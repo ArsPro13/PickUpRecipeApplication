@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
+import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_small_card_widget.dart';
 
 void main() {
   runApp(const MainApp());
@@ -7,7 +9,6 @@ void main() {
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,9 +17,9 @@ class MainApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Scaffold(
+      home: Scaffold(
         body: Center(
-          child: Text('aaa'),
+          child: RecipeSmallCardWidget(recipe: RecipeData(title: 'abcd', author: 'bcde', a: [])),
         ),
       ),
     );
