@@ -12,6 +12,7 @@ dependencies:
   build_runner: ^2.4.9
   flutter:
     sdk: flutter
+  get_it: ^7.7.0
   json_annotation: ^4.9.0
 
 dev_dependencies:
