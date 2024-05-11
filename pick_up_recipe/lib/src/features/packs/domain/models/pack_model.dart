@@ -34,6 +34,9 @@ class PackData {
   @JsonKey(name: "pack_sca_score")
   late int packScaScore;
 
+  @JsonKey(name: "is_active")
+  late bool isActive;
+
   PackData({
     required this.packId,
     required this.userId,
@@ -45,6 +48,7 @@ class PackData {
     required this.packImage,
     required this.packVariety,
     required this.packScaScore,
+    required this.isActive,
   });
 
   factory PackData.fromJson(Map<String, dynamic> json) =>

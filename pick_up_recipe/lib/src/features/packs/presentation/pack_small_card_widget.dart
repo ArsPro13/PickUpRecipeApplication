@@ -3,25 +3,35 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 
-String convertDate(String date) {
-  return '${date.substring(11, 19)} on ${date.substring(0, 10)}';
+import '../../recipes/presentation/recipe_small_card_widget.dart';
+
+String convertDescriptorsToLine(List<String> descriptors) {
+  String ans = '';
+  for (int i = 0; i < descriptors.length; ++i) {
+    ans += descriptors[i];
+    if (i < descriptors.length - 1) {
+      ans += ', ';
+    }
+  }
+  return ans;
 }
 
-class RecipeSmallCardWidget extends StatefulWidget {
-  const RecipeSmallCardWidget({
+class PackSmallCardWidget extends StatefulWidget {
+  const PackSmallCardWidget({
     super.key,
-    required this.recipe,
+    required this.pack,
   });
 
-  final RecipeData recipe;
+  final PackData pack;
 
   @override
-  State<RecipeSmallCardWidget> createState() => RecipeSmallCardWidgetState();
+  State<PackSmallCardWidget> createState() => _PackSmallCardWidgetState();
 }
 
-class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
+class _PackSmallCardWidgetState extends State<PackSmallCardWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -40,8 +50,8 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
               child: Image.memory(
-                base64Decode(widget.recipe.pack.packImage),
-                height: 70,
+                base64Decode(widget.pack.packImage),
+                height: 120,
               ),
             ),
           ),
@@ -49,11 +59,11 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
             child: Column(
               children: [
                 Text(
-                  widget.recipe.pack.packName,
+                  widget.pack.packName,
                   style: const TextStyle(fontSize: 24),
                 ),
-                Text(convertDate(widget.recipe.date)),
-                Text('Made on ${widget.recipe.device}'),
+                Text('Produced on ${convertDate(widget.pack.packDate)}'),
+                Text('Descriptors: ${convertDescriptorsToLine(widget.pack.packDescriptors)}'),
               ],
             ),
           ),

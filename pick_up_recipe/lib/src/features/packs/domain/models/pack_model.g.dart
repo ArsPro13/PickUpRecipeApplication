@@ -21,6 +21,7 @@ PackData _$PackDataFromJson(Map<String, dynamic> json) => PackData(
       packImage: json['pack_image'] as String,
       packVariety: json['pack_variety'] as String,
       packScaScore: (json['pack_sca_score'] as num).toInt(),
+      isActive: json['is_active'] as bool,
     );
 
 Map<String, dynamic> _$PackDataToJson(PackData instance) => <String, dynamic>{
@@ -34,4 +35,5 @@ Map<String, dynamic> _$PackDataToJson(PackData instance) => <String, dynamic>{
       'pack_image': instance.packImage,
       'pack_variety': instance.packVariety,
       'pack_sca_score': instance.packScaScore,
+      'is_active': instance.isActive,
     };

@@ -24,10 +24,11 @@ class _LatestRecipesWidgetState extends State<LatestRecipesWidget> {
     dao = getIt.get<LatestRecipesDAO>();
     loaded = false;
     super.initState();
-    fetchArticles(dao);
+    fetchRecipes(dao);
+    print(dao);
   }
 
-  Future<void> fetchArticles(LatestRecipesDAO dao) async {
+  Future<void> fetchRecipes(LatestRecipesDAO dao) async {
     setState(() {
       loaded = false;
     });
@@ -39,14 +40,12 @@ class _LatestRecipesWidgetState extends State<LatestRecipesWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SliverPadding(
-      padding: const EdgeInsets.only(top: 50),
-      sliver: SliverList.builder(
-        itemCount: latestRecipes.length,
-        itemBuilder: (context, index) {
-          return RecipeSmallCardWidget(recipe: latestRecipes[index]);
-        },
-      ),
+    return SliverList.builder(
+      // padding: const EdgeInsets.only(top: 10),
+      itemCount: latestRecipes.length,
+      itemBuilder: (context, index) {
+        return RecipeSmallCardWidget(recipe: latestRecipes[index]);
+      },
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:pick_up_recipe/src/features/packs/data/DAO/active_packs_dao.dart';
+import 'package:pick_up_recipe/src/features/packs/data/DAO/mocked_active_packs_dao.dart';
 import 'package:pick_up_recipe/src/features/recipes/data/DAO/latest_recipes_dao.dart';
 import 'package:pick_up_recipe/src/features/recipes/data/DAO/mocked_latest_recipes_dao_instance.dart';
 import 'package:pick_up_recipe/src/pages/main_page.dart';
@@ -23,6 +25,7 @@ class _MainAppState extends State<MainApp> {
 
   void setupGetIt() {
     getIt.registerSingleton<LatestRecipesDAO>(MockedLatestRecipesDAOInstance());
+    getIt.registerSingleton<ActivePacksDAO>(MockedActivePacksDAOInstance());
   }
 
   void _onItemTapped(int index) {
