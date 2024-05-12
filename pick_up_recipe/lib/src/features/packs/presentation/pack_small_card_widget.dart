@@ -4,20 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
-import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 
 import '../../recipes/presentation/recipe_small_card_widget.dart';
-
-String convertDescriptorsToLine(List<String> descriptors) {
-  String ans = '';
-  for (int i = 0; i < descriptors.length; ++i) {
-    ans += descriptors[i];
-    if (i < descriptors.length - 1) {
-      ans += ', ';
-    }
-  }
-  return ans;
-}
 
 class PackSmallCardWidget extends StatefulWidget {
   const PackSmallCardWidget({
@@ -38,32 +26,41 @@ class _PackSmallCardWidgetState extends State<PackSmallCardWidget> {
       margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary,
-          width: 1.5,
+          color: Theme.of(context).colorScheme.secondary,
+          width: .5,
         ),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(5.0),
+          SizedBox(
+            width: double.infinity,
+            height: 200,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: Image.memory(
-                base64Decode(widget.pack.packImage),
-                height: 120,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: Image.memory(
+                  base64Decode(widget.pack.packImage),
+                ),
               ),
             ),
           ),
-          Expanded(
+          Padding(
+            padding: const EdgeInsets.all(15),
             child: Column(
               children: [
                 Text(
                   widget.pack.packName,
                   style: const TextStyle(fontSize: 24),
                 ),
-                Text('Produced on ${convertDate(widget.pack.packDate)}'),
-                Text('Descriptors: ${convertDescriptorsToLine(widget.pack.packDescriptors)}'),
+                Text(
+                  'Обжарено в ${convertDate(widget.pack.packDate)}',
+                  style: const TextStyle(fontSize: 12),
+                ),
               ],
             ),
           ),

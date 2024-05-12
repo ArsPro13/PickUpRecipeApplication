@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 
 String convertDate(String date) {
-  return '${date.substring(11, 19)} on ${date.substring(0, 10)}';
+  return '${date.substring(11, 19)} ${date.substring(0, 10)}';
 }
 
 class RecipeSmallCardWidget extends StatefulWidget {
@@ -28,8 +28,8 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
       margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary,
-          width: 1.5,
+          color: Theme.of(context).colorScheme.secondary,
+          width: .5,
         ),
         borderRadius: BorderRadius.circular(10),
       ),

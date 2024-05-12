@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/src/features/recipes/data/DAO/latest_recipes_dao.dart';
@@ -25,7 +23,6 @@ class _LatestRecipesWidgetState extends State<LatestRecipesWidget> {
     loaded = false;
     super.initState();
     fetchRecipes(dao);
-    print(dao);
   }
 
   Future<void> fetchRecipes(LatestRecipesDAO dao) async {
