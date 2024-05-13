@@ -5,5 +5,6 @@ ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primary: Color.fromARGB(255, 2, 30, 102),
     secondary: Color.fromARGB(255, 33, 73, 194),
+    outline: Color.fromARGB(255, 0, 147, 42),
   ),
 );
