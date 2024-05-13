@@ -25,11 +25,8 @@ class _PackSmallCardWidgetState extends State<PackSmallCardWidget> {
     return Container(
       margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.secondary,
-          width: .5,
-        ),
         borderRadius: BorderRadius.circular(20),
+        color: Theme.of(context).colorScheme.onBackground,
       ),
       child: Column(
         children: [

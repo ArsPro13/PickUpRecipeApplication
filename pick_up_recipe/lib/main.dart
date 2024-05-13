@@ -46,7 +46,7 @@ class _MainAppState extends State<MainApp> {
 
   final List<Widget> pages = <Widget>[
     const MainPage(),
-    BrewPage(recipe: RecipeData.fromJson(json.decode(mockedJson))),
+    const Center(child: Text('bbb')),
     const Center(child: Text('ccc')),
   ];
 

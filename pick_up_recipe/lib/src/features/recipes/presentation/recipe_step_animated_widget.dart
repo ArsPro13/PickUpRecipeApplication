@@ -23,7 +23,8 @@ class RecipeStepAnimatedWidget extends StatefulWidget {
 class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
   @override
   Widget build(BuildContext context) {
-    bool has_finished = (widget.sec >= widget.step.stop);
+    bool hasFinished = (widget.sec >= widget.step.stop);
+    bool isRunning = (widget.sec <= widget.step.stop && widget.sec > widget.step.start);
 
     double progress = (widget.sec - widget.step.start) /
         (widget.step.stop - widget.step.start);
@@ -31,11 +32,12 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.secondary,
-          width: 1,
-        ),
+        color: Theme.of(context).colorScheme.onBackground,
         borderRadius: BorderRadius.circular(20),
+        border: isRunning ? Border.all(
+          color: Theme.of(context).colorScheme.primary,
+          width: 3,
+        ) : null
       ),
       margin: const EdgeInsets.all(20),
       child: Padding(
@@ -58,21 +60,18 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
               ],
             ),
             Container(
-              width: 120,
-              height: 120,
+              width: 160,
+              height: 160,
                 child: CircularPercentIndicator(
-                  radius: 60,
-                  // value: progress,
-                  // strokeWidth: 10,
+                  radius: 80,
                   percent: progress,
-                  lineWidth: has_finished ? 10 : 8,
+                  lineWidth: hasFinished ? 10 : 8,
                   center: Text('${(progress * (widget.step.stop - widget.step.start) * 10).round() / 10} сек.'),
                   progressColor: (
-                      has_finished
+                      hasFinished
                           ? Theme.of(context).colorScheme.outline
                           : Theme.of(context).colorScheme.primary),
                   backgroundColor: const Color.fromARGB(255, 210, 210, 210),
-                  // semanticsLabel: 'Progress indicator',
                 ),
 
             ),
