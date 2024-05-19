@@ -43,8 +43,11 @@ class RecipeTagWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 7),
-            child: Icon(tag.icon, size: 21,),
+            padding: const EdgeInsets.only(left: 7, right: 4),
+            child: Icon(
+              tag.icon,
+              size: 21,
+            ),
           ),
           Text(tag.name),
         ],

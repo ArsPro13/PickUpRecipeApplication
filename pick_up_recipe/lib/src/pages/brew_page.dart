@@ -1,9 +1,11 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_step_animated_widget.dart';
@@ -26,7 +28,7 @@ class BrewPage extends StatefulWidget {
 
 class _BrewPageState extends State<BrewPage>
     with SingleTickerProviderStateMixin<BrewPage> {
-  bool _is_animation_running = false;
+  bool _isAnimationRunning = false;
 
   late final _controller = AnimationController(
     vsync: this,
@@ -65,81 +67,113 @@ class _BrewPageState extends State<BrewPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        // padding: const EdgeInsets.only(top: 80),
-        slivers: [
-          SliverPersistentHeader(
-            delegate: _SliverAppBarDelegate(
-              minHeight: 50,
-              maxHeight: 70,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 40),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      size: 30,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            // padding: const EdgeInsets.only(top: 80),
+            slivers: [
+              SliverPersistentHeader(
+                delegate: _SliverAppBarDelegate(
+                  minHeight: 50,
+                  maxHeight: 70,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 40),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        iconSize: 30,
+                        icon: const Icon(
+                          Icons.arrow_back,
+                        ),
+                        tooltip: 'Return to the main page',
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
                     ),
-                    tooltip: 'Return to the main page',
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
                   ),
                 ),
               ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  child: Text(
-                    'Device: ${widget.recipe.device}',
-                    style: const TextStyle(fontSize: 20),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 30),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Brewed on ${widget.recipe.device}',
+                          style: const TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'Рецепт для зерна ${widget.recipe.pack.packName}',
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5, top: 15),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _RecipeIconWidget(value: widget.recipe.device, icon: Icons.coffee_maker_outlined, color: Colors.orange),
+                              _RecipeIconWidget(value: '${widget.recipe.load.toString()} г', icon: Icons.scale_outlined, color: const Color.fromARGB(255, 154, 126, 101)),
+                              _RecipeIconWidget(value: '${widget.recipe.water.toString()} мл', icon: Icons.water_drop_outlined, color: Colors.blueAccent),
+                              _RecipeIconWidget(value: '${widget.recipe.grindStep.toString()}.${widget.recipe.grindSubStep.toString()} click', icon: Icons.blur_on_sharp, color: const Color.fromARGB(255, 205, 166, 255)),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
-                Text(
-                  'Coffee: ${widget.recipe.pack.packName}',
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ],
-            ),
+              ),
+              stepsWidgetsColumn(widget.recipe.steps)
+            ],
           ),
-          SliverPadding(
-            sliver: SliverToBoxAdapter(
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 30),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_is_animation_running) {
-                        _controller.stop();
-                      } else {
-                        _controller.forward();
-                      }
-                      setState(() {
-                        _is_animation_running = !_is_animation_running;
-                      });
-                    },
-                    child: Text(_is_animation_running
-                        ? 'Stop brewing'
-                        : 'Start brewing!'),
+                  SizedBox(
+                    height: 50,
+                    width: 70,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      child: const Icon(Icons.edit_outlined),
+                    ),
                   ),
                   const SizedBox(
-                    width: 20,
+                    width: 10,
                   ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Icon(Icons.edit),
+                  SizedBox(
+                    height: 50,
+                    width: 170,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_isAnimationRunning) {
+                          _controller.stop();
+                        } else {
+                          _controller.forward();
+                        }
+                        setState(() {
+                          _isAnimationRunning = !_isAnimationRunning;
+                        });
+                      },
+                      child: Text(_isAnimationRunning
+                          ? 'Stop brewing'
+                          : 'Start brewing!'),
+                    ),
                   ),
                 ],
               ),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 15),
           ),
-          stepsWidgetsColumn(widget.recipe.steps),
         ],
       ),
     );
@@ -174,5 +208,42 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     return maxHeight != oldDelegate.maxHeight ||
         minHeight != oldDelegate.minHeight ||
         child != oldDelegate.child;
+  }
+}
+
+class _RecipeIconWidget extends StatelessWidget {
+  const _RecipeIconWidget({
+    super.key,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: color.withOpacity(0.3),
+          ),
+          child: Icon(
+            icon,
+            size: 30,
+          ),
+        ),
+        const SizedBox(
+          height: 5,
+        ),
+        Text(value),
+      ],
+    );
   }
 }

@@ -25,7 +25,7 @@ class _PackSmallCardWidgetState extends State<PackSmallCardWidget> {
     return Container(
       margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(15),
         color: Theme.of(context).colorScheme.onBackground,
       ),
       child: Column(
@@ -35,8 +35,8 @@ class _PackSmallCardWidgetState extends State<PackSmallCardWidget> {
             height: 200,
             child: ClipRRect(
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
               ),
               child: FittedBox(
                 fit: BoxFit.cover,
