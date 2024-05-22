@@ -85,13 +85,15 @@ class _BrewPageState extends State<BrewPage>
                     padding: const EdgeInsets.only(top: 40),
                     child: Align(
                       alignment: Alignment.topLeft,
-                      child: IconButton(
-                        iconSize: 30,
-                        icon: const Icon(
-                          Icons.arrow_back,
+                      child: GestureDetector(
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 10),
+                          child: SizedBox(
+                              height: 35,
+                              width: 35,
+                              child: Icon(Icons.arrow_back, size: 30.0)),
                         ),
-                        tooltip: 'Return to the main page',
-                        onPressed: () {
+                        onTap: () {
                           context.router.maybePop();
                         },
                       ),
@@ -119,14 +121,31 @@ class _BrewPageState extends State<BrewPage>
                           style: const TextStyle(fontSize: 18),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5, top: 15),
+                          padding: const EdgeInsets.only(
+                              left: 10, right: 10, bottom: 5, top: 15),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              RecipeIconWidget(value: '${widget.recipe.temperature.toString()} °C', icon: Icons.thermostat_outlined, color: Colors.orange),
-                              RecipeIconWidget(value: '${widget.recipe.load.toString()} г', icon: Icons.scale_outlined, color: const Color.fromARGB(255, 154, 126, 101)),
-                              RecipeIconWidget(value: '${widget.recipe.water.toString()} мл', icon: Icons.water_drop_outlined, color: Colors.blueAccent),
-                              RecipeIconWidget(value: '${widget.recipe.grindStep.toString()}.${widget.recipe.grindSubStep.toString()} click', icon: Icons.blur_on_sharp, color: const Color.fromARGB(255, 205, 166, 255)),
+                              RecipeIconWidget(
+                                  value:
+                                      '${widget.recipe.temperature.toString()} °C',
+                                  icon: Icons.thermostat_outlined,
+                                  color: Colors.orange),
+                              RecipeIconWidget(
+                                  value: '${widget.recipe.load.toString()} г',
+                                  icon: Icons.scale_outlined,
+                                  color:
+                                      const Color.fromARGB(255, 154, 126, 101)),
+                              RecipeIconWidget(
+                                  value: '${widget.recipe.water.toString()} мл',
+                                  icon: Icons.water_drop_outlined,
+                                  color: Colors.blueAccent),
+                              RecipeIconWidget(
+                                  value:
+                                      '${widget.recipe.grindStep.toString()}.${widget.recipe.grindSubStep.toString()} click',
+                                  icon: Icons.blur_on_sharp,
+                                  color:
+                                      const Color.fromARGB(255, 205, 166, 255)),
                             ],
                           ),
                         )
@@ -149,6 +168,18 @@ class _BrewPageState extends State<BrewPage>
                     height: 50,
                     width: 70,
                     child: ElevatedButton(
+                      style: ButtonStyle(
+                        shape:
+                        MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                            side: BorderSide(
+                              color: Theme.of(context).colorScheme.secondary,
+                              width: 0.1,
+                            ),
+                          ),
+                        ),
+                      ),
                       onPressed: () {},
                       child: const Icon(Icons.edit_outlined),
                     ),
@@ -160,6 +191,18 @@ class _BrewPageState extends State<BrewPage>
                     height: 50,
                     width: 170,
                     child: ElevatedButton(
+                      style: ButtonStyle(
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                            side: BorderSide(
+                              color: Theme.of(context).colorScheme.secondary,
+                              width: 0.1,
+                            ),
+                          ),
+                        ),
+                      ),
                       onPressed: () {
                         if (_isAnimationRunning) {
                           _controller.stop();

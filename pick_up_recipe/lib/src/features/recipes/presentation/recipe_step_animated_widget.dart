@@ -57,18 +57,18 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
         borderRadius: BorderRadius.circular(15),
         border: isRunning
             ? Border.all(
-                color: Theme.of(context).colorScheme.primary,
-                width: 3,
+                color: Theme.of(context).colorScheme.secondary,
+                width: 1,
               )
             : null,
         boxShadow: [
           BoxShadow(
             color: isRunning
-                ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
-                : Colors.grey.withOpacity(0.5),
+                ? Theme.of(context).colorScheme.secondary.withOpacity(0.5)
+                : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
             spreadRadius: 3,
-            blurRadius: 4,
-            offset: const Offset(0, 4), // changes position of shadow
+            blurRadius: 5,
+            offset: const Offset(0, 2), // changes position of shadow
           ),
         ],
       ),
@@ -115,9 +115,9 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
                   style: const TextStyle(fontSize: 25),
                 ),
                 progressColor: (hasFinished
-                    ? Theme.of(context).colorScheme.outline
-                    : Theme.of(context).colorScheme.primary),
-                backgroundColor: const Color.fromARGB(255, 210, 210, 210),
+                    ? Theme.of(context).colorScheme.outline.withOpacity(0.3)
+                    : Theme.of(context).colorScheme.secondary),
+                backgroundColor: Theme.of(context).colorScheme.background,
               ),
             ),
           ],

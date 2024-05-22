@@ -55,7 +55,7 @@ class _PackSmallCardWidgetState extends State<PackSmallCardWidget> {
                   style: const TextStyle(fontSize: 24),
                 ),
                 Text(
-                  'Обжарено в ${convertDate(widget.pack.packDate)}',
+                  'Обжарено ${convertDate(widget.pack.packDate)}',
                   style: const TextStyle(fontSize: 12),
                 ),
               ],

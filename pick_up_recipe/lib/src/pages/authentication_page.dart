@@ -15,7 +15,7 @@ class AuthenticationPage extends StatefulWidget {
 
 class _AuthenticationPageState
     extends State<AuthenticationPage> {
-  bool isRegistration = true;
+  bool isRegistration = false;
 
   @override
   Widget build(BuildContext context) {

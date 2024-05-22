@@ -44,7 +44,7 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.router.push(BrewRoute(recipe: RecipeData.fromJson(json.decode(mockedJson))));
+        context.router.push(BrewRoute(recipe: widget.recipe));
       },
       child: Container(
         height: 170,
@@ -78,7 +78,8 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
                     padding: const EdgeInsets.symmetric(vertical: 7),
                     child: Text(
                       widget.recipe.pack.packName,
-                      style: const TextStyle(fontSize: 24),
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 21),
                     ),
                   ),
                   Text('Заварено ${convertDate(widget.recipe.date)}'),

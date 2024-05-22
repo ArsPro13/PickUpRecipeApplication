@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../routing/app_router.dart';
 import '../provider/mocked_authentication_provider.dart';
 
 class RegistrationFormWidget extends ConsumerStatefulWidget {
@@ -42,6 +43,7 @@ class _RegistrationFormWidgetState extends ConsumerState<RegistrationFormWidget>
                   labelText: 'Email',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -60,6 +62,7 @@ class _RegistrationFormWidgetState extends ConsumerState<RegistrationFormWidget>
                   labelText: 'Пароль',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -86,7 +89,11 @@ class _RegistrationFormWidgetState extends ConsumerState<RegistrationFormWidget>
                     if (_formKey.currentState!.validate()) {
                       await ref.watch(authenticationProvider.notifier).register(_emailController.text, _passwordController.text);;
                       if (mounted) {
-                        context.router.maybePop();
+                        if (context.router.canPop()) {
+                          context.router.maybePop();
+                        } else {
+                          context.router.replace(const MainRoute());
+                        }
                       }
                     }
                   },

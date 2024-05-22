@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pick_up_recipe/routing/app_router.dart';
 
 import '../provider/mocked_authentication_provider.dart';
 
@@ -43,6 +44,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                   labelText: 'Email',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -61,6 +63,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                   labelText: 'Пароль',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -87,7 +90,11 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                     if (_formKey.currentState!.validate()) {
                       await ref.watch(authenticationProvider.notifier).login(_emailController.text, _passwordController.text);
                       if (mounted) {
-                        context.router.maybePop();
+                        if (context.router.canPop()) {
+                          context.router.maybePop();
+                        } else {
+                          context.router.replace(const MainRoute());
+                        }
                       }
                     }
                   },

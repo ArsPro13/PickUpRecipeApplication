@@ -16,7 +16,7 @@ class MockedAuthenticationProvider extends ChangeNotifier
 
   @override
   Future<void> login(String email, String passwordHash) async {
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 100));
     refreshToken = 'aaaa';
     accessToken = 'bbbbb';
     ++actionsCounter;
@@ -25,7 +25,7 @@ class MockedAuthenticationProvider extends ChangeNotifier
 
   @override
   Future<void> refresh() async {
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 100));
     refreshToken = 'ddddddd';
     accessToken = 'cccc';
     ++actionsCounter;
@@ -34,7 +34,7 @@ class MockedAuthenticationProvider extends ChangeNotifier
 
   @override
   Future<void> register(String email, String passwordHash) async {
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 100));
     refreshToken = 'aaaa';
     accessToken = 'bbbbb';
     ++actionsCounter;
@@ -43,9 +43,9 @@ class MockedAuthenticationProvider extends ChangeNotifier
 
   @override
   Future<void> checkStatus() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    ++actionsCounter;
-    statusOk = actionsCounter % 4 != 2;
+    // await Future.delayed(const Duration(milliseconds: 100));
+    // ++actionsCounter;
+    // statusOk = actionsCounter % 4 != 1;
   }
 }
 
