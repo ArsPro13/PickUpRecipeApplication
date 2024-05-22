@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -7,6 +8,8 @@ import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_mo
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_tags_widget.dart';
 import 'package:pick_up_recipe/src/pages/brew_page.dart';
 
+import '../../../../main.dart';
+import '../../../../routing/app_router.dart';
 import '../domain/models/recipe_tag_model.dart';
 
 String convertDate(String date) {
@@ -41,13 +44,14 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (context) {
-              return BrewPage(recipe: widget.recipe);
-            },
-          ),
-        );
+        context.router.push(BrewRoute(recipe: RecipeData.fromJson(json.decode(mockedJson))));
+        // Navigator.of(context).push(
+        //   MaterialPageRoute<void>(
+        //     builder: (context) {
+        //       return BrewPage(recipe: widget.recipe);
+        //     },
+        //   ),
+        // );
       },
       child: Container(
         height: 170,

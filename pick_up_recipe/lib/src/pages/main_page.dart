@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -5,6 +6,7 @@ import 'package:pick_up_recipe/src/features/packs/presentation/active_packs_widg
 import 'package:pick_up_recipe/src/features/recipes/presentation/latest_recipes_widget.dart';
 import 'package:sliver_text/sliver_text.dart';
 
+@RoutePage()
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
@@ -50,9 +52,7 @@ class MainPage extends StatelessWidget {
               ),
             ),
           ),
-
           const ActivePacksWidget(),
-
         ],
       ),
     );

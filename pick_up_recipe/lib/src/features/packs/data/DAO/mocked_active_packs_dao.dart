@@ -20,6 +20,7 @@ class MockedActivePacksDAOInstance implements ActivePacksDAO {
     latestRecipes = newPacks;
 
     return latestRecipes;
+
   }
 
   @override

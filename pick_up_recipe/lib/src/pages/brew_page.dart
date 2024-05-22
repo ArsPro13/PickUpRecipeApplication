@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:auto_route/annotations.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
@@ -14,6 +16,7 @@ int getDuration(RecipeData recipe) {
   return recipe.steps[recipe.steps.length - 1].stop;
 }
 
+@RoutePage()
 class BrewPage extends StatefulWidget {
   const BrewPage({
     super.key,
@@ -87,7 +90,7 @@ class _BrewPageState extends State<BrewPage>
                         ),
                         tooltip: 'Return to the main page',
                         onPressed: () {
-                          Navigator.pop(context);
+                          context.router.maybePop();
                         },
                       ),
                     ),
@@ -118,7 +121,7 @@ class _BrewPageState extends State<BrewPage>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _RecipeIconWidget(value: widget.recipe.device, icon: Icons.coffee_maker_outlined, color: Colors.orange),
+                              _RecipeIconWidget(value: '${widget.recipe.temperature.toString()} °C', icon: Icons.thermostat_outlined, color: Colors.orange),
                               _RecipeIconWidget(value: '${widget.recipe.load.toString()} г', icon: Icons.scale_outlined, color: const Color.fromARGB(255, 154, 126, 101)),
                               _RecipeIconWidget(value: '${widget.recipe.water.toString()} мл', icon: Icons.water_drop_outlined, color: Colors.blueAccent),
                               _RecipeIconWidget(value: '${widget.recipe.grindStep.toString()}.${widget.recipe.grindSubStep.toString()} click', icon: Icons.blur_on_sharp, color: const Color.fromARGB(255, 205, 166, 255)),
