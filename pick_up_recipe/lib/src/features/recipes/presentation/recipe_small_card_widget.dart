@@ -45,13 +45,6 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
     return GestureDetector(
       onTap: () {
         context.router.push(BrewRoute(recipe: RecipeData.fromJson(json.decode(mockedJson))));
-        // Navigator.of(context).push(
-        //   MaterialPageRoute<void>(
-        //     builder: (context) {
-        //       return BrewPage(recipe: widget.recipe);
-        //     },
-        //   ),
-        // );
       },
       child: Container(
         height: 170,

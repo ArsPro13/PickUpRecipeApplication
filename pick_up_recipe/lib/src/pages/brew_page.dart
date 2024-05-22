@@ -12,6 +12,8 @@ import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_mo
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_step_animated_widget.dart';
 
+import '../features/recipes/presentation/recipe_icon_widget.dart';
+
 int getDuration(RecipeData recipe) {
   return recipe.steps[recipe.steps.length - 1].stop;
 }
@@ -121,10 +123,10 @@ class _BrewPageState extends State<BrewPage>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _RecipeIconWidget(value: '${widget.recipe.temperature.toString()} °C', icon: Icons.thermostat_outlined, color: Colors.orange),
-                              _RecipeIconWidget(value: '${widget.recipe.load.toString()} г', icon: Icons.scale_outlined, color: const Color.fromARGB(255, 154, 126, 101)),
-                              _RecipeIconWidget(value: '${widget.recipe.water.toString()} мл', icon: Icons.water_drop_outlined, color: Colors.blueAccent),
-                              _RecipeIconWidget(value: '${widget.recipe.grindStep.toString()}.${widget.recipe.grindSubStep.toString()} click', icon: Icons.blur_on_sharp, color: const Color.fromARGB(255, 205, 166, 255)),
+                              RecipeIconWidget(value: '${widget.recipe.temperature.toString()} °C', icon: Icons.thermostat_outlined, color: Colors.orange),
+                              RecipeIconWidget(value: '${widget.recipe.load.toString()} г', icon: Icons.scale_outlined, color: const Color.fromARGB(255, 154, 126, 101)),
+                              RecipeIconWidget(value: '${widget.recipe.water.toString()} мл', icon: Icons.water_drop_outlined, color: Colors.blueAccent),
+                              RecipeIconWidget(value: '${widget.recipe.grindStep.toString()}.${widget.recipe.grindSubStep.toString()} click', icon: Icons.blur_on_sharp, color: const Color.fromARGB(255, 205, 166, 255)),
                             ],
                           ),
                         )
@@ -211,42 +213,5 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     return maxHeight != oldDelegate.maxHeight ||
         minHeight != oldDelegate.minHeight ||
         child != oldDelegate.child;
-  }
-}
-
-class _RecipeIconWidget extends StatelessWidget {
-  const _RecipeIconWidget({
-    super.key,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            color: color.withOpacity(0.3),
-          ),
-          child: Icon(
-            icon,
-            size: 30,
-          ),
-        ),
-        const SizedBox(
-          height: 5,
-        ),
-        Text(value),
-      ],
-    );
   }
 }

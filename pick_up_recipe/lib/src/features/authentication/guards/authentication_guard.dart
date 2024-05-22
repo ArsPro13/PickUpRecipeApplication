@@ -10,8 +10,7 @@ class AuthGuard extends AutoRouteGuard {
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
-    // bool isAuthenticated = await authenticationProvider.checkStatus();
-    // await ref.watch(authenticationProvider).checkStatus();
+    // todo: move to main initstate
     await ref.watch(authenticationProvider).checkStatus();
     bool isAuthenticated = ref.watch(authenticationProvider.notifier).statusOk;
     if (!isAuthenticated) {
