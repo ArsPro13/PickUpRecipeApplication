@@ -22,7 +22,7 @@ class AppRouter extends _$AppRouter {
         AutoRoute(
           page: RootRoute.page,
           initial: true,
-          guards: [AuthGuard(ref)],
+          // guards: [AuthGuard(ref)],
           children: [
             AutoRoute(
               page: MainRoute.page,
@@ -35,8 +35,10 @@ class AppRouter extends _$AppRouter {
         ),
         AutoRoute(
           page: BrewRoute.page,
-          guards: [AuthGuard(ref)],
+          // guards: [AuthGuard(ref)],
         ),
-        AutoRoute(page: AuthenticationRoute.page),
+        AutoRoute(
+          page: AuthenticationRoute.page,
+        ),
       ];
 }
