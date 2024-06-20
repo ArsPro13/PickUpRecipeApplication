@@ -4,8 +4,8 @@ import 'package:pick_up_recipe/src/features/packs/presentation/active_packs_widg
 import 'package:pick_up_recipe/src/features/recipes/presentation/latest_recipes_widget.dart';
 
 @RoutePage()
-class MainPage extends StatelessWidget {
-  const MainPage({super.key});
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

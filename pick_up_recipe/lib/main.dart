@@ -9,7 +9,7 @@ import 'package:pick_up_recipe/src/features/recipes/data/DAO/latest_recipes_dao.
 import 'package:pick_up_recipe/src/features/recipes/data/DAO/mocked_latest_recipes_dao_instance.dart';
 import 'package:pick_up_recipe/src/features/themes/dark_theme.dart';
 import 'package:pick_up_recipe/src/features/themes/light_theme.dart';
-
+import 'package:pick_up_recipe/src/pages/settings_page.dart';
 
 void main() {
   runApp(
@@ -44,7 +44,11 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: AppRouter(ref).config(),
-      // theme: lightTheme,
+      theme: ThemeData(
+        extensions: [
+          lightTheme,
+        ],
+      ),
       // darkTheme: darkTheme,
     );
   }
@@ -70,9 +74,11 @@ class _RootScreenState extends State<RootScreen> {
   Widget build(BuildContext context) {
     return AutoTabsScaffold(
       routes: [
-        const MainRoute(),
+        MainRoute(),
+        // MainRoute(),
+        MainRoute(),
         // BrewRoute(recipe: RecipeData.fromJson(json.decode(mockedJson1))),
-        // ProfileRoute(),
+        // SettingsRoute(),
       ],
       bottomNavigationBuilder: (_, tabsRouter) {
         return BottomNavigationBar(

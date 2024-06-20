@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 
 import '../../recipes/presentation/recipe_small_card_widget.dart';
+import '../../themes/app_theme.dart';
 
 class PackSmallCardWidget extends StatefulWidget {
   const PackSmallCardWidget({
@@ -22,11 +23,13 @@ class PackSmallCardWidget extends StatefulWidget {
 class _PackSmallCardWidgetState extends State<PackSmallCardWidget> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).extension<AppTheme>() ?? AppTheme.defaultThemeData;
+
     return Container(
       margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: Theme.of(context).colorScheme.onBackground,
+        color: theme.onBackgroundColor,
       ),
       child: Column(
         children: [

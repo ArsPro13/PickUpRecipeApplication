@@ -5,6 +5,8 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_icon_widget.dart';
 
+import '../../themes/app_theme.dart';
+
 // Widget getTags(RecipeData recipe) {
 //   List<RecipeTag> tags = [];
 //
@@ -43,6 +45,8 @@ class RecipeStepAnimatedWidget extends StatefulWidget {
 class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).extension<AppTheme>() ?? AppTheme.defaultThemeData;
+
     bool hasFinished = (widget.sec >= widget.step.stop);
     bool isRunning =
         (widget.sec <= widget.step.stop && widget.sec > widget.step.start);
@@ -53,7 +57,7 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onBackground,
+        color: theme.onBackgroundColor,
         borderRadius: BorderRadius.circular(15),
         border: isRunning
             ? Border.all(
@@ -64,8 +68,8 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
         boxShadow: [
           BoxShadow(
             color: isRunning
-                ? Theme.of(context).colorScheme.secondary.withOpacity(0.5)
-                : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                ? theme.secondaryColor.withOpacity(0.5)
+                : theme.secondaryColor.withOpacity(0.2),
             spreadRadius: 3,
             blurRadius: 5,
             offset: const Offset(0, 2), // changes position of shadow
@@ -115,9 +119,9 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
                   style: const TextStyle(fontSize: 25),
                 ),
                 progressColor: (hasFinished
-                    ? Theme.of(context).colorScheme.outline.withOpacity(0.3)
-                    : Theme.of(context).colorScheme.secondary),
-                backgroundColor: Theme.of(context).colorScheme.background,
+                    ? theme.outlineColor.withOpacity(0.3)
+                    : theme.secondaryColor),
+                backgroundColor: theme.backgroundColor,
               ),
             ),
           ],
