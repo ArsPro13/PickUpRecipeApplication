@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_tags_widget.dart';
-import 'package:pick_up_recipe/src/features/themes/app_theme.dart';
 import 'package:pick_up_recipe/src/pages/brew_page.dart';
 
 import '../../../../main.dart';
@@ -43,7 +42,6 @@ class RecipeSmallCardWidget extends StatefulWidget {
 class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).extension<AppTheme>() ?? AppTheme.defaultThemeData;
     return GestureDetector(
       onTap: () {
         context.router.push(BrewRoute(recipe: widget.recipe));
@@ -53,7 +51,7 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> {
         margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: theme.backgroundColor,
+          color: Theme.of(context).colorScheme.onBackground,
         ),
         child: Row(
           children: [

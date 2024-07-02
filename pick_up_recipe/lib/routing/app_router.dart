@@ -8,7 +8,6 @@ import '../src/features/recipes/domain/models/recipe_data_model.dart';
 import '../src/pages/authentication_page.dart';
 import '../src/pages/brew_page.dart';
 import '../src/pages/main_page.dart';
-import '../src/pages/settings_page.dart';
 
 part './app_router.gr.dart';
 
@@ -40,9 +39,6 @@ class AppRouter extends _$AppRouter {
         ),
         AutoRoute(
           page: AuthenticationRoute.page,
-        ),
-        AutoRoute(
-          page: SettingsRoute.page,
         ),
       ];
 }

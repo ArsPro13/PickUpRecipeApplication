@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
 
-import '../../themes/app_theme.dart';
 import '../provider/mocked_authentication_provider.dart';
 
 class LoginFormWidget extends ConsumerStatefulWidget {
@@ -22,8 +21,6 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).extension<AppTheme>() ?? AppTheme.defaultThemeData;
-
     return Column(
       children: [
         const Align(
@@ -47,7 +44,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                   labelText: 'Email',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.secondaryColor),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -66,7 +63,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                   labelText: 'Пароль',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.secondaryColor),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -83,7 +80,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                 child: ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all<Color>(
-                        theme.primaryColor),
+                        Theme.of(context).colorScheme.primary),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -105,7 +102,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                     'Войти',
                     style: TextStyle(
                         fontSize: 20,
-                        color: theme.backgroundColor),
+                        color: Theme.of(context).colorScheme.background),
                   ),
                 ),
               ),

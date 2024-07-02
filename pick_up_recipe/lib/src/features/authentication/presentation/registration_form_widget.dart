@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../routing/app_router.dart';
-import '../../themes/app_theme.dart';
 import '../provider/mocked_authentication_provider.dart';
 
 class RegistrationFormWidget extends ConsumerStatefulWidget {
@@ -21,8 +20,6 @@ class _RegistrationFormWidgetState extends ConsumerState<RegistrationFormWidget>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).extension<AppTheme>() ?? AppTheme.defaultThemeData;
-
     return Column(
       children: [
         const Align(
@@ -46,7 +43,7 @@ class _RegistrationFormWidgetState extends ConsumerState<RegistrationFormWidget>
                   labelText: 'Email',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.secondaryColor),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -65,7 +62,7 @@ class _RegistrationFormWidgetState extends ConsumerState<RegistrationFormWidget>
                   labelText: 'Пароль',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.secondaryColor),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -82,7 +79,7 @@ class _RegistrationFormWidgetState extends ConsumerState<RegistrationFormWidget>
                 child: ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all<Color>(
-                        theme.primaryColor),
+                        Theme.of(context).colorScheme.primary),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -104,7 +101,7 @@ class _RegistrationFormWidgetState extends ConsumerState<RegistrationFormWidget>
                     'Зарегистрироваться',
                     style: TextStyle(
                         fontSize: 20,
-                        color: theme.backgroundColor),
+                        color: Theme.of(context).colorScheme.background),
                   ),
                 ),
               ),

@@ -14,8 +14,7 @@ import 'app_theme.dart';
 
 
 AppTheme lightTheme = const AppTheme(
-  // primaryColor: Color.fromARGB(255, 1, 1, 159),
-  primaryColor: Color.fromARGB(255, 199, 40, 149),
+  primaryColor: Color.fromARGB(255, 1, 1, 159),
   secondaryColor: Color.fromARGB(255, 32, 36, 45),
   outlineColor: Color.fromARGB(255, 0, 147, 42),
   onBackgroundColor: Color.fromARGB(255, 255, 255, 255),
