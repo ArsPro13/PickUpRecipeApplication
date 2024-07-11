@@ -6,8 +6,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-import 'package:flutter/widgets.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_step_animated_widget.dart';
