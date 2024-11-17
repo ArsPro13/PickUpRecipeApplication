@@ -1,13 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pick_up_recipe/src/pages/recognition_camera_page.dart';
 
-import '../main.dart';
-import '../src/features/authentication/guards/authentication_guard.dart';
-import '../src/features/recipes/domain/models/recipe_data_model.dart';
-import '../src/pages/authentication_page.dart';
-import '../src/pages/brew_page.dart';
-import '../src/pages/main_page.dart';
+import 'package:pick_up_recipe/main.dart';
+import 'package:pick_up_recipe/src/features/authentication/guards/authentication_guard.dart';
+import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
+import 'package:pick_up_recipe/src/pages/authentication_page.dart';
+import 'package:pick_up_recipe/src/pages/brew_page.dart';
+import 'package:pick_up_recipe/src/pages/main_page.dart';
 
 part './app_router.gr.dart';
 
@@ -31,6 +32,9 @@ class AppRouter extends _$AppRouter {
             AutoRoute(
               page: BrewRoute.page,
             ),
+            AutoRoute(
+              page: RecognitionCameraRoute.page,
+            )
           ],
         ),
         AutoRoute(

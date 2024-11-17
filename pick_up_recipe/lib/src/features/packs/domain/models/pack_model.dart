@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:pick_up_recipe/src/features/packs/domain/models/pack_response_model.dart';
 
 part 'pack_model.g.dart';
 
@@ -17,13 +18,13 @@ class PackData {
   late String packName;
 
   @JsonKey(name: "pack_descriptors")
-  late List<String> packDescriptors;
+  late List<String>? packDescriptors;
 
   @JsonKey(name: "pack_country")
   late String packCountry;
 
   @JsonKey(name: "pack_processing_method")
-  late List<String> packProcessingMethod;
+  late List<String>? packProcessingMethod;
 
   @JsonKey(name: "pack_image")
   late String packImage;
@@ -54,5 +55,25 @@ class PackData {
   factory PackData.fromJson(Map<String, dynamic> json) =>
       _$PackDataFromJson(json);
 
+  factory PackData.fromResponse(PackResponseBodyModel response) {
+    return PackData(
+      packId: response.id.toString(),
+      userId: response.userId.toString(),
+      packDate: response.packDate,
+      packName: response.packName,
+      packDescriptors: response.packDescriptors,
+      packCountry: response.packCountry,
+      packProcessingMethod: response.packProcessingMethod,
+      packImage: response.packImage,
+      packVariety: response.packVariety,
+      packScaScore: response.packScaScore,
+      isActive: true,
+    );
+  }
+
   Map<String, dynamic> toJson() => _$PackDataToJson(this);
+
+  String toString() {
+    return 'packId: $packId, userId: $userId, packDate: $packDate, packName: $packName, packDescriptors: $packDescriptors, packCountry: $packCountry, packProcessingMethod: $packProcessingMethod, packImage: $packImage, packVariety: $packVariety, packScaScore: $packScaScore ';
+  }
 }

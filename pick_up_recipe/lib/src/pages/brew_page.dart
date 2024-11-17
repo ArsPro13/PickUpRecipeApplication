@@ -73,7 +73,6 @@ class _BrewPageState extends State<BrewPage>
       body: Stack(
         children: [
           CustomScrollView(
-            // padding: const EdgeInsets.only(top: 80),
             slivers: [
               SliverPersistentHeader(
                 delegate: _SliverAppBarDelegate(
@@ -85,7 +84,7 @@ class _BrewPageState extends State<BrewPage>
                       alignment: Alignment.topLeft,
                       child: GestureDetector(
                         child: const Padding(
-                          padding: EdgeInsets.only(left: 10),
+                          padding: EdgeInsets.only(left: 10, top: 10),
                           child: SizedBox(
                               height: 35,
                               width: 35,
@@ -168,7 +167,7 @@ class _BrewPageState extends State<BrewPage>
                     child: ElevatedButton(
                       style: ButtonStyle(
                         shape:
-                        MaterialStateProperty.all<RoundedRectangleBorder>(
+                        WidgetStateProperty.all<RoundedRectangleBorder>(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                             side: BorderSide(
@@ -191,7 +190,7 @@ class _BrewPageState extends State<BrewPage>
                     child: ElevatedButton(
                       style: ButtonStyle(
                         shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                            WidgetStateProperty.all<RoundedRectangleBorder>(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                             side: BorderSide(

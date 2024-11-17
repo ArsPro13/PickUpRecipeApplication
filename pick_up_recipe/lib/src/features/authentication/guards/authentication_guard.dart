@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
-import '../provider/mocked_authentication_provider.dart';
+import 'package:pick_up_recipe/src/features/authentication/provider/authentification_provider_impl.dart';
 
 class AuthGuard extends AutoRouteGuard {
   final WidgetRef ref;
@@ -10,8 +10,10 @@ class AuthGuard extends AutoRouteGuard {
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
-    // await ref.watch(authenticationProvider).checkStatus();
+    await ref.read(authenticationProvider).checkStatus();
+
     bool isAuthenticated = ref.watch(authenticationProvider.notifier).statusOk;
+
     if (!isAuthenticated) {
       router.push(const AuthenticationRoute());
     } else {

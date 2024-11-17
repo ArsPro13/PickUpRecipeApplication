@@ -1,10 +1,9 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
-
-import '../provider/mocked_authentication_provider.dart';
+import 'package:pick_up_recipe/src/features/authentication/provider/authentification_provider_impl.dart';
 
 class LoginFormWidget extends ConsumerStatefulWidget {
   const LoginFormWidget({super.key});
@@ -15,9 +14,36 @@ class LoginFormWidget extends ConsumerStatefulWidget {
 
 class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  String _error = '';
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  void _onSubmitTap() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        setState(() {
+          _isLoading = true;
+        });
+        await ref.read(authenticationProvider.notifier).login(
+              _emailController.text,
+              _passwordController.text,
+            );
+        if (context.mounted) {
+          context.router.replace(const MainRoute());
+        }
+        _error = '';
+      } catch (e) {
+        setState(() {
+          _error = e.toString();
+        });
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +52,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
         const Align(
           alignment: Alignment.topLeft,
           child: Text(
-            'Войти в свой аккаунт',
+            'Sign in to account',
             style: TextStyle(fontSize: 18),
           ),
         ),
@@ -44,13 +70,14 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                   labelText: 'Email',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
+                    borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 validator: (value) {
                   if (value!.isEmpty || !value.contains('@')) {
-                    return 'Пожалуйста, введите действительный email';
+                    return 'Enter existing email';
                   }
                   return null;
                 },
@@ -60,50 +87,50 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'Пароль',
+                  labelText: 'Password',
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
+                    borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.secondary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 validator: (value) {
                   if (value!.isEmpty || value.length < 6) {
-                    return 'Пароль должен содержать минимум 6 символов';
+                    return 'Password must contain minimum 6 symbols';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 24.0),
+              const SizedBox(height: 12),
+              Text(
+                _error,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+              const SizedBox(height: 12),
               SizedBox(
                 height: 60,
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(
+                    backgroundColor: WidgetStateProperty.all<Color>(
                         Theme.of(context).colorScheme.primary),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        )),
+                      borderRadius: BorderRadius.circular(10),
+                    )),
                   ),
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await ref.watch(authenticationProvider.notifier).login(_emailController.text, _passwordController.text);
-                      if (mounted) {
-                        if (context.router.canPop()) {
-                          context.router.maybePop();
-                        } else {
-                          context.router.replace(const MainRoute());
-                        }
-                      }
-                    }
-                  },
-                  child: Text(
-                    'Войти',
-                    style: TextStyle(
-                        fontSize: 20,
-                        color: Theme.of(context).colorScheme.background),
-                  ),
+                  onPressed: _onSubmitTap,
+                  child: _isLoading
+                      ? SpinKitWaveSpinner(
+                          color: Theme.of(context).colorScheme.surface,
+                        )
+                      : Text(
+                          'Sign in',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Theme.of(context).colorScheme.surface,
+                          ),
+                        ),
                 ),
               ),
             ],

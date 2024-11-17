@@ -53,7 +53,7 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onBackground,
+        color: Theme.of(context).colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(15),
         border: isRunning
             ? Border.all(
@@ -117,7 +117,7 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
                 progressColor: (hasFinished
                     ? Theme.of(context).colorScheme.outline.withOpacity(0.3)
                     : Theme.of(context).colorScheme.secondary),
-                backgroundColor: Theme.of(context).colorScheme.background,
+                backgroundColor: Theme.of(context).colorScheme.surface,
               ),
             ),
           ],

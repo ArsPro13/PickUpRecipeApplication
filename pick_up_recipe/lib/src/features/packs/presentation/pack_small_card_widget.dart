@@ -1,11 +1,10 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 
-import '../../recipes/presentation/recipe_small_card_widget.dart';
+import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_small_card_widget.dart';
+import 'package:pick_up_recipe/src/mocked_recipes.dart';
 
 class PackSmallCardWidget extends StatefulWidget {
   const PackSmallCardWidget({
@@ -26,7 +25,7 @@ class _PackSmallCardWidgetState extends State<PackSmallCardWidget> {
       margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: Theme.of(context).colorScheme.onBackground,
+        color: Theme.of(context).colorScheme.secondaryContainer,
       ),
       child: Column(
         children: [
@@ -40,9 +39,13 @@ class _PackSmallCardWidgetState extends State<PackSmallCardWidget> {
               ),
               child: FittedBox(
                 fit: BoxFit.cover,
-                child: Image.memory(
-                  base64Decode(widget.pack.packImage),
-                ),
+                child: widget.pack.packImage.length > 30
+                    ? Image.memory(
+                        base64Decode(widget.pack.packImage),
+                      )
+                    : Image.memory(
+                        base64Decode(baseImage),
+                      ),
               ),
             ),
           ),
