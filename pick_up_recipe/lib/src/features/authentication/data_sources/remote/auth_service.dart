@@ -1,14 +1,14 @@
 import 'dart:convert';
 
+import 'package:encrypt_shared_preferences/provider.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/main.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   final ApiClient _apiClient = ApiClient();
 
   Future<void> _saveTokens(String accessToken, String refreshToken) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = EncryptedSharedPreferences.getInstance();
     await prefs.setString('access_token', accessToken);
     await prefs.setString('refresh_token', refreshToken);
   }
@@ -85,7 +85,7 @@ class AuthService {
 
   Future<void> refreshTokens() async {
     try {
-      final response = await _apiClient.post('/auth/refresh', {});
+      final response = await _apiClient.postRefresh('/auth/refresh');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -109,17 +109,17 @@ class AuthService {
   }
 
   Future<String?> getAccessToken() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = EncryptedSharedPreferences.getInstance();
     return prefs.getString('access_token');
   }
 
   Future<String?> getRefreshToken() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = EncryptedSharedPreferences.getInstance();
     return prefs.getString('refresh_token');
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = EncryptedSharedPreferences.getInstance();
     await prefs.remove('access_token');
     await prefs.remove('refresh_token');
     logger.i('User logged out and tokens removed.');

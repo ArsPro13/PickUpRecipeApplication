@@ -9,12 +9,13 @@ class ActivePacksStateNotifier extends StateNotifier<ActivePacksState> {
   GetIt getIt = GetIt.instance;
 
   void clearPacks() {
-    state = state.copyWith(activePacks: []);
+    state = state.copyWith(activePacks: [], isLoading: false);
   }
 
   Future<void> fetchPacks() async {
     final ActivePacksDAO dao = getIt.get<ActivePacksDAO>();
+    state = state.copyWith(isLoading: true);
     final packs = await dao.fetchPacks();
-    state = state.copyWith(activePacks: packs);
+    state = state.copyWith(activePacks: packs, isLoading: false);
   }
 }

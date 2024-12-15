@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pick_up_recipe/core/converters.dart';
 import 'package:pick_up_recipe/main.dart';
@@ -42,10 +43,10 @@ class PackRequestModel {
   });
 
   Map<String, dynamic> toStringMap() {
-    logger.i(convertDateToString(DateTime.tryParse(packDate)?? DateTime.now()));
+    logger.i(convertDateToString(DateFormat('dd.MM.yyyy').tryParse(packDate)?? DateTime.now()));
     return {
       'pack_country': packCountry,
-      'pack_date': convertDateToString(DateTime.tryParse(packDate) ?? DateTime.now()),
+      'pack_date': convertDateToString(DateFormat('dd.MM.yyyy').tryParse(packDate) ?? DateTime.now()),
       'pack_descriptors': packDescriptors,
       'pack_image': packImage,
       'pack_name': packName,

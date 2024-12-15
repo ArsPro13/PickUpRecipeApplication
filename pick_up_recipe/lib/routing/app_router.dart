@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
+import 'package:pick_up_recipe/src/pages/choosing_recipe_page.dart';
 import 'package:pick_up_recipe/src/pages/recognition_camera_page.dart';
 
 import 'package:pick_up_recipe/main.dart';
@@ -39,6 +41,10 @@ class AppRouter extends _$AppRouter {
         ),
         AutoRoute(
           page: BrewRoute.page,
+          guards: [AuthGuard(ref)],
+        ),
+        AutoRoute(
+          page: ChoosingRecipeRoute.page,
           guards: [AuthGuard(ref)],
         ),
         AutoRoute(page: AuthenticationRoute.page),

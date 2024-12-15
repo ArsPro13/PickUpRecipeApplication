@@ -1,10 +1,7 @@
 import 'package:auto_route/annotations.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:pick_up_recipe/src/features/packs/presentation/active_packs_widget.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/latest_recipes_widget.dart';
-import 'package:sliver_text/sliver_text.dart';
 
 @RoutePage()
 class MainPage extends StatelessWidget {
@@ -27,7 +24,14 @@ class MainPage extends StatelessWidget {
               ),
             ),
           ),
-          const LatestRecipesWidget(),
+          const SliverPadding(
+            padding: EdgeInsets.symmetric(
+              horizontal: 10,
+            ),
+            sliver: LatestRecipesWidget(
+              // limit: 10,
+            ),
+          ),
           SliverToBoxAdapter(
             child: Container(
               padding: const EdgeInsets.only(top: 30),
@@ -52,7 +56,10 @@ class MainPage extends StatelessWidget {
               ),
             ),
           ),
-          const ActivePacksWidget(),
+          const SliverPadding(
+            padding: EdgeInsets.only(bottom: 20),
+            sliver: ActivePacksWidget(),
+          ),
         ],
       ),
     );

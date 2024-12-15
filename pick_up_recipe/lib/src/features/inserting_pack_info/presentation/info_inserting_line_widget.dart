@@ -50,6 +50,10 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
   }
 
   void _filterHints(String input) {
+    if (!mounted) {
+      return;
+    }
+
     if (input.isEmpty) {
       setState(() {
         _filteredHints = [];
@@ -60,7 +64,7 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
 
     setState(() {
       _filteredHints = widget.hintsArray
-          .where((hint) => hint.toLowerCase().contains(input.toLowerCase()))
+          .where((hint) => (hint.toLowerCase().contains(input.toLowerCase())) && hint != widget.controller.text)
           .toList();
       if (_filteredHints.isNotEmpty) {
         _showDropdown();
@@ -102,6 +106,9 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
         bottom: _isDropdownVisible
             ? const Radius.circular(0)
             : const Radius.circular(12.0),
+      ),
+      borderSide: BorderSide(
+        color: Theme.of(context).colorScheme.surface,
       ),
     );
 
@@ -151,8 +158,8 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
         color: Theme.of(context).colorScheme.secondaryContainer,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
         border: Border.all(
-          color: Theme.of(context).colorScheme.secondary,
-          width: 0.4,
+          color: Theme.of(context).colorScheme.surface,
+          width: 0.7,
         ),
       ),
       duration: const Duration(milliseconds: 100),

@@ -38,7 +38,7 @@ class RecipeTagWidget extends StatelessWidget {
         color: tag.color.withOpacity(0.3),
       ),
       height: 35,
-      width: 115,
+      width: 145,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [

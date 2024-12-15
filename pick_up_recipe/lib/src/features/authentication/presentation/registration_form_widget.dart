@@ -117,7 +117,8 @@ class _RegistrationFormWidgetState
                 child: ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all<Color>(
-                        Theme.of(context).colorScheme.primary),
+                      Theme.of(context).colorScheme.primary,
+                    ),
                     shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),

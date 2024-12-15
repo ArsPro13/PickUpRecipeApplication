@@ -6,7 +6,7 @@ part 'pack_model.g.dart';
 @JsonSerializable()
 class PackData {
   @JsonKey(name: "pack_id")
-  late String packId;
+  late int packId;
 
   @JsonKey(name: "user_id")
   late String userId;
@@ -57,7 +57,7 @@ class PackData {
 
   factory PackData.fromResponse(PackResponseBodyModel response) {
     return PackData(
-      packId: response.id.toString(),
+      packId: response.id,
       userId: response.userId.toString(),
       packDate: response.packDate,
       packName: response.packName,

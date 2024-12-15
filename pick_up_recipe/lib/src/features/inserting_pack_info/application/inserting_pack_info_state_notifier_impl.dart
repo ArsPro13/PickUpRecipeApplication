@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/main.dart';
@@ -16,13 +15,13 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
     required String? country,
     required String? scaScore,
     required String? variety,
-    required String? processingMethod,
+    required List<String>? processingMethod,
     required String? roastDate,
     required List<String>? descriptors,
     required String? image,
   }) async {
     state = state.copyWith(
-      isLoading: false,
+      isSubmitting: false,
       errorMessage: null,
       name: name,
       country: country,
@@ -41,12 +40,12 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
     required String country,
     required int scaScore,
     required String variety,
-    required String processingMethod,
+    required List<String>? processingMethod,
     required String roastDate,
     required List<String> descriptors,
     required String? image,
   }) async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isSubmitting: true);
 
     try {
       GetIt getIt = GetIt.instance;
@@ -59,13 +58,15 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
         descriptors,
         image ?? '',
         name,
-        [processingMethod],
+        processingMethod ?? [],
         scaScore,
-        variety,
+        variety
       );
-      logger.i(answer);
+      logger.i('Added pack information: $answer');
+
+      state = state.copyWith(isSubmitting: false, errorMessage: null);
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
     }
   }
 
@@ -89,6 +90,69 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
   }) async {
     state = state.copyWith(
       image: image,
+    );
+  }
+
+  @override
+  Future<void> startScanning() async {
+    state = state.copyWith(
+      isLoading: true,
+      name: state.name,
+      country: state.country,
+      descriptors: state.descriptors,
+      processingMethod: state.processingMethod,
+      roastDate: state.roastDate,
+      scaScore: state.scaScore,
+      variety: state.variety,
+      image: state.image,
+    );
+  }
+
+  @override
+  Future<void> finishScanning({String? error}) async {
+    state = state.copyWith(
+      isLoading: false,
+      imageErrorMessage: error,
+      name: state.name,
+      country: state.country,
+      descriptors: state.descriptors,
+      processingMethod: state.processingMethod,
+      roastDate: state.roastDate,
+      scaScore: state.scaScore,
+      variety: state.variety,
+      image: state.image,
+    );
+  }
+
+  @override
+  Future<void> updateDescriptors({
+    required List<String> descriptors,
+  }) async {
+    state = state.copyWith(
+      name: state.name,
+      country: state.country,
+      descriptors: descriptors,
+      processingMethod: state.processingMethod,
+      roastDate: state.roastDate,
+      scaScore: state.scaScore,
+      variety: state.variety,
+      image: state.image,
+    );
+  }
+
+  @override
+  Future<void> updateProcessingMethods({
+    required List<String> processingMethods,
+  }) async {
+    state = state.copyWith(
+      name: state.name,
+      country: state.country,
+      descriptors: state.descriptors,
+      processingMethod: processingMethods,
+      roastDate: state.roastDate,
+      scaScore: state.scaScore,
+      variety: state.variety,
+      image: state.image,
     );
   }
 }

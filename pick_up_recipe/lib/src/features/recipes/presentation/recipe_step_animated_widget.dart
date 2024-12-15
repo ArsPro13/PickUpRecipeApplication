@@ -30,10 +30,12 @@ class RecipeStepAnimatedWidget extends StatefulWidget {
     super.key,
     required this.step,
     required this.sec,
+    required this.start,
   });
 
   final RecipeStep step;
   final double sec;
+  final int start;
 
   @override
   State<RecipeStepAnimatedWidget> createState() =>
@@ -43,12 +45,11 @@ class RecipeStepAnimatedWidget extends StatefulWidget {
 class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
   @override
   Widget build(BuildContext context) {
-    bool hasFinished = (widget.sec >= widget.step.stop);
-    bool isRunning =
-        (widget.sec <= widget.step.stop && widget.sec > widget.step.start);
+    bool hasFinished = (widget.sec >= widget.step.time + widget.start);
+    bool isRunning = (widget.sec <= widget.step.time + widget.start &&
+        widget.sec > widget.start);
 
-    double progress = (widget.sec - widget.step.start) /
-        (widget.step.stop - widget.step.start);
+    double progress = (widget.sec - widget.start) / (widget.step.time);
     progress = min(1, max(0, progress));
 
     return Container(
@@ -64,17 +65,17 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
         boxShadow: [
           BoxShadow(
             color: isRunning
-                ? Theme.of(context).colorScheme.secondary.withOpacity(0.5)
+                ? Theme.of(context).colorScheme.secondary.withOpacity(0.3)
                 : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
             spreadRadius: 3,
             blurRadius: 5,
-            offset: const Offset(0, 2), // changes position of shadow
+            offset: const Offset(0, 1), // changes position of shadow
           ),
         ],
       ),
       margin: const EdgeInsets.all(20),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -83,13 +84,15 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
               children: [
                 Text(
                   widget.step.instruction,
-                  style: const TextStyle(fontSize: 20),
+                  style: const TextStyle(fontSize: 18),
                 ),
-                const SizedBox(height: 30,),
+                const SizedBox(
+                  height: 30,
+                ),
                 Row(
                   children: [
                     RecipeIconWidget(
-                      value: '${widget.step.stop - widget.step.start} с',
+                      value: '${widget.step.time} с',
                       icon: Icons.alarm,
                       color: Colors.orange,
                     ),
@@ -103,15 +106,16 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
                 ),
               ],
             ),
-            SizedBox(
-              width: 160,
-              height: 160,
+            const SizedBox(
+              width: 20,
+            ),
+            Expanded(
               child: CircularPercentIndicator(
                 radius: 80,
                 percent: progress,
                 lineWidth: hasFinished ? 10 : 8,
                 center: Text(
-                  '${(progress * (widget.step.stop - widget.step.start) * 10).round() / 10}',
+                  '${(progress * (widget.step.time) * 10).round() / 10}',
                   style: const TextStyle(fontSize: 25),
                 ),
                 progressColor: (hasFinished

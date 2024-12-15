@@ -20,8 +20,8 @@ class _RecognitionCameraPageState extends ConsumerState<RecognitionCameraPage> {
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18),
         child: ListView(
-          children: [
-            const InsertingPackInfoCameraWidget(),
+          children: const [
+            InsertingPackInfoCameraWidget(),
             InsertingPackInfoWidget(),
           ],
         ),

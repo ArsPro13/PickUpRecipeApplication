@@ -29,4 +29,10 @@ class MockedActivePacksDAOInstance implements ActivePacksDAO {
   List<PackData> getPacks() {
     return latestRecipes;
   }
+
+  @override
+  Future<PackData?> getPackById(int id) async {
+    final data1 = json.decode(mockedJson1)["pack"];
+    return PackData.fromJson(data1);
+  }
 }

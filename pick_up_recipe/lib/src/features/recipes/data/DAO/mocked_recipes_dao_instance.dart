@@ -1,17 +1,25 @@
 import 'dart:convert';
 
-import 'package:pick_up_recipe/src/features/recipes/data/DAO/latest_recipes_dao.dart';
+import 'package:pick_up_recipe/src/features/recipes/data/DAO/recipes_dao.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 
-import '../../../../mocked_recipes.dart';
+import 'package:pick_up_recipe/src/mocked_recipes.dart';
 
-
-
-class MockedLatestRecipesDAOInstance implements LatestRecipesDAO {
+class MockedLatestRecipesDAOInstance implements RecipesDAO {
   List<RecipeData> latestRecipes = [];
 
   @override
-  Future<List<RecipeData>> fetchRecipes() async {
+  Future<List<RecipeData>> fetchRecipes(
+      {int? packId,
+      int? grinderId,
+      int? grindStep,
+      int? grindSubStep,
+      String? device,
+      String? startDate,
+      String? endDate,
+      int? offset,
+      int? limit,
+      String? sortBy}) async {
     final data1 = json.decode(mockedJson1);
     final data2 = json.decode(mockedJson2);
     final data3 = json.decode(mockedJson3);
@@ -30,5 +38,10 @@ class MockedLatestRecipesDAOInstance implements LatestRecipesDAO {
   @override
   List<RecipeData> getRecipes() {
     return latestRecipes;
+  }
+
+  @override
+  Future<RecipeData> generateRecipe(String device, int packId) {
+    throw UnimplementedError();
   }
 }

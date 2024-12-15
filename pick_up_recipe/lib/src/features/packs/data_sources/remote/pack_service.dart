@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/main.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
+import 'package:pick_up_recipe/src/features/inserting_pack_info/domain/models/pack_from_image_response_model.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_request_model.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_response_model.dart';
@@ -34,7 +35,9 @@ class PackService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic>? data = jsonDecode(response.body);
+        final utf8Decoded = utf8.decode(response.bodyBytes);
+
+        final data = jsonDecode(utf8Decoded);
 
         final List<PackResponseBodyModel> packs = [];
         for (final pack in data ?? []) {
@@ -56,22 +59,39 @@ class PackService {
     return null;
   }
 
+  Future<PackResponseBodyModel?> getPackById(int id) async {
+    try {
+      final response = await _apiClient.get(
+        '/packs',
+        {
+          'id': id.toString(),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final utf8Decoded = utf8.decode(response.bodyBytes);
+
+        final data = jsonDecode(utf8Decoded);
+
+        final PackResponseBodyModel pack = PackResponseBodyModel.fromJson(data);
+
+        return pack;
+      } else if (response.statusCode == 401) {
+        AuthService authService = AuthService();
+        authService.refreshTokens();
+      } else {
+        throw Exception(
+            'Failed to fetch pack: ${response.statusCode} ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      logger.e('Error fetching pack', error: e);
+      rethrow;
+    }
+    return null;
+  }
+
   Future<PackData> addPack(PackRequestModel packData) async {
     try {
-      // final response = await _apiClient.post('/packs', {
-      //   "pack_country": "Kenya",
-      //   "pack_date": "12-12-2012",
-      //   "pack_descriptors": [
-      //     "aaaaaaaazzzz"
-      //   ],
-      //   "pack_image": "akwlnigiorsngowi",
-      //   "pack_name": "liqengwqn",
-      //   "pack_processing_method": [
-      //     "gpqn2og io2rgni2rg 2greion"
-      //   ],
-      //   "pack_sca_score": 90,
-      //   "pack_variety": "kjgrwnirwlg"
-      // });
       final response = await _apiClient.post('/packs', packData.toStringMap());
 
       if (response.statusCode != 200) {
@@ -120,5 +140,40 @@ class PackService {
       logger.e('Error deleting pack', error: e);
       rethrow;
     }
+  }
+
+  Future<PackFromImageResponseModel?> getPackByImage(String? image) async {
+    if (image == null) {
+      throw Exception(
+          'Failed to fetch pack information by image: image is empty');
+    }
+    try {
+      final response = await _apiClient.patchImage(
+        '/recognize/images_base64?lang=rus',
+        {
+          'image1': image,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final utf8Decoded = utf8.decode(response.bodyBytes);
+
+        final data = jsonDecode(utf8Decoded);
+
+        final PackFromImageResponseModel packResponse = PackFromImageResponseModel.fromJson(data);
+
+        return packResponse;
+      } else if (response.statusCode == 401) {
+        AuthService authService = AuthService();
+        authService.refreshTokens();
+      } else {
+        throw Exception(
+            'Failed to fetch pack information by image: ${response.statusCode} ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      logger.e('Error fetching pack', error: e);
+      rethrow;
+    }
+    return null;
   }
 }

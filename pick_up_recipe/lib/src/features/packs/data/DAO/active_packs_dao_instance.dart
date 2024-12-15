@@ -28,4 +28,10 @@ class ActivePacksDAOImpl implements ActivePacksDAO {
   List<PackData> getPacks() {
     return latestPacks;
   }
+
+  @override
+  Future<PackData?> getPackById(int id) async {
+    final pack = await _packService.getPackById(id);
+    return pack != null ? PackData.fromResponse(pack) : null;
+  }
 }

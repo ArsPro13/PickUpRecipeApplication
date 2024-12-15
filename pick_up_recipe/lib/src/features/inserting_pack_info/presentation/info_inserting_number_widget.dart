@@ -17,7 +17,21 @@ class NumberInput extends StatefulWidget {
 class _NumberInputState extends State<NumberInput> {
   double _fillPercentage = 0.0;
 
-  void _onChanged(String value) {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_updateFillPercentage);
+    _updateFillPercentage(); // Убедимся, что начальное значение обработано
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_updateFillPercentage);
+    super.dispose();
+  }
+
+  void _updateFillPercentage() {
+    final value = widget.controller.text;
     int? number = int.tryParse(value);
     if (number != null && number >= 1 && number <= 100) {
       setState(() {
@@ -42,7 +56,7 @@ class _NumberInputState extends State<NumberInput> {
                 borderRadius: BorderRadius.circular(10),
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.secondary,
+                  color: Theme.of(context).colorScheme.surface,
                 )),
           ),
           TweenAnimationBuilder<double>(
@@ -57,7 +71,7 @@ class _NumberInputState extends State<NumberInput> {
                     height: 45,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      color: Theme.of(context).colorScheme.primary.withOpacity(.4),
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
                     ),
                   ),
                 ),
@@ -67,7 +81,6 @@ class _NumberInputState extends State<NumberInput> {
           TextField(
             controller: widget.controller,
             keyboardType: TextInputType.number,
-            onChanged: _onChanged,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.transparent,
