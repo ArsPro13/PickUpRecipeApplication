@@ -21,7 +21,7 @@ class RecipeIconWidget extends StatelessWidget {
           height: 60,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
           ),
           child: Icon(
             icon,

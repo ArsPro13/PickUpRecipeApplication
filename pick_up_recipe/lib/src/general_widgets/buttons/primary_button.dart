@@ -70,7 +70,7 @@ class _PrimaryButtonState extends State<PrimaryButton>
           decoration: BoxDecoration(
             color: widget.isActive ?? true
                 ? Theme.of(context).colorScheme.secondaryContainer
-                : Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+                : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
