@@ -24,6 +24,11 @@ jobs:
           cd pick_up_recipe
           flutter pub get
 
+      - name: Run build_runner
+        run: |
+          cd pick_up_recipe
+          dart run build_runner build --delete-conflicting-outputs
+
       - name: Verify formatting
         run: |
           cd pick_up_recipe
