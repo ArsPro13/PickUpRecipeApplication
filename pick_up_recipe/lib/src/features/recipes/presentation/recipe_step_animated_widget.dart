@@ -66,7 +66,10 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
           BoxShadow(
             color: isRunning
                 ? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3)
-                : Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
+                : Theme.of(context)
+                    .colorScheme
+                    .secondary
+                    .withValues(alpha: 0.2),
             spreadRadius: 3,
             blurRadius: 5,
             offset: const Offset(0, 1), // changes position of shadow
@@ -119,7 +122,10 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
                   style: const TextStyle(fontSize: 25),
                 ),
                 progressColor: (hasFinished
-                    ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)
+                    ? Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.3)
                     : Theme.of(context).colorScheme.secondary),
                 backgroundColor: Theme.of(context).colorScheme.surface,
               ),
