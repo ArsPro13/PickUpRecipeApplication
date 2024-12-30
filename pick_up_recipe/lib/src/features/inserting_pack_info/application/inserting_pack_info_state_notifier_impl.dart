@@ -48,7 +48,6 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
     state = state.copyWith(isSubmitting: true);
 
     try {
-
       final packService = PackService();
 
       final answer = await packService.addPack(

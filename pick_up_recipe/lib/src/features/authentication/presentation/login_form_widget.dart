@@ -28,9 +28,9 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
         });
 
         await ref.read(authenticationProvider.notifier).login(
-          _emailController.text,
-          _passwordController.text,
-        );
+              _emailController.text,
+              _passwordController.text,
+            );
 
         if (mounted) {
           context.router.replace(const MainRoute());
@@ -51,7 +51,6 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

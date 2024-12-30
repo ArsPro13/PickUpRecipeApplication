@@ -16,7 +16,6 @@ class PackFromImageResponseModel {
   @JsonKey(name: "pack_descriptors")
   late List<String>? packDescriptors;
 
-
   @JsonKey(name: "pack_country")
   late String? packCountry;
 

@@ -46,10 +46,12 @@ class ApiClient {
     return response;
   }
 
-  Future<http.Response> get(String endpoint, Map<String, String> queryParams) async {
+  Future<http.Response> get(
+      String endpoint, Map<String, String> queryParams) async {
     final headers = await _getAuthHeaders();
 
-    final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
+    final uri =
+        Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
 
     final response = await http.get(
       uri,
@@ -82,7 +84,8 @@ class ApiClient {
     return response;
   }
 
-  Future<http.Response> patchImage(String endpoint, Map<String, dynamic> body) async {
+  Future<http.Response> patchImage(
+      String endpoint, Map<String, dynamic> body) async {
     final headers = await _getAuthHeaders();
 
     final response = await http.patch(
@@ -93,7 +96,8 @@ class ApiClient {
     return response;
   }
 
-  Future<http.Response> patch(String endpoint, Map<String, dynamic> body) async {
+  Future<http.Response> patch(
+      String endpoint, Map<String, dynamic> body) async {
     final headers = await _getAuthHeaders();
 
     final response = await http.patch(
@@ -104,10 +108,12 @@ class ApiClient {
     return response;
   }
 
-  Future<http.Response> getPossibleValues(String endpoint, Map<String, String> queryParams) async {
+  Future<http.Response> getPossibleValues(
+      String endpoint, Map<String, String> queryParams) async {
     final headers = await _getAuthHeaders();
 
-    final uri =  Uri.parse('${Config.packImageBaseUrl}$endpoint').replace(queryParameters: queryParams);
+    final uri = Uri.parse('${Config.packImageBaseUrl}$endpoint')
+        .replace(queryParameters: queryParams);
 
     final response = await http.get(
       uri,

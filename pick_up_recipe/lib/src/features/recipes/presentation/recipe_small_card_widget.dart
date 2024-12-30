@@ -53,7 +53,8 @@ class RecipeSmallCardWidget extends StatefulWidget {
   State<RecipeSmallCardWidget> createState() => RecipeSmallCardWidgetState();
 }
 
-class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> with AutomaticKeepAliveClientMixin {
+class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget>
+    with AutomaticKeepAliveClientMixin {
   final getIt = GetIt.instance;
   PackData? _pack;
   bool isLoadingPack = false;
@@ -104,47 +105,47 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> with Autom
                 color: Theme.of(context).colorScheme.surface,
               )
             : Row(
-              children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 2 / 5,
-                  height: 260,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      bottomLeft: Radius.circular(10),
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.cover,
-                      child: Image.memory(
-                        base64Decode(_pack?.packImage ?? baseImage),
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 2 / 5,
+                    height: 260,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        bottomLeft: Radius.circular(10),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.cover,
+                        child: Image.memory(
+                          base64Decode(_pack?.packImage ?? baseImage),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 7),
-                          child: Text(
-                            _pack?.packName ?? 'Coffee',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 21),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 7),
+                            child: Text(
+                              _pack?.packName ?? 'Coffee',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 21),
+                            ),
                           ),
-                        ),
-                        Text('Brewed ${convertDate(widget.recipe.date)}'),
-                        getTags(widget.recipe),
-                      ],
+                          Text('Brewed ${convertDate(widget.recipe.date)}'),
+                          getTags(widget.recipe),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
       ),
     );
   }

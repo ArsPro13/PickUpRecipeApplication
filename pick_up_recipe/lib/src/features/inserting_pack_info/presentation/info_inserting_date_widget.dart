@@ -5,13 +5,15 @@ class DateInputField extends StatefulWidget {
   final String hintText;
   final TextEditingController controller;
 
-  const DateInputField({super.key, required this.hintText, required this.controller});
+  const DateInputField(
+      {super.key, required this.hintText, required this.controller});
 
   @override
   State<DateInputField> createState() => _DateInputFieldState();
 }
 
-class _DateInputFieldState extends State<DateInputField> with SingleTickerProviderStateMixin {
+class _DateInputFieldState extends State<DateInputField>
+    with SingleTickerProviderStateMixin {
   DateTime? selectedDate;
   final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
   late AnimationController _controller;
@@ -104,10 +106,13 @@ class _DateInputFieldState extends State<DateInputField> with SingleTickerProvid
                           isDense: true,
                           contentPadding: const EdgeInsets.only(top: 4),
                           hintText: widget.hintText,
-                          hintStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                          hintStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary),
                           border: InputBorder.none,
                         ),
-                        style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 16),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontSize: 16),
                       ),
                     ),
                   ),

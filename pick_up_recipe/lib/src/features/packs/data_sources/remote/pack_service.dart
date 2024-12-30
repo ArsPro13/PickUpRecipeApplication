@@ -161,7 +161,8 @@ class PackService {
 
         final data = jsonDecode(utf8Decoded);
 
-        final PackFromImageResponseModel packResponse = PackFromImageResponseModel.fromJson(data);
+        final PackFromImageResponseModel packResponse =
+            PackFromImageResponseModel.fromJson(data);
 
         return packResponse;
       } else if (response.statusCode == 401) {

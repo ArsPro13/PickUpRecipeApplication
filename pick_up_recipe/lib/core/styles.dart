@@ -8,10 +8,7 @@ ButtonStyle secondaryButtonStyle(BuildContext context) {
       RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
-          color: Theme.of(context)
-              .colorScheme
-              .secondary
-              .withOpacity(0.1),
+          color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
         ),
       ),
     ),

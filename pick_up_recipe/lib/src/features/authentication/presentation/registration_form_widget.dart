@@ -20,7 +20,8 @@ class _RegistrationFormWidgetState
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   bool _isLoading = false;
   String _error = '';
@@ -33,9 +34,9 @@ class _RegistrationFormWidgetState
       if (_formKey.currentState!.validate()) {
         final email = _emailController.text;
         await ref.watch(authenticationProvider.notifier).register(
-          email,
-          _passwordController.text,
-        );
+              email,
+              _passwordController.text,
+            );
         ref
             .read(authenticationStateNotifierProvider.notifier)
             .switchMode(AuthPageMode.verifyMail);
@@ -142,21 +143,21 @@ class _RegistrationFormWidgetState
                     ),
                     shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        )),
+                      borderRadius: BorderRadius.circular(10),
+                    )),
                   ),
                   onPressed: _onSubmitTap,
                   child: _isLoading
                       ? SpinKitWaveSpinner(
-                    color: Theme.of(context).colorScheme.surface,
-                  )
+                          color: Theme.of(context).colorScheme.surface,
+                        )
                       : Text(
-                    'Sign up',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
-                  ),
+                          'Sign up',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Theme.of(context).colorScheme.surface,
+                          ),
+                        ),
                 ),
               ),
             ],

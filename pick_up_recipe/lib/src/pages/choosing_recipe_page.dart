@@ -44,11 +44,11 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
   }
 
   void _onGenerateTap() async {
-    final method = ref
-        .read(recipeChoosingNotifierProvider).brewingMethod;
+    final method = ref.read(recipeChoosingNotifierProvider).brewingMethod;
 
     final recipeService = RecipeService();
-    final generatedRecipe = await recipeService.generateRecipe(method?.getName() ?? '', widget.packId);
+    final generatedRecipe = await recipeService.generateRecipe(
+        method?.getName() ?? '', widget.packId);
 
     logger.i('Generated new recipe for: ${generatedRecipe?.device}');
 

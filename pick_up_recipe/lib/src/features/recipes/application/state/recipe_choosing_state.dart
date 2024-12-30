@@ -14,7 +14,10 @@ class RecipeChoosingState {
     this.isLoading = false,
   });
 
-  RecipeChoosingState copyWith({List<RecipeData>? recipes, BrewingMethods? brewingMethod, bool? isLoading}) {
+  RecipeChoosingState copyWith(
+      {List<RecipeData>? recipes,
+      BrewingMethods? brewingMethod,
+      bool? isLoading}) {
     return RecipeChoosingState(
       recipes: recipes ?? this.recipes,
       brewingMethod: brewingMethod ?? this.brewingMethod,

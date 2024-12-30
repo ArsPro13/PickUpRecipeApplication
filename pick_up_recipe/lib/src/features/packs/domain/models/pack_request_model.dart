@@ -43,10 +43,12 @@ class PackRequestModel {
   });
 
   Map<String, dynamic> toStringMap() {
-    logger.i(convertDateToString(DateFormat('dd.MM.yyyy').tryParse(packDate)?? DateTime.now()));
+    logger.i(convertDateToString(
+        DateFormat('dd.MM.yyyy').tryParse(packDate) ?? DateTime.now()));
     return {
       'pack_country': packCountry,
-      'pack_date': convertDateToString(DateFormat('dd.MM.yyyy').tryParse(packDate) ?? DateTime.now()),
+      'pack_date': convertDateToString(
+          DateFormat('dd.MM.yyyy').tryParse(packDate) ?? DateTime.now()),
       'pack_descriptors': packDescriptors,
       'pack_image': packImage,
       'pack_name': packName,

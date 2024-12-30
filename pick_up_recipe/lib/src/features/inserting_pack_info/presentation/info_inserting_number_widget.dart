@@ -35,11 +35,14 @@ class _NumberInputState extends State<NumberInput> {
   void _updateFillPercentage() {
     final value = widget.controller.text;
     int? number = int.tryParse(value);
-    if (number != null && number >= widget.minimalPercentageNumber && number <= 100) {
+    if (number != null &&
+        number >= widget.minimalPercentageNumber &&
+        number <= 100) {
       setState(() {
-        _fillPercentage = (number - widget.minimalPercentageNumber) / (100 - widget.minimalPercentageNumber);
+        _fillPercentage = (number - widget.minimalPercentageNumber) /
+            (100 - widget.minimalPercentageNumber);
       });
-    } else if (number != null && number > 100){
+    } else if (number != null && number > 100) {
       setState(() {
         _fillPercentage = 1.0;
       });
@@ -77,7 +80,10 @@ class _NumberInputState extends State<NumberInput> {
                     height: 45,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.4),
                     ),
                   ),
                 ),

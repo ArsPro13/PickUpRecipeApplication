@@ -80,7 +80,10 @@ class _CustomDropdownState extends State<CustomDropdown>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(_selectedItem, style: const TextStyle(fontSize: 16),),
+                Text(
+                  _selectedItem,
+                  style: const TextStyle(fontSize: 16),
+                ),
                 Icon(_isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down),
               ],
             ),

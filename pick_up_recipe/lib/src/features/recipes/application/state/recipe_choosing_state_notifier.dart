@@ -13,11 +13,31 @@ class RecipeChoosingStateNotifier extends StateNotifier<RecipeChoosingState> {
     state = state.copyWith(recipes: null, brewingMethod: null);
   }
 
-  Future<void> fetchRecipes(int? packId, int? grinderId, int? grindStep, int? grindSubStep, String? device, String? startDate, String? endDate, int? offset, int? limit, String? sortBy) async {
+  Future<void> fetchRecipes(
+      int? packId,
+      int? grinderId,
+      int? grindStep,
+      int? grindSubStep,
+      String? device,
+      String? startDate,
+      String? endDate,
+      int? offset,
+      int? limit,
+      String? sortBy) async {
     final recipeService = RecipeService();
 
     state = state.copyWith(isLoading: true);
-    final recipes = await recipeService.getByParams(packId: packId, grinderId: grinderId, grindStep: grindStep, grindSubStep: grindSubStep, device: device, startDate: startDate, endDate: endDate, offset: offset, limit: limit, sortBy: sortBy);
+    final recipes = await recipeService.getByParams(
+        packId: packId,
+        grinderId: grinderId,
+        grindStep: grindStep,
+        grindSubStep: grindSubStep,
+        device: device,
+        startDate: startDate,
+        endDate: endDate,
+        offset: offset,
+        limit: limit,
+        sortBy: sortBy);
     state = state.copyWith(recipes: recipes, isLoading: false);
   }
 

@@ -74,8 +74,8 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
     setState(() {
       _filteredHints = widget.hintsArray
           .where((hint) =>
-      (hint.toLowerCase().contains(input.toLowerCase())) &&
-          hint != widget.controller.text)
+              (hint.toLowerCase().contains(input.toLowerCase())) &&
+              hint != widget.controller.text)
           .toList();
       if (_filteredHints.isNotEmpty) {
         _showDropdown();

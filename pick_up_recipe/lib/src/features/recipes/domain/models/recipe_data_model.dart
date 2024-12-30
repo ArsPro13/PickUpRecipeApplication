@@ -32,7 +32,6 @@ class RecipeData {
 
   late List<RecipeStep> steps;
 
-
   RecipeData({
     required this.device,
     required this.date,

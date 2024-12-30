@@ -29,8 +29,8 @@ class MainPage extends StatelessWidget {
               horizontal: 10,
             ),
             sliver: LatestRecipesWidget(
-              // limit: 10,
-            ),
+                // limit: 10,
+                ),
           ),
           SliverToBoxAdapter(
             child: Container(

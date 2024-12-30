@@ -75,7 +75,7 @@ class RecipeService {
 
         for (final recipe in data ?? []) {
           final recipeResponseData = RecipeResponseModel.fromJson(recipe);
-          
+
           recipes.add(RecipeData.fromResponse(recipeResponseData));
         }
         return recipes;

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
-
 // do not use
 Future<String> compressBase64Img({
   required String base64Image,

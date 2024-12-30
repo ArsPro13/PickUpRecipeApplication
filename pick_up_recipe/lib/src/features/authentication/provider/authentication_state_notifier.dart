@@ -15,6 +15,7 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
   }
 }
 
-final authenticationStateNotifierProvider = StateNotifierProvider<AuthenticationStateNotifier, AuthenticationState>(
-      (ref) => AuthenticationStateNotifier(),
+final authenticationStateNotifierProvider =
+    StateNotifierProvider<AuthenticationStateNotifier, AuthenticationState>(
+  (ref) => AuthenticationStateNotifier(),
 );
