@@ -26,24 +26,32 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
         setState(() {
           _isLoading = true;
         });
+
         await ref.read(authenticationProvider.notifier).login(
-              _emailController.text,
-              _passwordController.text,
-            );
-        if (context.mounted) {
+          _emailController.text,
+          _passwordController.text,
+        );
+
+        if (mounted) {
           context.router.replace(const MainRoute());
         }
         _error = '';
       } catch (e) {
-        setState(() {
-          _error = e.toString();
-        });
+        if (mounted) {
+          setState(() {
+            _error = e.toString();
+          });
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

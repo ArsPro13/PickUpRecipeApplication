@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
-import 'package:pick_up_recipe/main.dart';
+import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state_notifier.dart';
-import 'package:pick_up_recipe/src/features/inserting_pack_info/data/DAO/pack_info_dao.dart';
+import 'package:pick_up_recipe/src/features/packs/data_sources/remote/pack_service.dart';
+import 'package:pick_up_recipe/src/features/packs/domain/models/pack_request_model.dart';
 
 class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
     implements PackInfoFormStateNotifier {
@@ -48,20 +48,22 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
     state = state.copyWith(isSubmitting: true);
 
     try {
-      GetIt getIt = GetIt.instance;
 
-      final dao = getIt.get<PackInfoDAO>();
+      final packService = PackService();
 
-      final answer = await dao.sendPack(
-        country,
-        roastDate,
-        descriptors,
-        image ?? '',
-        name,
-        processingMethod ?? [],
-        scaScore,
-        variety
+      final answer = await packService.addPack(
+        PackRequestModel(
+          packCountry: country,
+          packDate: roastDate,
+          packDescriptors: descriptors,
+          packImage: image ?? '',
+          packName: name,
+          packProcessingMethod: processingMethod ?? [],
+          packScaScore: scaScore,
+          packVariety: variety,
+        ),
       );
+
       logger.i('Added pack information: $answer');
 
       state = state.copyWith(isSubmitting: false, errorMessage: null);

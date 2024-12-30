@@ -4,8 +4,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get_it/get_it.dart';
-import 'package:pick_up_recipe/main.dart';
-import 'package:pick_up_recipe/src/features/packs/data/DAO/active_packs_dao.dart';
+import 'package:pick_up_recipe/core/logger.dart';
+import 'package:pick_up_recipe/src/features/packs/data_sources/remote/pack_service.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_tags_widget.dart';
@@ -57,6 +57,7 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> with Autom
   final getIt = GetIt.instance;
   PackData? _pack;
   bool isLoadingPack = false;
+  final PackService _packService = PackService();
 
   @override
   void initState() {
@@ -65,12 +66,12 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget> with Autom
   }
 
   void loadPack() async {
-    final ActivePacksDAO dao = getIt.get<ActivePacksDAO>();
     setState(() {
       isLoadingPack = true;
       _pack = null;
     });
-    final pack = await dao.getPackById(widget.recipe.packId);
+
+    final pack = await _packService.getPackById(widget.recipe.packId);
 
     logger.i('loaded pack: id: ${pack?.packId}, name: ${pack?.packName}');
 

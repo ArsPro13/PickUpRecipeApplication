@@ -4,11 +4,11 @@ import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pick_up_recipe/core/converters.dart';
 import 'package:pick_up_recipe/core/styles.dart';
-import 'package:pick_up_recipe/main.dart';
 
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
-import 'package:pick_up_recipe/src/features/inserting_pack_info/data/DAO/pack_info_from_camera_dao.dart';
 import 'package:pick_up_recipe/src/features/packs/data_sources/remote/pack_service.dart';
+
+import 'package:pick_up_recipe/core/logger.dart';
 
 class InsertingPackInfoCameraWidget extends ConsumerStatefulWidget {
   const InsertingPackInfoCameraWidget({super.key});
@@ -21,15 +21,11 @@ class InsertingPackInfoCameraWidget extends ConsumerStatefulWidget {
 class _InsertingPackInfoCameraWidgetState
     extends ConsumerState<InsertingPackInfoCameraWidget> {
   final ImagePicker _picker = ImagePicker();
-  bool _hasImage = false;
-  XFile? _image;
   GetIt getIt = GetIt.instance;
-  late final PackInfoFromCameraDAO dao;
 
   @override
   void initState() {
     super.initState();
-    dao = getIt.get<PackInfoFromCameraDAO>();
   }
 
   Future getImage(bool fromCamera) async {
@@ -66,13 +62,9 @@ class _InsertingPackInfoCameraWidgetState
         descriptors: recognisedPack.packDescriptors ?? [],
         image: base64Image,
         variety: recognisedPack.packVariety ?? '',
-
       );
 
-      setState(() {
-        _hasImage = image != null;
-        _image = image;
-      });
+      setState(() {});
 
       logger.i('Successfully inserted image');
 

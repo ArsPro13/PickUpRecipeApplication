@@ -9,9 +9,6 @@ class AuthenticationProviderImpl extends ChangeNotifier
   final AuthService _authService = AuthService();
 
   @override
-  bool statusOk = false;
-
-  @override
   Future<void> login(String email, String password) async {
     try {
       await _authService.authenticate(
@@ -64,7 +61,15 @@ class AuthenticationProviderImpl extends ChangeNotifier
   }
 
   @override
+  Future<void> updateStatus(bool newStatus) async {
+    statusOk = newStatus;
+  }
+
+  @override
   Future<void> checkStatus() async {}
+
+  @override
+  bool statusOk = false;
 }
 
 final authenticationProvider =

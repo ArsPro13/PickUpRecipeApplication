@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get_it/get_it.dart';
-import 'package:pick_up_recipe/src/features/recipes/data/DAO/recipes_dao.dart';
+import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_small_card_widget.dart';
 
@@ -25,33 +25,28 @@ class _LatestRecipesWidgetState extends ConsumerState<LatestRecipesWidget> {
   bool loaded = false;
   List<RecipeData> latestRecipes = [];
   GetIt getIt = GetIt.instance;
-  late final RecipesDAO dao;
 
   @override
   void initState() {
-    dao = getIt.get<RecipesDAO>();
     loaded = false;
     super.initState();
-    fetchRecipes(dao);
+    Future(() {
+      fetchRecipes();
+    });
   }
 
-  Future<void> fetchRecipes(RecipesDAO dao) async {
+  Future<void> fetchRecipes() async {
     setState(() {
       loaded = false;
     });
 
-    latestRecipes = await dao.fetchRecipes(
-      packId: widget.packId,
-      grinderId: null,
-      grindStep: null,
-      grindSubStep: null,
-      device: null,
-      startDate: null,
-      endDate: null,
-      offset: null,
-      limit: widget.limit,
-      sortBy: null,
-    );
+    final recipeService = RecipeService();
+
+    latestRecipes = await recipeService.getByParams(
+          packId: widget.packId,
+          limit: widget.limit,
+        ) ??
+        [];
 
     setState(() {
       loaded = true;

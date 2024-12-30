@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:pick_up_recipe/core/api_client.dart';
-import 'package:pick_up_recipe/main.dart';
+import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
 
 class PossibleValuesService {

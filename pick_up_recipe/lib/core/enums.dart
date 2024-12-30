@@ -28,7 +28,7 @@ extension BrewingMethodsBackendNameExtension on BrewingMethods {
 
 extension BrewingMethodsFromString on String {
   BrewingMethods? toBrewingMethod() {
-    switch (this.toLowerCase()) {
+    switch (toLowerCase()) {
       case "hario v60":
         return BrewingMethods.harioV60;
       case "choose brewing method":

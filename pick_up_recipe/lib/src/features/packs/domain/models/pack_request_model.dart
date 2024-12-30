@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pick_up_recipe/core/converters.dart';
-import 'package:pick_up_recipe/main.dart';
+import 'package:pick_up_recipe/core/logger.dart';
 
 part 'pack_request_model.g.dart';
 

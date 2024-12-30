@@ -4,7 +4,7 @@ class CommonLoader extends StatefulWidget {
   const CommonLoader({super.key});
 
   @override
-  _CommonLoaderState createState() => _CommonLoaderState();
+  State<CommonLoader> createState() => _CommonLoaderState();
 }
 
 class _CommonLoaderState extends State<CommonLoader>

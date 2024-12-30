@@ -1,12 +1,11 @@
-import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/core/enums.dart';
-import 'package:pick_up_recipe/main.dart';
+import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/state/recipe_choosing_state.dart';
-import 'package:pick_up_recipe/src/features/recipes/data/DAO/recipes_dao.dart';
+import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/latest_recipes_widget.dart';
 import 'package:pick_up_recipe/src/general_widgets/buttons/primary_button.dart';
 import 'package:pick_up_recipe/src/general_widgets/dropdown/custom_dropdown.dart';
@@ -45,11 +44,11 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
   }
 
   void _onGenerateTap() async {
-    final dao = getIt.get<RecipesDAO>();
     final method = ref
         .read(recipeChoosingNotifierProvider).brewingMethod;
 
-    final generatedRecipe = await dao.generateRecipe(method?.getName() ?? '', widget.packId);
+    final recipeService = RecipeService();
+    final generatedRecipe = await recipeService.generateRecipe(method?.getName() ?? '', widget.packId);
 
     logger.i('Generated new recipe for: ${generatedRecipe?.device}');
 

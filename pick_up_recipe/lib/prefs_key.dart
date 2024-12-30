@@ -1,1 +1,1 @@
-final String prefsKey = '1313131313131313';
+const String prefsKey = '1313131313131313';

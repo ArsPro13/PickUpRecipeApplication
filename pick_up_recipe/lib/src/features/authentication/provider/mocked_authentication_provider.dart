@@ -39,6 +39,11 @@ class MockedAuthenticationProvider extends ChangeNotifier
   }
 
   @override
+  Future<void> updateStatus(bool newStatus) async {
+    statusOk = newStatus;
+  }
+
+  @override
   Future<void> verifyMail(String email, String password) async {}
 
   @override

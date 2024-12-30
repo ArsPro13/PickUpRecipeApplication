@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/core/styles.dart';
-import 'package:pick_up_recipe/main.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/data_sources/remote/possible_values_service.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/info_inserting_date_widget.dart';
@@ -14,7 +14,7 @@ class InsertingPackInfoWidget extends ConsumerStatefulWidget {
   const InsertingPackInfoWidget({super.key});
 
   @override
-  _InsertingPackInfoWidgetState createState() =>
+  ConsumerState<InsertingPackInfoWidget> createState() =>
       _InsertingPackInfoWidgetState();
 }
 
@@ -46,11 +46,17 @@ class _InsertingPackInfoWidgetState
   }
 
   void getPossibleValues() async {
-    possibleCountries = await _possibleValuesService.getByEndpoint('pack_country') ?? [];
-    possibleDescriptors = await _possibleValuesService.getByEndpoint('pack_descriptors') ?? [];
-    possibleName = await _possibleValuesService.getByEndpoint('pack_name') ?? [];
-    possibleVariety = await _possibleValuesService.getByEndpoint('pack_variety') ?? [];
-    possibleProcessingMethods = await _possibleValuesService.getByEndpoint('pack_processing_method') ?? [];
+    possibleCountries =
+        await _possibleValuesService.getByEndpoint('pack_country') ?? [];
+    possibleDescriptors =
+        await _possibleValuesService.getByEndpoint('pack_descriptors') ?? [];
+    possibleName =
+        await _possibleValuesService.getByEndpoint('pack_name') ?? [];
+    possibleVariety =
+        await _possibleValuesService.getByEndpoint('pack_variety') ?? [];
+    possibleProcessingMethods =
+        await _possibleValuesService.getByEndpoint('pack_processing_method') ??
+            [];
     setState(() {});
   }
 
@@ -108,17 +114,16 @@ class _InsertingPackInfoWidgetState
     final processingMethods = ref.read(formNotifierProvider).processingMethod;
     final descriptors = ref.read(formNotifierProvider).descriptors;
 
-    ref
-        .read(formNotifierProvider.notifier).updateForm(
-      name: name,
-      country: country,
-      scaScore: scaScore.toString(),
-      variety: variety,
-      processingMethod: processingMethods ?? [],
-      roastDate: roastDate,
-      descriptors: descriptors ?? [],
-      image: ref.read(formNotifierProvider).image,
-    );
+    ref.read(formNotifierProvider.notifier).updateForm(
+          name: name,
+          country: country,
+          scaScore: scaScore.toString(),
+          variety: variety,
+          processingMethod: processingMethods ?? [],
+          roastDate: roastDate,
+          descriptors: descriptors ?? [],
+          image: ref.read(formNotifierProvider).image,
+        );
   }
 
   void _onTextChanged(String text) {
@@ -134,8 +139,9 @@ class _InsertingPackInfoWidgetState
       });
     }
     if (text.isNotEmpty && _processingMethodControllers.last.text == text) {
-      final descriptors =
-      _processingMethodControllers.map((controller) => controller.text).toList();
+      final descriptors = _processingMethodControllers
+          .map((controller) => controller.text)
+          .toList();
       ref
           .read(formNotifierProvider.notifier)
           .updateDescriptors(descriptors: descriptors);
@@ -258,6 +264,7 @@ class _InsertingPackInfoWidgetState
                   child: NumberInput(
                     controller: _scaScoreController,
                     hintText: "SCA score",
+                    minimalPercentageNumber: 80,
                   ),
                 ),
                 const SizedBox(

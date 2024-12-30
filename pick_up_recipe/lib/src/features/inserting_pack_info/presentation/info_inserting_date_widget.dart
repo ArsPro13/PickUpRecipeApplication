@@ -8,7 +8,7 @@ class DateInputField extends StatefulWidget {
   const DateInputField({super.key, required this.hintText, required this.controller});
 
   @override
-  _DateInputFieldState createState() => _DateInputFieldState();
+  State<DateInputField> createState() => _DateInputFieldState();
 }
 
 class _DateInputFieldState extends State<DateInputField> with SingleTickerProviderStateMixin {

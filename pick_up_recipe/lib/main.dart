@@ -3,17 +3,8 @@ import 'package:encrypt_shared_preferences/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:logger/logger.dart';
 import 'package:pick_up_recipe/prefs_key.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
-import 'package:pick_up_recipe/src/features/inserting_pack_info/data/DAO/mocked_pack_info_from_camera_instance.dart';
-import 'package:pick_up_recipe/src/features/inserting_pack_info/data/DAO/pack_info_dao.dart';
-import 'package:pick_up_recipe/src/features/inserting_pack_info/data/DAO/pack_info_dao_instance.dart';
-import 'package:pick_up_recipe/src/features/inserting_pack_info/data/DAO/pack_info_from_camera_dao.dart';
-import 'package:pick_up_recipe/src/features/packs/data/DAO/active_packs_dao.dart';
-import 'package:pick_up_recipe/src/features/packs/data/DAO/active_packs_dao_instance.dart';
-import 'package:pick_up_recipe/src/features/recipes/data/DAO/recipes_dao.dart';
-import 'package:pick_up_recipe/src/features/recipes/data/DAO/recipes_dao_instanse.dart';
 import 'package:pick_up_recipe/src/themes/dark_theme.dart';
 import 'package:pick_up_recipe/src/themes/light_theme.dart';
 
@@ -29,9 +20,6 @@ void main() async {
   );
 }
 
-//todo: move logger to another file (logger.dart in core)
-var logger = Logger();
-
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
@@ -42,13 +30,7 @@ class MyApp extends ConsumerStatefulWidget {
 class _MyAppState extends ConsumerState<MyApp> {
   final getIt = GetIt.instance;
 
-  void setupGetIt() {
-    getIt.registerSingleton<RecipesDAO>(RecipesDAOInstance());
-    getIt.registerSingleton<ActivePacksDAO>(ActivePacksDAOImpl());
-    getIt.registerSingleton<PackInfoFromCameraDAO>(
-        MockedPackInfoFromCameraDAO());
-    getIt.registerSingleton<PackInfoDAO>(PackInfoDAOInstance());
-  }
+  void setupGetIt() {}
 
   @override
   void initState() {
@@ -116,4 +98,3 @@ class _RootScreenState extends State<RootScreen> {
     );
   }
 }
-

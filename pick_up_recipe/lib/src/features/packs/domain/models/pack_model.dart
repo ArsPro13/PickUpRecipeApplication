@@ -73,6 +73,7 @@ class PackData {
 
   Map<String, dynamic> toJson() => _$PackDataToJson(this);
 
+  @override
   String toString() {
     return 'packId: $packId, userId: $userId, packDate: $packDate, packName: $packName, packDescriptors: $packDescriptors, packCountry: $packCountry, packProcessingMethod: $packProcessingMethod, packImage: $packImage, packVariety: $packVariety, packScaScore: $packScaScore ';
   }

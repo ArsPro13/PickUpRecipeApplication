@@ -6,5 +6,6 @@ abstract interface class AutenticationProvider extends ChangeNotifier {
   Future<void> refresh();
   Future<void> checkStatus();
   Future<void> verifyMail(String email, String code);
-  bool statusOk = false;
+  Future<void> updateStatus(bool newStatus);
+  late bool statusOk;
 }

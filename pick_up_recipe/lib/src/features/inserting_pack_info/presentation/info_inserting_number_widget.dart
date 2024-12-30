@@ -5,13 +5,15 @@ class NumberInput extends StatefulWidget {
     super.key,
     required this.controller,
     required this.hintText,
+    required this.minimalPercentageNumber,
   });
 
   final TextEditingController controller;
   final String hintText;
+  final int minimalPercentageNumber;
 
   @override
-  _NumberInputState createState() => _NumberInputState();
+  State<NumberInput> createState() => _NumberInputState();
 }
 
 class _NumberInputState extends State<NumberInput> {
@@ -21,7 +23,7 @@ class _NumberInputState extends State<NumberInput> {
   void initState() {
     super.initState();
     widget.controller.addListener(_updateFillPercentage);
-    _updateFillPercentage(); // Убедимся, что начальное значение обработано
+    _updateFillPercentage();
   }
 
   @override
@@ -33,9 +35,13 @@ class _NumberInputState extends State<NumberInput> {
   void _updateFillPercentage() {
     final value = widget.controller.text;
     int? number = int.tryParse(value);
-    if (number != null && number >= 1 && number <= 100) {
+    if (number != null && number >= widget.minimalPercentageNumber && number <= 100) {
       setState(() {
-        _fillPercentage = number / 100;
+        _fillPercentage = (number - widget.minimalPercentageNumber) / (100 - widget.minimalPercentageNumber);
+      });
+    } else if (number != null && number > 100){
+      setState(() {
+        _fillPercentage = 1.0;
       });
     } else {
       setState(() {

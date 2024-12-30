@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:encrypt_shared_preferences/provider.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
-import 'package:pick_up_recipe/main.dart';
+import 'package:pick_up_recipe/core/logger.dart';
 
 class AuthService {
   final ApiClient _apiClient = ApiClient();

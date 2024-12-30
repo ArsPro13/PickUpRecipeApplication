@@ -16,13 +16,15 @@ class TextInputWithHints extends StatefulWidget {
   });
 
   @override
-  _TextInputWithHintsState createState() => _TextInputWithHintsState();
+  State<TextInputWithHints> createState() => _TextInputWithHintsState();
 }
 
 class _TextInputWithHintsState extends State<TextInputWithHints>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  late FocusNode _focusNode;
+
   List<String> _filteredHints = [];
   bool _isDropdownVisible = false;
   bool _hintSelected = false;
@@ -39,6 +41,13 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
       parent: _animationController,
       curve: Curves.easeInOut,
     );
+
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        _hideDropdown();
+      }
+    });
 
     widget.controller.addListener(() {
       if (!_hintSelected) {
@@ -64,7 +73,9 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
 
     setState(() {
       _filteredHints = widget.hintsArray
-          .where((hint) => (hint.toLowerCase().contains(input.toLowerCase())) && hint != widget.controller.text)
+          .where((hint) =>
+      (hint.toLowerCase().contains(input.toLowerCase())) &&
+          hint != widget.controller.text)
           .toList();
       if (_filteredHints.isNotEmpty) {
         _showDropdown();
@@ -95,6 +106,7 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
   @override
   void dispose() {
     _animationController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -125,6 +137,7 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
+                focusNode: _focusNode,
                 controller: widget.controller,
                 onChanged: (String query) {
                   widget.onChanged(query);

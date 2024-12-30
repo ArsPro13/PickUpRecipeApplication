@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:encrypt_shared_preferences/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:pick_up_recipe/config.dart';
-import 'package:pick_up_recipe/main.dart';
 
 class ApiClient {
   final String baseUrl = Config.baseUrl;
@@ -37,8 +36,6 @@ class ApiClient {
       'Content-Type': 'application/json',
       'Authorization': refreshToken ?? '',
     };
-
-    logger.i(headers);
 
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),

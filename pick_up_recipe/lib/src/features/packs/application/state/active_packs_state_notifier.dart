@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:pick_up_recipe/src/features/packs/data/DAO/active_packs_dao.dart';
+import 'package:pick_up_recipe/src/features/packs/data_sources/remote/pack_service.dart';
 import 'active_packs_state.dart';
 
 class ActivePacksStateNotifier extends StateNotifier<ActivePacksState> {
@@ -13,9 +13,10 @@ class ActivePacksStateNotifier extends StateNotifier<ActivePacksState> {
   }
 
   Future<void> fetchPacks() async {
-    final ActivePacksDAO dao = getIt.get<ActivePacksDAO>();
+    final PackService packService = PackService();
+
     state = state.copyWith(isLoading: true);
-    final packs = await dao.fetchPacks();
+    final packs = await packService.getPacks();
     state = state.copyWith(activePacks: packs, isLoading: false);
   }
 }

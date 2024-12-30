@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:pick_up_recipe/core/api_client.dart';
-import 'package:pick_up_recipe/main.dart';
+import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/domain/models/pack_from_image_response_model.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
@@ -11,7 +11,7 @@ import 'package:pick_up_recipe/src/features/packs/domain/models/pack_response_mo
 class PackService {
   final ApiClient _apiClient = ApiClient();
 
-  Future<List<PackResponseBodyModel>?> getPacks(
+  Future<List<PackData>?> getPacks({
     String? name,
     String? country,
     String? startDate,
@@ -19,7 +19,7 @@ class PackService {
     int? offset,
     int? limit,
     String? sortBy,
-  ) async {
+  }) async {
     try {
       final response = await _apiClient.get(
         '/packs/params',
@@ -39,9 +39,10 @@ class PackService {
 
         final data = jsonDecode(utf8Decoded);
 
-        final List<PackResponseBodyModel> packs = [];
+        final List<PackData> packs = [];
         for (final pack in data ?? []) {
-          packs.add(PackResponseBodyModel.fromJson(pack));
+          final responseData = PackResponseBodyModel.fromJson(pack);
+          packs.add(PackData.fromResponse(responseData));
         }
 
         return packs;
@@ -59,7 +60,7 @@ class PackService {
     return null;
   }
 
-  Future<PackResponseBodyModel?> getPackById(int id) async {
+  Future<PackData?> getPackById(int id) async {
     try {
       final response = await _apiClient.get(
         '/packs',
@@ -75,7 +76,7 @@ class PackService {
 
         final PackResponseBodyModel pack = PackResponseBodyModel.fromJson(data);
 
-        return pack;
+        return PackData.fromResponse(pack);
       } else if (response.statusCode == 401) {
         AuthService authService = AuthService();
         authService.refreshTokens();
