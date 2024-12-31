@@ -87,5 +87,3 @@ PickUpRecipe — это мобильное приложение, созданн�
 <div style="display: flex; justify-content: space-around;">
   <img src="./images/brew_timer_page.png" style="width: 45%;" alt="Brew page with brewing steps">
 </div>
-<br><br><br>
-Спасибо, что используете PickUpRecipe! Мы уверены, что с нами ваше кофейное путешествие станет ещё вкуснее и разнообразнее! ☕
