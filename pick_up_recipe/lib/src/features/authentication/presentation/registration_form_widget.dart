@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import 'package:pick_up_recipe/src/features/authentication/provider/authentication_page_state_notifier.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
-import 'package:pick_up_recipe/src/features/authentication/provider/authentification_provider_impl.dart';
 import 'package:pick_up_recipe/src/pages/authentication_page.dart';
 
 class RegistrationFormWidget extends ConsumerStatefulWidget {
@@ -33,15 +33,15 @@ class _RegistrationFormWidgetState
     try {
       if (_formKey.currentState!.validate()) {
         final email = _emailController.text;
-        await ref.watch(authenticationProvider.notifier).register(
+        await ref.watch(authenticationStateNotifierProvider.notifier).register(
               email,
               _passwordController.text,
             );
         ref
-            .read(authenticationStateNotifierProvider.notifier)
+            .read(authenticationPageStateNotifierProvider.notifier)
             .switchMode(AuthPageMode.verifyMail);
         ref
-            .read(authenticationStateNotifierProvider.notifier)
+            .read(authenticationPageStateNotifierProvider.notifier)
             .updateEmail(email);
       }
       _error = '';

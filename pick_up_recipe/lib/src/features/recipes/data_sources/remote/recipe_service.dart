@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
@@ -7,7 +8,8 @@ import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_mo
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_response_model.dart';
 
 class RecipeService {
-  final ApiClient _apiClient = ApiClient();
+  final getIt = GetIt.instance;
+  final ApiClient _apiClient = GetIt.instance<ApiClient>();
 
   Future<RecipeData?> generateRecipe(String device, int packId) async {
     try {

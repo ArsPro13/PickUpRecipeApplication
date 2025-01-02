@@ -264,7 +264,7 @@ class _InsertingPackInfoWidgetState
                   child: NumberInput(
                     controller: _scaScoreController,
                     hintText: "SCA score",
-                    minimalPercentageNumber: 80,
+                    minimalPercentageNumber: 70,
                   ),
                 ),
                 const SizedBox(

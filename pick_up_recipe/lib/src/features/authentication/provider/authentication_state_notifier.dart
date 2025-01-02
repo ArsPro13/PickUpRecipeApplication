@@ -1,17 +1,60 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state.dart';
-import 'package:pick_up_recipe/src/pages/authentication_page.dart';
+import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
+
+import 'authentication_state.dart';
 
 class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
-  AuthenticationStateNotifier()
-      : super(AuthenticationState(mode: AuthPageMode.login));
+  final AuthService _authService = AuthService();
 
-  void switchMode(AuthPageMode newMode) {
-    state = state.copyWith(mode: newMode);
+  AuthenticationStateNotifier()
+      : super(AuthenticationState(status: AuthState.needsAuthentication)) {
+    refresh();
   }
 
-  void updateEmail(String email) {
-    state = state.copyWith(email: email);
+  Future<void> login(String email, String password) async {
+    try {
+      state = state.copyWith(status: AuthState.isLoading);
+      await _authService.authenticate(
+        email,
+        password,
+      );
+      state = state.copyWith(status: AuthState.isAuthenticated);
+    } catch (e) {
+      state = state.copyWith(status: AuthState.needsAuthentication);
+      rethrow;
+    }
+  }
+
+  Future<void> refresh() async {
+    try {
+      state = state.copyWith(status: AuthState.isLoading);
+      await _authService.refreshTokens();
+      state = state.copyWith(status: AuthState.isAuthenticated);
+    } catch (e) {
+      state = state.copyWith(status: AuthState.needsAuthentication);
+    }
+  }
+
+  Future<void> register(String email, String password) async {
+    try {
+      await _authService.register(
+        email,
+        password,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> verifyMail(String email, String code) async {
+    try {
+      await _authService.verifyMail(
+        email,
+        code,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }
 

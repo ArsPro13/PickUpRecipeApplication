@@ -1,21 +1,21 @@
-import 'package:pick_up_recipe/src/pages/authentication_page.dart';
+enum AuthState {
+  isAuthenticated,
+  isLoading,
+  needsAuthentication,
+}
 
 class AuthenticationState {
-  final AuthPageMode mode;
-  final String? email;
+  late AuthState status;
 
   AuthenticationState({
-    required this.mode,
-    this.email,
+    required this.status,
   });
 
   AuthenticationState copyWith({
-    AuthPageMode? mode,
-    String? email,
+    AuthState? status,
   }) {
     return AuthenticationState(
-      mode: mode ?? this.mode,
-      email: email ?? this.email,
+      status: status ?? this.status,
     );
   }
 }
