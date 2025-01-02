@@ -83,7 +83,7 @@ class _NumberInputState extends State<NumberInput> {
                       color: Theme.of(context)
                           .colorScheme
                           .primary
-                          .withValues(alpha: 0.4),
+                          .withOpacity(0.4),
                     ),
                   ),
                 ),

@@ -35,7 +35,7 @@ class RecipeTagWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: tag.color.withValues(alpha: 0.3),
+        color: tag.color.withOpacity(0.3),
       ),
       height: 35,
       width: 145,

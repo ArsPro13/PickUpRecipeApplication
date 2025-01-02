@@ -73,7 +73,7 @@ class _PrimaryButtonState extends State<PrimaryButton>
                 : Theme.of(context)
                     .colorScheme
                     .onSurface
-                    .withValues(alpha: 0.12),
+                    .withOpacity(0.12),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(

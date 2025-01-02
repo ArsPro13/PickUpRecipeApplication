@@ -80,7 +80,7 @@ class _AuthenticationPageState extends ConsumerState<AuthenticationPage> {
                         color: Theme.of(context)
                             .colorScheme
                             .secondary
-                            .withValues(alpha: 0.5),
+                            .withOpacity(0.5),
                       ),
                     ),
                   ),

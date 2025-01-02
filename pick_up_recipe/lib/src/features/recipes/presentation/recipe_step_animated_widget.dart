@@ -5,26 +5,6 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_icon_widget.dart';
 
-// Widget getTags(RecipeData recipe) {
-//   List<RecipeTag> tags = [];
-//
-//   tags.add(RecipeTag(icon: Icons.coffee_maker_outlined,
-//       name: recipe.device.toString(),
-//       color: Colors.orange));
-//   tags.add(RecipeTag(icon: Icons.scale_outlined,
-//       name: '${recipe.load.toString()} г',
-//       color: const Color.fromARGB(255, 154, 126, 101)));
-//   tags.add(RecipeTag(icon: Icons.water_drop_outlined,
-//       name: '${recipe.water.toString()} мл',
-//       color: Colors.blueAccent));
-//   tags.add(RecipeTag(icon: Icons.blur_on_sharp,
-//       name: '${recipe.grindStep.toString()}.${recipe.grindSubStep
-//           .toString()} click',
-//       color: const Color.fromARGB(255, 205, 166, 255)));
-//
-//   return RecipeTagsWidget(tags: tags);
-// }
-
 class RecipeStepAnimatedWidget extends StatefulWidget {
   const RecipeStepAnimatedWidget({
     super.key,
@@ -65,11 +45,11 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
         boxShadow: [
           BoxShadow(
             color: isRunning
-                ? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3)
+                ? Theme.of(context).colorScheme.secondary.withOpacity(0.3)
                 : Theme.of(context)
                     .colorScheme
                     .secondary
-                    .withValues(alpha: 0.2),
+                    .withOpacity(0.2),
             spreadRadius: 3,
             blurRadius: 5,
             offset: const Offset(0, 1), // changes position of shadow
@@ -125,7 +105,7 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
                     ? Theme.of(context)
                         .colorScheme
                         .outline
-                        .withValues(alpha: 0.3)
+                        .withOpacity(0.3)
                     : Theme.of(context).colorScheme.secondary),
                 backgroundColor: Theme.of(context).colorScheme.surface,
               ),
