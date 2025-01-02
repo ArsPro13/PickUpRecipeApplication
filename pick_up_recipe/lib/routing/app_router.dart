@@ -30,12 +30,15 @@ class AppRouter extends _$AppRouter {
             AutoRoute(
               page: MainRoute.page,
               initial: true,
+              guards: [AuthGuard(ref)],
             ),
             AutoRoute(
               page: BrewRoute.page,
+              guards: [AuthGuard(ref)],
             ),
             AutoRoute(
               page: RecognitionCameraRoute.page,
+              guards: [AuthGuard(ref)],
             )
           ],
         ),

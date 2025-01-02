@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:pick_up_recipe/src/features/authentication/provider/authentication_page_state_notifier.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
-import 'package:pick_up_recipe/src/features/authentication/provider/authentification_provider_impl.dart';
 import 'package:pick_up_recipe/src/pages/authentication_page.dart';
 
 class MailConfirmationFormWidget extends ConsumerStatefulWidget {
@@ -32,13 +32,13 @@ class _MailConfirmationFormWidgetState
         setState(() {
           _isLoading = true;
         });
-        await ref.read(authenticationProvider.notifier).verifyMail(
+        await ref.read(authenticationStateNotifierProvider.notifier).verifyMail(
               widget.mail,
               _codeController.text,
             );
         _error = '';
         ref
-            .read(authenticationStateNotifierProvider.notifier)
+            .read(authenticationPageStateNotifierProvider.notifier)
             .switchMode(AuthPageMode.login);
       }
     } catch (e) {

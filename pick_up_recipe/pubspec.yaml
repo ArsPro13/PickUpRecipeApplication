@@ -13,7 +13,6 @@ dependencies:
   build_runner: ^2.4.9
   camera: ^0.11.0+1
   encrypt_shared_preferences: ^0.8.2
-#  encrypted_shared_preferences: ^3.0.1
   flutter:
     sdk: flutter
   flutter_date_pickers: ^0.4.3
