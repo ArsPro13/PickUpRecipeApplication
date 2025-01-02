@@ -2,7 +2,7 @@ import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pick_up_recipe/src/features/authentication/presentation/mail_confirmation_form_widget.dart';
-import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
+import 'package:pick_up_recipe/src/features/authentication/provider/authentication_page_state_notifier.dart';
 import '../features/authentication/presentation/login_form_widget.dart';
 import '../features/authentication/presentation/registration_form_widget.dart';
 
@@ -19,15 +19,15 @@ class _AuthenticationPageState extends ConsumerState<AuthenticationPage> {
     switch (oldMode) {
       case AuthPageMode.registration:
         ref
-            .read(authenticationStateNotifierProvider.notifier)
+            .read(authenticationPageStateNotifierProvider.notifier)
             .switchMode(AuthPageMode.login);
       case AuthPageMode.login:
         ref
-            .read(authenticationStateNotifierProvider.notifier)
+            .read(authenticationPageStateNotifierProvider.notifier)
             .switchMode(AuthPageMode.registration);
       case AuthPageMode.verifyMail:
         ref
-            .read(authenticationStateNotifierProvider.notifier)
+            .read(authenticationPageStateNotifierProvider.notifier)
             .switchMode(AuthPageMode.login);
     }
     setState(() {});
@@ -35,8 +35,8 @@ class _AuthenticationPageState extends ConsumerState<AuthenticationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mode = ref.watch(authenticationStateNotifierProvider).mode;
-    final mail = ref.read(authenticationStateNotifierProvider).email ?? '';
+    final mode = ref.watch(authenticationPageStateNotifierProvider).mode;
+    final mail = ref.read(authenticationPageStateNotifierProvider).email ?? '';
 
     final body = switch (mode) {
       AuthPageMode.registration => const RegistrationFormWidget(),

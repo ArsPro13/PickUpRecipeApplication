@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:encrypt_shared_preferences/provider.dart';
+import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/core/logger.dart';
 
 class AuthService {
-  final ApiClient _apiClient = ApiClient();
+  final ApiClient _apiClient = GetIt.instance<ApiClient>();
 
   Future<void> _saveTokens(String accessToken, String refreshToken) async {
     final prefs = EncryptedSharedPreferences.getInstance();

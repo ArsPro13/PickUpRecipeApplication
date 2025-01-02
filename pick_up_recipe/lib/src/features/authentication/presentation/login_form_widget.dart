@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
-import 'package:pick_up_recipe/src/features/authentication/provider/authentification_provider_impl.dart';
+import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
 
 class LoginFormWidget extends ConsumerStatefulWidget {
   const LoginFormWidget({super.key});
@@ -27,7 +27,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
           _isLoading = true;
         });
 
-        await ref.read(authenticationProvider.notifier).login(
+        await ref.read(authenticationStateNotifierProvider.notifier).login(
               _emailController.text,
               _passwordController.text,
             );
