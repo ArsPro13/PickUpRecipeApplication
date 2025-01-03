@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pick_up_recipe/core/converters.dart';
-import 'package:pick_up_recipe/core/styles.dart';
 
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
 import 'package:pick_up_recipe/src/features/packs/data_sources/remote/pack_service.dart';
 
 import 'package:pick_up_recipe/core/logger.dart';
+import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 
 class InsertingPackInfoCameraWidget extends ConsumerStatefulWidget {
   const InsertingPackInfoCameraWidget({super.key});
@@ -101,12 +101,11 @@ class _InsertingPackInfoCameraWidgetState
             Expanded(
               child: SizedBox(
                 height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
+                child: AppButton(
+                  onTap: () {
                     getImage(true);
                   },
-                  style: secondaryButtonStyle(context),
-                  child: const Row(
+                  centerWidget: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text('Camera'),
@@ -116,6 +115,7 @@ class _InsertingPackInfoCameraWidgetState
                       Icon(Icons.camera_alt),
                     ],
                   ),
+                  buttonStyle: AppButtonStyle.secondary,
                 ),
               ),
             ),
@@ -125,12 +125,11 @@ class _InsertingPackInfoCameraWidgetState
             Expanded(
               child: SizedBox(
                 height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
+                child: AppButton(
+                  onTap: () {
                     getImage(false);
                   },
-                  style: secondaryButtonStyle(context),
-                  child: const Row(
+                  centerWidget: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text('Gallery'),
@@ -140,6 +139,7 @@ class _InsertingPackInfoCameraWidgetState
                       Icon(Icons.pageview),
                     ],
                   ),
+                  buttonStyle: AppButtonStyle.secondary,
                 ),
               ),
             ),

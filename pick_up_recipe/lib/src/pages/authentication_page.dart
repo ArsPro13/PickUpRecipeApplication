@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pick_up_recipe/src/features/authentication/presentation/mail_confirmation_form_widget.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_page_state_notifier.dart';
+import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 import '../features/authentication/presentation/login_form_widget.dart';
 import '../features/authentication/presentation/registration_form_widget.dart';
 
@@ -69,30 +70,16 @@ class _AuthenticationPageState extends ConsumerState<AuthenticationPage> {
             const SizedBox(height: 60),
             SizedBox(
               height: 60,
-              child: ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all<Color>(
-                      Theme.of(context).colorScheme.secondaryContainer),
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .secondary
-                            .withOpacity(0.5),
-                      ),
-                    ),
-                  ),
-                ),
-                onPressed: () => toggleMode(mode, ref),
-                child: Text(
+              child: AppButton(
+                onTap: () => toggleMode(mode, ref),
+                centerWidget: Text(
                   buttonTitle,
                   style: TextStyle(
                     fontSize: 15,
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
+                buttonStyle: AppButtonStyle.secondary,
               ),
             ),
           ],
