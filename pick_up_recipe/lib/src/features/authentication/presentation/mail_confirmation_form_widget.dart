@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_page_state_notifier.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
+import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 import 'package:pick_up_recipe/src/pages/authentication_page.dart';
 
 class MailConfirmationFormWidget extends ConsumerStatefulWidget {
@@ -94,17 +95,9 @@ class _MailConfirmationFormWidgetState
               const SizedBox(height: 12),
               SizedBox(
                 height: 60,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all<Color>(
-                        Theme.of(context).colorScheme.primary),
-                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    )),
-                  ),
-                  onPressed: _onSubmitTap,
-                  child: _isLoading
+                child: AppButton(
+                  onTap: _onSubmitTap,
+                  centerWidget: _isLoading
                       ? SpinKitWaveSpinner(
                           color: Theme.of(context).colorScheme.surface,
                         )
@@ -115,6 +108,7 @@ class _MailConfirmationFormWidgetState
                             color: Theme.of(context).colorScheme.surface,
                           ),
                         ),
+                  buttonStyle: AppButtonStyle.primary,
                 ),
               ),
             ],

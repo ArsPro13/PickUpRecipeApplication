@@ -2,13 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pick_up_recipe/core/logger.dart';
-import 'package:pick_up_recipe/core/styles.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/data_sources/remote/possible_values_service.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/info_inserting_date_widget.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/info_inserting_line_widget.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/info_inserting_number_widget.dart';
 import 'package:pick_up_recipe/src/features/packs/application/state/active_packs_state.dart';
+import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 
 class InsertingPackInfoWidget extends ConsumerStatefulWidget {
   const InsertingPackInfoWidget({super.key});
@@ -377,13 +377,20 @@ class _InsertingPackInfoWidgetState
                 ),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: secondaryButtonStyle(context),
-                    onPressed: _onSubmitTap,
-                    child: isSubmitting
+                  height: 60,
+                  child: AppButton(
+                    onTap: _onSubmitTap,
+                    centerWidget: isSubmitting
                         ? const CircularProgressIndicator()
-                        : const Text('Отправить'),
+                        : Text(
+                            'Отправить',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                    buttonStyle: AppButtonStyle.secondary,
                   ),
                 ),
                 const SizedBox(
@@ -397,6 +404,9 @@ class _InsertingPackInfoWidgetState
                       style: const TextStyle(color: Colors.red),
                     ),
                   ),
+                const SizedBox(
+                  height: 30,
+                ),
               ],
             ),
           );

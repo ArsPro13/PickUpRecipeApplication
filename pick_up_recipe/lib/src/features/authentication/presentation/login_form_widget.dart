@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
+import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 
 class LoginFormWidget extends ConsumerStatefulWidget {
   const LoginFormWidget({super.key});
@@ -117,17 +118,9 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
               const SizedBox(height: 12),
               SizedBox(
                 height: 60,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all<Color>(
-                        Theme.of(context).colorScheme.primary),
-                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    )),
-                  ),
-                  onPressed: _onSubmitTap,
-                  child: _isLoading
+                child: AppButton(
+                  onTap: _onSubmitTap,
+                  centerWidget: _isLoading
                       ? SpinKitWaveSpinner(
                           color: Theme.of(context).colorScheme.surface,
                         )
@@ -138,6 +131,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                             color: Theme.of(context).colorScheme.surface,
                           ),
                         ),
+                  buttonStyle: AppButtonStyle.primary,
                 ),
               ),
             ],

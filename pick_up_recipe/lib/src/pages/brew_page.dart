@@ -4,6 +4,7 @@ import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart'
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_step_animated_widget.dart';
+import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 
 import '../features/recipes/presentation/recipe_icon_widget.dart';
 
@@ -154,20 +155,10 @@ class _BrewPageState extends State<BrewPage>
                   SizedBox(
                     height: 50,
                     width: 70,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                            side: BorderSide(
-                              color: Theme.of(context).colorScheme.secondary,
-                              width: 0.1,
-                            ),
-                          ),
-                        ),
-                      ),
-                      onPressed: () {},
-                      child: const Icon(Icons.edit_outlined),
+                    child: AppButton(
+                      onTap: () {},
+                      centerWidget: const Icon(Icons.edit_outlined),
+                      buttonStyle: AppButtonStyle.primary,
                     ),
                   ),
                   const SizedBox(

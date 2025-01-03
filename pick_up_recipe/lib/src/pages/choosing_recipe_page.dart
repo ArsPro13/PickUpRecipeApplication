@@ -7,7 +7,7 @@ import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/state/recipe_choosing_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/latest_recipes_widget.dart';
-import 'package:pick_up_recipe/src/general_widgets/buttons/primary_button.dart';
+import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 import 'package:pick_up_recipe/src/general_widgets/dropdown/custom_dropdown.dart';
 
 @RoutePage()
@@ -89,7 +89,7 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
             SliverPadding(
               padding: const EdgeInsets.only(top: 20),
               sliver: SliverToBoxAdapter(
-                child: PrimaryButton(
+                child: AppButton(
                   onTap: _onGenerateTap,
                   isActive: method != BrewingMethods.all,
                   centerWidget: Padding(
@@ -114,6 +114,7 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
                       ],
                     ),
                   ),
+                  buttonStyle: AppButtonStyle.secondary,
                 ),
               ),
             ),

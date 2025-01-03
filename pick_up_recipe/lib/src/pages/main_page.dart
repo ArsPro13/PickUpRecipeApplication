@@ -1,7 +1,8 @@
-import 'package:auto_route/annotations.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:pick_up_recipe/src/features/packs/presentation/active_packs_widget.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/latest_recipes_widget.dart';
+import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 
 @RoutePage()
 class MainPage extends StatelessWidget {
@@ -45,12 +46,15 @@ class MainPage extends StatelessWidget {
                   const SizedBox(
                     width: 20,
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      textStyle: const TextStyle(fontSize: 20),
+                  Center(
+                    child: AppButton(
+                      onTap: () {
+                        final tabsRouter = AutoTabsRouter.of(context);
+                        tabsRouter.setActiveIndex(1);
+                      },
+                      centerWidget: const Icon(Icons.add),
+                      buttonStyle: AppButtonStyle.secondary,
                     ),
-                    onPressed: () {},
-                    child: const Icon(Icons.add),
                   ),
                 ],
               ),
