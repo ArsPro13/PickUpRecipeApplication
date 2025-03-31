@@ -46,9 +46,9 @@ class _AuthenticationPageState extends ConsumerState<AuthenticationPage> {
     };
 
     final buttonTitle = switch (mode) {
-      AuthPageMode.registration => "Have an account? Sign in",
-      AuthPageMode.verifyMail => "Have an account? Sign in",
-      AuthPageMode.login => "Not registered? Sign up",
+      AuthPageMode.registration => S.of(context).authPageButtonRegistration,
+      AuthPageMode.verifyMail => S.of(context).authPageButtonVerifyEmail,
+      AuthPageMode.login => S.of(context).authPageButtonLogin,
     };
 
     return Scaffold(
@@ -60,7 +60,7 @@ class _AuthenticationPageState extends ConsumerState<AuthenticationPage> {
             const Align(
                 alignment: Alignment.center,
                 child: Text(
-                  'PickUpRecipe',
+                  S.of(context).authPageTitle,
                   style: TextStyle(fontSize: 30),
                 )),
             const SizedBox(

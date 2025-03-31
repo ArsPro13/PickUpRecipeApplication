@@ -133,12 +133,12 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget>
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 7),
                             child: Text(
-                              _pack?.packName ?? 'Coffee',
+                              _pack?.packName ?? S.of(context).recipesCoffee,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 21),
                             ),
                           ),
-                          Text('Brewed ${convertDate(widget.recipe.date)}'),
+                          Text(S.of(context).recipesBrewed + ' ${convertDate(widget.recipe.date)}'),
                           getTags(widget.recipe),
                         ],
                       ),

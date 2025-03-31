@@ -230,16 +230,16 @@ class _InsertingPackInfoWidgetState
               children: [
                 if (imageError != null)
                   Text(
-                    'Error fetching information from pack image',
+                    S.of(context).newPackImageError,
                     style: TextStyle(
                         fontSize: 16,
                         color: Theme.of(context).colorScheme.error),
                   ),
                 _InputWidget(
-                  title: 'Name',
+                  title: S.of(context).newPackName,
                   child: TextInputWithHints(
                     hintsArray: possibleName,
-                    labelText: 'Name',
+                    labelText: S.of(context).newPackName,
                     controller: _nameInputController,
                     onChanged: _onTextChanged,
                   ),
@@ -248,10 +248,10 @@ class _InsertingPackInfoWidgetState
                   height: 10,
                 ),
                 _InputWidget(
-                  title: 'Country',
+                  title: S.of(context).newPackCountry,
                   child: TextInputWithHints(
                     hintsArray: possibleCountries,
-                    labelText: 'Country',
+                    labelText: S.of(context).newPackCountry,
                     controller: _countryInputController,
                     onChanged: _onTextChanged,
                   ),
@@ -260,10 +260,10 @@ class _InsertingPackInfoWidgetState
                   height: 10,
                 ),
                 _InputWidget(
-                  title: 'SCA score',
+                  title: S.of(context).newPackScore,
                   child: NumberInput(
                     controller: _scaScoreController,
-                    hintText: "SCA score",
+                    hintText: S.of(context).newPackScore,
                     minimalPercentageNumber: 70,
                   ),
                 ),
@@ -285,7 +285,7 @@ class _InsertingPackInfoWidgetState
                         child: Padding(
                           padding: EdgeInsets.only(left: 12, top: 10),
                           child: Text(
-                            'Descriptors',
+                            S.of(context).newPackDescriptors,
                             style: TextStyle(fontSize: 20),
                           ),
                         ),
@@ -300,7 +300,7 @@ class _InsertingPackInfoWidgetState
                                 horizontal: 10, vertical: 10),
                             child: TextInputWithHints(
                               hintsArray: possibleDescriptors,
-                              labelText: 'Descriptor ${index + 1}',
+                              labelText: S.of(context).newPackDescriptor + ' ${index + 1}',
                               controller: _descriptorControllers[index],
                               onChanged: _onTextChanged,
                             ),
@@ -314,10 +314,10 @@ class _InsertingPackInfoWidgetState
                   height: 10,
                 ),
                 _InputWidget(
-                  title: 'Variety',
+                  title: S.of(context).newPackVariety,
                   child: TextInputWithHints(
                     hintsArray: possibleVariety,
-                    labelText: 'Variety',
+                    labelText: S.of(context).newPackVariety,
                     controller: _varietyController,
                     onChanged: _onTextChanged,
                   ),
@@ -340,7 +340,7 @@ class _InsertingPackInfoWidgetState
                         child: Padding(
                           padding: EdgeInsets.only(left: 12, top: 10),
                           child: Text(
-                            'Processing methods',
+                            S.of(context).newPackMethods,
                             style: TextStyle(fontSize: 20),
                           ),
                         ),
@@ -355,7 +355,7 @@ class _InsertingPackInfoWidgetState
                                 horizontal: 10, vertical: 10),
                             child: TextInputWithHints(
                               hintsArray: possibleProcessingMethods,
-                              labelText: 'Method ${index + 1}',
+                              labelText: S.of(context).newPackMethod + ' ${index + 1}',
                               controller: _processingMethodControllers[index],
                               onChanged: _onTextChanged,
                             ),
@@ -369,7 +369,7 @@ class _InsertingPackInfoWidgetState
                   height: 10,
                 ),
                 DateInputField(
-                  hintText: 'Roast date',
+                  hintText: S.of(context).newPackDate,
                   controller: _dateInputController,
                 ),
                 const SizedBox(
@@ -383,7 +383,7 @@ class _InsertingPackInfoWidgetState
                     centerWidget: isSubmitting
                         ? const CircularProgressIndicator()
                         : Text(
-                            'Отправить',
+                            S.of(context).newPackSend,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,

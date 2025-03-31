@@ -61,7 +61,7 @@ class _RegistrationFormWidgetState
         const Align(
           alignment: Alignment.topLeft,
           child: Text(
-            'Create new account',
+            S.of(context).registrationFormTitle,
             style: TextStyle(fontSize: 18),
           ),
         ),
@@ -74,7 +74,7 @@ class _RegistrationFormWidgetState
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'Email',
+                  labelText: S.of(context).registrationFormEmail,
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -84,7 +84,7 @@ class _RegistrationFormWidgetState
                 ),
                 validator: (value) {
                   if (value!.isEmpty || !value.contains('@')) {
-                    return 'Enter existing email address';
+                    return S.of(context).registrationFormInvalidEmail;
                   }
                   return null;
                 },
@@ -94,7 +94,7 @@ class _RegistrationFormWidgetState
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'Password',
+                  labelText: S.of(context).registrationFormPassword,
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -104,7 +104,7 @@ class _RegistrationFormWidgetState
                 ),
                 validator: (value) {
                   if (value!.isEmpty || value.length < 6) {
-                    return 'Password must contain minimum of 6 symbols';
+                    return S.of(context).registrationFormInvalidPassword;
                   }
                   return null;
                 },
@@ -114,7 +114,7 @@ class _RegistrationFormWidgetState
                 controller: _confirmPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'Confirm Password',
+                  labelText: S.of(context).registrationFormConfirmPassword,
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -124,7 +124,7 @@ class _RegistrationFormWidgetState
                 ),
                 validator: (value) {
                   if (value != _passwordController.text) {
-                    return 'Passwords do not match';
+                    return S.of(context).registrationFormPasswordsUnmatch;
                   }
                   return null;
                 },
@@ -144,7 +144,7 @@ class _RegistrationFormWidgetState
                           color: Theme.of(context).colorScheme.surface,
                         )
                       : Text(
-                          'Sign up',
+                          S.of(context).registrationFormRegister,
                           style: TextStyle(
                             fontSize: 20,
                             color: Theme.of(context).colorScheme.surface,

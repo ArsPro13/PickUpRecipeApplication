@@ -17,7 +17,7 @@ class MainPage extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.only(top: 70),
               child: Text(
-                'Latest Recipes',
+                S.of(context).mainPageLatest,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 30,
@@ -40,7 +40,7 @@ class MainPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    'Active packs',
+                    S.of(context).mainPageActive,
                     style: TextStyle(fontSize: 30),
                   ),
                   const SizedBox(

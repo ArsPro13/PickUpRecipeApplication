@@ -57,7 +57,7 @@ class _MailConfirmationFormWidgetState
         const Align(
           alignment: Alignment.topLeft,
           child: Text(
-            'Confirm your e-mail address',
+            S.of(context).mailConfirmationFormTitle,
             style: TextStyle(fontSize: 18),
           ),
         ),
@@ -72,7 +72,7 @@ class _MailConfirmationFormWidgetState
               TextFormField(
                 controller: _codeController,
                 decoration: InputDecoration(
-                  labelText: 'Confirmation code',
+                  labelText: S.of(context).mailConfirmationFormCode,
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -82,7 +82,7 @@ class _MailConfirmationFormWidgetState
                 ),
                 validator: (value) {
                   if (value!.isEmpty || value.length != 6) {
-                    return 'Code must contain 6 symbols';
+                    return S.of(context).mailConfirmationFormInvalidCode;
                   }
                   return null;
                 },
@@ -102,7 +102,7 @@ class _MailConfirmationFormWidgetState
                           color: Theme.of(context).colorScheme.surface,
                         )
                       : Text(
-                          'Confirm email',
+                          S.of(context).mailConfirmationFormConfirm,
                           style: TextStyle(
                             fontSize: 20,
                             color: Theme.of(context).colorScheme.surface,

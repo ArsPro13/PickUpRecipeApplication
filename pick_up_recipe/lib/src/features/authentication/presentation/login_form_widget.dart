@@ -60,7 +60,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
         const Align(
           alignment: Alignment.topLeft,
           child: Text(
-            'Sign in to account',
+            S.of(context).loginFormTitle,
             style: TextStyle(fontSize: 18),
           ),
         ),
@@ -75,7 +75,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'Email',
+                  labelText: S.of(context).loginFormEmail,
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -85,7 +85,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                 ),
                 validator: (value) {
                   if (value!.isEmpty || !value.contains('@')) {
-                    return 'Enter existing email';
+                    return S.of(context).loginFormInvalidEmail;
                   }
                   return null;
                 },
@@ -95,7 +95,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'Password',
+                  labelText: S.of(context).loginFormPassword,
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -105,7 +105,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                 ),
                 validator: (value) {
                   if (value!.isEmpty || value.length < 6) {
-                    return 'Password must contain minimum 6 symbols';
+                    return S.of(context).loginFormInvalidPassword;
                   }
                   return null;
                 },
@@ -125,7 +125,7 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
                           color: Theme.of(context).colorScheme.surface,
                         )
                       : Text(
-                          'Sign in',
+                          S.of(context).loginFormSignIn,
                           style: TextStyle(
                             fontSize: 20,
                             color: Theme.of(context).colorScheme.surface,

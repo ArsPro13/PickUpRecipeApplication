@@ -81,7 +81,7 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
           slivers: [
             SliverToBoxAdapter(
               child: CustomDropdown(
-                placeholder: 'Choose brewing method',
+                placeholder: S.of(context).recipePageChoose,
                 items: brewingMethods,
                 onSelect: _onSelectBrewingMethod,
               ),
@@ -99,16 +99,16 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
                       children: [
                         if (method != BrewingMethods.all)
                           const Text(
-                            'Generate',
+                            S.of(context).recipePageGenerate,
                             style: TextStyle(fontSize: 24),
                           ),
                         method != BrewingMethods.all
                             ? Text(
-                                'recipe for ${method?.getTitle()}',
+                                S.of(context).recipePageFor + ' ${method?.getTitle()}',
                                 style: const TextStyle(fontSize: 14),
                               )
                             : const Text(
-                                'Choose brewing method to generate',
+                                S.of(context).recipePageChooseGenerate,
                                 style: TextStyle(fontSize: 18),
                               ),
                       ],

@@ -79,7 +79,7 @@ class _InsertingPackInfoCameraWidgetState
     return Column(
       children: [
         const Text(
-          'Add a new pack',
+          S.of(context).newPackScreenTitle,
           style: TextStyle(fontSize: 30),
           textAlign: TextAlign.center,
         ),
@@ -87,7 +87,7 @@ class _InsertingPackInfoCameraWidgetState
           height: 10,
         ),
         const Text(
-          'You can make a photo of your pack to recognise it',
+          S.of(context).newPackScreenSubtitle,
           style: TextStyle(fontSize: 20),
           textAlign: TextAlign.center,
         ),
@@ -108,7 +108,7 @@ class _InsertingPackInfoCameraWidgetState
                   centerWidget: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Camera'),
+                      Text(S.of(context).newPackScreenCamera),
                       SizedBox(
                         width: 5,
                       ),
@@ -132,7 +132,7 @@ class _InsertingPackInfoCameraWidgetState
                   centerWidget: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Gallery'),
+                      Text(S.of(context).newPackScreenGallery),
                       SizedBox(
                         width: 5,
                       ),

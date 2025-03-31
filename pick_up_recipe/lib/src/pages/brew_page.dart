@@ -99,14 +99,14 @@ class _BrewPageState extends State<BrewPage>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Brewed on ${widget.recipe.device}',
+                        S.of(context).brewPageBrewed + ' ${widget.recipe.device}',
                         style: const TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       Text(
-                        'Рецепт для зерна ${widget.pack?.packName}',
+                        S.of(context).brewPageRecipeFor + ' ${widget.pack?.packName}',
                         style: const TextStyle(fontSize: 18),
                       ),
                       Padding(
@@ -117,21 +117,21 @@ class _BrewPageState extends State<BrewPage>
                           children: [
                             RecipeIconWidget(
                                 value:
-                                    '${widget.recipe.temperature.toString()} °C',
+                                    '${widget.recipe.temperature.toString()} ' + S.of(context).brewPageDegrees,
                                 icon: Icons.thermostat_outlined,
                                 color: Colors.orange),
                             RecipeIconWidget(
-                                value: '${widget.recipe.load.toString()} г',
+                                value: '${widget.recipe.load.toString()} ' + S.of(context).brewPageMass,
                                 icon: Icons.scale_outlined,
                                 color:
                                     const Color.fromARGB(255, 154, 126, 101)),
                             RecipeIconWidget(
-                                value: '${widget.recipe.water.toString()} мл',
+                                value: '${widget.recipe.water.toString()} ' + S.of(context).brewPageVolume,
                                 icon: Icons.water_drop_outlined,
                                 color: Colors.blueAccent),
                             RecipeIconWidget(
                                 value:
-                                    '${widget.recipe.grindStep.toString()} click',
+                                    '${widget.recipe.grindStep.toString()} ' + S.of(context).brewPageGrind,
                                 icon: Icons.blur_on_sharp,
                                 color:
                                     const Color.fromARGB(255, 205, 166, 255)),
@@ -190,8 +190,8 @@ class _BrewPageState extends State<BrewPage>
                         });
                       },
                       child: Text(_isAnimationRunning
-                          ? 'Stop brewing'
-                          : 'Start brewing!'),
+                          ? S.of(context).brewPageStop
+                          : S.of(context).brewPageStart),
                     ),
                   ),
                 ],
