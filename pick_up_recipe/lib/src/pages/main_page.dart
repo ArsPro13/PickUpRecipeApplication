@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pick_up_recipe/src/features/packs/presentation/active_packs_widget.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/latest_recipes_widget.dart';
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 @RoutePage()
 class MainPage extends StatelessWidget {
@@ -13,13 +14,13 @@ class MainPage extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.only(top: 70),
+              padding: const EdgeInsets.only(top: 70),
               child: Text(
                 S.of(context).mainPageLatest,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 30,
                 ),
               ),
@@ -39,9 +40,9 @@ class MainPage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     S.of(context).mainPageActive,
-                    style: TextStyle(fontSize: 30),
+                    style: const TextStyle(fontSize: 30),
                   ),
                   const SizedBox(
                     width: 20,

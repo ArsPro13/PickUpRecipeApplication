@@ -99,14 +99,14 @@ class _RootScreenState extends State<RootScreen> {
             enableFeedback: false,
             selectedItemColor: Theme.of(context).colorScheme.primary,
             iconSize: 28,
-            items: const [
+            items: [
               BottomNavigationBarItem(
                 label: S.of(context).mainPageHome,
-                icon: Icon(Icons.coffee),
+                icon: const Icon(Icons.coffee),
               ),
               BottomNavigationBarItem(
                 label: S.of(context).mainPageAdd,
-                icon: Icon(Icons.add),
+                icon: const Icon(Icons.add),
               ),
             ],
           ),

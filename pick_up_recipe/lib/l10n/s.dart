@@ -1,8 +1,9 @@
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter/widgets.dart';
 
 class S {
-  static const locale = Locale('en');
+  static const locale = Locale('ru');
 
   static const supportedLocales = [Locale('en'), Locale('ru')];
 

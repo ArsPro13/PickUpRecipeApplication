@@ -9,6 +9,7 @@ import 'package:pick_up_recipe/src/features/packs/data_sources/remote/pack_servi
 
 import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 class InsertingPackInfoCameraWidget extends ConsumerStatefulWidget {
   const InsertingPackInfoCameraWidget({super.key});
@@ -78,17 +79,17 @@ class _InsertingPackInfoCameraWidgetState
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Text(
+        Text(
           S.of(context).newPackScreenTitle,
-          style: TextStyle(fontSize: 30),
+          style: const TextStyle(fontSize: 30),
           textAlign: TextAlign.center,
         ),
         const SizedBox(
           height: 10,
         ),
-        const Text(
+        Text(
           S.of(context).newPackScreenSubtitle,
-          style: TextStyle(fontSize: 20),
+          style: const TextStyle(fontSize: 20),
           textAlign: TextAlign.center,
         ),
         const SizedBox(
@@ -105,14 +106,14 @@ class _InsertingPackInfoCameraWidgetState
                   onTap: () {
                     getImage(true);
                   },
-                  centerWidget: const Row(
+                  centerWidget: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(S.of(context).newPackScreenCamera),
-                      SizedBox(
+                      const SizedBox(
                         width: 5,
                       ),
-                      Icon(Icons.camera_alt),
+                      const Icon(Icons.camera_alt),
                     ],
                   ),
                   buttonStyle: AppButtonStyle.secondary,
@@ -129,14 +130,14 @@ class _InsertingPackInfoCameraWidgetState
                   onTap: () {
                     getImage(false);
                   },
-                  centerWidget: const Row(
+                  centerWidget: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(S.of(context).newPackScreenGallery),
-                      SizedBox(
+                      const SizedBox(
                         width: 5,
                       ),
-                      Icon(Icons.pageview),
+                      const Icon(Icons.pageview),
                     ],
                   ),
                   buttonStyle: AppButtonStyle.secondary,

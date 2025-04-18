@@ -5,6 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 class LoginFormWidget extends ConsumerStatefulWidget {
   const LoginFormWidget({super.key});
@@ -57,11 +58,11 @@ class _LoginFormWidgetState extends ConsumerState<LoginFormWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Align(
+        Align(
           alignment: Alignment.topLeft,
           child: Text(
             S.of(context).loginFormTitle,
-            style: TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 18),
           ),
         ),
         const SizedBox(

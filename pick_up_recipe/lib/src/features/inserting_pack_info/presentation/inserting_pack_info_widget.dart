@@ -9,6 +9,7 @@ import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/inf
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/info_inserting_number_widget.dart';
 import 'package:pick_up_recipe/src/features/packs/application/state/active_packs_state.dart';
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 class InsertingPackInfoWidget extends ConsumerStatefulWidget {
   const InsertingPackInfoWidget({super.key});
@@ -280,13 +281,13 @@ class _InsertingPackInfoWidgetState
                   duration: const Duration(milliseconds: 300),
                   child: Column(
                     children: [
-                      const Align(
+                      Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: EdgeInsets.only(left: 12, top: 10),
+                          padding: const EdgeInsets.only(left: 12, top: 10),
                           child: Text(
                             S.of(context).newPackDescriptors,
-                            style: TextStyle(fontSize: 20),
+                            style: const TextStyle(fontSize: 20),
                           ),
                         ),
                       ),
@@ -300,7 +301,7 @@ class _InsertingPackInfoWidgetState
                                 horizontal: 10, vertical: 10),
                             child: TextInputWithHints(
                               hintsArray: possibleDescriptors,
-                              labelText: S.of(context).newPackDescriptor + ' ${index + 1}',
+                              labelText: '${S.of(context).newPackDescriptor} ${index + 1}',
                               controller: _descriptorControllers[index],
                               onChanged: _onTextChanged,
                             ),
@@ -335,13 +336,13 @@ class _InsertingPackInfoWidgetState
                   duration: const Duration(milliseconds: 300),
                   child: Column(
                     children: [
-                      const Align(
+                      Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: EdgeInsets.only(left: 12, top: 10),
+                          padding: const EdgeInsets.only(left: 12, top: 10),
                           child: Text(
                             S.of(context).newPackMethods,
-                            style: TextStyle(fontSize: 20),
+                            style: const TextStyle(fontSize: 20),
                           ),
                         ),
                       ),
@@ -355,7 +356,7 @@ class _InsertingPackInfoWidgetState
                                 horizontal: 10, vertical: 10),
                             child: TextInputWithHints(
                               hintsArray: possibleProcessingMethods,
-                              labelText: S.of(context).newPackMethod + ' ${index + 1}',
+                              labelText: '${S.of(context).newPackMethod} ${index + 1}',
                               controller: _processingMethodControllers[index],
                               onChanged: _onTextChanged,
                             ),

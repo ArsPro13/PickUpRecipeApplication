@@ -7,6 +7,7 @@ import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_step_ani
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 
 import '../features/recipes/presentation/recipe_icon_widget.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 int getDuration(RecipeData recipe) {
   int recipeDuration = 0;
@@ -99,14 +100,14 @@ class _BrewPageState extends State<BrewPage>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        S.of(context).brewPageBrewed + ' ${widget.recipe.device}',
+                        '${S.of(context).brewPageBrewed} ${widget.recipe.device}',
                         style: const TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       Text(
-                        S.of(context).brewPageRecipeFor + ' ${widget.pack?.packName}',
+                        '${S.of(context).brewPageRecipeFor} ${widget.pack?.packName}',
                         style: const TextStyle(fontSize: 18),
                       ),
                       Padding(
@@ -117,21 +118,21 @@ class _BrewPageState extends State<BrewPage>
                           children: [
                             RecipeIconWidget(
                                 value:
-                                    '${widget.recipe.temperature.toString()} ' + S.of(context).brewPageDegrees,
+                                    '${widget.recipe.temperature.toString()} ${S.of(context).brewPageDegrees}',
                                 icon: Icons.thermostat_outlined,
                                 color: Colors.orange),
                             RecipeIconWidget(
-                                value: '${widget.recipe.load.toString()} ' + S.of(context).brewPageMass,
+                                value: '${widget.recipe.load.toString()} ${S.of(context).brewPageMass}',
                                 icon: Icons.scale_outlined,
                                 color:
                                     const Color.fromARGB(255, 154, 126, 101)),
                             RecipeIconWidget(
-                                value: '${widget.recipe.water.toString()} ' + S.of(context).brewPageVolume,
+                                value: '${widget.recipe.water.toString()} ${S.of(context).brewPageVolume}',
                                 icon: Icons.water_drop_outlined,
                                 color: Colors.blueAccent),
                             RecipeIconWidget(
                                 value:
-                                    '${widget.recipe.grindStep.toString()} ' + S.of(context).brewPageGrind,
+                                    '${widget.recipe.grindStep.toString()} ${S.of(context).brewPageGrind}',
                                 icon: Icons.blur_on_sharp,
                                 color:
                                     const Color.fromARGB(255, 205, 166, 255)),

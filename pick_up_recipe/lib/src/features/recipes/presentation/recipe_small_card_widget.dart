@@ -13,6 +13,7 @@ import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_tags_wid
 import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_tag_model.dart';
 import 'package:pick_up_recipe/src/mocked_recipes.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 String convertDate(String date) {
   return '${date.substring(8, 10)}.${date.substring(5, 7)}.${date.substring(0, 4)}';
@@ -138,7 +139,7 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget>
                               style: const TextStyle(fontSize: 21),
                             ),
                           ),
-                          Text(S.of(context).recipesBrewed + ' ${convertDate(widget.recipe.date)}'),
+                          Text('${S.of(context).recipesBrewed} ${convertDate(widget.recipe.date)}'),
                           getTags(widget.recipe),
                         ],
                       ),

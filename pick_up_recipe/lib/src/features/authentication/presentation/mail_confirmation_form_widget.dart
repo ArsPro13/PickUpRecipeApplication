@@ -5,6 +5,7 @@ import 'package:pick_up_recipe/src/features/authentication/provider/authenticati
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 import 'package:pick_up_recipe/src/pages/authentication_page.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 class MailConfirmationFormWidget extends ConsumerStatefulWidget {
   const MailConfirmationFormWidget({
@@ -54,11 +55,11 @@ class _MailConfirmationFormWidgetState
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Align(
+        Align(
           alignment: Alignment.topLeft,
           child: Text(
             S.of(context).mailConfirmationFormTitle,
-            style: TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 18),
           ),
         ),
         const SizedBox(

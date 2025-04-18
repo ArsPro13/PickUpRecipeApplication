@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_icon_widget.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 class RecipeStepAnimatedWidget extends StatefulWidget {
   const RecipeStepAnimatedWidget({
@@ -78,7 +79,7 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
                     ),
                     const SizedBox(width: 10),
                     RecipeIconWidget(
-                      value: '${widget.step.water} ' + S.of(context).recipesVolume,
+                      value: '${widget.step.water} ${S.of(context).recipesVolume}',
                       icon: Icons.water_drop_outlined,
                       color: Colors.blueAccent,
                     ),
