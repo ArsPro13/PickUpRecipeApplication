@@ -301,7 +301,8 @@ class _InsertingPackInfoWidgetState
                                 horizontal: 10, vertical: 10),
                             child: TextInputWithHints(
                               hintsArray: possibleDescriptors,
-                              labelText: '${S.of(context).newPackDescriptor} ${index + 1}',
+                              labelText:
+                                  '${S.of(context).newPackDescriptor} ${index + 1}',
                               controller: _descriptorControllers[index],
                               onChanged: _onTextChanged,
                             ),
@@ -356,7 +357,8 @@ class _InsertingPackInfoWidgetState
                                 horizontal: 10, vertical: 10),
                             child: TextInputWithHints(
                               hintsArray: possibleProcessingMethods,
-                              labelText: '${S.of(context).newPackMethod} ${index + 1}',
+                              labelText:
+                                  '${S.of(context).newPackMethod} ${index + 1}',
                               controller: _processingMethodControllers[index],
                               onChanged: _onTextChanged,
                             ),

@@ -122,12 +122,14 @@ class _BrewPageState extends State<BrewPage>
                                 icon: Icons.thermostat_outlined,
                                 color: Colors.orange),
                             RecipeIconWidget(
-                                value: '${widget.recipe.load.toString()} ${S.of(context).brewPageMass}',
+                                value:
+                                    '${widget.recipe.load.toString()} ${S.of(context).brewPageMass}',
                                 icon: Icons.scale_outlined,
                                 color:
                                     const Color.fromARGB(255, 154, 126, 101)),
                             RecipeIconWidget(
-                                value: '${widget.recipe.water.toString()} ${S.of(context).brewPageVolume}',
+                                value:
+                                    '${widget.recipe.water.toString()} ${S.of(context).brewPageVolume}',
                                 icon: Icons.water_drop_outlined,
                                 color: Colors.blueAccent),
                             RecipeIconWidget(

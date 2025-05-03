@@ -139,7 +139,8 @@ class RecipeSmallCardWidgetState extends State<RecipeSmallCardWidget>
                               style: const TextStyle(fontSize: 21),
                             ),
                           ),
-                          Text('${S.of(context).recipesBrewed} ${convertDate(widget.recipe.date)}'),
+                          Text(
+                              '${S.of(context).recipesBrewed} ${convertDate(widget.recipe.date)}'),
                           getTags(widget.recipe),
                         ],
                       ),

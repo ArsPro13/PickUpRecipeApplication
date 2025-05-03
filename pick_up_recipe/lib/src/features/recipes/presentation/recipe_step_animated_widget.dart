@@ -79,7 +79,8 @@ class _RecipeStepAnimatedWidgetState extends State<RecipeStepAnimatedWidget> {
                     ),
                     const SizedBox(width: 10),
                     RecipeIconWidget(
-                      value: '${widget.step.water} ${S.of(context).recipesVolume}',
+                      value:
+                          '${widget.step.water} ${S.of(context).recipesVolume}',
                       icon: Icons.water_drop_outlined,
                       color: Colors.blueAccent,
                     ),
