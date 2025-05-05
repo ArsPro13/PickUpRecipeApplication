@@ -6,6 +6,7 @@ import 'package:pick_up_recipe/src/features/authentication/provider/authenticati
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 import '../features/authentication/presentation/login_form_widget.dart';
 import '../features/authentication/presentation/registration_form_widget.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 @RoutePage()
 class AuthenticationPage extends ConsumerStatefulWidget {
@@ -46,9 +47,9 @@ class _AuthenticationPageState extends ConsumerState<AuthenticationPage> {
     };
 
     final buttonTitle = switch (mode) {
-      AuthPageMode.registration => "Have an account? Sign in",
-      AuthPageMode.verifyMail => "Have an account? Sign in",
-      AuthPageMode.login => "Not registered? Sign up",
+      AuthPageMode.registration => S.of(context).authPageButtonRegistration,
+      AuthPageMode.verifyMail => S.of(context).authPageButtonVerifyEmail,
+      AuthPageMode.login => S.of(context).authPageButtonLogin,
     };
 
     return Scaffold(
@@ -57,11 +58,11 @@ class _AuthenticationPageState extends ConsumerState<AuthenticationPage> {
         padding: const EdgeInsets.only(top: 50, left: 60, right: 60),
         child: ListView(
           children: [
-            const Align(
+            Align(
                 alignment: Alignment.center,
                 child: Text(
-                  'PickUpRecipe',
-                  style: TextStyle(fontSize: 30),
+                  S.of(context).authPageTitle,
+                  style: const TextStyle(fontSize: 30),
                 )),
             const SizedBox(
               height: 50,

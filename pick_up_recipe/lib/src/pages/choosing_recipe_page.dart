@@ -9,6 +9,7 @@ import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_s
 import 'package:pick_up_recipe/src/features/recipes/presentation/latest_recipes_widget.dart';
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 import 'package:pick_up_recipe/src/general_widgets/dropdown/custom_dropdown.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 @RoutePage()
 class ChoosingRecipePage extends ConsumerStatefulWidget {
@@ -81,7 +82,7 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
           slivers: [
             SliverToBoxAdapter(
               child: CustomDropdown(
-                placeholder: 'Choose brewing method',
+                placeholder: S.of(context).recipePageChoose,
                 items: brewingMethods,
                 onSelect: _onSelectBrewingMethod,
               ),
@@ -98,18 +99,18 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (method != BrewingMethods.all)
-                          const Text(
-                            'Generate',
-                            style: TextStyle(fontSize: 24),
+                          Text(
+                            S.of(context).recipePageGenerate,
+                            style: const TextStyle(fontSize: 24),
                           ),
                         method != BrewingMethods.all
                             ? Text(
-                                'recipe for ${method?.getTitle()}',
+                                '${S.of(context).recipePageFor} ${method?.getTitle()}',
                                 style: const TextStyle(fontSize: 14),
                               )
-                            : const Text(
-                                'Choose brewing method to generate',
-                                style: TextStyle(fontSize: 18),
+                            : Text(
+                                S.of(context).recipePageChooseGenerate,
+                                style: const TextStyle(fontSize: 18),
                               ),
                       ],
                     ),

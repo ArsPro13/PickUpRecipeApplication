@@ -9,6 +9,7 @@ import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
 import 'package:pick_up_recipe/src/themes/dark_theme.dart';
 import 'package:pick_up_recipe/src/themes/light_theme.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +59,9 @@ class _MyAppState extends ConsumerState<MyApp> {
       routerConfig: AppRouter(ref).config(),
       theme: lightTheme,
       darkTheme: darkTheme,
+      localizationsDelegates: S.localizationDelegates,
+      supportedLocales: S.supportedLocales,
+      locale: S.locale,
     );
   }
 }
@@ -95,14 +99,14 @@ class _RootScreenState extends State<RootScreen> {
             enableFeedback: false,
             selectedItemColor: Theme.of(context).colorScheme.primary,
             iconSize: 28,
-            items: const [
+            items: [
               BottomNavigationBarItem(
-                label: 'Main',
-                icon: Icon(Icons.coffee),
+                label: S.of(context).mainPageHome,
+                icon: const Icon(Icons.coffee),
               ),
               BottomNavigationBarItem(
-                label: 'Add pack',
-                icon: Icon(Icons.add),
+                label: S.of(context).mainPageAdd,
+                icon: const Icon(Icons.add),
               ),
             ],
           ),

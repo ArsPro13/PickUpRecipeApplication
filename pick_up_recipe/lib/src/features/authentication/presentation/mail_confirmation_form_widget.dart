@@ -5,6 +5,7 @@ import 'package:pick_up_recipe/src/features/authentication/provider/authenticati
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 import 'package:pick_up_recipe/src/pages/authentication_page.dart';
+import 'package:pick_up_recipe/l10n/s.dart';
 
 class MailConfirmationFormWidget extends ConsumerStatefulWidget {
   const MailConfirmationFormWidget({
@@ -54,11 +55,11 @@ class _MailConfirmationFormWidgetState
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Align(
+        Align(
           alignment: Alignment.topLeft,
           child: Text(
-            'Confirm your e-mail address',
-            style: TextStyle(fontSize: 18),
+            S.of(context).mailConfirmationFormTitle,
+            style: const TextStyle(fontSize: 18),
           ),
         ),
         const SizedBox(
@@ -72,7 +73,7 @@ class _MailConfirmationFormWidgetState
               TextFormField(
                 controller: _codeController,
                 decoration: InputDecoration(
-                  labelText: 'Confirmation code',
+                  labelText: S.of(context).mailConfirmationFormCode,
                   border: const OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -82,7 +83,7 @@ class _MailConfirmationFormWidgetState
                 ),
                 validator: (value) {
                   if (value!.isEmpty || value.length != 6) {
-                    return 'Code must contain 6 symbols';
+                    return S.of(context).mailConfirmationFormInvalidCode;
                   }
                   return null;
                 },
@@ -102,7 +103,7 @@ class _MailConfirmationFormWidgetState
                           color: Theme.of(context).colorScheme.surface,
                         )
                       : Text(
-                          'Confirm email',
+                          S.of(context).mailConfirmationFormConfirm,
                           style: TextStyle(
                             fontSize: 20,
                             color: Theme.of(context).colorScheme.surface,
