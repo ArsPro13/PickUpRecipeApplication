@@ -46,3 +46,11 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# Auto-generated files by build_runner
+*.g.dart
+*.freezed.dart
+*.chopper.dart
+*.injectable.dart
+*.mocks.dart
+*.gr.dart
