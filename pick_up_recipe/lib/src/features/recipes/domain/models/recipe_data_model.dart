@@ -7,7 +7,6 @@ part 'recipe_data_model.g.dart';
 @JsonSerializable()
 class RecipeData {
   late String device;
-
   late String date;
 
   @JsonKey(name: "pack")
@@ -23,13 +22,9 @@ class RecipeData {
   late String? grindSubStep;
 
   late int water;
-
   late int time;
-
   late int temperature;
-
   late double load;
-
   late List<RecipeStep> steps;
 
   RecipeData({
@@ -46,6 +41,34 @@ class RecipeData {
     required this.steps,
   });
 
+  RecipeData copyWith({
+    String? device,
+    String? date,
+    int? packId,
+    int? grinderId,
+    String? grindStep,
+    String? grindSubStep,
+    int? water,
+    int? time,
+    int? temperature,
+    double? load,
+    List<RecipeStep>? steps,
+  }) {
+    return RecipeData(
+      device: device ?? this.device,
+      date: date ?? this.date,
+      packId: packId ?? this.packId,
+      grinderId: grinderId ?? this.grinderId,
+      grindStep: grindStep ?? this.grindStep,
+      grindSubStep: grindSubStep ?? this.grindSubStep,
+      water: water ?? this.water,
+      time: time ?? this.time,
+      temperature: temperature ?? this.temperature,
+      load: load ?? this.load,
+      steps: steps ?? this.steps,
+    );
+  }
+
   factory RecipeData.fromJson(Map<String, dynamic> json) =>
       _$RecipeDataFromJson(json);
 
@@ -60,7 +83,7 @@ class RecipeData {
         grindSubStep: response.grindSubStep,
         water: response.water,
         time: response.time,
-        // todo
+// todo
         temperature: 95,
         load: response.load,
         steps: response.steps.map((e) => RecipeStep.fromResponse(e)).toList(),

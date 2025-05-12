@@ -94,4 +94,19 @@ class RecipeService {
     }
     return null;
   }
+
+  Future<void> updateRecipe(int recipeId, Map<String, dynamic> recipeData) async {
+    try {
+      final response = await _apiClient.put('/recipe/$recipeId', recipeData);
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update recipe: ${response.body}');
+      }
+
+      logger.i('Recipe updated successfully.');
+    } catch (e) {
+      logger.e('Error updating recipe', error: e);
+      rethrow;
+    }
+  }
 }

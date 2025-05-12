@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 import 'package:pick_up_recipe/src/pages/choosing_recipe_page.dart';
 import 'package:pick_up_recipe/src/pages/recognition_camera_page.dart';
+import 'package:pick_up_recipe/src/features/recipes_editing/presentation/edit_recipe_page.dart';
 
 import 'package:pick_up_recipe/main.dart';
 import 'package:pick_up_recipe/src/features/authentication/guards/authentication_guard.dart';
@@ -50,6 +51,11 @@ class AppRouter extends _$AppRouter {
           page: ChoosingRecipeRoute.page,
           guards: [AuthGuard(ref)],
         ),
-        AutoRoute(page: AuthenticationRoute.page),
+        AutoRoute(
+          page: AuthenticationRoute.page,
+        ),
+        AutoRoute(
+          page: EditRecipeRoute.page,
+        ),
       ];
 }

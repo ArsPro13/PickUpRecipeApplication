@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/presentation/recipe_step_animated_widget.dart';
+import 'package:pick_up_recipe/src/features/recipes_editing/presentation/edit_recipe_page.dart';
 import 'package:pick_up_recipe/src/general_widgets/buttons/app_button.dart';
 
 import '../features/recipes/presentation/recipe_icon_widget.dart';
@@ -156,7 +158,11 @@ class _BrewPageState extends State<BrewPage>
                     height: 50,
                     width: 70,
                     child: AppButton(
-                      onTap: () {},
+                      onTap: () {
+                        context.router.push(
+                          EditRecipeRoute(recipe: widget.recipe),
+                        );
+                      },
                       centerWidget: const Icon(Icons.edit_outlined),
                       buttonStyle: AppButtonStyle.primary,
                     ),
