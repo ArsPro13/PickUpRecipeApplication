@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
@@ -5,6 +6,7 @@ import 'package:pick_up_recipe/src/features/recipes_editing/application/edit_rec
 import 'package:pick_up_recipe/src/features/recipes_editing/data_sources/recipe_editing_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 
+@RoutePage()
 class EditRecipePage extends ConsumerStatefulWidget {
   final RecipeData recipe;
 
