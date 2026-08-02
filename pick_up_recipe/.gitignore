@@ -33,6 +33,12 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Продукты кодогенерации: собираются командой
+# dart run build_runner build --delete-conflicting-outputs
+# и в CI, поэтому в репозитории им делать нечего.
+*.g.dart
+*.gr.dart
+
 # Symbolication related
 app.*.symbols
 
