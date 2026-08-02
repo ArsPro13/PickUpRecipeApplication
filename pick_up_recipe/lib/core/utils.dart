@@ -24,3 +24,23 @@ Future<String> compressBase64Img({
 
   return base64Encode(compressedBytes);
 }
+
+/// Разбирает картинку пачки, присланную base64-строкой.
+///
+/// Фото хранится в БД текстовой колонкой, а не в файловом хранилище, поэтому
+/// строка бывает пустой, обрезанной или с префиксом data:. Возвращает null
+/// вместо исключения: карточка пачки должна нарисоваться и без фото.
+Uint8List? decodePackImage(String? base64Image) {
+  if (base64Image == null || base64Image.isEmpty) return null;
+
+  final comma = base64Image.indexOf(',');
+  final payload = base64Image.startsWith('data:') && comma != -1
+      ? base64Image.substring(comma + 1)
+      : base64Image;
+
+  try {
+    return base64Decode(payload);
+  } on FormatException {
+    return null;
+  }
+}

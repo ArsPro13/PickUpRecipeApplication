@@ -46,6 +46,27 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
     }
   }
 
+  /// Повторная отправка кода подтверждения.
+  Future<void> resendVerificationCode(String email) =>
+      _authService.resendVerificationCode(email);
+
+  /// Письмо для сброса пароля.
+  Future<void> requestPasswordReset(String email) =>
+      _authService.requestPasswordReset(email);
+
+  /// Сброс пароля по коду из письма.
+  Future<void> resetPassword(String email, String code, String password) =>
+      _authService.resetPassword(email, code, password);
+
+  /// Выход: токены стираются, состояние возвращается к «нужен вход».
+  ///
+  /// Раньше выхода не было вовсе — а он нужен уже потому, что на одном
+  /// телефоне заваривают вдвоём.
+  Future<void> logout() async {
+    await _authService.logout();
+    state = state.copyWith(status: AuthState.needsAuthentication);
+  }
+
   Future<void> verifyMail(String email, String code) async {
     try {
       await _authService.verifyMail(

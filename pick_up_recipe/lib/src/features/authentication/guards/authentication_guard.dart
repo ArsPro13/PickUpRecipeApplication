@@ -5,22 +5,39 @@ import 'package:pick_up_recipe/src/features/authentication/provider/authenticati
 
 import '../provider/authentication_state.dart';
 
+/// Пускает дальше только авторизованных. Гостя нет (ответ на вопрос 9).
 class AuthGuard extends AutoRouteGuard {
+  AuthGuard(this.ref);
+
   final WidgetRef ref;
 
-  AuthGuard(this.ref);
+  /// Сколько ждём восстановления сессии, прежде чем считать, что её нет.
+  ///
+  /// Без предела цикл ожидания вечный: сеть может не ответить никогда, и тогда
+  /// приложение остаётся на пустом экране — переход так и не разрешился ни в
+  /// одну сторону.
+  static const Duration _sessionTimeout = Duration(seconds: 10);
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
-    while (ref.read(authenticationStateNotifierProvider).status ==
-        AuthState.isLoading) {
-      await Future.delayed(const Duration(milliseconds: 50));
+    final deadline = DateTime.now().add(_sessionTimeout);
+
+    while (ref.read(authenticationStateNotifierProvider).status == AuthState.isLoading &&
+        DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
     }
-    if (ref.read(authenticationStateNotifierProvider).status ==
-        AuthState.needsAuthentication) {
-      router.push(const AuthenticationRoute());
-    } else {
+
+    if (ref.read(authenticationStateNotifierProvider).status == AuthState.isAuthenticated) {
       resolver.next(true);
+      return;
     }
+
+    // redirect, а не push: push оставляет переход неразрешённым, и навигатор
+    // застревает — под экраном входа остаётся пустой корень, а если экран
+    // входа почему-то не открылся, человек видит пустоту и всё.
+    //
+    // redirect и уводит на вход, и закрывает исходный переход: когда экран
+    // входа отпустят, обещание выполнится, и человек попадёт туда, куда шёл.
+    resolver.redirect(const AuthWelcomeRoute());
   }
 }

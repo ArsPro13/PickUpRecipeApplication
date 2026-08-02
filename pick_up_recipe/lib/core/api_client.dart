@@ -43,24 +43,24 @@ class ApiClient {
     });
   }
 
+  /// Обновление пары токенов.
+  ///
+  /// Мимо _handleRequest намеренно: тот на 401 зовёт onAuthError, а onAuthError
+  /// зовёт обновление токенов. Пропусти этот запрос через общий обработчик — и
+  /// протухшая сессия уходит в бесконечный цикл: 401 → обновить → 401 → …
+  /// Приложение при этом молотит сервер запросами, а человек видит пустой экран.
   Future<http.Response> postRefresh(String endpoint) async {
-    return await _handleRequest(() async {
-      final prefs = EncryptedSharedPreferences.getInstance();
-      final refreshToken = prefs.getString('refresh_token');
+    final prefs = EncryptedSharedPreferences.getInstance();
+    final refreshToken = prefs.getString('refresh_token');
 
-      final headers = {
+    return http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: {
         'Content-Type': 'application/json',
         'Authorization': refreshToken ?? '',
-      };
-
-      final response = await http.post(
-        Uri.parse('$baseUrl$endpoint'),
-        headers: headers,
-        body: jsonEncode({}),
-      );
-
-      return response;
-    });
+      },
+      body: jsonEncode({}),
+    );
   }
 
   Future<http.Response> get(

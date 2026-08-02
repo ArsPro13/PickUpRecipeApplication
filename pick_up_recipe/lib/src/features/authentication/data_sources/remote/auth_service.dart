@@ -4,6 +4,7 @@ import 'package:encrypt_shared_preferences/provider.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/core/logger.dart';
+import 'package:pick_up_recipe/src/features/authentication/domain/auth_rules.dart';
 
 class AuthService {
   final ApiClient _apiClient = GetIt.instance<ApiClient>();
@@ -15,30 +16,58 @@ class AuthService {
   }
 
   Future<void> authenticate(String email, String password) async {
-    try {
-      final response = await _apiClient.post('/auth/login', {
-        'email': email,
-        'password': password,
-      });
+    final response = await _apiClient.post('/auth/login', {
+      'email': email,
+      'password': password,
+    });
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+    if (response.statusCode != 200) {
+      throw AuthFailure.fromResponse(response, action: 'войти');
+    }
 
-        if (data.containsKey('access_token') &&
-            data.containsKey('refresh_token')) {
-          await _saveTokens(data['access_token'], data['refresh_token']);
-          logger.i('User authenticated and tokens saved.');
-        } else {
-          throw Exception('Invalid response format: tokens are missing');
-        }
-      } else {
-        throw Exception(
-          'Failed to login user',
-        );
-      }
-    } catch (e) {
-      logger.e('Authentication error', error: e);
-      rethrow;
+    final data = jsonDecode(response.body);
+    if (!data.containsKey('access_token') || !data.containsKey('refresh_token')) {
+      throw const AuthFailure('Сервер ответил без токенов');
+    }
+
+    await _saveTokens(data['access_token'], data['refresh_token']);
+    logger.i('User authenticated and tokens saved.');
+  }
+
+  /// Повторная отправка кода подтверждения.
+  ///
+  /// Без неё человек, у которого письмо не дошло, оказывался в тупике:
+  /// ручка на бэкенде была, а клиент её не звал.
+  Future<void> resendVerificationCode(String email) async {
+    final response = await _apiClient.post('/mail/send_verify_email', {'email': email});
+
+    if (response.statusCode != 200) {
+      throw AuthFailure.fromResponse(response, action: 'отправить код');
+    }
+  }
+
+  /// Письмо для сброса пароля.
+  ///
+  /// Ответ одинаковый и на известный, и на неизвестный адрес (ответ 39):
+  /// иначе форма превращается в проверялку, зарегистрирован ли человек.
+  Future<void> requestPasswordReset(String email) async {
+    final response = await _apiClient.post('/auth/forgot_password', {'email': email});
+
+    if (response.statusCode != 200 && response.statusCode != 404) {
+      throw AuthFailure.fromResponse(response, action: 'отправить письмо');
+    }
+  }
+
+  /// Сброс пароля по коду из письма.
+  Future<void> resetPassword(String email, String code, String newPassword) async {
+    final response = await _apiClient.post('/auth/reset_password', {
+      'email': email,
+      'code': code,
+      'password': newPassword,
+    });
+
+    if (response.statusCode != 200) {
+      throw AuthFailure.fromResponse(response, action: 'сменить пароль');
     }
   }
 
@@ -49,12 +78,8 @@ class AuthService {
         'password': password,
       });
 
-      if (response.statusCode == 200) {
-        return;
-      } else {
-        throw Exception(
-          'Failed to register user',
-        );
+      if (response.statusCode != 200) {
+        throw AuthFailure.fromResponse(response, action: 'зарегистрироваться');
       }
     } catch (e) {
       logger.e('Registration error', error: e);
@@ -71,13 +96,16 @@ class AuthService {
 
       if (response.statusCode == 200) {
         return;
-      } else if (response.statusCode == 500) {
-        logger.w('Wrong code');
-        throw Exception('Wrong confirmation code. Try again');
-      } else {
-        throw Exception(
-            'Failed to register: ${response.statusCode} ${response.reasonPhrase}');
       }
+
+      // Бэкенд отвечает 500 на неверный код: разбирать его как «сервер лёг»
+      // было бы неправдой, и человек не понял бы, что надо просто перенабрать.
+      if (response.statusCode == 500) {
+        logger.w('Wrong code');
+        throw const AuthFailure('Код не подошёл. Проверьте письмо ещё раз');
+      }
+
+      throw AuthFailure.fromResponse(response, action: 'подтвердить почту');
     } catch (e) {
       logger.e('Registration error', error: e);
       rethrow;
