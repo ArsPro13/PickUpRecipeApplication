@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../src/features/authentication/guards/authentication_guard.dart';
+import '../src/features/brew_methods/domain/brew_method.dart';
 import '../src/features/packs/domain/models/pack_model.dart';
 import '../src/features/recipes/domain/models/recipe_data_model.dart';
 import '../src/pages/auth_login_page.dart';
@@ -12,10 +13,13 @@ import '../src/pages/auth_welcome_page.dart';
 import '../src/pages/brew_page.dart';
 import '../src/pages/choosing_recipe_page.dart';
 import '../src/pages/coffee_page.dart';
+import '../src/pages/correction_review_page.dart';
 import '../src/pages/grinder_select_page.dart';
 import '../src/pages/packs_page.dart';
 import '../src/pages/password_reset_page.dart';
 import '../src/pages/profile_page.dart';
+import '../src/pages/rating_page.dart';
+import '../src/pages/recipe_builder_page.dart';
 import '../src/pages/recipes_for_coffee_page.dart';
 import '../src/pages/recipes_page.dart';
 import '../src/pages/recognition_camera_page.dart';
@@ -56,6 +60,9 @@ class AppRouter extends _$AppRouter {
         AutoRoute(page: RecipesForCoffeeRoute.page, path: '/coffee/methods', guards: [AuthGuard(ref)]),
         AutoRoute(page: GrinderSelectRoute.page, path: '/grinder', guards: [AuthGuard(ref)]),
         AutoRoute(page: BrewRoute.page, path: '/brew', guards: [AuthGuard(ref)]),
+        AutoRoute(page: RatingRoute.page, path: '/rating', guards: [AuthGuard(ref)]),
+        AutoRoute(page: CorrectionReviewRoute.page, path: '/correction', guards: [AuthGuard(ref)]),
+        AutoRoute(page: RecipeBuilderRoute.page, path: '/recipe/edit', guards: [AuthGuard(ref)]),
         AutoRoute(page: ChoosingRecipeRoute.page, path: '/choose-recipe', guards: [AuthGuard(ref)]),
         AutoRoute(page: RecognitionCameraRoute.page, path: '/pack-photo', guards: [AuthGuard(ref)]),
 

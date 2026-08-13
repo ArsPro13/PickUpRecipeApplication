@@ -235,10 +235,32 @@ class _RoasterRecipe extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.s4),
-          AppButton(
-            label: 'Заварить · ${_formatTime(recipe.time)}',
-            icon: AppIcons.uiPlay,
-            onPressed: () => context.router.push(BrewRoute(recipe: recipe, pack: pack)),
+          Row(
+            children: [
+              // Правка стоит рядом с завариванием, а не прячется в меню: чаще
+              // всего рецепт открывают именно чтобы подвинуть одно число под
+              // свою кофемолку. Оригинал обжарщика при этом неприкосновенен —
+              // сохранение заводит новую версию.
+              // «Править» по содержимому, а не долей ширины: доля отмерялась
+              // от «Заварить · 2:30», и слово ужималось сначала до «П…»,
+              // потом до «Прав…». Место делит тот, у кого подпись длиннее.
+              AppButton(
+                label: 'Править',
+                kind: AppButtonKind.secondary,
+                block: false,
+                onPressed: () => context.router.push(
+                  RecipeBuilderRoute(recipe: recipe, pack: pack),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s3),
+              Expanded(
+                child: AppButton(
+                  label: 'Заварить · ${_formatTime(recipe.time)}',
+                  icon: AppIcons.uiPlay,
+                  onPressed: () => context.router.push(BrewRoute(recipe: recipe, pack: pack)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
