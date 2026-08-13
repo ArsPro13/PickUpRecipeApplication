@@ -7,9 +7,14 @@ enum BrewMethodsStatus { loading, ready, failed }
 
 /// Группа вместе с попавшими в неё методами — то, что рисует экран.
 class GroupedMethods {
-  const GroupedMethods({required this.name, required this.methods});
+  const GroupedMethods({required this.name, required this.methods, this.slug = ''});
 
   final String name;
+
+  /// Slug группы из справочника: по нему выбирается шаблон заваривания
+  /// («давление» заканчивает шаги по признаку, а не по секундомеру).
+  final String slug;
+
   final List<BrewMethod> methods;
 }
 
@@ -74,7 +79,7 @@ List<GroupedMethods> groupMethods(List<BrewMethod> methods, List<BrewMethodGroup
   for (final group in ordered) {
     final inGroup = byGroup.remove(group.id);
     if (inGroup != null && inGroup.isNotEmpty) {
-      result.add(GroupedMethods(name: group.name, methods: inGroup));
+      result.add(GroupedMethods(name: group.name, slug: group.slug, methods: inGroup));
     }
   }
 

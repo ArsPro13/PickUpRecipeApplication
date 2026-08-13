@@ -27,15 +27,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../routing/app_router.dart';
+import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/last_brew_cache.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/domain/models/grind_descriptor_model.dart';
 import '../features/recipes/domain/brew_engine.dart';
 import '../features/recipes/domain/brew_step.dart';
+import '../features/recipes/domain/brew_template.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
+import '../general_widgets/app_layout.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -91,10 +95,23 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
   /// каждую секунду — только на смене шага.
   int? _scrolledTo;
 
+  /// Когда приложение ушло в фон при идущем заваривании.
+  DateTime? _wentBackground;
+
+  /// Показать экран возврата (S09/S10): отсутствовали дольше, чем длится
+  /// текущий шаг (порог из ответа C3).
+  bool _showResume = false;
+
+  /// Сколько нас не было — для заголовка «Прошло 4 минуты».
+  Duration _awayFor = Duration.zero;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Последний открытый рецепт переживает пропажу сети (ответ C5): офлайн
+    // покажут его. Пишется при входе — дальше сети может уже не быть.
+    LastBrewCache.save(widget.recipe, widget.pack);
   }
 
   @override
@@ -108,9 +125,30 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused && _snapshot.isRunning) {
+      _wentBackground = DateTime.now();
+      return;
+    }
+
     // Возвращение из фона — это просто ещё один запрос снимка: движок сам
     // знает, сколько прошло по настенным часам.
-    if (state == AppLifecycleState.resumed) _refresh();
+    if (state == AppLifecycleState.resumed) {
+      final left = _wentBackground;
+      _wentBackground = null;
+
+      if (left != null) {
+        final away = DateTime.now().difference(left);
+        final threshold = _snapshot.stepDuration;
+
+        // Ушёл на десять секунд из паузы в тридцать — вернулся молча; ушёл
+        // на четыре минуты — экран спрашивает, что случилось (ответ C3).
+        if (away > threshold && threshold > Duration.zero) {
+          _awayFor = away;
+          _showResume = true;
+        }
+      }
+      _refresh();
+    }
   }
 
   void _refresh() {
@@ -118,7 +156,9 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
     setState(() => _snapshot = _engine.snapshot());
     if (_snapshot.isFinished) {
       _stopTicker();
-      _scheduleRating();
+      // Пока открыт экран возврата, на оценку не уводим: человек ещё не
+      // сказал, что заваривание вообще состоялось.
+      if (!_showResume) _scheduleRating();
     }
     _followActiveStep();
   }
@@ -189,14 +229,103 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
     context.router.replace(RatingRoute(recipe: widget.recipe, pack: widget.pack));
   }
 
+  /// Вернулись к брошенному завариванию (S09/S10).
+  ///
+  /// Короткий метод: «столько кофе уже не стоит на месте» и три исхода —
+  /// заново, продолжить, считать законченным. Длинный (колд брю) — другой
+  /// смысл: «прошло 13 часов» там не ошибка, а норма, и предлагать «начать
+  /// заново» значит предложить ещё двенадцать часов.
+  Widget _resume() {
+    final long = widget.recipe.time > 3600;
+    final finishedWhileAway = _engine.snapshot().isFinished;
+    final steps = _engine.steps;
+    final stepLabel = steps[_snapshot.stepIndex.clamp(0, steps.length - 1)].label;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_methodName(), style: context.texts.bodySmall),
+      ),
+      body: _ResumeScreen(
+        awayFor: _awayFor,
+        stepLabel: stepLabel,
+        long: long,
+        finished: finishedWhileAway,
+        onRestart: () {
+          _engine.reset();
+          _stopTicker();
+          setState(() {
+            _showResume = false;
+            _snapshot = _engine.snapshot();
+          });
+        },
+        onContinue: () {
+          // Время шло по настенным часам, и движок уже всё посчитал:
+          // продолжить — значит просто посмотреть на текущее состояние.
+          setState(() => _showResume = false);
+          _refresh();
+        },
+        onFinish: () {
+          setState(() => _showResume = false);
+          _rate();
+        },
+      ),
+    );
+  }
+
+  /// Шаблон экрана: чем определяется конец шага у этого метода.
+  BrewTemplate get _template {
+    String waterMeaning = 'poured';
+    String groupSlug = '';
+
+    for (final group in ref.read(brewMethodsProvider).grouped) {
+      for (final method in group.methods) {
+        if (method.slug == widget.recipe.device) {
+          waterMeaning = method.waterMeaning;
+          groupSlug = group.slug;
+        }
+      }
+    }
+
+    return resolveBrewTemplate(
+      widget.recipe,
+      waterMeaning: waterMeaning,
+      methodGroup: groupSlug,
+    );
+  }
+
+  /// Состояние прибора к текущему шагу: «Клапан закрыт», «Перевёрнут».
+  ///
+  /// Считается по пройденным шагам: состояние ставит последний из них,
+  /// у чьего типа в справочнике непустой device_state. Шаг живёт пять
+  /// секунд, состояние — минуту, поэтому строка закреплена, а не мелькает.
+  String _deviceState() {
+    final reference = ref.watch(stepTypesProvider).valueOrNull;
+    if (reference == null) return '';
+
+    var state = '';
+    final upTo = _snapshot.stepIndex.clamp(0, _engine.steps.length - 1);
+    for (var i = 0; i <= upTo; i++) {
+      final type = reference.bySlug(_engine.steps[i].type.wireName);
+      if (type != null && type.deviceState.isNotEmpty) state = type.deviceState;
+    }
+    return state;
+  }
+
   @override
   Widget build(BuildContext context) {
     final steps = _engine.steps;
 
     if (steps.isEmpty) return _empty();
 
+    if (_showResume) return _resume();
+
+    // Следим за справочником: шаблон и состояние прибора приезжают с ним.
+    ref.watch(brewMethodsProvider);
+
     final current = steps[_snapshot.stepIndex.clamp(0, steps.length - 1)];
     final params = _params();
+    final template = _template;
+    final deviceState = template == BrewTemplate.valve ? _deviceState() : '';
 
     return Scaffold(
       appBar: AppBar(
@@ -216,6 +345,31 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
       ),
       body: Column(
         children: [
+          if (deviceState.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.s5,
+                vertical: AppSpacing.s2,
+              ),
+              color: context.colors.secondaryContainer,
+              child: Row(
+                children: [
+                  AppIcon(
+                    AppIcons.uiInfo,
+                    size: AppSizes.icon20,
+                    color: context.colors.primary,
+                  ),
+                  const SizedBox(width: AppSpacing.s2),
+                  Text(
+                    deviceState,
+                    style: context.texts.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.s5,
@@ -223,7 +377,12 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
               AppSpacing.s5,
               AppSpacing.s2,
             ),
-            child: _BrewFrame(step: current, snapshot: _snapshot, params: params),
+            child: _BrewFrame(
+              step: current,
+              snapshot: _snapshot,
+              params: params,
+              template: template,
+            ),
           ),
           Expanded(
             child: _StepList(
@@ -267,7 +426,14 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
                   if (_engine.isStarted && !_snapshot.isFinished) ...[
                     const SizedBox(width: AppSpacing.s3),
                     AppButton(
-                      label: 'Пропустить',
+                      // У усилия и признака конец шага определяет человек,
+                      // а не секундомер, — и кнопка называет это действие,
+                      // а не извиняется словом «пропустить».
+                      label: switch (template) {
+                        BrewTemplate.press => 'Сделал',
+                        BrewTemplate.cue => 'Случилось',
+                        _ => 'Пропустить',
+                      },
                       icon: AppIcons.uiForward,
                       kind: AppButtonKind.secondary,
                       block: false,
@@ -415,6 +581,179 @@ class _ParamsStrip extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
+/// Вернулись к брошенному завариванию: три исхода, а не два (S09/S10).
+class _ResumeScreen extends StatelessWidget {
+  const _ResumeScreen({
+    required this.awayFor,
+    required this.stepLabel,
+    required this.long,
+    required this.finished,
+    required this.onRestart,
+    required this.onContinue,
+    required this.onFinish,
+  });
+
+  final Duration awayFor;
+  final String stepLabel;
+
+  /// Метод на часы: колд брю, колд дрип. «Начать заново» тут не предлагаем.
+  final bool long;
+
+  /// Заваривание доиграло, пока нас не было.
+  final bool finished;
+
+  final VoidCallback onRestart;
+  final VoidCallback onContinue;
+  final VoidCallback onFinish;
+
+  @override
+  Widget build(BuildContext context) {
+    final away = _awayLabel(awayFor);
+
+    if (long) {
+      // Колд брю: «прошло 13 часов» — норма. Не «вы бросили», а «уже готово».
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.s5,
+          AppSpacing.s4,
+          AppSpacing.s5,
+          AppSpacing.s8,
+        ),
+        children: [
+          QuietSurface(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppIcon(AppIcons.uiCheck, size: AppSizes.icon20, color: context.colors.primary),
+                const SizedBox(width: AppSpacing.s3),
+                Expanded(
+                  child: Text(
+                    finished
+                        ? 'Настаивание закончилось, пока приложение было закрыто. '
+                            'Доделайте оставшиеся шаги — дальше кофе только горчит.'
+                        : 'Настаивание идёт: прошло $away. Экран можно закрывать — '
+                            'время считается по часам, а не по таймеру на экране.',
+                    style: context.texts.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s6),
+          AppButton(
+            label: finished ? 'К оставшимся шагам' : 'Продолжить',
+            icon: AppIcons.uiPlay,
+            onPressed: onContinue,
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          AppButton(
+            label: 'Считать законченным',
+            kind: AppButtonKind.secondary,
+            onPressed: onFinish,
+          ),
+        ],
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s5,
+        AppSpacing.s4,
+        AppSpacing.s5,
+        AppSpacing.s8,
+      ),
+      children: [
+        AppState(
+          icon: AppIcons.stepWait,
+          title: 'Прошло $away',
+          description: 'Вы остановились на шаге «$stepLabel». Столько кофе уже '
+              'не стоит на месте: вода остыла, воронка проливается.',
+        ),
+        const SizedBox(height: AppSpacing.s5),
+        _ResumeOption(
+          icon: AppIcons.uiRefresh,
+          title: 'Начать заново',
+          note: 'Обычно правильный выбор: 15 г кофе дешевле испорченной чашки',
+          onTap: onRestart,
+        ),
+        _ResumeOption(
+          icon: AppIcons.uiPlay,
+          title: 'Продолжить с этого места',
+          note: 'Если вы всё это время лили и просто выключили экран',
+          onTap: onContinue,
+        ),
+        _ResumeOption(
+          icon: AppIcons.uiCheck,
+          title: 'Считать законченным',
+          note: 'Заварилось, но до оценки руки не дошли — оценим сейчас',
+          onTap: onFinish,
+        ),
+      ],
+    );
+  }
+
+  static String _awayLabel(Duration away) {
+    if (away.inHours > 0) {
+      final hours = away.inHours;
+      final minutes = away.inMinutes.remainder(60);
+      return minutes == 0 ? '$hours ч' : '$hours ч $minutes мин';
+    }
+    if (away.inMinutes > 0) {
+      final minutes = away.inMinutes;
+      final word = switch (minutes % 10) {
+        1 when minutes % 100 != 11 => 'минута',
+        2 || 3 || 4 when minutes % 100 < 12 || minutes % 100 > 14 => 'минуты',
+        _ => 'минут',
+      };
+      return '$minutes $word';
+    }
+    return '${away.inSeconds} с';
+  }
+}
+
+class _ResumeOption extends StatelessWidget {
+  const _ResumeOption({
+    required this.icon,
+    required this.title,
+    required this.note,
+    required this.onTap,
+  });
+
+  final String icon;
+  final String title;
+  final String note;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s3),
+      child: InkWell(
+        borderRadius: AppRadius.medium,
+        onTap: onTap,
+        child: QuietSurface(
+          child: Row(
+            children: [
+              AppIcon(icon, size: AppSizes.icon20, color: context.colors.primary),
+              const SizedBox(width: AppSpacing.s3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: context.texts.bodyMedium),
+                    const SizedBox(height: AppSpacing.s1),
+                    Text(note, style: context.texts.labelSmall),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Рамка заваривания: прогресс шага по периметру и крупный таймер внутри.
 ///
 /// Линия стартует с середины верхней грани, а не из угла: у середины есть
@@ -424,14 +763,28 @@ class _ParamsStrip extends StatelessWidget implements PreferredSizeWidget {
 /// ему нечего, а «сколько молоть и на чём» — единственный вопрос момента.
 /// Отдельного экрана под это не заводится: главное место экрана отдаётся
 /// главному вопросу и возвращается обратно, как только заваривание началось.
+///
+/// Шаблон меняет содержимое рамки, а не экран целиком: у «часов» вместо
+/// отсчёта — время готовности, у «выстрела» секундомер считает вверх,
+/// у «признака» время — ориентир, а не срок.
 class _BrewFrame extends StatelessWidget {
-  const _BrewFrame({required this.step, required this.snapshot, required this.params});
+  const _BrewFrame({
+    required this.step,
+    required this.snapshot,
+    required this.params,
+    this.template = BrewTemplate.pour,
+  });
 
   final BrewStep step;
   final BrewSnapshot snapshot;
   final BrewParams params;
+  final BrewTemplate template;
 
   bool get _isPrep => snapshot.status == BrewStatus.idle && params.hasPrep;
+
+  /// «Часы»: шаг длиннее получаса — показываем не отсчёт, а «готово в».
+  bool get _clockStep =>
+      template == BrewTemplate.long && step.duration > const Duration(minutes: 30);
 
   @override
   Widget build(BuildContext context) {
@@ -480,13 +833,7 @@ class _BrewFrame extends StatelessWidget {
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    _isPrep
-                        ? params.prepValue!
-                        : formatDuration(
-                            snapshot.status == BrewStatus.idle
-                                ? step.duration
-                                : snapshot.remainingInStep,
-                          ),
+                    _centralValue(),
                     style: context.texts.displayLarge?.copyWith(
                       height: 1,
                       fontFeatures: const [FontFeature.tabularFigures()],
@@ -510,10 +857,53 @@ class _BrewFrame extends StatelessWidget {
     );
   }
 
+  /// Крупное число в центре рамки. Что это за число — решает шаблон.
+  String _centralValue() {
+    if (_isPrep) return params.prepValue!;
+
+    final idle = snapshot.status == BrewStatus.idle;
+
+    // «Выстрел»: секундомер вверх — следят за первой каплей на 5–7 секунде,
+    // и «осталось 19» об этом не говорит ничего.
+    if (template == BrewTemplate.shot && !idle) {
+      return formatDuration(snapshot.elapsedInStep);
+    }
+
+    // «Часы»: к экрану вернутся через полдня, и важно не «осталось 11:58:03»,
+    // а «готово в 08:40» — это число сверяют с будильником.
+    if (_clockStep && !idle && snapshot.status != BrewStatus.finished) {
+      final readyAt = DateTime.now().add(snapshot.remainingInStep);
+      final hh = readyAt.hour.toString().padLeft(2, '0');
+      final mm = readyAt.minute.toString().padLeft(2, '0');
+      return 'в $hh:$mm';
+    }
+
+    return formatDuration(idle ? step.duration : snapshot.remainingInStep);
+  }
+
   String _subtitle() {
     final water = snapshot.waterTotalG <= 0
         ? null
         : 'налито ${snapshot.waterPouredG.round()} из ${snapshot.waterTotalG.round()} г';
+
+    // «Выстрел»: цель — вес напитка, вода тут не «наливается».
+    if (template == BrewTemplate.shot && snapshot.waterTotalG > 0) {
+      return switch (snapshot.status) {
+        BrewStatus.idle => 'цель — ${snapshot.waterTotalG.round()} г в чашке',
+        BrewStatus.finished => 'готово · ${snapshot.waterTotalG.round()} г в чашке',
+        _ => 'цель — ${snapshot.waterTotalG.round()} г в чашке · первые капли на 5–7 с',
+      };
+    }
+
+    // «По признаку»: секундомер — ориентир, конец шага слышно и видно.
+    if (template == BrewTemplate.cue && snapshot.status == BrewStatus.running) {
+      return water == null ? 'время — ориентир, смотрите на признак' : 'время — ориентир · $water';
+    }
+
+    // «Часы»: под «готово в 08:40» — когда это будет по-человечески.
+    if (_clockStep && snapshot.status == BrewStatus.running) {
+      return 'готово через ${_ResumeScreen._awayLabel(snapshot.remainingInStep)}';
+    }
 
     final head = switch (snapshot.status) {
       BrewStatus.idle => 'шаг ещё не начат',
