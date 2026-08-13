@@ -6,15 +6,25 @@
 // чисел: у медианного метода живых семь клеток из семнадцати, то есть больше
 // половины таблицы — мёртвые клетки, которые просматривают заново каждый раз.
 //
-// Постоянство при этом не теряется: пять типов есть у всех двадцати методов
+// Постоянство при этом не теряется: пять типов есть у всех методов
 // (пролив, пауза, подать, ремарка, своё), ещё три — больше чем у трети.
 // Верх таблицы у любого прибора одинаковый, меняется хвост.
+//
+// По макетам ночи 4 (S03–S06, S08):
+//   * в шапке — метод и счёт «восемь типов из семнадцати»;
+//   * у «Обслуживания» подзаголовок «меняет состояние прибора» — иначе
+//     непонятно, чем «открыть клапан» отличается от «ремарки»;
+//   * тип с предупреждением помечен жёлтым уже в листе, а не выскакивает
+//     потом: человек должен видеть, что кладёт в рецепт опасный шаг;
+//   * свои заготовки стоят четвёртой группой, а не последней: человек их
+//     только что завёл и ищет наверху. «Пауза и текст» уходит вниз.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/domain/models/step_type_model.dart';
+import '../features/recipes/domain/models/user_step_type_model.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -33,7 +43,14 @@ class BuiltInStepPick extends StepTypePick {
   final StepType type;
 }
 
-/// «Своё» — не тип, а выход за справочник: открывает форму своего шага.
+/// Своя заготовка из группы «Ваши типы».
+class UserStepPick extends StepTypePick {
+  const UserStepPick(this.type);
+
+  final UserStepType type;
+}
+
+/// «Новый» — не тип, а выход за справочник: открывает форму своего шага.
 class CustomStepPick extends StepTypePick {
   const CustomStepPick();
 }
@@ -43,6 +60,8 @@ Future<StepTypePick?> showStepTypeSheet(
   BuildContext context, {
   required List<String> allowedStepTypes,
   String? currentSlug,
+  int brewMethodId = 0,
+  String? methodName,
 }) {
   return showModalBottomSheet<StepTypePick>(
     context: context,
@@ -53,19 +72,32 @@ Future<StepTypePick?> showStepTypeSheet(
     builder: (context) => _StepTypeSheet(
       allowedStepTypes: allowedStepTypes,
       currentSlug: currentSlug,
+      brewMethodId: brewMethodId,
+      methodName: methodName,
     ),
   );
 }
 
 class _StepTypeSheet extends ConsumerWidget {
-  const _StepTypeSheet({required this.allowedStepTypes, this.currentSlug});
+  const _StepTypeSheet({
+    required this.allowedStepTypes,
+    required this.brewMethodId,
+    this.currentSlug,
+    this.methodName,
+  });
 
   final List<String> allowedStepTypes;
+  final int brewMethodId;
   final String? currentSlug;
+  final String? methodName;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reference = ref.watch(stepTypesProvider);
+    // Свои заготовки грузятся параллельно со справочником; их отсутствие не
+    // блокирует лист — группа просто останется с одной клеткой «новый».
+    final own = ref.watch(userStepTypesProvider(brewMethodId)).valueOrNull ??
+        const <UserStepType>[];
 
     return Container(
       constraints: BoxConstraints(
@@ -88,6 +120,16 @@ class _StepTypeSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const _GrabHandle(),
+            reference.maybeWhen(
+              data: (data) => _Header(
+                methodName: methodName,
+                shown: data.allowedFor(allowedStepTypes).fold<int>(
+                    0, (sum, group) => sum + group.types.length),
+                total: data.types.length,
+                own: own.length,
+              ),
+              orElse: () => const SizedBox.shrink(),
+            ),
             Flexible(
               child: reference.when(
                 loading: () => const Padding(
@@ -106,6 +148,7 @@ class _StepTypeSheet extends ConsumerWidget {
                 ),
                 data: (data) => _Types(
                   groups: data.allowedFor(allowedStepTypes),
+                  own: own,
                   currentSlug: currentSlug,
                 ),
               ),
@@ -115,6 +158,57 @@ class _StepTypeSheet extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Шапка листа: что выбираем и сколько типов у этого прибора.
+class _Header extends StatelessWidget {
+  const _Header({
+    required this.methodName,
+    required this.shown,
+    required this.total,
+    required this.own,
+  });
+
+  final String? methodName;
+  final int shown;
+  final int total;
+  final int own;
+
+  @override
+  Widget build(BuildContext context) {
+    final counts = own > 0
+        ? '$shown ${_typesWord(shown)} из $total и ${_ownCount(own)}'
+        : '$shown ${_typesWord(shown)} из $total';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text('Тип шага', style: context.texts.bodyMedium),
+          const SizedBox(width: AppSpacing.s2),
+          Expanded(
+            child: Text(
+              methodName == null ? counts : '$methodName · $counts',
+              style: context.texts.labelSmall,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _typesWord(int count) => switch (count % 10) {
+        1 when count % 100 != 11 => 'тип',
+        2 || 3 || 4 when count % 100 < 12 || count % 100 > 14 => 'типа',
+        _ => 'типов',
+      };
+
+  static String _ownCount(int count) =>
+      count == 1 ? 'одна ваша заготовка' : '$count ваших';
 }
 
 class _GrabHandle extends StatelessWidget {
@@ -137,45 +231,72 @@ class _GrabHandle extends StatelessWidget {
 }
 
 class _Types extends StatelessWidget {
-  const _Types({required this.groups, this.currentSlug});
+  const _Types({required this.groups, required this.own, this.currentSlug});
 
   final List<GroupedStepTypes> groups;
+  final List<UserStepType> own;
   final String? currentSlug;
 
   @override
   Widget build(BuildContext context) {
+    // «Ваши типы» встают четвёртой группой, перед «Паузой и текстом»:
+    // человек их только что завёл и ищет наверху, а пауза с ремаркой — самая
+    // редкая группа, ей место внизу (макет S08).
+    final tail = groups.where(_isPauseText).toList();
+    final head = groups.where((group) => !_isPauseText(group)).toList();
+
     return ListView(
       shrinkWrap: true,
       children: [
-        for (final group in groups) ...[
-          _GroupHeader(group.name),
-          _Grid(
-            children: [
-              for (final type in group.types)
-                _TypeCell(
-                  icon: AppIcons.step(type.iconKey),
-                  label: type.label,
-                  selected: type.slug == currentSlug,
-                  onTap: () => Navigator.of(context).pop(BuiltInStepPick(type)),
-                ),
-            ],
-          ),
-        ],
-        // «Своё» стоит последним и отдельной группой: это не ещё один тип
-        // рядом с проливом, а выход за справочник.
-        const _GroupHeader('Ваши типы'),
+        for (final group in head) ..._group(context, group),
+        _GroupHeader(own.isEmpty ? 'Ваши типы' : 'Ваши типы · только для этого прибора'),
         _Grid(
           children: [
+            for (final type in own)
+              _TypeCell(
+                icon: AppIcons.step(type.icon),
+                label: type.label,
+                warn: type.warning.isNotEmpty,
+                own: true,
+                onTap: () => Navigator.of(context).pop(UserStepPick(type)),
+              ),
             _TypeCell(
-              icon: AppIcons.stepCustom,
-              label: 'своё',
+              icon: AppIcons.uiPlus,
+              label: 'новый',
               dashed: true,
               onTap: () => Navigator.of(context).pop(const CustomStepPick()),
             ),
           ],
         ),
+        for (final group in tail) ..._group(context, group),
       ],
     );
+  }
+
+  static bool _isPauseText(GroupedStepTypes group) => group.slug == 'pause_text';
+
+  List<Widget> _group(BuildContext context, GroupedStepTypes group) {
+    // Подзаголовок «меняет состояние прибора» — у группы, чьи типы ставят
+    // строку состояния в шапку заваривания: «Клапан закрыт», «Перевёрнут».
+    final statefulGroup = group.types.any((type) => type.deviceState.isNotEmpty);
+
+    return [
+      _GroupHeader(
+        statefulGroup ? '${group.name} · меняет состояние прибора' : group.name,
+      ),
+      _Grid(
+        children: [
+          for (final type in group.types)
+            _TypeCell(
+              icon: AppIcons.step(type.iconKey),
+              label: type.label,
+              selected: type.slug == currentSlug,
+              warn: type.warning.isNotEmpty,
+              onTap: () => Navigator.of(context).pop(BuiltInStepPick(type)),
+            ),
+        ],
+      ),
+    ];
   }
 }
 
@@ -190,7 +311,7 @@ class _GroupHeader extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.s2),
       child: Row(
         children: [
-          Text(name, style: context.texts.labelSmall),
+          Flexible(child: Text(name, style: context.texts.labelSmall)),
           const SizedBox(width: AppSpacing.s2),
           Expanded(child: Divider(height: AppStroke.thin, color: context.palette.border)),
         ],
@@ -230,6 +351,8 @@ class _TypeCell extends StatelessWidget {
     required this.onTap,
     this.selected = false,
     this.dashed = false,
+    this.warn = false,
+    this.own = false,
   });
 
   final String icon;
@@ -237,21 +360,45 @@ class _TypeCell extends StatelessWidget {
   final VoidCallback onTap;
   final bool selected;
 
-  /// Пунктир — у «своего»: оно открывает форму, а не выбирает существующее.
+  /// Пунктир — у «нового»: он открывает форму, а не выбирает существующее.
   final bool dashed;
+
+  /// Жёлтая метка — у типа с непустым предупреждением: человек должен
+  /// видеть уже в листе, что кладёт в рецепт опасный шаг (макет S05).
+  final bool warn;
+
+  /// Своя заготовка: пунктирная рамка отличает её от встроенного, чтобы не
+  /// искать потом, почему шаг не приехал на другом приборе.
+  final bool own;
 
   @override
   Widget build(BuildContext context) {
     final accent = context.colors.primary;
-    final highlighted = selected || dashed;
+    final warnColor = context.colors.tertiary;
+    final highlighted = selected || dashed || own;
 
     final content = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        AppIcon(
-          icon,
-          size: AppSizes.icon24,
-          color: highlighted ? accent : context.colors.onSurface,
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            AppIcon(
+              icon,
+              size: AppSizes.icon24,
+              color: highlighted ? accent : context.colors.onSurface,
+            ),
+            if (warn)
+              Positioned(
+                top: -AppSpacing.s1,
+                right: -AppSpacing.s2,
+                child: Container(
+                  width: AppSpacing.s2,
+                  height: AppSpacing.s2,
+                  decoration: BoxDecoration(color: warnColor, shape: BoxShape.circle),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: AppSpacing.s1),
         Text(
@@ -266,7 +413,7 @@ class _TypeCell extends StatelessWidget {
       ],
     );
 
-    if (dashed) {
+    if (dashed || own) {
       return DashedBorderBox(
         color: accent,
         onTap: onTap,
@@ -288,7 +435,13 @@ class _TypeCell extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             borderRadius: AppRadius.medium,
-            border: Border.all(color: selected ? accent : context.palette.border),
+            border: Border.all(
+              color: selected
+                  ? accent
+                  : warn
+                      ? warnColor
+                      : context.palette.border,
+            ),
           ),
           child: content,
         ),

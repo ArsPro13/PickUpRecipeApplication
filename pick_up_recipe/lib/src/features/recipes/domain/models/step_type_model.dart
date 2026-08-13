@@ -91,7 +91,11 @@ class StepType {
 
 /// Группа вместе с попавшими в неё типами — то, что рисует лист выбора.
 class GroupedStepTypes {
-  const GroupedStepTypes({required this.name, required this.types});
+  const GroupedStepTypes({required this.slug, required this.name, required this.types});
+
+  /// Slug группы из справочника: по нему лист узнаёт «Паузу и текст»,
+  /// которую опускает под «Ваши типы».
+  final String slug;
 
   final String name;
   final List<StepType> types;
@@ -158,7 +162,7 @@ class StepTypeReference {
     for (final group in ordered) {
       final inGroup = byGroup.remove(group.id);
       if (inGroup != null && inGroup.isNotEmpty) {
-        result.add(GroupedStepTypes(name: group.name, types: inGroup));
+        result.add(GroupedStepTypes(slug: group.slug, name: group.name, types: inGroup));
       }
     }
 
@@ -167,7 +171,7 @@ class StepTypeReference {
     final orphans = byGroup.values.expand((list) => list).toList();
     if (orphans.isNotEmpty) {
       orphans.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-      result.add(GroupedStepTypes(name: 'Прочие', types: orphans));
+      result.add(GroupedStepTypes(slug: 'other', name: 'Прочие', types: orphans));
     }
 
     return result;

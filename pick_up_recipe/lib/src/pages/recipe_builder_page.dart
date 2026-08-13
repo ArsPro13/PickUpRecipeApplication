@@ -31,6 +31,7 @@ import '../features/recipes/data_sources/remote/recipe_service.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../features/recipes/domain/models/recipe_step_model.dart';
 import '../features/recipes/domain/models/step_type_model.dart';
+import '../features/recipes/domain/models/user_step_type_model.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
@@ -349,32 +350,79 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     final pick = await showStepTypeSheet(
       context,
       allowedStepTypes: method?.allowedStepTypes ?? const [],
+      brewMethodId: method?.id ?? 0,
+      methodName: method?.name,
     );
     if (pick == null || !mounted) return;
 
-    if (pick is CustomStepPick) {
-      _notYet('Свой тип шага');
-      return;
-    }
+    final blank = await _stepFromPick(pick, method);
+    if (blank == null || !mounted) return;
 
-    final type = (pick as BuiltInStepPick).type;
     setState(() {
-      _recipe.steps.add(RecipeStep(
-        seqNum: _recipe.steps.length + 1,
-        instruction: type.name,
-        water: 0,
-        time: 0,
-        id: 0,
-        stepType: type.slug,
-        stepKey: '',
-        tip: '',
-        isOptional: false,
-        untilUser: false,
-        untilSign: '',
-        warning: type.warning,
-      ));
+      blank.seqNum = _recipe.steps.length + 1;
+      _recipe.steps.add(blank);
       _openStep = _recipe.steps.length - 1;
     });
+  }
+
+  /// Заготовка шага из того, что выбрали в листе.
+  ///
+  /// «Новый» сначала уводит в форму своего типа: шаг появится, только если
+  /// заготовку сохранили. null — человек передумал.
+  Future<RecipeStep?> _stepFromPick(StepTypePick pick, BrewMethod? method) async {
+    switch (pick) {
+      case BuiltInStepPick(:final type):
+        return RecipeStep(
+          seqNum: 0,
+          instruction: type.name,
+          water: 0,
+          time: 0,
+          id: 0,
+          stepType: type.slug,
+          stepKey: '',
+          tip: '',
+          isOptional: false,
+          untilUser: false,
+          untilSign: '',
+          warning: type.warning,
+        );
+
+      case UserStepPick(:final type):
+        return RecipeStep(
+          seqNum: 0,
+          instruction: type.label,
+          water: 0,
+          time: 0,
+          id: 0,
+          stepType: 'custom',
+          stepKey: '',
+          tip: '',
+          isOptional: false,
+          untilUser: type.endsWith != StepEndsWith.timer,
+          untilSign: '',
+          warning: type.warning,
+        );
+
+      case CustomStepPick():
+        final created = await context.router.push<UserStepType>(
+          CustomStepRoute(brewMethodId: method?.id ?? 0, methodName: method?.name),
+        );
+        if (created == null) return null;
+        return RecipeStep(
+          seqNum: 0,
+          instruction: created.label,
+          water: 0,
+          time: 0,
+          id: 0,
+          stepType: 'custom',
+          stepKey: '',
+          tip: '',
+          isOptional: false,
+          untilUser: created.endsWith != StepEndsWith.timer,
+          untilSign: '',
+          warning: created.warning,
+        );
+    }
   }
 
   Future<void> _pickType(int index) async {
@@ -383,23 +431,23 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       context,
       allowedStepTypes: _method?.allowedStepTypes ?? const [],
       currentSlug: step.stepType,
+      brewMethodId: _method?.id ?? 0,
+      methodName: _method?.name,
     );
     if (pick == null || !mounted) return;
 
-    if (pick is CustomStepPick) {
-      _notYet('Свой тип шага');
-      return;
-    }
+    final replacement = await _stepFromPick(pick, _method);
+    if (replacement == null || !mounted) return;
 
-    final type = (pick as BuiltInStepPick).type;
     setState(() {
       // Подпись меняется вместе с типом только если её не правили руками:
       // человек, назвавший шаг «долить до 250», не должен потерять это
       // название из-за смены типа с пролива на долив.
       final untouched = step.instruction.isEmpty || _isTypeName(step.instruction);
-      step.stepType = type.slug;
-      if (untouched) step.instruction = type.name;
-      if (step.warning.isEmpty) step.warning = type.warning;
+      step.stepType = replacement.stepType;
+      if (untouched) step.instruction = replacement.instruction;
+      if (step.warning.isEmpty) step.warning = replacement.warning;
+      step.untilUser = replacement.untilUser;
     });
   }
 
@@ -696,9 +744,6 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     context.router.push(BrewRoute(recipe: _recipe, pack: widget.pack));
   }
 
-  void _notYet(String what) {
-    _say('$what появится позже: ручки под свои типы шагов ещё нет');
-  }
 
   void _say(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
