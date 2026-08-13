@@ -34,6 +34,11 @@ class PackResponseBodyModel {
   @JsonKey(name: "user_id")
   late int userId;
 
+  /// Имя обжарщика текстом (ответ на вопрос 7). Пусто — обжарщика не знаем:
+  /// пачку завели руками, а не по коду с упаковки.
+  @JsonKey(name: "roaster_name", defaultValue: '')
+  late String roasterName;
+
   PackResponseBodyModel({
     required this.id,
     required this.packCountry,

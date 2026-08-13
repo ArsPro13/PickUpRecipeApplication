@@ -6,6 +6,10 @@ part 'recipe_data_model.g.dart';
 
 @JsonSerializable()
 class RecipeData {
+  /// Идентификатор рецепта. Без него нельзя ни сохранить оценку, ни попросить
+  /// поправку: обе ручки работают по recipe_id.
+  late int id;
+
   late String device;
 
   late String date;
@@ -26,13 +30,25 @@ class RecipeData {
 
   late int time;
 
-  late int temperature;
+  /// Температура воды. null — рецепт её не знает: так у исторических записей,
+  /// и показывать вместо неё придуманное число нельзя.
+  late double? temperature;
 
   late double load;
+
+  /// Название рецепта. Пусто — экран показывает метод заваривания.
+  late String title;
+
+  late String notes;
+
+  late String grindDescriptor;
+
+  late int? agitationLevel;
 
   late List<RecipeStep> steps;
 
   RecipeData({
+    required this.id,
     required this.device,
     required this.date,
     required this.packId,
@@ -43,6 +59,10 @@ class RecipeData {
     required this.time,
     required this.temperature,
     required this.load,
+    required this.title,
+    required this.notes,
+    required this.grindDescriptor,
+    required this.agitationLevel,
     required this.steps,
   });
 
@@ -52,6 +72,7 @@ class RecipeData {
   Map<String, dynamic> toJson() => _$RecipeDataToJson(this);
 
   factory RecipeData.fromResponse(RecipeResponseModel response) => RecipeData(
+        id: response.id,
         device: response.device,
         date: response.date,
         packId: response.packId,
@@ -60,9 +81,12 @@ class RecipeData {
         grindSubStep: response.grindSubStep,
         water: response.water,
         time: response.time,
-        // todo
-        temperature: 95,
+        temperature: response.temperature,
         load: response.load,
+        title: response.title,
+        notes: response.notes,
+        grindDescriptor: response.grindDescriptor,
+        agitationLevel: response.agitationLevel,
         steps: response.steps.map((e) => RecipeStep.fromResponse(e)).toList(),
       );
 }

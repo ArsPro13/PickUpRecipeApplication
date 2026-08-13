@@ -38,6 +38,10 @@ class PackData {
   @JsonKey(name: "is_active")
   late bool isActive;
 
+  /// Имя обжарщика текстом. Пусто — пачку завели руками, без кода.
+  @JsonKey(name: "roaster_name", defaultValue: '')
+  late String roasterName;
+
   PackData({
     required this.packId,
     required this.userId,
@@ -50,6 +54,7 @@ class PackData {
     required this.packVariety,
     required this.packScaScore,
     required this.isActive,
+    this.roasterName = '',
   });
 
   factory PackData.fromJson(Map<String, dynamic> json) =>
@@ -67,7 +72,11 @@ class PackData {
       packImage: response.packImage,
       packVariety: response.packVariety,
       packScaScore: response.packScaScore,
+      // Колонки «допита» в базе нет: по вопросу 33 закрывать пачку должен
+      // человек кнопкой, но ни колонки, ни ручки под это пока не завели.
+      // Карточка приглушённое состояние рисовать умеет — включать нечем.
       isActive: true,
+      roasterName: response.roasterName,
     );
   }
 

@@ -29,6 +29,31 @@ class RecipeResponseModel {
 
   late String device;
 
+  // Поля формата рецепта v1. Все необязательные: у исторических рецептов их
+  // нет, и запрашивать их у сервера как обязательные значит уронить разбор
+  // на первой же старой записи.
+
+  /// Название рецепта. Пусто — показываем метод заваривания.
+  @JsonKey(defaultValue: '')
+  late String title;
+
+  @JsonKey(defaultValue: '')
+  late String notes;
+
+  /// Температура воды. Раньше клиент подставлял сюда 95 для всех рецептов.
+  late double? temperature;
+
+  /// Крупность помола словами — slug из справочника.
+  @JsonKey(name: "grind_descriptor", defaultValue: '')
+  late String grindDescriptor;
+
+  /// Уровень агитации 0…4.
+  @JsonKey(name: "agitation_level")
+  late int? agitationLevel;
+
+  @JsonKey(name: "brew_method_id")
+  late int? brewMethodId;
+
   late List<RecipeResponseStepModel> steps;
 
   RecipeResponseModel({
@@ -42,6 +67,12 @@ class RecipeResponseModel {
     required this.time,
     required this.date,
     required this.device,
+    required this.title,
+    required this.notes,
+    required this.temperature,
+    required this.grindDescriptor,
+    required this.agitationLevel,
+    required this.brewMethodId,
     required this.steps,
   });
 

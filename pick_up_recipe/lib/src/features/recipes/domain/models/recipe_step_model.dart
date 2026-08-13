@@ -16,12 +16,40 @@ class RecipeStep {
 
   late int id;
 
+  @JsonKey(name: "step_type", defaultValue: '')
+  late String stepType;
+
+  @JsonKey(name: "step_key", defaultValue: '')
+  late String stepKey;
+
+  @JsonKey(defaultValue: '')
+  late String tip;
+
+  @JsonKey(name: "is_optional", defaultValue: false)
+  late bool isOptional;
+
+  @JsonKey(name: "until_user", defaultValue: false)
+  late bool untilUser;
+
+  @JsonKey(name: "until_sign", defaultValue: '')
+  late String untilSign;
+
+  @JsonKey(defaultValue: '')
+  late String warning;
+
   RecipeStep({
     required this.seqNum,
     required this.instruction,
     required this.water,
     required this.time,
     required this.id,
+    required this.stepType,
+    required this.stepKey,
+    required this.tip,
+    required this.isOptional,
+    required this.untilUser,
+    required this.untilSign,
+    required this.warning,
   });
 
   factory RecipeStep.fromJson(Map<String, dynamic> json) =>
@@ -36,5 +64,12 @@ class RecipeStep {
         water: response.water,
         time: response.time,
         id: response.id,
+        stepType: response.stepType,
+        stepKey: response.stepKey,
+        tip: response.tip,
+        isOptional: response.isOptional,
+        untilUser: response.untilUser,
+        untilSign: response.untilSign,
+        warning: response.warning,
       );
 }
