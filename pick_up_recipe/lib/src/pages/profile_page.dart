@@ -39,27 +39,43 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Профиль')),
+      // Разделы лежат на поднятых поверхностях, а не строками по голому фону:
+      // без подъёма экран читался как список ссылок, в котором «Выйти» стоит
+      // ровно так же, как кофемолка.
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.s5,
+          AppSpacing.s2,
+          AppSpacing.s5,
+          AppSpacing.s8,
+        ),
         children: [
           const SectionTitle('Мои кофемолки'),
-          if (grinders.userGrinders.isEmpty)
-            AppCard(
-              flat: true,
-              child: Text(
-                'Кофемолка не выбрана. Без неё рецепт показывает крупность словами, '
-                'а не щелчками вашей кофемолки.',
-                style: context.texts.bodySmall,
-              ),
-            )
-          else
-            for (final grinder in grinders.userGrinders)
-              AppRow(
-                label: grinder.grinder.name,
-                icon: AppIcons.metricGrind,
-                value: grinder.isPrimary ? 'основная' : null,
-                onTap: () => context.router.push(const GrinderSelectRoute()),
-              ),
+          AppCard(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
+            child: Column(
+              children: [
+                if (grinders.userGrinders.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
+                    child: Text(
+                      'Кофемолка не выбрана. Без неё рецепт показывает крупность словами, '
+                      'а не щелчками вашей кофемолки.',
+                      style: context.texts.bodySmall,
+                    ),
+                  )
+                else
+                  for (var index = 0; index < grinders.userGrinders.length; index++)
+                    AppRow(
+                      label: grinders.userGrinders[index].grinder.name,
+                      icon: AppIcons.metricGrind,
+                      value: grinders.userGrinders[index].isPrimary ? 'основная' : null,
+                      divider: index < grinders.userGrinders.length - 1,
+                      onTap: () => context.router.push(const GrinderSelectRoute()),
+                    ),
+              ],
+            ),
+          ),
           const SizedBox(height: AppSpacing.s3),
           AppButton(
             label: grinders.userGrinders.isEmpty ? 'Выбрать кофемолку' : 'Изменить набор',
@@ -67,17 +83,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             onPressed: () => context.router.push(const GrinderSelectRoute()),
           ),
           const SectionTitle('Аккаунт'),
-          AppRow(
-            label: 'Выйти',
-            icon: AppIcons.uiUser,
-            onTap: () async {
-              await ref.read(authenticationStateNotifierProvider.notifier).logout();
-              if (context.mounted) {
-                await context.router.replaceAll([const AuthWelcomeRoute()]);
-              }
-            },
+          AppCard(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
+            child: AppRow(
+              label: 'Выйти',
+              icon: AppIcons.uiUser,
+              divider: false,
+              onTap: () async {
+                await ref.read(authenticationStateNotifierProvider.notifier).logout();
+                if (context.mounted) {
+                  await context.router.replaceAll([const AuthWelcomeRoute()]);
+                }
+              },
+            ),
           ),
-          const SizedBox(height: AppSpacing.s6),
         ],
       ),
     );
