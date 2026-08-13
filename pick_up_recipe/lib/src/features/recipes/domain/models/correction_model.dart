@@ -84,25 +84,75 @@ class CorrectionChange {
   String get toLabel => _format(to);
 }
 
+/// Одна проверка техники — пункт списка «Что проверить».
+class ConflictCheck {
+  const ConflictCheck({required this.iconKey, required this.title, required this.text});
+
+  /// Ключ иконки на клиенте — то же соглашение, что у справочников.
+  final String iconKey;
+
+  final String title;
+  final String text;
+
+  factory ConflictCheck.fromJson(Map<String, dynamic> json) => ConflictCheck(
+        iconKey: json['icon_key'] as String? ?? '',
+        title: json['title'] as String? ?? '',
+        text: json['text'] as String? ?? '',
+      );
+}
+
+/// Пара жалоб, тянущих параметры в разные стороны, — «кисло и горько сразу».
+///
+/// Это не ошибка ввода: человек действительно так чувствует. Ответ правил
+/// в этом случае не про цифры, а про технику, и тексты проверок зависят от
+/// группы метода (вопрос 16): «ровность таблетки» у эспрессо и «ровность
+/// шапки» у V60 — разные проверки.
+class CorrectionConflict {
+  const CorrectionConflict({
+    required this.complaints,
+    required this.explanation,
+    required this.checks,
+  });
+
+  final List<String> complaints;
+  final String explanation;
+  final List<ConflictCheck> checks;
+
+  factory CorrectionConflict.fromJson(Map<String, dynamic> json) => CorrectionConflict(
+        complaints: [
+          for (final complaint in (json['complaints'] as List<dynamic>? ?? []))
+            complaint.toString(),
+        ],
+        explanation: json['explanation'] as String? ?? '',
+        checks: [
+          for (final check in (json['checks'] as List<dynamic>? ?? []))
+            ConflictCheck.fromJson(check as Map<String, dynamic>),
+        ],
+      );
+}
+
 /// Предложение поправки целиком.
 class RecipeCorrection {
-  const RecipeCorrection({required this.changes, required this.checks});
+  const RecipeCorrection({required this.changes, required this.conflicts});
 
   final List<CorrectionChange> changes;
 
-  /// «Что проверить» — приходит, когда жалобы тянут параметр в разные стороны.
-  /// Тексты зависят от группы метода (вопрос 16).
-  final List<String> checks;
+  /// Конфликты жалоб. Раньше клиент читал поле `checks` с верхнего уровня —
+  /// сервер такого не шлёт, и список проверок всегда оказывался пустым.
+  final List<CorrectionConflict> conflicts;
 
   bool get isEmpty => changes.isEmpty;
+
+  bool get hasConflicts => conflicts.isNotEmpty;
 
   factory RecipeCorrection.fromJson(Map<String, dynamic> json) => RecipeCorrection(
         changes: [
           for (final change in (json['changes'] as List<dynamic>? ?? []))
             CorrectionChange.fromJson(change as Map<String, dynamic>),
         ],
-        checks: [
-          for (final check in (json['checks'] as List<dynamic>? ?? [])) check.toString(),
+        conflicts: [
+          for (final conflict in (json['conflicts'] as List<dynamic>? ?? []))
+            CorrectionConflict.fromJson(conflict as Map<String, dynamic>),
         ],
       );
 }

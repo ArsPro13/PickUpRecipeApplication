@@ -84,6 +84,16 @@ class _CorrectionReviewPageState extends ConsumerState<CorrectionReviewPage> {
     }
   }
 
+  /// Конфликт подтверждён: техника ни при чём, показываем цифры.
+  bool _conflictAccepted = false;
+
+  /// Конфликтная фаза активна: жалобы тянут в разные стороны, и прежде чем
+  /// двигать цифры, экран просит проверить технику (макеты S15/S16).
+  /// Тексты проверок приходят с бэка и зависят от группы метода: «ровность
+  /// таблетки» у эспрессо и «ровность шапки» у V60 — разные проверки.
+  bool get _inConflictPhase =>
+      (_correction?.hasConflicts ?? false) && !_conflictAccepted;
+
   @override
   Widget build(BuildContext context) {
     final correction = _correction;
@@ -106,7 +116,18 @@ class _CorrectionReviewPageState extends ConsumerState<CorrectionReviewPage> {
             isError: true,
             primaryAction: AppButton(label: 'Повторить', onPressed: _load),
           )
-        else if (correction == null || correction.isEmpty)
+        else if (_inConflictPhase) ...[
+          for (final conflict in correction!.conflicts) ...[
+            _ConflictPlate(conflict: conflict),
+            const SizedBox(height: AppSpacing.s4),
+            Text('Что проверить', style: context.texts.bodyMedium),
+            const SizedBox(height: AppSpacing.s2),
+            for (final check in conflict.checks) ...[
+              _CheckRow(check: check),
+              const SizedBox(height: AppSpacing.s2),
+            ],
+          ],
+        ] else if (correction == null || correction.isEmpty)
           const AppState(
             icon: AppIcons.uiCheck,
             title: 'Менять нечего',
@@ -118,37 +139,90 @@ class _CorrectionReviewPageState extends ConsumerState<CorrectionReviewPage> {
             _ChangeCard(change: change),
             const SizedBox(height: AppSpacing.s3),
           ],
-          if (correction.checks.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.s2),
-            Text('Что проверить', style: context.texts.bodyMedium),
-            const SizedBox(height: AppSpacing.s2),
-            for (final check in correction.checks) ...[
-              QuietSurface(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppIcon(
-                      AppIcons.uiInfo,
-                      size: AppSizes.icon20,
-                      color: context.colors.secondary,
-                    ),
-                    const SizedBox(width: AppSpacing.s3),
-                    Expanded(child: Text(check, style: context.texts.bodySmall)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s2),
-            ],
-          ],
         ],
       ],
       bottom: [
-        AppButton(
-          label: 'Готово',
-          kind: AppButtonKind.secondary,
-          onPressed: () => context.router.maybePop(),
-        ),
+        if (_inConflictPhase)
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: 'Всё так, поправьте',
+                  kind: AppButtonKind.secondary,
+                  onPressed: () => setState(() => _conflictAccepted = true),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s3),
+              Expanded(
+                child: AppButton(
+                  label: 'Перезаварю',
+                  onPressed: () => context.router.maybePop(),
+                ),
+              ),
+            ],
+          )
+        else
+          AppButton(
+            label: 'Готово',
+            kind: AppButtonKind.secondary,
+            onPressed: () => context.router.maybePop(),
+          ),
       ],
+    );
+  }
+}
+
+/// Жёлтая плашка конфликта: почему цифры сейчас — не ответ.
+class _ConflictPlate extends StatelessWidget {
+  const _ConflictPlate({required this.conflict});
+
+  final CorrectionConflict conflict;
+
+  @override
+  Widget build(BuildContext context) {
+    return QuietSurface(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppIcon(AppIcons.uiWarning, size: AppSizes.icon20, color: context.colors.tertiary),
+          const SizedBox(width: AppSpacing.s3),
+          Expanded(child: Text(conflict.explanation, style: context.texts.bodySmall)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Одна проверка техники: значок, заголовок, объяснение.
+class _CheckRow extends StatelessWidget {
+  const _CheckRow({required this.check});
+
+  final ConflictCheck check;
+
+  @override
+  Widget build(BuildContext context) {
+    return QuietSurface(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppIcon(
+            AppIcons.byKey(check.iconKey) ?? AppIcons.uiInfo,
+            size: AppSizes.icon20,
+            color: context.colors.secondary,
+          ),
+          const SizedBox(width: AppSpacing.s3),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(check.title, style: context.texts.bodyMedium),
+                const SizedBox(height: AppSpacing.s1),
+                Text(check.text, style: context.texts.bodySmall),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
