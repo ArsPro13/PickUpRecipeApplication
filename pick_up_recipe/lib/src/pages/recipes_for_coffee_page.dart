@@ -65,7 +65,7 @@ class _RecipesForCoffeePageState extends ConsumerState<RecipesForCoffeePage> {
           for (final method in group.methods)
             AppRow(
               label: method.name,
-              icon: AppIcons.byKey('method-${method.iconKey}') ?? AppIcons.methodHarioV60,
+              icon: AppIcons.method(method.iconKey),
               onTap: () => context.router.push(
                 ChoosingRecipeRoute(
                   packId: widget.packId ?? 0,

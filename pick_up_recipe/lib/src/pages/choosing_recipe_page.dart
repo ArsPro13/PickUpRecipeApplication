@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../routing/app_router.dart';
+import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
@@ -58,7 +59,14 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _load();
+      // Справочник нужен ради иконки метода: по диплинку сюда приходят
+      // мимо экрана выбора, и загрузить его больше некому.
+      if (ref.read(brewMethodsProvider).grouped.isEmpty) {
+        ref.read(brewMethodsProvider.notifier).load();
+      }
+    });
   }
 
   Future<void> _load() async {
@@ -145,8 +153,13 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
         child: Row(
           children: [
             AppIcon(
-              AppIcons.byKey('method-${(widget.method ?? '').replaceAll('_', '-')}') ??
-                  AppIcons.methodHarioV60,
+              // В руках только slug метода, а файлы лежат по icon_key —
+              // перевод знает справочник. Пока он не загружен, slug сам
+              // по себе верен для новых методов и даёт V60 для старых.
+              AppIcons.method(
+                ref.watch(brewMethodsProvider).iconKeyBySlug[widget.method] ??
+                    widget.method,
+              ),
               size: AppSizes.icon32,
               color: context.colors.secondary,
             ),

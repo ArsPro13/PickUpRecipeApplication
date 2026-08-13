@@ -46,7 +46,7 @@ class AuthWelcomePage extends StatelessWidget {
         Column(
           children: [
             AppIcon(
-              AppIcons.methodHarioV60,
+              AppIcons.methodV60,
               size: AppSizes.icon72,
               color: context.colors.primary,
             ),

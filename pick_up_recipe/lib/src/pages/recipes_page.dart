@@ -204,8 +204,7 @@ class _Header extends StatelessWidget {
           ),
           child: Center(
             child: AppIcon(
-              AppIcons.byKey('method-${group.methodIconKey.replaceAll('_', '-')}') ??
-                  AppIcons.methodHarioV60,
+              AppIcons.method(group.methodIconKey),
               size: AppSizes.icon20,
               color: accent,
             ),

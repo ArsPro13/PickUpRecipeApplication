@@ -17,11 +17,18 @@ class BrewMethodsState {
   const BrewMethodsState({
     this.status = BrewMethodsStatus.loading,
     this.grouped = const [],
+    this.iconKeyBySlug = const {},
     this.error,
   });
 
   final BrewMethodsStatus status;
   final List<GroupedMethods> grouped;
+
+  /// icon_key по slug метода. Рецепт хранит slug (`hario_v60`), иконки лежат
+  /// по icon_key (`v60`), и для двадцати методов этапа 1 они расходятся.
+  /// Экраны, у которых в руках только slug, переводят его здесь, а не гадают.
+  final Map<String, String> iconKeyBySlug;
+
   final String? error;
 }
 
@@ -38,6 +45,9 @@ class BrewMethodsNotifier extends StateNotifier<BrewMethodsState> {
       state = BrewMethodsState(
         status: BrewMethodsStatus.ready,
         grouped: groupMethods(methods, groups),
+        iconKeyBySlug: {
+          for (final method in methods) method.slug: method.iconKey,
+        },
       );
     } catch (error) {
       state = BrewMethodsState(status: BrewMethodsStatus.failed, error: error.toString());

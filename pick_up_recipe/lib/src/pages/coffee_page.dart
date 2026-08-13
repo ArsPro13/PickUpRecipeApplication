@@ -193,7 +193,7 @@ class _QuickStart extends StatelessWidget {
       child: Row(
         children: [
           AppIcon(
-            AppIcons.byKey('method-${method.iconKey}') ?? AppIcons.methodHarioV60,
+            AppIcons.method(method.iconKey),
             size: AppSizes.icon40,
             color: context.colors.primary,
           ),
@@ -281,7 +281,7 @@ class _MethodRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final icon = AppIcons.byKey('method-${method.iconKey}') ?? AppIcons.methodHarioV60;
+    final icon = AppIcons.method(method.iconKey);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.s2),
