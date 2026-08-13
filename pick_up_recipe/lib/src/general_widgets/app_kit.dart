@@ -7,6 +7,8 @@
 // Правило то же, что в вёрстке макетов: в экранах не должно быть ни одного
 // числа мимо AppSpacing/AppRadius/AppSizes.
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../themes/app_icons.dart';
@@ -38,21 +40,27 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final border = borderColor ?? (flat ? context.palette.border : null);
 
-    return Material(
-      color: context.colors.secondaryContainer,
-      borderRadius: AppRadius.medium,
-      elevation: flat ? 0 : 1,
-      shadowColor: context.palette.overlay,
-      child: InkWell(
-        onTap: onTap,
+    // Тень из шкалы токенов, а не Material elevation: у M3 первая ступень
+    // почти не видна на светлом фоне, и стопка карточек сливалась в один лист.
+    return DecoratedBox(
+      decoration: BoxDecoration(
         borderRadius: AppRadius.medium,
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.medium,
-            border: border == null ? null : Border.all(color: border),
+        boxShadow: flat ? null : context.shadows.level1,
+      ),
+      child: Material(
+        color: context.colors.secondaryContainer,
+        borderRadius: AppRadius.medium,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadius.medium,
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.medium,
+              border: border == null ? null : Border.all(color: border),
+            ),
+            child: child,
           ),
-          child: child,
         ),
       ),
     );
@@ -289,6 +297,7 @@ class AppRow extends StatelessWidget {
     this.icon,
     this.onTap,
     this.trailing,
+    this.divider = true,
   });
 
   final String label;
@@ -296,6 +305,10 @@ class AppRow extends StatelessWidget {
   final String? icon;
   final VoidCallback? onTap;
   final Widget? trailing;
+
+  /// Черта под строкой. Последней в списке она не нужна: висящая линия
+  /// читается как обрезанный список, которого нет.
+  final bool divider;
 
   @override
   Widget build(BuildContext context) {
@@ -305,7 +318,9 @@ class AppRow extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: AppSizes.tapTarget),
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.s3),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: context.palette.border)),
+          border: divider
+              ? Border(bottom: BorderSide(color: context.palette.border))
+              : null,
         ),
         child: Row(
           children: [
@@ -386,6 +401,83 @@ class AppState extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Прямоугольник с пунктирной обводкой.
+///
+/// Пунктира в `Border` у Flutter нет, поэтому он рисуется вручную. Нужен
+/// дважды и оба раза об одном: действие, которое создаёт новое, — «добавить
+/// шаг» в конструкторе и «своё» в листе типов. Сплошная рамка там читается
+/// как уже существующий элемент, а не как приглашение его завести.
+class DashedBorderBox extends StatelessWidget {
+  const DashedBorderBox({
+    super.key,
+    required this.child,
+    this.color,
+    this.borderRadius = AppRadius.medium,
+    this.onTap,
+    this.padding = const EdgeInsets.all(AppSpacing.s3),
+  });
+
+  final Widget child;
+  final Color? color;
+  final BorderRadius borderRadius;
+  final VoidCallback? onTap;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _DashedBorderPainter(
+        color: color ?? context.palette.border,
+        radius: borderRadius,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: borderRadius,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: borderRadius,
+          child: Padding(padding: padding, child: child),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  const _DashedBorderPainter({required this.color, required this.radius});
+
+  final Color color;
+  final BorderRadius radius;
+
+  /// Штрих и просвет подобраны так, чтобы на скруглении радиусом 12 не
+  /// собиралась сплошная дуга: на коротких штрихах пунктир перестаёт читаться.
+  static const double _dash = 6;
+  static const double _gap = 4;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final outline = Path()..addRRect(radius.toRRect(Offset.zero & size));
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = AppStroke.thin;
+
+    for (final metric in outline.computeMetrics()) {
+      var start = 0.0;
+      while (start < metric.length) {
+        final end = math.min(start + _dash, metric.length);
+        canvas.drawPath(metric.extractPath(start, end), paint);
+        start = end + _gap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedBorderPainter oldDelegate) {
+    return oldDelegate.color != color || oldDelegate.radius != radius;
   }
 }
 

@@ -85,9 +85,13 @@ class AppBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Панель не просто отчёркнута линией, а поднята над содержимым: под ней
+    // продолжается прокрутка, и тень объясняет, почему кнопка не уезжает.
     return Container(
       decoration: BoxDecoration(
+        color: context.colors.secondaryContainer,
         border: Border(top: BorderSide(color: context.palette.border)),
+        boxShadow: context.shadows.level3,
       ),
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: SafeArea(
@@ -136,13 +140,7 @@ class HeroSurface extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.colors.secondaryContainer,
         borderRadius: AppRadius.large,
-        boxShadow: [
-          BoxShadow(
-            color: context.palette.overlay.withValues(alpha: 0.10),
-            blurRadius: AppSpacing.s3,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: context.shadows.level2,
       ),
       child: child,
     );

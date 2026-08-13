@@ -15,6 +15,7 @@ import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
 import 'app_icon.dart';
+import 'app_surface.dart';
 
 class AppField extends StatefulWidget {
   const AppField({
@@ -102,18 +103,13 @@ class _AppFieldState extends State<AppField> {
             horizontal: AppSpacing.s4,
             vertical: AppSpacing.s1,
           ),
-          decoration: BoxDecoration(
-            // Вдавленная поверхность: поле утоплено, а не наклеено сверху.
-            color: context.colors.surface,
+          // Вдавленная поверхность: поле утоплено, а не наклеено сверху.
+          // Раньше тень лежала снаружи и поле выглядело приподнятым —
+          // ровно наоборот тому, что нарисовано в макете.
+          decoration: sunkenDecoration(
+            context,
             borderRadius: AppRadius.medium,
-            border: Border.all(color: borderColor),
-            boxShadow: [
-              BoxShadow(
-                color: context.palette.overlay.withValues(alpha: 0.10),
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
+            outline: borderColor,
           ),
           child: Row(
             children: [
@@ -372,10 +368,10 @@ class _CodeInputState extends State<CodeInput> {
     return AspectRatio(
       aspectRatio: 3 / 4,
       child: Container(
-        decoration: BoxDecoration(
-          color: context.colors.surface,
+        decoration: sunkenDecoration(
+          context,
           borderRadius: AppRadius.medium,
-          border: Border.all(color: borderColor),
+          outline: borderColor,
         ),
         alignment: Alignment.center,
         child: filled
