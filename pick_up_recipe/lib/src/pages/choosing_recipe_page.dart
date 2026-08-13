@@ -53,7 +53,6 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
 
   List<RecipeData> _recipes = const [];
   bool _loading = true;
-  bool _building = false;
   String? _error;
 
   @override
@@ -91,19 +90,6 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
         _error = error.toString();
         _loading = false;
       });
-    }
-  }
-
-  /// Собирает базовый рецепт метода под это зерно.
-  Future<void> _buildBase() async {
-    setState(() => _building = true);
-    try {
-      await _service.generateRecipe(widget.method ?? '', widget.packId);
-      await _load();
-    } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
-    } finally {
-      if (mounted) setState(() => _building = false);
     }
   }
 
@@ -149,40 +135,50 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
         title: 'Базовый',
         note: 'из справочника',
       ),
-      QuietSurface(
-        child: Row(
-          children: [
-            AppIcon(
-              // В руках только slug метода, а файлы лежат по icon_key —
-              // перевод знает справочник. Пока он не загружен, slug сам
-              // по себе верен для новых методов и даёт V60 для старых.
-              AppIcons.method(
-                ref.watch(brewMethodsProvider).iconKeyBySlug[widget.method] ??
-                    widget.method,
+      // Базовый рецепт теперь лежит в базе у каждого метода (миграция
+      // 20260813100000), поэтому строка ведёт на его экран, а не собирает
+      // рецепт конструктором по кнопке.
+      InkWell(
+        borderRadius: AppRadius.medium,
+        onTap: () => context.router.push(
+          RecipeBaseRoute(
+            method: widget.method ?? '',
+            methodName: widget.methodName,
+            pack: widget.pack,
+          ),
+        ),
+        child: QuietSurface(
+          child: Row(
+            children: [
+              AppIcon(
+                // В руках только slug метода, а файлы лежат по icon_key —
+                // перевод знает справочник. Пока он не загружен, slug сам
+                // по себе верен для новых методов и даёт V60 для старых.
+                AppIcons.method(
+                  ref.watch(brewMethodsProvider).iconKeyBySlug[widget.method] ??
+                      widget.method,
+                ),
+                size: AppSizes.icon32,
+                color: context.colors.secondary,
               ),
-              size: AppSizes.icon32,
-              color: context.colors.secondary,
-            ),
-            const SizedBox(width: AppSpacing.s3),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Рецепт метода', style: context.texts.bodyMedium),
-                  const SizedBox(height: AppSpacing.s1),
-                  Text('зерно не учитывает', style: context.texts.labelSmall),
-                ],
+              const SizedBox(width: AppSpacing.s3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Рецепт метода', style: context.texts.bodyMedium),
+                    const SizedBox(height: AppSpacing.s1),
+                    Text('зерно не учитывает', style: context.texts.labelSmall),
+                  ],
+                ),
               ),
-            ),
-            if (_building)
-              const SizedBox(
-                width: AppSizes.icon20,
-                height: AppSizes.icon20,
-                child: CircularProgressIndicator(strokeWidth: AppStroke.thick),
-              )
-            else
-              TextButton(onPressed: _buildBase, child: const Text('Собрать')),
-          ],
+              AppIcon(
+                AppIcons.uiForward,
+                size: AppSizes.icon20,
+                color: context.colors.secondary,
+              ),
+            ],
+          ),
         ),
       ),
 

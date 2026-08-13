@@ -40,6 +40,20 @@ class RecipeService {
     return null;
   }
 
+  /// Справочный рецепт метода — с него начинается ветка «у обжарщика нет
+  /// рецепта под ваш прибор». null — у метода нет базового рецепта.
+  Future<RecipeData?> getBaseRecipe(String device) async {
+    final response = await _apiClient.get('/recipe/base', {'device': device});
+
+    if (response.statusCode == 404) return null;
+    if (response.statusCode != 200) {
+      throw Exception('Базовый рецепт не пришёл: ${response.statusCode}');
+    }
+
+    final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    return RecipeData.fromResponse(RecipeResponseModel.fromJson(data));
+  }
+
   Future<List<RecipeData>?> getByParams({
     int? packId,
     int? grinderId,

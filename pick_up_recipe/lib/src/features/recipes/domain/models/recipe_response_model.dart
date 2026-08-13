@@ -7,7 +7,9 @@ part 'recipe_response_model.g.dart';
 class RecipeResponseModel {
   late int id;
 
-  @JsonKey(name: "pack_id")
+  // 0 — у рецепта нет пачки: так устроен справочный рецепт метода.
+  // null в JSON именно это и означает, а не ошибку данных.
+  @JsonKey(name: "pack_id", defaultValue: 0)
   late int packId;
 
   @JsonKey(name: "grinder_id")
