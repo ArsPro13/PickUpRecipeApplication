@@ -49,9 +49,17 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
     });
   }
 
-  void _openMethod(CoffeeMethod method, int packId) {
+  void _openMethod(CoffeeMethod method, PackData pack) {
     context.router.push(
-      ChoosingRecipeRoute(packId: packId, method: method.slug, methodName: method.name),
+      ChoosingRecipeRoute(
+        packId: pack.packId,
+        method: method.slug,
+        methodName: method.name,
+        // Пачка едет объектом: ниже по пути она нужна и шапке выбора, и
+        // экрану базового рецепта — без неё правка базового не знает,
+        // с какого зерна началась (C7).
+        pack: pack,
+      ),
     );
   }
 
@@ -184,7 +192,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           _QuickStart(
             method: state.lastBrewed!.method,
             date: state.lastBrewed!.date,
-            onStart: () => _openMethod(state.lastBrewed!.method, pack.packId),
+            onStart: () => _openMethod(state.lastBrewed!.method, pack),
           ),
         ],
         if (state.groups.isEmpty)
@@ -200,7 +208,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
             for (final method in group.methods)
               _MethodRow(
                 method: method,
-                onTap: () => _openMethod(method, pack.packId),
+                onTap: () => _openMethod(method, pack),
               ),
           ],
         ],

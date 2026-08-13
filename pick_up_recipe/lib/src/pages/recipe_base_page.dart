@@ -102,15 +102,21 @@ class _RecipeBasePageState extends ConsumerState<RecipeBasePage> {
     return null;
   }
 
-  /// Рецепт, уходящий дальше — на заваривание или в конструктор.
+  /// Рецепт для конструктора: пачка подставлена.
   ///
-  /// Пачка подставляется здесь: у базового рецепта её нет, а копия при
-  /// правке обязана знать, с какого зерна началась (ветка C7 на бэке).
-  RecipeData _outgoing() {
+  /// У базового рецепта пачки нет, а копия при правке обязана знать,
+  /// с какого зерна началась (ветка C7 на бэке).
+  RecipeData _forEdit() {
     final recipe = _recipe!;
     if (widget.pack != null) recipe.packId = widget.pack!.packId;
     return recipe;
   }
+
+  /// Рецепт для заваривания: как есть, с packId == 0.
+  ///
+  /// Ноль — признак базового: по нему экран оценки понимает, что оценку
+  /// нельзя вешать на общий рецепт, и сначала заводит свою копию (C7).
+  RecipeData _forBrew() => _recipe!;
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +166,7 @@ class _RecipeBasePageState extends ConsumerState<RecipeBasePage> {
                       label: 'Заварить',
                       icon: AppIcons.uiPlay,
                       onPressed: () => context.router.push(
-                        BrewRoute(recipe: _outgoing(), pack: widget.pack),
+                        BrewRoute(recipe: _forBrew(), pack: widget.pack),
                       ),
                     ),
                   ),
@@ -170,7 +176,7 @@ class _RecipeBasePageState extends ConsumerState<RecipeBasePage> {
                     kind: AppButtonKind.secondary,
                     block: false,
                     onPressed: () => context.router.push(
-                      RecipeBuilderRoute(recipe: _outgoing(), pack: widget.pack),
+                      RecipeBuilderRoute(recipe: _forEdit(), pack: widget.pack),
                     ),
                   ),
                 ],

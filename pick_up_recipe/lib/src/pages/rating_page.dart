@@ -77,6 +77,15 @@ class _RatingPageState extends ConsumerState<RatingPage> {
     });
 
     try {
+      // Базовый рецепт (packId == 0) общий, и оценку на него не повесить:
+      // владельца у него нет. Первая оценка и есть «первая правка» из C7 —
+      // заводим свою копию с пачкой, с которой пришли, и оцениваем её.
+      // Дальше вся цепочка — поправка, правки — идёт по копии.
+      if (widget.recipe.packId == 0 && widget.pack != null) {
+        widget.recipe.packId = widget.pack!.packId;
+        widget.recipe.id = await _service.evolveRecipe(widget.recipe);
+      }
+
       await _service.postEstimation(
         recipeId: widget.recipe.id,
         // Развёрнутые оси необязательны. Если их не трогали, все шесть идут

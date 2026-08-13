@@ -476,6 +476,7 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
       descriptorName: reference == null
           ? null
           : grindDescriptorName(reference, widget.recipe.grindDescriptor),
+      inCup: _template == BrewTemplate.shot,
     );
   }
 
@@ -1222,11 +1223,14 @@ class BrewParams {
     RecipeData recipe, {
     String? grinderName,
     String? descriptorName,
+    bool inCup = false,
   }) {
     final dose = recipe.load > 0 ? '${formatAmount(recipe.load)} г' : null;
     final step = recipe.grindStep.trim();
     final grind = step.isEmpty ? null : '$step щ.';
-    final water = recipe.water > 0 ? '${recipe.water} мл' : null;
+    // У эспрессо-семейства вода — вес напитка в чашке, и «мл» тут врали бы
+    // дважды: и единицей, и смыслом (water_meaning = in_cup).
+    final water = recipe.water > 0 ? '${recipe.water} ${inCup ? 'г' : 'мл'}' : null;
     final temperature = recipe.temperature == null
         ? null
         : '${formatAmount(recipe.temperature!)} °C';
