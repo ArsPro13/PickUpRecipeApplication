@@ -13,6 +13,7 @@ import '../../routing/app_router.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/application/state/active_packs_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../themes/app_icons.dart';
@@ -34,6 +35,10 @@ class _PacksPageState extends ConsumerState<PacksPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(activePacksNotifierProvider.notifier).fetchPacks();
       ref.read(grinderStateProvider.notifier).loadUserGrinders();
+      // История нужна ради двух вещей: меток «чем эту пачку заваривали» и
+      // того, какая пачка открыта. Провайдер общий со второй вкладкой, так
+      // что запрос один на обе.
+      ref.read(recipesListProvider.notifier).load();
     });
   }
 
@@ -47,7 +52,10 @@ class _PacksPageState extends ConsumerState<PacksPage> {
         actions: const [GrinderButton(), SizedBox(width: AppSpacing.s4)],
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(activePacksNotifierProvider.notifier).fetchPacks(),
+        onRefresh: () async {
+          await ref.read(activePacksNotifierProvider.notifier).fetchPacks();
+          await ref.read(recipesListProvider.notifier).load();
+        },
         child: _body(packs),
       ),
     );
@@ -98,9 +106,15 @@ class _PacksPageState extends ConsumerState<PacksPage> {
           );
         }
 
+        final groups = ref.watch(recipesListProvider).groups;
         final pack = packs.activePacks[index];
+
         return PackCard(
           pack: pack,
+          methods: methodsOfPack(groups, pack.packId),
+          // Открытая — та, которой заваривали последней. Отдельного признака
+          // в схеме нет, а «с ней и заваривают» — ровно это и значит.
+          highlighted: groups.isNotEmpty && groups.first.packId == pack.packId,
           onTap: () => context.router.push(CoffeeRoute(packId: pack.packId)),
         );
       },
@@ -161,54 +175,165 @@ class GrinderButton extends ConsumerWidget {
   }
 }
 
-/// Карточка пачки: фото, название, обжарщик и дата.
+/// Карточка пачки: фото, название, обжарщик с датой и строка меток.
+///
+/// Высота задана жёстко. Карточки с метками и без них обязаны стоять в одну
+/// линейку, иначе список выглядит рваным; а раз высота жёсткая, каждая строка
+/// внутри — ровно одна строка, длинное режется многоточием. Перенос здесь
+/// ломал бы не свою карточку, а высоту всего списка.
 class PackCard extends StatelessWidget {
-  const PackCard({super.key, required this.pack, this.onTap});
+  const PackCard({
+    super.key,
+    required this.pack,
+    this.onTap,
+    this.methods = const [],
+    this.highlighted = false,
+  });
 
   final PackData pack;
   final VoidCallback? onTap;
 
+  /// Приборы, которыми эту пачку уже заваривали.
+  final List<String> methods;
+
+  /// Открытая пачка — та, с которой заваривают сейчас. Обводка акцентом.
+  final bool highlighted;
+
+  /// Фото 72 при 3:4 даёт 96, плюс отступы — ровно высота карточки.
+  static const double _photoWidth = AppSpacing.s18;
+  static const double _height = AppSpacing.s18 + AppSpacing.s12;
+
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(AppSpacing.s3),
-      child: Row(
-        children: [
-          _Photo(image: pack.packImage),
-          const SizedBox(width: AppSpacing.s3),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  pack.packName,
-                  style: context.texts.bodyMedium,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: AppSpacing.s1),
-                Text(
-                  [pack.packCountry, pack.packVariety].where((it) => it.isNotEmpty).join(' · '),
-                  style: context.texts.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+    final done = !pack.isActive;
+    final border = highlighted
+        ? context.colors.primary
+        : (done ? context.palette.border : null);
+
+    final card = SizedBox(
+      height: _height,
+      child: AppCard(
+        onTap: onTap,
+        // Допитая пачка уходит в тень, но не прячется: по ней ещё смотрят
+        // рецепты — плоская рамка вместо поднятой поверхности.
+        flat: done,
+        borderColor: border,
+        padding: const EdgeInsets.all(AppSpacing.s3),
+        child: Row(
+          children: [
+            _Photo(image: pack.packImage),
+            const SizedBox(width: AppSpacing.s4),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    pack.packName,
+                    style: context.texts.bodyMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.s1),
+                  Text(
+                    _subtitle(),
+                    style: context.texts.labelSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  _Tags(methods: methods, done: done),
+                ],
+              ),
             ),
+            const SizedBox(width: AppSpacing.s2),
+            AppIcon(
+              AppIcons.uiForward,
+              size: AppSizes.icon20,
+              color: context.colors.secondary,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Приглушается карточка целиком, а не каждая строка по отдельности:
+    // иначе рамка остаётся яркой и спорит с содержимым.
+    return done ? Opacity(opacity: 0.55, child: card) : card;
+  }
+
+  /// «Tasty Coffee · 28 июля». Без обжарщика остаётся страна и сорт: пустая
+  /// строка на его месте читалась бы как потерянные данные.
+  String _subtitle() {
+    final date = formatRecipeDate(pack.packDate);
+    if (pack.roasterName.isNotEmpty) return '${pack.roasterName} · $date';
+
+    final origin = [pack.packCountry, pack.packVariety].where((it) => it.isNotEmpty).join(' · ');
+    return origin.isEmpty ? date : '$origin · $date';
+  }
+}
+
+/// Строка меток. Держит высоту, даже когда меток нет: иначе имя пачки
+/// у карточки без меток съезжает относительно соседей.
+class _Tags extends StatelessWidget {
+  const _Tags({required this.methods, required this.done});
+
+  final List<String> methods;
+  final bool done;
+
+  @override
+  Widget build(BuildContext context) {
+    final labels = [if (done) 'допита', ...methods];
+
+    return Container(
+      height: AppSpacing.s6,
+      alignment: Alignment.centerLeft,
+      margin: const EdgeInsets.only(top: AppSpacing.s2),
+      // Не переносим и не растём: лишняя метка уезжает за край, а не роняет
+      // вниз соседнюю карточку.
+      child: ClipRect(
+        child: OverflowBox(
+          alignment: Alignment.centerLeft,
+          maxWidth: double.infinity,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final label in labels) ...[
+                _Tag(label),
+                const SizedBox(width: AppSpacing.s2),
+              ],
+            ],
           ),
-          AppIcon(
-            AppIcons.uiForward,
-            size: AppSizes.icon20,
-            color: context.colors.secondary,
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
+class _Tag extends StatelessWidget {
+  const _Tag(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s2,
+        vertical: AppSpacing.s1 / 2,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.rounded,
+        border: Border.all(color: context.palette.border),
+      ),
+      child: Text(label, style: context.texts.labelSmall, maxLines: 1),
+    );
+  }
+}
+
 /// Фото пачки. Приходит base64-строкой прямо из БД.
+///
+/// Пропорция 3:4 — как на упаковке: квадрат обрезает высокие пачки по самому
+/// заметному, по имени зерна.
 class _Photo extends StatelessWidget {
   const _Photo({required this.image});
 
@@ -217,11 +342,11 @@ class _Photo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: AppSpacing.s16,
-      width: AppSpacing.s12,
+      width: PackCard._photoWidth,
+      height: PackCard._photoWidth * 4 / 3,
       decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: AppRadius.small,
+        color: context.palette.border,
+        borderRadius: AppRadius.medium,
       ),
       clipBehavior: Clip.antiAlias,
       child: PackImage(base64Image: image),

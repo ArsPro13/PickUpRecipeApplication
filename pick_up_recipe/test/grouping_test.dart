@@ -4,6 +4,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/application/brew_methods_state.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/domain/brew_method.dart';
+import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_list_state.dart';
+import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 
 BrewMethod method(String slug, {int? groupId, int sortOrder = 0}) {
   return BrewMethod(
@@ -76,6 +78,77 @@ void main() {
 
     test('пустой справочник даёт пустой список, а не падение', () {
       expect(groupMethods(const [], const []), isEmpty);
+    });
+  });
+
+  group('история завариваний', () {
+    RecipeData recipe(int packId, String device, String date) => RecipeData(
+          id: '$packId$device$date'.hashCode,
+          device: device,
+          date: date,
+          packId: packId,
+          grinderId: 1,
+          grindStep: '26',
+          grindSubStep: null,
+          water: 250,
+          time: 150,
+          temperature: 93,
+          load: 15,
+          title: '',
+          notes: '',
+          grindDescriptor: '',
+          agitationLevel: null,
+          steps: const [],
+        );
+
+    test('свежая группа стоит первой, свежая версия — сверху стопки', () {
+      final result = groupRecipes([
+        recipe(1, 'hario_v60', '2026-07-20T08:00:00Z'),
+        recipe(2, 'chemex', '2026-08-01T08:00:00Z'),
+        recipe(1, 'hario_v60', '2026-07-28T08:00:00Z'),
+      ]);
+
+      expect(result.first.method, 'chemex');
+      expect(result.last.latest.date, '2026-07-28T08:00:00Z');
+      expect(result.last.depth, 1);
+    });
+
+    test('значок и имя прибора берутся из справочника', () {
+      final result = groupRecipes(
+        [recipe(1, 'hario_v60', '2026-08-01T08:00:00Z')],
+        methodNames: {'hario_v60': 'Hario V60'},
+        methodIcons: {'hario_v60': 'hario-v60'},
+      );
+
+      expect(result.single.methodName, 'Hario V60');
+      expect(result.single.methodIconKey, 'hario-v60');
+    });
+
+    test('без справочника вместо имени идёт slug, а не пустота', () {
+      final result = groupRecipes([recipe(1, 'hario_v60', '2026-08-01T08:00:00Z')]);
+
+      expect(result.single.methodName, 'hario_v60');
+      expect(result.single.methodIconKey, 'hario_v60');
+    });
+
+    test('метки пачки — приборы из её истории, каждый по разу', () {
+      final groups = groupRecipes(
+        [
+          recipe(1, 'hario_v60', '2026-08-01T08:00:00Z'),
+          recipe(1, 'hario_v60', '2026-07-20T08:00:00Z'),
+          recipe(1, 'chemex', '2026-07-25T08:00:00Z'),
+          recipe(2, 'aeropress', '2026-07-25T08:00:00Z'),
+        ],
+        methodNames: {
+          'hario_v60': 'Hario V60',
+          'chemex': 'Chemex',
+          'aeropress': 'AeroPress',
+        },
+      );
+
+      expect(methodsOfPack(groups, 1), ['Hario V60', 'Chemex']);
+      expect(methodsOfPack(groups, 2), ['AeroPress']);
+      expect(methodsOfPack(groups, 3), isEmpty);
     });
   });
 }
