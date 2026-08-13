@@ -118,12 +118,150 @@ class AppColors extends ThemeExtension<AppColors> {
   }
 }
 
+/// Шкала подъёма поверхностей.
+///
+/// Три ступени, а не одна тень: экран не должен быть стопкой одинаковых белых
+/// прямоугольников. Главный блок поднят, обычный лежит, подсказка не поднята
+/// вовсе. До этого в приложении была ровно одна тень, прописанная числами в
+/// `HeroSurface`, — отсюда и ощущение плоского листа.
+///
+/// Свет падает сверху, поэтому вертикальное смещение всегда положительное.
+/// Значения — из `design/tokens/tokens.css`, две тени на ступень: близкая
+/// даёт контакт с поверхностью, дальняя — сам подъём.
+@immutable
+class AppShadows extends ThemeExtension<AppShadows> {
+  const AppShadows({
+    required this.level1,
+    required this.level2,
+    required this.level3,
+    required this.sunkenTint,
+  });
+
+  /// Лежит на поверхности: карточка списка, строка метода.
+  final List<BoxShadow> level1;
+
+  /// Поднято: главный блок экрана, рамка заваривания.
+  final List<BoxShadow> level2;
+
+  /// Парит: нижняя панель, лист поверх экрана.
+  final List<BoxShadow> level3;
+
+  /// Вдавленность: поле ввода, дорожка шкалы.
+  ///
+  /// У Flutter нет внутренней тени, поэтому вдавленность рисуется градиентом
+  /// от этого цвета к прозрачному по верхней кромке — см. [SunkenDecoration].
+  final Color sunkenTint;
+
+  static const AppShadows light = AppShadows(
+    level1: [
+      BoxShadow(color: Color(0x0F20242D), blurRadius: 2, offset: Offset(0, 1)),
+      BoxShadow(color: Color(0x1420242D), blurRadius: 3, offset: Offset(0, 1)),
+    ],
+    level2: [
+      BoxShadow(color: Color(0x1220242D), blurRadius: 6, offset: Offset(0, 2)),
+      BoxShadow(color: Color(0x1420242D), blurRadius: 14, offset: Offset(0, 6)),
+    ],
+    level3: [
+      BoxShadow(color: Color(0x1A20242D), blurRadius: 16, offset: Offset(0, 6)),
+      BoxShadow(color: Color(0x1F20242D), blurRadius: 34, offset: Offset(0, 14)),
+    ],
+    sunkenTint: Color(0x1A20242D),
+  );
+
+  /// На тёмном фоне подъём читается не тенью, а более светлой поверхностью,
+  /// поэтому тени глубже, но мягче.
+  static const AppShadows dark = AppShadows(
+    level1: [
+      BoxShadow(color: Color(0x4D000000), blurRadius: 2, offset: Offset(0, 1)),
+      BoxShadow(color: Color(0x3D000000), blurRadius: 3, offset: Offset(0, 1)),
+    ],
+    level2: [
+      BoxShadow(color: Color(0x57000000), blurRadius: 6, offset: Offset(0, 2)),
+      BoxShadow(color: Color(0x4D000000), blurRadius: 14, offset: Offset(0, 6)),
+    ],
+    level3: [
+      BoxShadow(color: Color(0x66000000), blurRadius: 16, offset: Offset(0, 6)),
+      BoxShadow(color: Color(0x5C000000), blurRadius: 34, offset: Offset(0, 14)),
+    ],
+    sunkenTint: Color(0x59000000),
+  );
+
+  @override
+  AppShadows copyWith({
+    List<BoxShadow>? level1,
+    List<BoxShadow>? level2,
+    List<BoxShadow>? level3,
+    Color? sunkenTint,
+  }) {
+    return AppShadows(
+      level1: level1 ?? this.level1,
+      level2: level2 ?? this.level2,
+      level3: level3 ?? this.level3,
+      sunkenTint: sunkenTint ?? this.sunkenTint,
+    );
+  }
+
+  @override
+  AppShadows lerp(ThemeExtension<AppShadows>? other, double t) {
+    if (other is! AppShadows) return this;
+    return AppShadows(
+      level1: BoxShadow.lerpList(level1, other.level1, t)!,
+      level2: BoxShadow.lerpList(level2, other.level2, t)!,
+      level3: BoxShadow.lerpList(level3, other.level3, t)!,
+      sunkenTint: Color.lerp(sunkenTint, other.sunkenTint, t)!,
+    );
+  }
+}
+
+/// Оттенки текстуры бумаги.
+///
+/// Фон не идеально ровный: две едва заметные точечные сетки со сдвигом дают
+/// ощущение крафтовой бумаги вместо залитого одним цветом прямоугольника.
+@immutable
+class PaperColors extends ThemeExtension<PaperColors> {
+  const PaperColors({required this.tint, required this.tintSecond});
+
+  final Color tint;
+  final Color tintSecond;
+
+  static const PaperColors light = PaperColors(
+    tint: Color(0x0A8E6341),
+    tintSecond: Color(0x068E6341),
+  );
+
+  /// В тёмной теме тёплый оттенок уходит в тёплый уголь: сам коричневый
+  /// на почти чёрном выглядит грязным пятном.
+  static const PaperColors dark = PaperColors(
+    tint: Color(0x08FFECD6),
+    tintSecond: Color(0x05FFECD6),
+  );
+
+  @override
+  PaperColors copyWith({Color? tint, Color? tintSecond}) {
+    return PaperColors(
+      tint: tint ?? this.tint,
+      tintSecond: tintSecond ?? this.tintSecond,
+    );
+  }
+
+  @override
+  PaperColors lerp(ThemeExtension<PaperColors>? other, double t) {
+    if (other is! PaperColors) return this;
+    return PaperColors(
+      tint: Color.lerp(tint, other.tint, t)!,
+      tintSecond: Color.lerp(tintSecond, other.tintSecond, t)!,
+    );
+  }
+}
+
 /// Короткий доступ к расширениям темы из виджетов.
 extension AppThemeContext on BuildContext {
   ColorScheme get colors => Theme.of(this).colorScheme;
   TextTheme get texts => Theme.of(this).textTheme;
   MetricColors get metrics => Theme.of(this).extension<MetricColors>()!;
   AppColors get palette => Theme.of(this).extension<AppColors>()!;
+  AppShadows get shadows => Theme.of(this).extension<AppShadows>()!;
+  PaperColors get paper => Theme.of(this).extension<PaperColors>()!;
 }
 
 /// Типографика. Семь ступеней вместо десяти захардкоженных размеров.
@@ -139,15 +277,22 @@ TextTheme _textTheme(Color primary, Color secondary) {
   );
 }
 
-ThemeData _theme(ColorScheme scheme, AppColors palette) {
+ThemeData _theme(
+  ColorScheme scheme,
+  AppColors palette,
+  AppShadows shadows,
+  PaperColors paper,
+) {
   final texts = _textTheme(scheme.onSurface, scheme.secondary);
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: scheme.surface,
+    // Прозрачный, потому что фон рисует PaperBackground под всем приложением:
+    // залитый цветом Scaffold закрыл бы текстуру.
+    scaffoldBackgroundColor: Colors.transparent,
     textTheme: texts,
-    extensions: <ThemeExtension<dynamic>>[MetricColors.standard, palette],
+    extensions: <ThemeExtension<dynamic>>[MetricColors.standard, palette, shadows, paper],
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
@@ -236,6 +381,27 @@ ThemeData _theme(ColorScheme scheme, AppColors palette) {
       showDragHandle: true,
     ),
     dividerTheme: DividerThemeData(color: palette.border, thickness: AppStroke.thin, space: 0),
+    // Без этого переключатель и ползунок берут зелёный по умолчанию M3 —
+    // цвет, которого в наборе нет вовсе: зелёный у нас означает «успех».
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? scheme.secondaryContainer
+            : scheme.secondary,
+      ),
+      trackColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected) ? scheme.primary : palette.border,
+      ),
+      trackOutlineColor: WidgetStateProperty.all(palette.border),
+    ),
+    sliderTheme: SliderThemeData(
+      activeTrackColor: scheme.primary,
+      inactiveTrackColor: palette.border,
+      thumbColor: scheme.primary,
+      overlayColor: scheme.primary.withValues(alpha: 0.12),
+      valueIndicatorColor: scheme.primary,
+      valueIndicatorTextStyle: texts.labelSmall?.copyWith(color: scheme.secondaryContainer),
+    ),
     chipTheme: ChipThemeData(
       backgroundColor: scheme.secondaryContainer,
       side: BorderSide(color: palette.border),
@@ -267,6 +433,8 @@ ThemeData get lightTheme => _theme(
         error: Color(0xFFF44336),
       ),
       AppColors.light,
+      AppShadows.light,
+      PaperColors.light,
     );
 
 ThemeData get darkTheme => _theme(
@@ -281,4 +449,6 @@ ThemeData get darkTheme => _theme(
         error: Color(0xFFF44336),
       ),
       AppColors.dark,
+      AppShadows.dark,
+      PaperColors.dark,
     );

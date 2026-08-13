@@ -6,6 +6,7 @@ import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/prefs_key.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
+import 'package:pick_up_recipe/src/general_widgets/app_surface.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 
 void main() async {
@@ -56,6 +57,9 @@ class _MyAppState extends ConsumerState<MyApp> {
       routerConfig: AppRouter(ref).config(),
       theme: lightTheme,
       darkTheme: darkTheme,
+      // Текстура бумаги лежит под всем приложением, а не под каждым экраном:
+      // Scaffold прозрачный, и фон рисуется здесь один раз.
+      builder: (context, child) => PaperBackground(child: child ?? const SizedBox.shrink()),
     );
   }
 }

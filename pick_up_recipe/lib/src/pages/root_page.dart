@@ -52,6 +52,7 @@ class _TabBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.colors.secondaryContainer,
         border: Border(top: BorderSide(color: context.palette.border)),
+        boxShadow: context.shadows.level3,
       ),
       child: SafeArea(
         top: false,
