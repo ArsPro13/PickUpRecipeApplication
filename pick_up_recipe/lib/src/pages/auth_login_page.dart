@@ -8,6 +8,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../config.dart';
 import '../../routing/app_router.dart';
 import '../features/authentication/domain/auth_rules.dart';
 import '../features/authentication/provider/authentication_state_notifier.dart';
@@ -29,8 +30,13 @@ class AuthLoginPage extends ConsumerStatefulWidget {
 }
 
 class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
-  late final TextEditingController _email = TextEditingController(text: widget.email ?? '');
-  final TextEditingController _password = TextEditingController();
+  // В отладочной сборке поля приходят заполненными демо-аккаунтом: иначе
+  // каждый запуск начинается с набора почты и пароля руками. Почта из
+  // маршрута важнее — на вход приводит «забыли пароль» с конкретным адресом.
+  late final TextEditingController _email =
+      TextEditingController(text: widget.email ?? Config.devLoginEmail);
+  late final TextEditingController _password =
+      TextEditingController(text: Config.devLoginPassword);
 
   String? _emailError;
   String? _passwordError;
