@@ -1,49 +1,101 @@
 // СГЕНЕРИРОВАНО scripts/extract-icons.js — НЕ ПРАВИТЬ РУКАМИ.
 //
-// Источник — design/tokens/icons.js, 109 иконок (ADR 0005).
+// Источник — design/tokens/icons.js, 161 иконок (ADR 0005).
 // Перегенерировать: node scripts/extract-icons.js
 
 /// Пути к иконкам набора. Ключи совпадают с id в спрайте макетов.
 abstract final class AppIcons {
   static const String _base = 'assets/icons';
 
-  // ── method (20) ──
-  static const String methodHarioV60 = '$_base/ico-method-hario-v60.svg';
-  static const String methodChemex = '$_base/ico-method-chemex.svg';
-  static const String methodKalitaWave = '$_base/ico-method-kalita-wave.svg';
+  // ── method (72) ──
+  static const String methodV60 = '$_base/ico-method-v60.svg';
   static const String methodOrigami = '$_base/ico-method-origami.svg';
+  static const String methodChemex = '$_base/ico-method-chemex.svg';
   static const String methodApril = '$_base/ico-method-april.svg';
-  static const String methodHarioSwitch = '$_base/ico-method-hario-switch.svg';
+  static const String methodKono = '$_base/ico-method-kono.svg';
+  static const String methodMelitta = '$_base/ico-method-melitta.svg';
+  static const String methodDaiso = '$_base/ico-method-daiso.svg';
+  static const String methodLilydrip = '$_base/ico-method-lilydrip.svg';
+  static const String methodKoar = '$_base/ico-method-koar.svg';
+  static const String methodTorch = '$_base/ico-method-torch.svg';
+  static const String methodPhoenix = '$_base/ico-method-phoenix.svg';
+  static const String methodGina = '$_base/ico-method-gina.svg';
+  static const String methodFunnex = '$_base/ico-method-funnex.svg';
+  static const String methodPourigami = '$_base/ico-method-pourigami.svg';
+  static const String methodWoodneck = '$_base/ico-method-woodneck.svg';
+  static const String methodPourOver = '$_base/ico-method-pour-over.svg';
+  static const String methodKalita = '$_base/ico-method-kalita.svg';
+  static const String methodBatch = '$_base/ico-method-batch.svg';
+  static const String methodKalitaFlat = '$_base/ico-method-kalita-flat.svg';
+  static const String methodOrea = '$_base/ico-method-orea.svg';
+  static const String methodStagg = '$_base/ico-method-stagg.svg';
+  static const String methodTricolate = '$_base/ico-method-tricolate.svg';
+  static const String methodPulsar = '$_base/ico-method-pulsar.svg';
+  static const String methodMelodrip = '$_base/ico-method-melodrip.svg';
+  static const String methodCafflanoKompact = '$_base/ico-method-cafflano-kompact.svg';
+  static const String methodCafflanoKlassic = '$_base/ico-method-cafflano-klassic.svg';
+  static const String methodDripBag = '$_base/ico-method-drip-bag.svg';
+  static const String methodPhin = '$_base/ico-method-phin.svg';
+  static const String methodEvaSolo = '$_base/ico-method-eva-solo.svg';
+  static const String methodSowden = '$_base/ico-method-sowden.svg';
+  static const String methodKarlsbader = '$_base/ico-method-karlsbader.svg';
+  static const String methodFrenchPress = '$_base/ico-method-french-press.svg';
   static const String methodClever = '$_base/ico-method-clever.svg';
+  static const String methodSwitch = '$_base/ico-method-switch.svg';
+  static const String methodSiphon = '$_base/ico-method-siphon.svg';
+  static const String methodCezve = '$_base/ico-method-cezve.svg';
+  static const String methodEspro = '$_base/ico-method-espro.svg';
+  static const String methodVacone = '$_base/ico-method-vacone.svg';
+  static const String methodDelter = '$_base/ico-method-delter.svg';
+  static const String methodCupping = '$_base/ico-method-cupping.svg';
+  static const String methodEspresso = '$_base/ico-method-espresso.svg';
+  static const String methodFlair = '$_base/ico-method-flair.svg';
+  static const String methodCafelatRobot = '$_base/ico-method-cafelat-robot.svg';
+  static const String methodLeverpresso = '$_base/ico-method-leverpresso.svg';
+  static const String methodRok = '$_base/ico-method-rok.svg';
+  static const String methodHandpresso = '$_base/ico-method-handpresso.svg';
+  static const String methodKompresso = '$_base/ico-method-kompresso.svg';
+  static const String methodTrinityZero = '$_base/ico-method-trinity-zero.svg';
+  static const String methodTrinityOne = '$_base/ico-method-trinity-one.svg';
+  static const String methodCapsule = '$_base/ico-method-capsule.svg';
+  static const String methodPicopresso = '$_base/ico-method-picopresso.svg';
+  static const String methodNanopresso = '$_base/ico-method-nanopresso.svg';
+  static const String methodMinipresso = '$_base/ico-method-minipresso.svg';
+  static const String methodStaresso = '$_base/ico-method-staresso.svg';
+  static const String methodStaressoMini = '$_base/ico-method-staresso-mini.svg';
+  static const String methodStaressoPro = '$_base/ico-method-staresso-pro.svg';
+  static const String methodPipamoka = '$_base/ico-method-pipamoka.svg';
+  static const String methodCuppamoka = '$_base/ico-method-cuppamoka.svg';
   static const String methodAeropress = '$_base/ico-method-aeropress.svg';
   static const String methodAeropressInverted = '$_base/ico-method-aeropress-inverted.svg';
-  static const String methodFrenchPress = '$_base/ico-method-french-press.svg';
   static const String methodMoka = '$_base/ico-method-moka.svg';
-  static const String methodCezve = '$_base/ico-method-cezve.svg';
-  static const String methodSiphon = '$_base/ico-method-siphon.svg';
-  static const String methodBatchBrewer = '$_base/ico-method-batch-brewer.svg';
+  static const String methodPercolator = '$_base/ico-method-percolator.svg';
+  static const String methodPrismo = '$_base/ico-method-prismo.svg';
+  static const String methodBrikka = '$_base/ico-method-brikka.svg';
+  static const String methodNeapolitan = '$_base/ico-method-neapolitan.svg';
+  static const String methodNineBarista = '$_base/ico-method-nine-barista.svg';
   static const String methodColdBrew = '$_base/ico-method-cold-brew.svg';
   static const String methodColdDrip = '$_base/ico-method-cold-drip.svg';
-  static const String methodPercolator = '$_base/ico-method-percolator.svg';
-  static const String methodPhin = '$_base/ico-method-phin.svg';
-  static const String methodDripBag = '$_base/ico-method-drip-bag.svg';
-  static const String methodEspresso = '$_base/ico-method-espresso.svg';
+  static const String methodColdAero = '$_base/ico-method-cold-aero.svg';
+  static const String methodToddy = '$_base/ico-method-toddy.svg';
+  static const String methodSock = '$_base/ico-method-sock.svg';
+  static const String methodBripe = '$_base/ico-method-bripe.svg';
 
   // ── step (17) ──
   static const String stepPour = '$_base/ico-step-pour.svg';
   static const String stepBloom = '$_base/ico-step-bloom.svg';
-  static const String stepWait = '$_base/ico-step-wait.svg';
+  static const String stepDilute = '$_base/ico-step-dilute.svg';
+  static const String stepAddIce = '$_base/ico-step-add-ice.svg';
   static const String stepStir = '$_base/ico-step-stir.svg';
   static const String stepSwirl = '$_base/ico-step-swirl.svg';
-  static const String stepPress = '$_base/ico-step-press.svg';
   static const String stepInvert = '$_base/ico-step-invert.svg';
   static const String stepFlip = '$_base/ico-step-flip.svg';
-  static const String stepRemoveFilter = '$_base/ico-step-remove-filter.svg';
+  static const String stepPress = '$_base/ico-step-press.svg';
+  static const String stepGrind = '$_base/ico-step-grind.svg';
   static const String stepOpenValve = '$_base/ico-step-open-valve.svg';
   static const String stepCloseValve = '$_base/ico-step-close-valve.svg';
-  static const String stepGrind = '$_base/ico-step-grind.svg';
-  static const String stepAddIce = '$_base/ico-step-add-ice.svg';
-  static const String stepDilute = '$_base/ico-step-dilute.svg';
+  static const String stepRemoveFilter = '$_base/ico-step-remove-filter.svg';
+  static const String stepWait = '$_base/ico-step-wait.svg';
   static const String stepServe = '$_base/ico-step-serve.svg';
   static const String stepNote = '$_base/ico-step-note.svg';
   static const String stepCustom = '$_base/ico-step-custom.svg';
@@ -131,40 +183,92 @@ abstract final class AppIcons {
   /// Все иконки набора: по этому списку тест проверяет, что каждый
   /// файл на месте, а pubspec их видит.
   static const List<String> all = <String>[
-    '$_base/ico-method-hario-v60.svg',
-    '$_base/ico-method-chemex.svg',
-    '$_base/ico-method-kalita-wave.svg',
+    '$_base/ico-method-v60.svg',
     '$_base/ico-method-origami.svg',
+    '$_base/ico-method-chemex.svg',
     '$_base/ico-method-april.svg',
-    '$_base/ico-method-hario-switch.svg',
+    '$_base/ico-method-kono.svg',
+    '$_base/ico-method-melitta.svg',
+    '$_base/ico-method-daiso.svg',
+    '$_base/ico-method-lilydrip.svg',
+    '$_base/ico-method-koar.svg',
+    '$_base/ico-method-torch.svg',
+    '$_base/ico-method-phoenix.svg',
+    '$_base/ico-method-gina.svg',
+    '$_base/ico-method-funnex.svg',
+    '$_base/ico-method-pourigami.svg',
+    '$_base/ico-method-woodneck.svg',
+    '$_base/ico-method-pour-over.svg',
+    '$_base/ico-method-kalita.svg',
+    '$_base/ico-method-batch.svg',
+    '$_base/ico-method-kalita-flat.svg',
+    '$_base/ico-method-orea.svg',
+    '$_base/ico-method-stagg.svg',
+    '$_base/ico-method-tricolate.svg',
+    '$_base/ico-method-pulsar.svg',
+    '$_base/ico-method-melodrip.svg',
+    '$_base/ico-method-cafflano-kompact.svg',
+    '$_base/ico-method-cafflano-klassic.svg',
+    '$_base/ico-method-drip-bag.svg',
+    '$_base/ico-method-phin.svg',
+    '$_base/ico-method-eva-solo.svg',
+    '$_base/ico-method-sowden.svg',
+    '$_base/ico-method-karlsbader.svg',
+    '$_base/ico-method-french-press.svg',
     '$_base/ico-method-clever.svg',
+    '$_base/ico-method-switch.svg',
+    '$_base/ico-method-siphon.svg',
+    '$_base/ico-method-cezve.svg',
+    '$_base/ico-method-espro.svg',
+    '$_base/ico-method-vacone.svg',
+    '$_base/ico-method-delter.svg',
+    '$_base/ico-method-cupping.svg',
+    '$_base/ico-method-espresso.svg',
+    '$_base/ico-method-flair.svg',
+    '$_base/ico-method-cafelat-robot.svg',
+    '$_base/ico-method-leverpresso.svg',
+    '$_base/ico-method-rok.svg',
+    '$_base/ico-method-handpresso.svg',
+    '$_base/ico-method-kompresso.svg',
+    '$_base/ico-method-trinity-zero.svg',
+    '$_base/ico-method-trinity-one.svg',
+    '$_base/ico-method-capsule.svg',
+    '$_base/ico-method-picopresso.svg',
+    '$_base/ico-method-nanopresso.svg',
+    '$_base/ico-method-minipresso.svg',
+    '$_base/ico-method-staresso.svg',
+    '$_base/ico-method-staresso-mini.svg',
+    '$_base/ico-method-staresso-pro.svg',
+    '$_base/ico-method-pipamoka.svg',
+    '$_base/ico-method-cuppamoka.svg',
     '$_base/ico-method-aeropress.svg',
     '$_base/ico-method-aeropress-inverted.svg',
-    '$_base/ico-method-french-press.svg',
     '$_base/ico-method-moka.svg',
-    '$_base/ico-method-cezve.svg',
-    '$_base/ico-method-siphon.svg',
-    '$_base/ico-method-batch-brewer.svg',
+    '$_base/ico-method-percolator.svg',
+    '$_base/ico-method-prismo.svg',
+    '$_base/ico-method-brikka.svg',
+    '$_base/ico-method-neapolitan.svg',
+    '$_base/ico-method-nine-barista.svg',
     '$_base/ico-method-cold-brew.svg',
     '$_base/ico-method-cold-drip.svg',
-    '$_base/ico-method-percolator.svg',
-    '$_base/ico-method-phin.svg',
-    '$_base/ico-method-drip-bag.svg',
-    '$_base/ico-method-espresso.svg',
+    '$_base/ico-method-cold-aero.svg',
+    '$_base/ico-method-toddy.svg',
+    '$_base/ico-method-sock.svg',
+    '$_base/ico-method-bripe.svg',
     '$_base/ico-step-pour.svg',
     '$_base/ico-step-bloom.svg',
-    '$_base/ico-step-wait.svg',
+    '$_base/ico-step-dilute.svg',
+    '$_base/ico-step-add-ice.svg',
     '$_base/ico-step-stir.svg',
     '$_base/ico-step-swirl.svg',
-    '$_base/ico-step-press.svg',
     '$_base/ico-step-invert.svg',
     '$_base/ico-step-flip.svg',
-    '$_base/ico-step-remove-filter.svg',
+    '$_base/ico-step-press.svg',
+    '$_base/ico-step-grind.svg',
     '$_base/ico-step-open-valve.svg',
     '$_base/ico-step-close-valve.svg',
-    '$_base/ico-step-grind.svg',
-    '$_base/ico-step-add-ice.svg',
-    '$_base/ico-step-dilute.svg',
+    '$_base/ico-step-remove-filter.svg',
+    '$_base/ico-step-wait.svg',
     '$_base/ico-step-serve.svg',
     '$_base/ico-step-note.svg',
     '$_base/ico-step-custom.svg',
@@ -242,27 +346,36 @@ abstract final class AppIcons {
     '$_base/ico-state-offline.svg',
   ];
 
-  /// Путь к иконке по её ключу из справочника (icon_key с бэкенда).
-  ///
-  /// Бэкенд отдаёт ключ вроде 'step-bloom' или 'v60' — без префикса ico- и
-  /// без расширения. Неизвестный ключ даёт null, и вызывающий рисует
-  /// запасной значок: пустой квадрат вместо иконки — худший из ответов.
   /// Значок типа шага по ключу справочника.
   ///
   /// Справочник хранит семантический ключ — «bloom», «open_valve», — а файлы
-  /// в спрайте лежат с пространством имён и через дефис: `ico-step-open-valve`.
-  /// Тот же перевод руками делают экраны кофе и заваривания.
+  /// в спрайте лежат с пространством имён: ico-step-open-valve.
   ///
   /// Незнакомый ключ даёт значок своего шага: пустой квадрат вместо иконки —
   /// худший из ответов (ответ C12).
   static String step(String? key) {
-    return byKey('step-${(key ?? '').replaceAll('_', '-')}') ?? stepCustom;
+    return byKey('step-${key ?? ''}') ?? stepCustom;
   }
 
+  /// Значок метода заваривания по icon_key справочника.
+  ///
+  /// Незнакомый ключ даёт V60 — опорный прибор всей ветки.
+  static String method(String? key) {
+    return byKey('method-${key ?? ''}') ?? methodV60;
+  }
+
+  /// Путь к иконке по её ключу из справочника (icon_key с бэкенда).
+  ///
+  /// Бэкенд отдаёт ключ вроде 'step-bloom' или 'v60' — без префикса ico- и
+  /// без расширения. Подчёркивание и дефис равнозначны: справочник пишет
+  /// open_valve, файлы лежат через дефис, и помнить об этом на каждом
+  /// экране — способ однажды забыть. Неизвестный ключ даёт null, и
+  /// вызывающий рисует запасной значок.
   static String? byKey(String? key) {
     if (key == null || key.isEmpty) return null;
+    final name = key.replaceAll('_', '-');
     for (final path in all) {
-      if (path.endsWith('/ico-$key.svg')) return path;
+      if (path.endsWith('/ico-$name.svg')) return path;
     }
     return null;
   }
