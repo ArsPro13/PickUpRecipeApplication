@@ -90,7 +90,7 @@ class _AppButtonState extends State<AppButton>
     };
 
     if (!(widget.isActive ?? true)) {
-      bgColor = bgColor.withOpacity(0.5);
+      bgColor = bgColor.withValues(alpha: 0.5);
     }
 
     return GestureDetector(
