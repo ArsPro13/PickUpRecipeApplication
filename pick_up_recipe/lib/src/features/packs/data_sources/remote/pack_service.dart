@@ -9,8 +9,58 @@ import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart'
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_request_model.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_response_model.dart';
 
+/// Что нашлось по коду с упаковки.
+sealed class CodeResolution {
+  const CodeResolution();
+}
+
+/// Кофе жив: код ведёт на пачку.
+class CodeFound extends CodeResolution {
+  const CodeFound({required this.packId, required this.packName, required this.roasterName});
+
+  final int packId;
+  final String packName;
+  final String roasterName;
+}
+
+/// Код существует, но кофе снят с продажи. Пачка на полке никуда не делась,
+/// и рецепты по ней остаются доступны (DECISIONS §2.3).
+class CodeWithdrawn extends CodeResolution {
+  const CodeWithdrawn({required this.packId, required this.packName, required this.roasterName});
+
+  final int packId;
+  final String packName;
+  final String roasterName;
+}
+
+/// Такого кода нет.
+class CodeNotFound extends CodeResolution {
+  const CodeNotFound();
+}
+
 class PackService {
   final ApiClient _apiClient = GetIt.instance<ApiClient>();
+
+  /// Что стоит за кодом с упаковки: пачка, снятая позиция или ничего.
+  Future<CodeResolution> resolveCode(String code) async {
+    final response = await _apiClient.get('/packs/by_code', {'code': code});
+
+    if (response.statusCode == 404 || response.statusCode == 400) {
+      return const CodeNotFound();
+    }
+    if (response.statusCode != 200 && response.statusCode != 403) {
+      throw Exception('Код не проверился: ${response.statusCode}');
+    }
+
+    final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    final packId = (data['pack_id'] as num?)?.toInt() ?? 0;
+    final packName = data['pack_name'] as String? ?? '';
+    final roasterName = data['roaster_name'] as String? ?? '';
+
+    return response.statusCode == 403
+        ? CodeWithdrawn(packId: packId, packName: packName, roasterName: roasterName)
+        : CodeFound(packId: packId, packName: packName, roasterName: roasterName);
+  }
 
   Future<List<PackData>?> getPacks({
     String? name,

@@ -17,6 +17,7 @@ import '../../routing/app_router.dart';
 import '../features/codes/application/coffee_state.dart';
 import '../features/codes/domain/pack_code.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/last_brew_cache.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
@@ -63,39 +64,89 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
       body: switch (state.status) {
         CoffeeStatus.loading => const Center(child: CircularProgressIndicator()),
         CoffeeStatus.notFound => _notFound(),
-        CoffeeStatus.failed => AppState(
-            icon: AppIcons.stateError,
-            title: 'Не удалось открыть кофе',
-            description: state.error,
-            isError: true,
-            primaryAction: AppButton(
-              label: 'Повторить',
-              onPressed: () => ref
-                  .read(coffeeStateProvider.notifier)
-                  .open(code: widget.code, packId: widget.packId),
-            ),
-          ),
+        CoffeeStatus.withdrawn => _withdrawn(state),
+        CoffeeStatus.failed => _failed(state),
         CoffeeStatus.ready => _ready(state),
       },
     );
   }
 
-  /// Код не найден. Не тупик: у человека на руках пачка, и он пришёл сюда
-  /// не просто так — предлагаем собрать рецепт по справочнику.
+  /// Такого кода нет (S11). Проверять символы бессмысленно — контрольный
+  /// символ уже сошёлся, значит код набран верно и его правда нет.
   Widget _notFound() {
-    return AppState(
-      icon: AppIcons.stateError,
-      title: 'Код не найден',
-      description: widget.code == null
-          ? 'Такого кофе нет в системе'
-          : 'Кода ${PackCode.format(widget.code!)} нет в системе. '
-              'Возможно, обжарщик ещё не завёл рецепт под эту партию',
-      isError: true,
-      primaryAction: AppButton(
-        label: 'Ввести код заново',
-        kind: AppButtonKind.secondary,
-        onPressed: () => context.router.maybePop(),
+    final code = widget.code;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s5,
+        AppSpacing.s8,
+        AppSpacing.s5,
+        AppSpacing.s8,
       ),
+      children: [
+        AppState(
+          icon: AppIcons.stateError,
+          title: 'Такого кода нет',
+          description: code == null
+              ? 'Такого кофе нет в системе.'
+              : 'Код набран без опечаток — контрольный символ сходится, — '
+                  'но в системе его нет. Возможно, обжарщик ещё не выложил '
+                  'эту партию.',
+        ),
+        if (code != null) ...[
+          const SizedBox(height: AppSpacing.s3),
+          Center(
+            child: Text(
+              PackCode.format(code),
+              style: context.texts.titleMedium?.copyWith(letterSpacing: 2),
+            ),
+          ),
+        ],
+        const SizedBox(height: AppSpacing.s6),
+        AppButton(
+          label: 'Сканировать ещё раз',
+          icon: AppIcons.uiScan,
+          onPressed: () => context.router.maybePop(),
+        ),
+        const SizedBox(height: AppSpacing.s3),
+        AppButton(
+          label: 'Ввести снова',
+          kind: AppButtonKind.secondary,
+          onPressed: () => context.router.maybePop(),
+        ),
+      ],
+    );
+  }
+
+  /// Кофе снят с продажи, а пачка чужая — показать нечего, кроме имени (S12).
+  Widget _withdrawn(CoffeeState state) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s5,
+        AppSpacing.s4,
+        AppSpacing.s5,
+        AppSpacing.s8,
+      ),
+      children: [
+        _WithdrawnPlate(name: state.withdrawnName, roaster: state.withdrawnRoaster),
+        const SizedBox(height: AppSpacing.s6),
+        AppButton(
+          label: 'К моим пачкам',
+          kind: AppButtonKind.secondary,
+          onPressed: () => context.router.maybePop(),
+        ),
+      ],
+    );
+  }
+
+  /// Сеть не ответила (S13). Если в памяти лежит свежий рецепт — по нему
+  /// можно заваривать прямо сейчас, об этом и говорим.
+  Widget _failed(CoffeeState state) {
+    return _OfflineFallback(
+      error: state.error,
+      onRetry: () => ref
+          .read(coffeeStateProvider.notifier)
+          .open(code: widget.code, packId: widget.packId),
     );
   }
 
@@ -111,6 +162,12 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
         AppSpacing.s8,
       ),
       children: [
+        // Пачка на полке никуда не делась: снятие с продажи — обычный случай,
+        // и рецепты остаются доступны (DECISIONS §2.3). Плашка, а не тупик.
+        if (state.withdrawn) ...[
+          _WithdrawnPlate(name: pack.packName, roaster: ''),
+          const SizedBox(height: AppSpacing.s4),
+        ],
         _PackHeader(pack: pack),
         if (descriptors.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.s4),
@@ -148,6 +205,181 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           ],
         ],
       ],
+    );
+  }
+}
+
+/// «Этой партии больше нет в продаже» — жёлтая плашка, не тупик (S12).
+class _WithdrawnPlate extends StatelessWidget {
+  const _WithdrawnPlate({required this.name, required this.roaster});
+
+  final String name;
+  final String roaster;
+
+  @override
+  Widget build(BuildContext context) {
+    final what = [name, roaster].where((it) => it.isNotEmpty).join(' · ');
+
+    return QuietSurface(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppIcon(AppIcons.uiInfo, size: AppSizes.icon20, color: context.colors.tertiary),
+          const SizedBox(width: AppSpacing.s3),
+          Expanded(
+            child: Text.rich(
+              TextSpan(children: [
+                TextSpan(
+                  text: 'Этой партии больше нет в продаже. ',
+                  style: context.texts.bodySmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                TextSpan(
+                  text: 'Обжарщик снял её${what.isEmpty ? '' : ' ($what)'} — обычно '
+                      'это значит, что зерно кончилось. Рецепты остаются: заварить '
+                      'пачку, которая уже стоит у вас на полке, ничто не мешает.',
+                ),
+              ]),
+              style: context.texts.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Сети нет, но заваривать можно: из памяти достаётся последний рецепт (S13).
+class _OfflineFallback extends StatefulWidget {
+  const _OfflineFallback({required this.onRetry, this.error});
+
+  final VoidCallback onRetry;
+  final String? error;
+
+  @override
+  State<_OfflineFallback> createState() => _OfflineFallbackState();
+}
+
+class _OfflineFallbackState extends State<_OfflineFallback> {
+  CachedBrew? _cached;
+  bool _checked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    LastBrewCache.load().then((cached) {
+      if (!mounted) return;
+      setState(() {
+        _cached = cached;
+        _checked = true;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cached = _cached;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s5,
+        AppSpacing.s4,
+        AppSpacing.s5,
+        AppSpacing.s8,
+      ),
+      children: [
+        QuietSurface(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppIcon(AppIcons.stateOffline, size: AppSizes.icon20, color: context.colors.tertiary),
+              const SizedBox(width: AppSpacing.s3),
+              Expanded(
+                child: Text(
+                  cached == null
+                      ? 'Сети нет, и сохранённого рецепта в памяти тоже: '
+                          'заваривать пока не из чего.'
+                      : 'Сети нет. В памяти лежит рецепт, сохранённый '
+                          '${_when(cached.savedAt)}, — заваривать по нему можно. '
+                          'Обновится сам, когда появится связь.',
+                  style: context.texts.bodySmall,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s4),
+        Text('Что сейчас нельзя', style: context.texts.bodyMedium),
+        const SizedBox(height: AppSpacing.s2),
+        const _OfflineRow(
+          icon: AppIcons.uiScan,
+          title: 'Сканировать новую пачку',
+          note: 'код проверяется на сервере',
+        ),
+        const _OfflineRow(
+          icon: AppIcons.uiStar,
+          title: 'Отправить оценку',
+          note: 'поставить можно, отправится позже',
+        ),
+        const _OfflineRow(
+          icon: AppIcons.uiRefresh,
+          title: 'Получить поправку',
+          note: 'считает сервер, не телефон',
+        ),
+        const SizedBox(height: AppSpacing.s6),
+        if (_checked && cached != null) ...[
+          AppButton(
+            label: 'Заварить по сохранённому',
+            icon: AppIcons.uiPlay,
+            onPressed: () => context.router.push(
+              BrewRoute(recipe: cached.recipe, pack: cached.pack),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s3),
+        ],
+        AppButton(
+          label: 'Повторить',
+          kind: AppButtonKind.secondary,
+          onPressed: widget.onRetry,
+        ),
+      ],
+    );
+  }
+
+  static String _when(DateTime savedAt) {
+    const months = [
+      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+    ];
+    return '${savedAt.day} ${months[savedAt.month - 1]}';
+  }
+}
+
+class _OfflineRow extends StatelessWidget {
+  const _OfflineRow({required this.icon, required this.title, required this.note});
+
+  final String icon;
+  final String title;
+  final String note;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s2),
+      child: Row(
+        children: [
+          AppIcon(icon, size: AppSizes.icon20, color: context.colors.secondary),
+          const SizedBox(width: AppSpacing.s3),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: context.texts.bodySmall),
+                Text(note, style: context.texts.labelSmall),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

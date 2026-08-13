@@ -8,7 +8,7 @@ import '../../recipes/data_sources/remote/recipe_service.dart';
 import '../../recipes/domain/models/recipe_data_model.dart';
 import '../domain/pack_code.dart';
 
-enum CoffeeStatus { loading, ready, notFound, failed }
+enum CoffeeStatus { loading, ready, notFound, withdrawn, failed }
 
 /// Метод заваривания в списке страницы кофе.
 class CoffeeMethod {
@@ -42,6 +42,9 @@ class CoffeeState {
     this.groups = const [],
     this.lastBrewed,
     this.error,
+    this.withdrawn = false,
+    this.withdrawnName = '',
+    this.withdrawnRoaster = '',
   });
 
   final CoffeeStatus status;
@@ -54,6 +57,15 @@ class CoffeeState {
   final ({CoffeeMethod method, String date})? lastBrewed;
 
   final String? error;
+
+  /// Кофе снят с продажи, но пачка открылась (она уже на полке): экран
+  /// показывает её как обычно, добавив плашку. Это не то же самое, что
+  /// status == withdrawn — тот случай для чужой пачки, которую не открыть.
+  final bool withdrawn;
+
+  /// Имя и обжарщик снятой позиции — для экрана, где пачки нет.
+  final String withdrawnName;
+  final String withdrawnRoaster;
 }
 
 /// Открывает страницу кофе по коду с упаковки или по своей пачке.
@@ -70,22 +82,35 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
   Future<void> open({String? code, int? packId}) async {
     state = const CoffeeState();
 
-    if (code != null && code.isNotEmpty) {
-      // Ручка поиска кофе по коду появляется вместе с кабинетом обжарщика
-      // (этап 7): пока код ведёт в то же «не найдено», что и чужая пачка,
-      // но проверка контрольного символа уже работает и отличает опечатку
-      // от честно ненайденного кода.
-      state = const CoffeeState(status: CoffeeStatus.notFound);
-      return;
-    }
+    var withdrawn = false;
+    var withdrawnName = '';
+    var withdrawnRoaster = '';
 
-    if (packId == null) {
-      state = const CoffeeState(status: CoffeeStatus.notFound);
-      return;
-    }
+    var targetPackId = packId;
 
     try {
-      final pack = await _packs.getPackById(packId);
+      if (code != null && code.isNotEmpty) {
+        // Код разбирает сервер: три исхода — пачка, «снят с продажи», ничего.
+        switch (await _packs.resolveCode(code)) {
+          case CodeFound(packId: final found):
+            targetPackId = found;
+          case CodeNotFound():
+            state = const CoffeeState(status: CoffeeStatus.notFound);
+            return;
+          case CodeWithdrawn(packId: final found, :final packName, :final roasterName):
+            withdrawn = true;
+            withdrawnName = packName;
+            withdrawnRoaster = roasterName;
+            targetPackId = found;
+        }
+      }
+
+      if (targetPackId == null) {
+        state = const CoffeeState(status: CoffeeStatus.notFound);
+        return;
+      }
+
+      final pack = await _packs.getPackById(targetPackId);
       if (pack == null) {
         state = const CoffeeState(status: CoffeeStatus.notFound);
         return;
@@ -93,15 +118,27 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
 
       // Пачка обязательна, список методов — нет: без него экран покажет
       // зерно и скажет, что способы не открылись, вместо того чтобы упасть.
-      final (groups, last) = await _loadMethods(packId);
+      final (groups, last) = await _loadMethods(targetPackId);
 
       state = CoffeeState(
         status: CoffeeStatus.ready,
         pack: pack,
         groups: groups,
         lastBrewed: last,
+        withdrawn: withdrawn,
       );
     } catch (error) {
+      // Снятая позиция с чужой пачкой не открывается по правам — но это не
+      // ошибка сети: показываем «снят с продажи» с тем, что о нём известно.
+      if (withdrawn) {
+        state = CoffeeState(
+          status: CoffeeStatus.withdrawn,
+          withdrawn: true,
+          withdrawnName: withdrawnName,
+          withdrawnRoaster: withdrawnRoaster,
+        );
+        return;
+      }
       state = CoffeeState(status: CoffeeStatus.failed, error: error.toString());
     }
   }
