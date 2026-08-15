@@ -44,3 +44,11 @@ flutter:
     # 109 иконок набора (ADR 0005). Генерируются из спрайта макетов:
     # node scripts/extract-icons.js
     - assets/icons/
+
+  # Roboto в ассетах — ради офлайна: веб-движок иначе тянет шрифт с
+  # fonts.gstatic.com, и без сети текст не рисуется. Секция обязана жить
+  # в паре с самим файлом ассета: файл без секции в сборку не попадает.
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
