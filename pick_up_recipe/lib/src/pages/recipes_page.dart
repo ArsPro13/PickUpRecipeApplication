@@ -1,16 +1,14 @@
 // Экран 07 «Мои рецепты» — вторая вкладка.
 //
-// Цепочка версий выглядит физической стопкой карточек: сверху последняя, из-под
-// неё торчат края прошлых. Толщина стопки и есть число поправок — считать
-// нечего, слова «версия 4» не нужны нигде. Рецепт с четырьмя правками
-// физически толще одноразового, и это видно раньше, чем прочитано.
+// Группа — пара «кофе + метод» (ответ Q23b), а не цепочка prev_id/next_id: на
+// экране это выглядит одинаково, но владелец выбрал пару. Внутри группы версии
+// листаются вбок: прошлые лежат справа, край следующей карточки виден всегда,
+// поэтому пролистнуть догадываются без подписи.
 //
-// Глубже трёх краёв стопка не растёт: четыре и больше уже не читаются как
-// «несколько прошлых», а выглядят списком, который забыли закрыть. Всё, что не
-// поместилось, сворачивается в счётчик на нижнем крае.
-//
-// Группа — пара «кофе + метод» (ответ Q23b), а не цепочка prev_id/next_id:
-// на экране это выглядит одинаково, но владелец выбрал пару.
+// Раньше версии лежали стопкой с торчащими краями: толщина стопки читалась
+// как число правок, но добраться до прошлой версии можно было только точным
+// тычком в узкую полоску. Прокрутка отвечает на тот же вопрос и попадает
+// пальцем с первого раза.
 //
 // Чего здесь нет: оценки. Она лежит в `/recipe/estimations` по одному запросу
 // на рецепт, и ради звезды в списке платить запросом за карточку рано —
@@ -31,13 +29,13 @@ import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
 import 'packs_page.dart';
 
-/// Высота карточки и глубина выступа края. Одна шкала на весь экран — от неё
-/// считается всё остальное, поэтому список не разъезжается.
-const double _cardHeight = AppSpacing.s18 + AppSpacing.s12 + AppSpacing.s2;
-const double _peek = AppSpacing.s6;
+/// Высота карточки версии. Одна шкала на весь экран — от неё считается
+/// остальное, поэтому список не разъезжается.
+const double _cardHeight = 170;
 
-/// Больше трёх краёв стопка не показывает.
-const int _maxPeek = 3;
+/// Ширина страницы прокрутки долей экрана: остаток — это край следующей
+/// версии. Без него прокрутка ничем себя не выдаёт.
+const double _pageFraction = 0.92;
 
 @RoutePage()
 class RecipesPage extends ConsumerStatefulWidget {
@@ -121,7 +119,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.s5,
         AppSpacing.s4,
-        AppSpacing.s5,
+        0,
         AppSpacing.s5,
       ),
       itemCount: state.groups.length,
@@ -131,7 +129,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
           group: group,
           pack: byId[group.packId],
           // Единственный главный элемент экрана — верхняя карточка первой
-          // стопки. Поднимать все значит не поднять ни одну.
+          // группы. Поднимать все значит не поднять ни одну.
           hero: index == 0,
           first: index == 0,
         );
@@ -140,7 +138,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
   }
 }
 
-/// Одна группа: шапка и стопка версий под ней.
+/// Одна группа: шапка и лента версий под ней.
 class _Group extends StatefulWidget {
   const _Group({
     required this.group,
@@ -159,11 +157,22 @@ class _Group extends StatefulWidget {
 }
 
 class _GroupState extends State<_Group> {
-  bool _expanded = false;
+  late final PageController _pages = PageController(
+    viewportFraction: _pageFraction,
+  );
+
+  /// Версия, которая сейчас перед глазами. Нужна подписи «2 из 4» и точкам.
+  int _current = 0;
+
+  @override
+  void dispose() {
+    _pages.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final group = widget.group;
+    final versions = widget.group.versions;
 
     return Container(
       padding: EdgeInsets.only(top: widget.first ? 0 : AppSpacing.s4),
@@ -175,19 +184,37 @@ class _GroupState extends State<_Group> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _Header(
-            group: group,
-            pack: widget.pack,
-            expanded: _expanded,
-            onToggle: group.depth == 0
-                ? null
-                : () => setState(() => _expanded = !_expanded),
+          // Отступ справа только у шапки: лента карточек обязана уходить
+          // под край экрана, иначе непонятно, что там есть продолжение.
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.s5),
+            child: _Header(group: widget.group, pack: widget.pack),
           ),
           const SizedBox(height: AppSpacing.s2),
-          if (_expanded)
-            _Unstacked(group: group, pack: widget.pack, hero: widget.hero)
-          else
-            _Stack(group: group, pack: widget.pack, hero: widget.hero),
+          SizedBox(
+            height: _cardHeight,
+            child: PageView.builder(
+              controller: _pages,
+              // Без этого первая и последняя карточки встают по центру, и
+              // лента выглядит съехавшей относительно всего остального.
+              padEnds: false,
+              onPageChanged: (index) => setState(() => _current = index),
+              itemCount: versions.length,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.s3),
+                child: _VersionCard(
+                  version: versions[index],
+                  pack: widget.pack,
+                  hero: widget.hero && index == 0,
+                  latest: index == 0,
+                ),
+              ),
+            ),
+          ),
+          if (versions.length > 1) ...[
+            const SizedBox(height: AppSpacing.s2),
+            _Pager(count: versions.length, index: _current),
+          ],
           const SizedBox(height: AppSpacing.s4),
         ],
       ),
@@ -197,17 +224,10 @@ class _GroupState extends State<_Group> {
 
 /// Шапка группы: значок прибора в кружке, «кофе · метод» и число версий.
 class _Header extends StatelessWidget {
-  const _Header({
-    required this.group,
-    required this.pack,
-    required this.expanded,
-    required this.onToggle,
-  });
+  const _Header({required this.group, required this.pack});
 
   final RecipeGroup group;
   final PackData? pack;
-  final bool expanded;
-  final VoidCallback? onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -235,8 +255,7 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Название не обрезается: длинное переносится на две строки,
-              // кнопка и стопка подстраиваются по высоте.
+              // Название не обрезается: длинное переносится на две строки.
               Text(
                 _title(),
                 style: context.texts.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -245,21 +264,6 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        // Тач-таргет 48 есть только там, где есть глубина.
-        if (onToggle != null)
-          SizedBox(
-            height: AppSizes.tapTarget,
-            width: AppSizes.tapTarget,
-            child: IconButton(
-              onPressed: onToggle,
-              tooltip: expanded ? 'Сложить стопку' : 'Разложить стопку',
-              icon: AppIcon(
-                expanded ? AppIcons.uiChevronUp : AppIcons.uiChevronDown,
-                size: AppSizes.icon20,
-                color: context.colors.secondary,
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -280,174 +284,134 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// Стопка: верхняя карточка и до трёх краёв под ней.
-class _Stack extends StatelessWidget {
-  const _Stack({required this.group, required this.pack, required this.hero});
+/// Где мы в ленте версий: точки и подпись словами.
+///
+/// Точки без подписи читаются как украшение, подпись без точек — как текст,
+/// который не к чему привязать. Вместе они говорят «здесь есть что листать».
+class _Pager extends StatelessWidget {
+  const _Pager({required this.count, required this.index});
 
-  final RecipeGroup group;
-  final PackData? pack;
-  final bool hero;
-
-  @override
-  Widget build(BuildContext context) {
-    final hidden = group.versions.skip(1).toList();
-    final edges = hidden.length > _maxPeek ? _maxPeek : hidden.length;
-
-    return SizedBox(
-      height: _cardHeight + _peek * edges,
-      child: Stack(
-        children: [
-          // Края рисуются с дальнего: ближний должен лечь поверх.
-          for (var depth = edges; depth >= 1; depth--)
-            Positioned(
-              top: _peek * depth,
-              left: AppSpacing.s1 * depth,
-              right: AppSpacing.s1 * depth,
-              height: _cardHeight,
-              child: Opacity(
-                opacity: 1 - 0.1 * (depth - 1),
-                child: _Edge(
-                  // Нижний край показывает счётчик, если версий больше, чем
-                  // краёв: остальное сворачивается в одну строку.
-                  label: depth == edges && hidden.length > _maxPeek
-                      ? _restLabel(hidden)
-                      : _edgeLabel(hidden[depth - 1]),
-                  counter: depth == edges && hidden.length > _maxPeek,
-                ),
-              ),
-            ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: _cardHeight,
-            child: _TopCard(version: group.latest, pack: pack, hero: hero),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _edgeLabel(RecipeVersion version) {
-    final parts = [
-      formatRecipeDate(version.date),
-      if (version.temperatureC != null) '${version.temperatureC!.toStringAsFixed(0)} °C',
-      _formatTime(version.timeSec),
-    ];
-    return parts.join(' · ');
-  }
-
-  String _restLabel(List<RecipeVersion> hidden) {
-    final rest = hidden.length - (_maxPeek - 1);
-    final oldest = hidden.last;
-    return 'ещё $rest ${_versionWord(rest)}, с ${formatRecipeDate(oldest.date)}';
-  }
-}
-
-/// Край прошлой версии: наружу выходит только нижняя полоса.
-class _Edge extends StatelessWidget {
-  const _Edge({required this.label, required this.counter});
-
-  final String label;
-  final bool counter;
+  final int count;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.bottomLeft,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.s3,
-        0,
-        AppSpacing.s3,
-        AppSpacing.s1,
-      ),
-      decoration: BoxDecoration(
-        color: context.colors.secondaryContainer,
-        borderRadius: AppRadius.medium,
-        boxShadow: context.shadows.level1,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: context.texts.labelSmall,
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-              softWrap: false,
+    return Row(
+      children: [
+        for (var i = 0; i < count; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpacing.s1),
+          Container(
+            height: AppSpacing.s1 + 2,
+            width: i == index ? AppSpacing.s4 : AppSpacing.s1 + 2,
+            decoration: BoxDecoration(
+              color: i == index
+                  ? context.colors.primary
+                  : context.palette.border,
+              borderRadius: AppRadius.rounded,
             ),
           ),
-          if (counter)
-            AppIcon(
-              AppIcons.uiChevronDown,
-              size: AppSizes.icon16,
-              color: context.colors.secondary,
-            ),
         ],
-      ),
+        const SizedBox(width: AppSpacing.s3),
+        Text(
+          index == 0 ? 'сейчас · листайте вбок' : 'версия ${index + 1} из $count',
+          style: context.texts.labelSmall,
+        ),
+      ],
     );
   }
 }
 
-/// Верхняя карточка стопки: фото слева, числа рецепта справа.
-class _TopCard extends StatelessWidget {
-  const _TopCard({required this.version, required this.pack, required this.hero});
+/// Карточка версии: фото слева, показатели метками справа.
+///
+/// Тап в любом месте открывает рецепт — на экране заваривания он и живёт,
+/// вместе с шагами и числами. Кружок «заварить» на карточке сразу пускает
+/// таймер: рецепт человек уже видел, если жмёт именно сюда.
+class _VersionCard extends StatelessWidget {
+  const _VersionCard({
+    required this.version,
+    required this.pack,
+    required this.hero,
+    required this.latest,
+  });
 
   final RecipeVersion version;
   final PackData? pack;
   final bool hero;
+  final bool latest;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.colors.secondaryContainer,
-        borderRadius: hero ? AppRadius.large : AppRadius.medium,
-        boxShadow: hero ? context.shadows.level2 : context.shadows.level1,
-      ),
+    return Material(
+      color: context.colors.secondaryContainer,
+      borderRadius: hero ? AppRadius.large : AppRadius.medium,
       clipBehavior: Clip.antiAlias,
-      child: Row(
-        children: [
-          Expanded(child: _Photo(pack: pack, caption: formatRecipeDate(version.date))),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.s3,
-                vertical: AppSpacing.s2,
+      elevation: 0,
+      child: InkWell(
+        onTap: () => context.router.push(
+          BrewRoute(recipe: version.recipe, pack: pack),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: hero ? AppRadius.large : AppRadius.medium,
+            boxShadow: hero ? context.shadows.level2 : context.shadows.level1,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: _Photo(pack: pack, caption: formatRecipeDate(version.date)),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('так завариваю', style: context.texts.labelSmall),
-                  const SizedBox(height: AppSpacing.s1),
-                  Text(
-                    '${_formatDose(version.doseG)} г → ${version.waterG} мл',
-                    style: context.texts.bodyMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    [
-                      if (version.temperatureC != null)
-                        '${version.temperatureC!.toStringAsFixed(0)} °C',
-                      _formatTime(version.timeSec),
-                    ].join(' · '),
-                    style: context.texts.bodySmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const Spacer(),
-                  Row(
+              Expanded(
+                flex: 6,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.s3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        latest ? 'так завариваю' : 'прошлая версия',
+                        style: context.texts.labelSmall,
+                      ),
+                      const SizedBox(height: AppSpacing.s2),
+                      // Показатели метками, а не строкой текста: цвет метки
+                      // и есть её подпись — дозу от воды отличают, не читая.
+                      Wrap(
+                        spacing: AppSpacing.s2,
+                        runSpacing: AppSpacing.s2,
+                        children: [
+                          MetricTag(
+                            kind: MetricKind.dose,
+                            label: '${_formatDose(version.doseG)} г',
+                          ),
+                          MetricTag(
+                            kind: MetricKind.water,
+                            label: '${version.waterG} мл',
+                          ),
+                          if (version.temperatureC != null)
+                            MetricTag(
+                              kind: MetricKind.temperature,
+                              label: '${version.temperatureC!.toStringAsFixed(0)} °C',
+                            ),
+                          MetricTag(
+                            kind: MetricKind.time,
+                            label: _formatTime(version.timeSec),
+                          ),
+                        ],
+                      ),
                       const Spacer(),
-                      _PlayButton(version: version, pack: pack, filled: hero),
+                      Row(
+                        children: [
+                          const Spacer(),
+                          _PlayButton(version: version, pack: pack, filled: hero),
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -503,7 +467,7 @@ class _Photo extends StatelessWidget {
 /// Круглая кнопка «заварить снова».
 ///
 /// Своего размера, а не `AppButton`: тот держит высоту 50 и разрезал бы
-/// карточку пополам. У неглавных групп повтор тише — контур вместо заливки.
+/// карточку пополам. У неглавных версий повтор тише — контур вместо заливки.
 class _PlayButton extends StatelessWidget {
   const _PlayButton({required this.version, required this.pack, required this.filled});
 
@@ -519,7 +483,9 @@ class _PlayButton extends StatelessWidget {
       button: true,
       label: 'Заварить снова',
       child: InkWell(
-        onTap: () => context.router.push(BrewRoute(recipe: version.recipe, pack: pack)),
+        onTap: () => context.router.push(
+          BrewRoute(recipe: version.recipe, pack: pack, autoStart: true),
+        ),
         customBorder: const CircleBorder(),
         child: Container(
           height: AppSpacing.s8,
@@ -538,39 +504,6 @@ class _PlayButton extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Разложенная стопка: та же верхняя карточка и прошлые версии строками.
-class _Unstacked extends StatelessWidget {
-  const _Unstacked({required this.group, required this.pack, required this.hero});
-
-  final RecipeGroup group;
-  final PackData? pack;
-  final bool hero;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: _cardHeight,
-          child: _TopCard(version: group.latest, pack: pack, hero: hero),
-        ),
-        for (final version in group.versions.skip(1))
-          AppRow(
-            label: formatRecipeDate(version.date),
-            value: [
-              if (version.temperatureC != null)
-                '${version.temperatureC!.toStringAsFixed(0)} °C',
-              _formatTime(version.timeSec),
-            ].join(' · '),
-            onTap: () => context.router.push(
-              BrewRoute(recipe: version.recipe, pack: pack),
-            ),
-          ),
-      ],
     );
   }
 }

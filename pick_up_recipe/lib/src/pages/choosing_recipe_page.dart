@@ -55,6 +55,10 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
   bool _loading = true;
   String? _error;
 
+  /// Базовый рецепт грузится по тапу: отдельного экрана под него больше нет,
+  /// и пока он едет, строка показывает, что нажатие услышано.
+  bool _openingBase = false;
+
   @override
   void initState() {
     super.initState();
@@ -91,6 +95,36 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
         _loading = false;
       });
     }
+  }
+
+  /// Открывает базовый рецепт метода — сразу на завариванием.
+  ///
+  /// Промежуточного экрана «вот рецепт из справочника» больше нет: он
+  /// показывал ровно то же, что показывает экран заваривания до старта —
+  /// числа, шаги и подготовку, — и стоил лишнего нажатия на каждой чашке.
+  Future<void> _openBase() async {
+    if (_openingBase) return;
+    setState(() => _openingBase = true);
+
+    try {
+      final recipe = await _service.getBaseRecipe(widget.method ?? '');
+      if (!mounted) return;
+
+      if (recipe == null) {
+        _say('У этого метода нет справочного рецепта');
+        return;
+      }
+
+      await context.router.push(BrewRoute(recipe: recipe, pack: widget.pack));
+    } catch (error) {
+      if (mounted) _say('Рецепт не открылся: $error');
+    } finally {
+      if (mounted) setState(() => _openingBase = false);
+    }
+  }
+
+  void _say(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override
@@ -135,18 +169,12 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
         title: 'Базовый',
         note: 'из справочника',
       ),
-      // Базовый рецепт теперь лежит в базе у каждого метода (миграция
-      // 20260813100000), поэтому строка ведёт на его экран, а не собирает
-      // рецепт конструктором по кнопке.
+      // Базовый рецепт лежит в базе у каждого метода (миграция
+      // 20260813100000). Строка ведёт прямо на заваривание: до старта тот
+      // экран и есть рецепт — числа, шаги и подготовка на одном месте.
       InkWell(
         borderRadius: AppRadius.medium,
-        onTap: () => context.router.push(
-          RecipeBaseRoute(
-            method: widget.method ?? '',
-            methodName: widget.methodName,
-            pack: widget.pack,
-          ),
-        ),
+        onTap: _openBase,
         child: QuietSurface(
           child: Row(
             children: [
@@ -172,11 +200,18 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
                   ],
                 ),
               ),
-              AppIcon(
-                AppIcons.uiForward,
-                size: AppSizes.icon20,
-                color: context.colors.secondary,
-              ),
+              if (_openingBase)
+                const SizedBox(
+                  height: AppSizes.icon20,
+                  width: AppSizes.icon20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                AppIcon(
+                  AppIcons.uiForward,
+                  size: AppSizes.icon20,
+                  color: context.colors.secondary,
+                ),
             ],
           ),
         ),
@@ -266,7 +301,10 @@ class _RoasterRecipe extends StatelessWidget {
                 child: AppButton(
                   label: 'Заварить · ${_formatTime(recipe.time)}',
                   icon: AppIcons.uiPlay,
-                  onPressed: () => context.router.push(BrewRoute(recipe: recipe, pack: pack)),
+                  // Числа рецепта уже над кнопкой — таймер идёт сразу.
+                  onPressed: () => context.router.push(
+                    BrewRoute(recipe: recipe, pack: pack, autoStart: true),
+                  ),
                 ),
               ),
             ],

@@ -20,7 +20,6 @@ import '../src/pages/packs_page.dart';
 import '../src/pages/password_reset_page.dart';
 import '../src/pages/profile_page.dart';
 import '../src/pages/rating_page.dart';
-import '../src/pages/recipe_base_page.dart';
 import '../src/pages/custom_step_page.dart';
 import '../src/pages/recipe_builder_page.dart';
 import '../src/pages/recipes_for_coffee_page.dart';
@@ -62,7 +61,6 @@ class AppRouter extends _$AppRouter {
 
         AutoRoute(page: RecipesForCoffeeRoute.page, path: '/coffee/methods', guards: [AuthGuard(ref)]),
         AutoRoute(page: GrinderSelectRoute.page, path: '/grinder', guards: [AuthGuard(ref)]),
-        AutoRoute(page: RecipeBaseRoute.page, path: '/recipe/base', guards: [AuthGuard(ref)]),
         AutoRoute(page: CustomStepRoute.page, path: '/recipe/custom-step', guards: [AuthGuard(ref)]),
         AutoRoute(page: BrewRoute.page, path: '/brew', guards: [AuthGuard(ref)]),
         AutoRoute(page: RatingRoute.page, path: '/rating', guards: [AuthGuard(ref)]),

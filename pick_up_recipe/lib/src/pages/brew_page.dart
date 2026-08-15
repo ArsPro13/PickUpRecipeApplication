@@ -23,7 +23,9 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../routing/app_router.dart';
@@ -89,18 +91,33 @@ class BrewPage extends ConsumerStatefulWidget {
   ConsumerState<BrewPage> createState() => _BrewPageState();
 }
 
-class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver {
+class _BrewPageState extends ConsumerState<BrewPage>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late final BrewEngine _engine = BrewEngine(steps: brewStepsOf(widget.recipe));
 
-  /// Таймер перерисовки. Он не считает время — только просит движок отдать
-  /// снимок. Поэтому пропущенный тик ничего не ломает.
-  Timer? _ticker;
+  /// Тикер перерисовки. Он не считает время — только просит движок отдать
+  /// снимок, поэтому пропущенный кадр ничего не ломает.
+  ///
+  /// Кадровый, а не секундный: раз в секунду линия прогресса прыгала
+  /// заметными ступеньками, и заваривание выглядело дёргающимся, хотя
+  /// время считалось верно.
+  late final Ticker _frames = createTicker((_) => _tick());
 
   /// Отложенный переход на оценку. Отдельно от тикера: тикер уже остановлен,
   /// когда этот заведён.
   Timer? _toRating;
 
-  late BrewSnapshot _snapshot = _engine.snapshot();
+  /// Живой снимок для тех, кому нужен каждый кадр. Линия по периметру рамки
+  /// перерисовывается по нему напрямую, не перестраивая ни одного виджета:
+  /// шестьдесят перестроек списка шагов в секунду — цена без выгоды.
+  late final ValueNotifier<BrewSnapshot> _live =
+      ValueNotifier<BrewSnapshot>(_engine.snapshot());
+
+  BrewSnapshot get _snapshot => _live.value;
+
+  /// Секунда, показанная крупным таймером. Виджеты перестраиваются, только
+  /// когда она сменилась, — цифра всё равно меняется раз в секунду.
+  int _shownSecond = -1;
 
   final ScrollController _steps = ScrollController();
 
@@ -128,15 +145,16 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
 
     if (widget.autoStart && _engine.steps.isNotEmpty) {
       _engine.start();
-      _startTicker();
-      _snapshot = _engine.snapshot();
+      _startFrames();
+      _live.value = _engine.snapshot();
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _ticker?.cancel();
+    _frames.dispose();
+    _live.dispose();
     _toRating?.cancel();
     _steps.dispose();
     super.dispose();
@@ -170,13 +188,37 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
     }
   }
 
-  void _refresh() {
+  /// Кадр: снимок обновляется всегда, виджеты — только когда изменилось то,
+  /// что они показывают.
+  void _tick() {
     if (!mounted) return;
-    setState(() => _snapshot = _engine.snapshot());
-    if (_snapshot.isFinished) {
-      _stopTicker();
+
+    final previous = _live.value;
+    final next = _engine.snapshot();
+    _live.value = next;
+
+    final second = next.remainingInStep.inSeconds;
+    if (next.stepIndex != previous.stepIndex ||
+        next.status != previous.status ||
+        second != _shownSecond) {
+      _shownSecond = second;
+      setState(() {});
+      _followActiveStep();
+    }
+
+    if (next.isFinished) {
+      _stopFrames();
       // Пока открыт экран возврата, на оценку не уводим: человек ещё не
       // сказал, что заваривание вообще состоялось.
+      if (!_showResume) _scheduleRating();
+    }
+  }
+
+  void _refresh() {
+    if (!mounted) return;
+    setState(() => _live.value = _engine.snapshot());
+    if (_snapshot.isFinished) {
+      _stopFrames();
       if (!_showResume) _scheduleRating();
     }
     _followActiveStep();
@@ -216,25 +258,23 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
   void _toggle() {
     if (!_engine.isStarted) {
       _engine.start();
-      _startTicker();
+      _startFrames();
     } else if (_snapshot.status == BrewStatus.paused) {
       _engine.resume();
-      _startTicker();
+      _startFrames();
     } else {
       _engine.pause();
-      _stopTicker();
+      _stopFrames();
     }
     _refresh();
   }
 
-  void _startTicker() {
-    _ticker?.cancel();
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _refresh());
+  void _startFrames() {
+    if (!_frames.isActive) _frames.start();
   }
 
-  void _stopTicker() {
-    _ticker?.cancel();
-    _ticker = null;
+  void _stopFrames() {
+    if (_frames.isActive) _frames.stop();
   }
 
   void _skip() {
@@ -246,6 +286,14 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
   /// к отыгранному таймеру некуда, а «назад» из оценки должно вести в список.
   void _rate() {
     context.router.replace(RatingRoute(recipe: widget.recipe, pack: widget.pack));
+  }
+
+  /// Правка рецепта. Отдельного экрана рецепта больше нет — этот и есть
+  /// рецепт, поэтому «Править» живёт здесь, в шапке.
+  void _edit() {
+    context.router.push(
+      RecipeBuilderRoute(recipe: widget.recipe, pack: widget.pack),
+    );
   }
 
   /// Вернулись к брошенному завариванию (S09/S10).
@@ -271,10 +319,10 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
         finished: finishedWhileAway,
         onRestart: () {
           _engine.reset();
-          _stopTicker();
+          _stopFrames();
           setState(() {
             _showResume = false;
-            _snapshot = _engine.snapshot();
+            _live.value = _engine.snapshot();
           });
         },
         onContinue: () {
@@ -353,14 +401,31 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
           icon: const AppIcon(AppIcons.uiBack, size: AppSizes.icon24),
           tooltip: 'Назад',
         ),
+        // Название прибора крупно: его читают от кофемолки, боком, и
+        // мелкая подпись для этого не годится. Номер шага уехал в строку
+        // параметров — там он рядом с числами, которые сверяют вместе с ним.
         title: Text(
-          '${_methodName()} · шаг ${_snapshot.stepIndex + 1} из ${steps.length}',
-          style: context.texts.bodySmall,
+          _methodName(),
+          style: context.texts.titleMedium,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
+        actions: [
+          IconButton(
+            onPressed: _edit,
+            icon: const AppIcon(AppIcons.uiEdit, size: AppSizes.icon24),
+            tooltip: 'Править рецепт',
+          ),
+        ],
         // Строка не меняется вместе с состоянием: она отвечает на вопрос
         // «не сбился ли я», а он одинаков и до старта, и на третьем проливе.
         // Меняющаяся справка заставляет её перечитывать каждый раз.
-        bottom: params.isEmpty ? null : _ParamsStrip(params: params),
+        bottom: params.isEmpty
+            ? null
+            : _ParamsStrip(
+                params: params,
+                step: 'шаг ${_snapshot.stepIndex + 1} из ${steps.length}',
+              ),
       ),
       body: Column(
         children: [
@@ -399,6 +464,7 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
             child: _BrewFrame(
               step: current,
               snapshot: _snapshot,
+              live: _live,
               params: params,
               template: template,
             ),
@@ -542,15 +608,17 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
 /// что наливают. `FittedBox` вместо переноса: строка обязана остаться одной
 /// строкой, а на узком экране лучше уменьшить кегль, чем спрятать число.
 class _ParamsStrip extends StatelessWidget implements PreferredSizeWidget {
-  const _ParamsStrip({required this.params});
+  const _ParamsStrip({required this.params, required this.step});
 
   final BrewParams params;
 
-  /// Кегль строки — тот же, что у основного текста: её читают мельком, одним
-  /// взглядом от кофемолки, и подпись в двенадцать пунктов для этого мелка.
-  /// Тише содержимого она остаётся не размером, а цветом значков и отсутствием
-  /// поверхности под собой.
-  static const double _height = 44;
+  /// «шаг 2 из 5» — уехал сюда из шапки, к числам, с которыми его и сверяют.
+  final String step;
+
+  /// Кегль крупный намеренно: строку читают мельком, от кофемолки, боком —
+  /// подпись в двенадцать пунктов для этого мелка. Тише содержимого она
+  /// остаётся не размером, а цветом значков и отсутствием поверхности.
+  static const double _height = 58;
 
   @override
   Size get preferredSize => const Size.fromHeight(_height);
@@ -576,26 +644,34 @@ class _ParamsStrip extends StatelessWidget implements PreferredSizeWidget {
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: context.palette.border)),
       ),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.centerLeft,
-        child: Row(
-          children: [
-            for (var i = 0; i < items.length; i++) ...[
-              if (i > 0) const SizedBox(width: AppSpacing.s3),
-              AppIcon(items[i].$1, size: AppSizes.icon20, color: items[i].$3),
-              const SizedBox(width: AppSpacing.s1),
-              Text(
-                items[i].$2,
-                style: context.texts.bodyMedium?.copyWith(
-                  color: context.colors.onSurface,
-                  fontWeight: FontWeight.w500,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+      child: Row(
+        children: [
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                children: [
+                  for (var i = 0; i < items.length; i++) ...[
+                    if (i > 0) const SizedBox(width: AppSpacing.s4),
+                    AppIcon(items[i].$1, size: AppSizes.icon24, color: items[i].$3),
+                    const SizedBox(width: AppSpacing.s1),
+                    Text(
+                      items[i].$2,
+                      style: context.texts.titleMedium?.copyWith(
+                        color: context.colors.onSurface,
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ],
-        ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.s3),
+          Text(step, style: context.texts.bodySmall),
+        ],
       ),
     );
   }
@@ -791,12 +867,18 @@ class _BrewFrame extends StatelessWidget {
   const _BrewFrame({
     required this.step,
     required this.snapshot,
+    required this.live,
     required this.params,
     this.template = BrewTemplate.pour,
   });
 
   final BrewStep step;
   final BrewSnapshot snapshot;
+
+  /// Покадровый снимок — только для линии прогресса: она перерисовывается
+  /// без перестройки виджетов, поэтому едет плавно и ничего не стоит.
+  final ValueListenable<BrewSnapshot> live;
+
   final BrewParams params;
   final BrewTemplate template;
 
@@ -825,9 +907,10 @@ class _BrewFrame extends StatelessWidget {
         ),
         child: CustomPaint(
           painter: _FrameProgressPainter(
+            live: live,
             track: _isPrep ? context.colors.primary : context.palette.border,
             run: context.colors.primary,
-            progress: snapshot.status == BrewStatus.idle ? 0 : snapshot.stepProgress,
+            idle: snapshot.status == BrewStatus.idle,
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.s5),
@@ -937,16 +1020,26 @@ class _BrewFrame extends StatelessWidget {
 }
 
 /// Дорожка и бегущая линия по периметру рамки.
+///
+/// Перерисовывается от `live` напрямую (`super.repaint`), а не от перестройки
+/// виджета: линия обязана ехать покадрово, а список шагов над ней — нет.
 class _FrameProgressPainter extends CustomPainter {
-  const _FrameProgressPainter({
+  _FrameProgressPainter({
+    required this.live,
     required this.track,
     required this.run,
-    required this.progress,
-  });
+    required this.idle,
+  }) : super(repaint: live);
 
+  final ValueListenable<BrewSnapshot> live;
   final Color track;
   final Color run;
-  final double progress;
+
+  /// До старта дорожка пуста: показывать нечего, а линия в нуле выглядела бы
+  /// как «уже началось».
+  final bool idle;
+
+  double get progress => idle ? 0 : live.value.stepProgress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1016,9 +1109,11 @@ class _FrameProgressPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_FrameProgressPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.run != run ||
-        oldDelegate.track != track;
+    // Прогресс сюда не входит намеренно: за него отвечает `repaint`, и
+    // сравнивать его здесь значило бы ждать перестройки виджета.
+    return oldDelegate.run != run ||
+        oldDelegate.track != track ||
+        oldDelegate.idle != idle;
   }
 }
 
