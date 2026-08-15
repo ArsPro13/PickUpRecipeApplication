@@ -5,6 +5,9 @@
 // Экран без причин превращается в «сервер сказал мели мельче», и доверия
 // такому экрану нет.
 
+import 'recipe_data_model.dart';
+import 'recipe_response_model.dart';
+
 /// Почему параметр поменялся.
 class CorrectionReason {
   const CorrectionReason({required this.complaint, required this.text});
@@ -133,13 +136,23 @@ class CorrectionConflict {
 
 /// Предложение поправки целиком.
 class RecipeCorrection {
-  const RecipeCorrection({required this.changes, required this.conflicts});
+  const RecipeCorrection({
+    required this.changes,
+    required this.conflicts,
+    this.recipe,
+  });
 
   final List<CorrectionChange> changes;
 
   /// Конфликты жалоб. Раньше клиент читал поле `checks` с верхнего уровня —
   /// сервер такого не шлёт, и список проверок всегда оказывался пустым.
   final List<CorrectionConflict> conflicts;
+
+  /// Рецепт с уже применёнными поправками — его собирает бэкенд в том же
+  /// виде, в каком его принимает POST /recipe/evolve. Конструктор открывает
+  /// именно его: клиент не пересчитывает числа сам, и разъехаться с
+  /// правилами ему нечем.
+  final RecipeData? recipe;
 
   bool get isEmpty => changes.isEmpty;
 
@@ -154,5 +167,13 @@ class RecipeCorrection {
           for (final conflict in (json['conflicts'] as List<dynamic>? ?? []))
             CorrectionConflict.fromJson(conflict as Map<String, dynamic>),
         ],
+        // Через модель серверного формата: там pack_id и defaultValue на
+        // случай базового рецепта. RecipeData.fromJson ждёт ключ `pack` —
+        // это внутренний формат, сервер так не пишет.
+        recipe: json['recipe'] == null
+            ? null
+            : RecipeData.fromResponse(
+                RecipeResponseModel.fromJson(json['recipe'] as Map<String, dynamic>),
+              ),
       );
 }

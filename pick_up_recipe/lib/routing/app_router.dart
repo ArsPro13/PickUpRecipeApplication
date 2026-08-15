@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../src/features/authentication/guards/authentication_guard.dart';
 import '../src/features/brew_methods/domain/brew_method.dart';
 import '../src/features/packs/domain/models/pack_model.dart';
+import '../src/features/recipes/domain/models/correction_model.dart';
 import '../src/features/recipes/domain/models/recipe_data_model.dart';
 import '../src/pages/auth_login_page.dart';
 import '../src/pages/auth_register_page.dart';
@@ -13,7 +14,7 @@ import '../src/pages/auth_welcome_page.dart';
 import '../src/pages/brew_page.dart';
 import '../src/pages/choosing_recipe_page.dart';
 import '../src/pages/coffee_page.dart';
-import '../src/pages/correction_review_page.dart';
+import '../src/pages/rating_conflict_page.dart';
 import '../src/pages/grinder_select_page.dart';
 import '../src/pages/packs_page.dart';
 import '../src/pages/password_reset_page.dart';
@@ -65,7 +66,7 @@ class AppRouter extends _$AppRouter {
         AutoRoute(page: CustomStepRoute.page, path: '/recipe/custom-step', guards: [AuthGuard(ref)]),
         AutoRoute(page: BrewRoute.page, path: '/brew', guards: [AuthGuard(ref)]),
         AutoRoute(page: RatingRoute.page, path: '/rating', guards: [AuthGuard(ref)]),
-        AutoRoute(page: CorrectionReviewRoute.page, path: '/correction', guards: [AuthGuard(ref)]),
+        AutoRoute(page: RatingConflictRoute.page, path: '/rating_conflict', guards: [AuthGuard(ref)]),
         AutoRoute(page: RecipeBuilderRoute.page, path: '/recipe/edit', guards: [AuthGuard(ref)]),
         AutoRoute(page: ChoosingRecipeRoute.page, path: '/choose-recipe', guards: [AuthGuard(ref)]),
         AutoRoute(page: RecognitionCameraRoute.page, path: '/pack-photo', guards: [AuthGuard(ref)]),

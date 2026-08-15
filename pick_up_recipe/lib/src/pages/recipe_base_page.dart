@@ -1,10 +1,15 @@
 // Базовый рецепт из справочника: у обжарщика нет рецепта под ваш прибор.
 //
-// Плашка объясняет не «откуда рецепт», а чего он не знает — сорт и обжарку
-// (макет S01). На эспрессо-семействе экран меняет подписи: вода там — выход
-// в чашке, доза — в корзину, и жёлтая плашка проговаривает это отдельно
-// (S02): подпись плитки берётся из brew_methods.water_meaning, а не из
-// предположения, что всё на свете — пуровер.
+// Разметка — макет S01 (recipe-base.html): в шапке метод, компактная плашка
+// происхождения, карточка-герой с иконкой прибора и цветными плитками
+// показателей, шаги в пунктирной рамке — они из шаблона, а не от человека.
+// «Заварить» начинает сразу: рецепт целиком перед глазами, и отдельный экран
+// подготовки после него был бы этим же экраном ещё раз.
+//
+// На эспрессо-семействе подписи меняются: вода там — выход в чашке, доза —
+// в корзину, и жёлтая плашка проговаривает это отдельно (S02): подпись
+// берётся из brew_methods.water_meaning, а не из предположения, что всё на
+// свете — пуровер.
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/brew_methods/domain/brew_method.dart';
+import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/domain/models/grind_descriptor_model.dart';
@@ -92,14 +98,15 @@ class _RecipeBasePageState extends ConsumerState<RecipeBasePage> {
     }
   }
 
-  /// Метод из справочника — ради water_meaning и человеческого имени.
-  BrewMethod? _method() {
+  /// Метод из справочника и имя его группы — ради water_meaning, иконки
+  /// и подписи «иммерсия · 1:14 · около 1:45» на карточке.
+  (BrewMethod?, String) _method() {
     for (final group in ref.watch(brewMethodsProvider).grouped) {
       for (final method in group.methods) {
-        if (method.slug == widget.method) return method;
+        if (method.slug == widget.method) return (method, group.name);
       }
     }
-    return null;
+    return (null, '');
   }
 
   /// Рецепт для конструктора: пачка подставлена.
@@ -120,12 +127,18 @@ class _RecipeBasePageState extends ConsumerState<RecipeBasePage> {
 
   @override
   Widget build(BuildContext context) {
-    final method = _method();
+    final (method, groupName) = _method();
     final methodName = method?.name ?? widget.methodName ?? widget.method;
     final recipe = _recipe;
+    final inCup = method?.waterMeaning == 'in_cup';
+
+    final subtitle = [
+      if (widget.pack?.packName.isNotEmpty ?? false) widget.pack!.packName,
+      if (widget.pack?.roasterName.isNotEmpty ?? false) widget.pack!.roasterName,
+    ].join(' · ');
 
     return AppScreen(
-      title: widget.pack?.packName ?? methodName,
+      title: methodName,
       body: [
         if (_loading)
           const Padding(
@@ -141,97 +154,221 @@ class _RecipeBasePageState extends ConsumerState<RecipeBasePage> {
             primaryAction: AppButton(label: 'Повторить', onPressed: _load),
           )
         else ...[
-          _InfoPlate(inCup: method?.waterMeaning == 'in_cup', methodName: methodName),
+          if (subtitle.isNotEmpty) ...[
+            Text(subtitle, style: context.texts.bodySmall),
+            const SizedBox(height: AppSpacing.s3),
+          ],
+          _SourcePlate(inCup: inCup),
           const SizedBox(height: AppSpacing.s4),
-          _Figs(recipe: recipe, inCup: method?.waterMeaning == 'in_cup', ref: ref),
-          if (method?.waterMeaning == 'in_cup') ...[
+          _HeroCard(
+            recipe: recipe,
+            method: method,
+            methodName: methodName,
+            groupName: groupName,
+            inCup: inCup,
+            ref: ref,
+          ),
+          if (inCup) ...[
             const SizedBox(height: AppSpacing.s4),
             _InCupPlate(recipe: recipe),
           ],
           const SizedBox(height: AppSpacing.s5),
-          SectionTitle(
-            '${_stepsCount(recipe.steps.length)} · ${formatDuration(Duration(seconds: recipe.time))}',
+          const SectionTitle('Шаги · из шаблона метода'),
+          DashedBorderBox(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s4,
+              vertical: AppSpacing.s1,
+            ),
+            child: Column(
+              children: [
+                for (final (index, step) in recipe.steps.indexed) ...[
+                  if (index > 0) Divider(height: 1, color: context.palette.border),
+                  _StepRow(step: step),
+                ],
+              ],
+            ),
           ),
-          for (final (index, step) in recipe.steps.indexed)
-            _StepRow(step: step, alt: index.isEven),
         ],
       ],
       bottom: recipe == null
           ? const []
           : [
-              Row(
-                children: [
-                  Expanded(
-                    child: AppButton(
-                      label: 'Заварить',
-                      icon: AppIcons.uiPlay,
-                      onPressed: () => context.router.push(
-                        BrewRoute(recipe: _forBrew(), pack: widget.pack),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.s3),
-                  AppButton(
-                    label: 'Править',
-                    kind: AppButtonKind.secondary,
-                    block: false,
-                    onPressed: () => context.router.push(
-                      RecipeBuilderRoute(recipe: _forEdit(), pack: widget.pack),
-                    ),
-                  ),
-                ],
+              AppButton(
+                label: 'Заварить',
+                icon: AppIcons.uiPlay,
+                onPressed: () => context.router.push(
+                  // Сразу к завариванию: этот экран и есть подготовка.
+                  BrewRoute(recipe: _forBrew(), pack: widget.pack, autoStart: true),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s3),
+              AppButton(
+                label: 'Отредактировать',
+                icon: AppIcons.uiEdit,
+                kind: AppButtonKind.secondary,
+                onPressed: () => context.router.push(
+                  RecipeBuilderRoute(recipe: _forEdit(), pack: widget.pack),
+                ),
               ),
             ],
     );
   }
 }
 
-String _stepsCount(int count) {
-  final words = switch (count % 10) {
-    1 when count % 100 != 11 => 'шаг',
-    2 || 3 || 4 when count % 100 < 12 || count % 100 > 14 => 'шага',
-    _ => 'шагов',
-  };
-  return '$count $words';
-}
-
-/// «Базовый рецепт из справочника»: чего он не знает и почему это честно.
-class _InfoPlate extends StatelessWidget {
-  const _InfoPlate({required this.inCup, required this.methodName});
+/// Происхождение рецепта — раньше параметров, но в две строки, не в абзац.
+class _SourcePlate extends StatelessWidget {
+  const _SourcePlate({required this.inCup});
 
   final bool inCup;
-  final String methodName;
 
   @override
   Widget build(BuildContext context) {
-    final text = inCup
-        ? 'Числа типовые: под вашу машину и корзину их почти наверняка '
-            'придётся сдвинуть.'
-        : 'Обжарщик не завёл рецепт под $methodName, поэтому взят типовой: '
-            'он учитывает прибор, но не сорт и не обжарку. Заварите и '
-            'оцените — подберём точнее.';
-
-    return QuietSurface(
+    return DashedBorderBox(
+      padding: const EdgeInsets.all(AppSpacing.s4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppIcon(AppIcons.uiInfo, size: AppSizes.icon20, color: context.colors.secondary),
+          AppIcon(AppIcons.uiInfo, size: AppSizes.icon32, color: context.colors.secondary),
           const SizedBox(width: AppSpacing.s3),
           Expanded(
-            child: Text.rich(
-              TextSpan(children: [
-                TextSpan(
-                  text: 'Базовый рецепт из справочника. ',
-                  style: context.texts.bodySmall?.copyWith(fontWeight: FontWeight.w700),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Базовый рецепт', style: context.texts.bodyMedium),
+                Text(
+                  inCup
+                      ? 'типовой — под машину и корзину числа сдвигают'
+                      : 'собран по прибору, зерно не учитывает',
+                  style: context.texts.labelSmall,
                 ),
-                TextSpan(text: text),
-              ]),
-              style: context.texts.bodySmall,
+              ],
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+/// Карточка-герой: прибор, подпись группы и четыре цветные плитки чисел.
+class _HeroCard extends StatelessWidget {
+  const _HeroCard({
+    required this.recipe,
+    required this.method,
+    required this.methodName,
+    required this.groupName,
+    required this.inCup,
+    required this.ref,
+  });
+
+  final RecipeData recipe;
+  final BrewMethod? method;
+  final String methodName;
+  final String groupName;
+  final bool inCup;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final descriptors = ref.watch(grindDescriptorsProvider).valueOrNull;
+    final grindWord = descriptors == null
+        ? recipe.grindDescriptor
+        : grindDescriptorName(descriptors, recipe.grindDescriptor);
+
+    final grinder = ref.watch(grinderStateProvider).primary;
+
+    return HeroSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              AppIcon(
+                AppIcons.method(method?.iconKey ?? recipe.device),
+                size: AppSizes.icon40,
+                color: context.colors.primary,
+              ),
+              const SizedBox(width: AppSpacing.s3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(methodName, style: context.texts.titleMedium),
+                    Text(_caption(), style: context.texts.labelSmall),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (recipe.load > 0)
+                Expanded(
+                  child: MetricTile(
+                    kind: MetricKind.dose,
+                    value: '${formatAmount(recipe.load)} г',
+                    caption: inCup ? 'в корзину' : null,
+                  ),
+                ),
+              if (recipe.water > 0)
+                Expanded(
+                  child: MetricTile(
+                    kind: MetricKind.water,
+                    value: '${recipe.water} ${inCup ? 'г' : 'мл'}',
+                    caption: inCup ? 'в чашке' : null,
+                  ),
+                ),
+              if (recipe.temperature != null)
+                Expanded(
+                  child: MetricTile(
+                    kind: MetricKind.temperature,
+                    value: '${formatAmount(recipe.temperature!)} °C',
+                  ),
+                ),
+              if (grindWord.isNotEmpty)
+                Expanded(
+                  child: MetricTile(kind: MetricKind.grind, value: grindWord),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          Divider(height: 1, color: context.palette.border),
+          const SizedBox(height: AppSpacing.s3),
+          Row(
+            children: [
+              AppIcon(
+                AppIcons.metricGrind,
+                size: AppSizes.icon16,
+                color: context.metrics.grind,
+              ),
+              const SizedBox(width: AppSpacing.s2),
+              Expanded(
+                child: Text(
+                  // Щелчков в справочнике нет — честная строка вместо числа:
+                  // помол дан словом, деление человек подбирает на своей.
+                  grinder == null
+                      ? 'Помол словом из справочника'
+                      : 'Деление подберите на вашей ${grinder.name}',
+                  style: context.texts.labelSmall,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// «иммерсия · 1:14 · около 1:45» — группа, соотношение, время.
+  String _caption() {
+    final parts = [
+      if (groupName.isNotEmpty) groupName.toLowerCase(),
+      if (recipe.load > 0 && recipe.water > 0)
+        '1:${(recipe.water / recipe.load).toStringAsFixed(1).replaceAll('.', ',')}',
+      if (recipe.time > 0) 'около ${formatDuration(Duration(seconds: recipe.time))}',
+    ];
+    return parts.join(' · ');
   }
 }
 
@@ -265,97 +402,32 @@ class _InCupPlate extends StatelessWidget {
   }
 }
 
-/// Четыре плитки чисел. Подписи зависят от метода: у эспрессо доза идёт
-/// «в корзину», вода — «в чашке».
-class _Figs extends StatelessWidget {
-  const _Figs({required this.recipe, required this.inCup, required this.ref});
-
-  final RecipeData recipe;
-  final bool inCup;
-  final WidgetRef ref;
-
-  @override
-  Widget build(BuildContext context) {
-    final descriptors = ref.watch(grindDescriptorsProvider).valueOrNull;
-    final grindWord = descriptors == null
-        ? recipe.grindDescriptor
-        : grindDescriptorName(descriptors, recipe.grindDescriptor);
-
-    final figs = <(String, String, String)>[
-      if (recipe.load > 0)
-        (AppIcons.metricDose, '${formatAmount(recipe.load)} г', inCup ? 'в корзину' : 'кофе'),
-      if (grindWord.isNotEmpty) (AppIcons.metricGrind, grindWord, 'помол'),
-      if (recipe.water > 0)
-        (AppIcons.metricWater, '${recipe.water} ${inCup ? 'г' : 'мл'}', inCup ? 'в чашке' : 'вода'),
-      if (recipe.temperature != null)
-        (AppIcons.metricTemperature, '${formatAmount(recipe.temperature!)}°', 'вода'),
-    ];
-
-    return Row(
-      children: [
-        for (final (icon, value, label) in figs)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s1),
-              child: Column(
-                children: [
-                  AppIcon(icon, size: AppSizes.icon20, color: context.colors.secondary),
-                  const SizedBox(height: AppSpacing.s1),
-                  Text(
-                    value,
-                    style: context.texts.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(label, style: context.texts.labelSmall, maxLines: 1),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// Строка шага: значок типа, подпись, вода и время.
+/// Строка шага в пунктирной рамке: значок, подпись, «вода · время» справа.
 class _StepRow extends StatelessWidget {
-  const _StepRow({required this.step, required this.alt});
+  const _StepRow({required this.step});
 
   final RecipeStep step;
-  final bool alt;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s3,
-        vertical: AppSpacing.s2,
-      ),
-      decoration: BoxDecoration(
-        color: alt ? context.colors.surfaceContainerHighest.withValues(alpha: 0.35) : null,
-        borderRadius: AppRadius.medium,
-      ),
+    final value = [
+      if (step.water > 0) '${step.water} г',
+      if (step.time > 0) formatDuration(Duration(seconds: step.time)),
+    ].join(' · ');
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s3),
       child: Row(
         children: [
           AppIcon(
             AppIcons.step(step.stepType),
             size: AppSizes.icon20,
-            color: context.colors.secondary,
+            // Цвет воды — только у шагов, которые её льют (как в макете).
+            color: step.water > 0 ? context.metrics.water : context.colors.onSurface,
           ),
           const SizedBox(width: AppSpacing.s3),
-          Expanded(child: Text(step.instruction, style: context.texts.bodySmall)),
-          if (step.water > 0)
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.s2),
-              child: Text(
-                '+${step.water}',
-                style: context.texts.labelSmall?.copyWith(color: context.colors.primary),
-              ),
-            ),
-          Text(
-            formatDuration(Duration(seconds: step.time)),
-            style: context.texts.labelSmall,
-          ),
+          Expanded(child: Text(step.instruction, style: context.texts.bodyMedium)),
+          Text(value, style: context.texts.labelSmall),
         ],
       ),
     );

@@ -67,10 +67,23 @@ List<BrewStep> brewStepsOf(RecipeData recipe) {
 
 @RoutePage()
 class BrewPage extends ConsumerStatefulWidget {
-  const BrewPage({super.key, required this.recipe, required this.pack});
+  const BrewPage({
+    super.key,
+    required this.recipe,
+    required this.pack,
+    this.autoStart = false,
+  });
 
   final RecipeData recipe;
   final PackData? pack;
+
+  /// Начать сразу, без idle-состояния «Смолол, начинаем».
+  ///
+  /// true у входов с экранов, где рецепт целиком уже был перед глазами
+  /// (базовый рецепт, конструктор): там «Заварить» и есть «начинаем», а
+  /// повтор той же подготовки читался как лишний экран. У входов из списков
+  /// подготовка остаётся: помол человек ещё не видел.
+  final bool autoStart;
 
   @override
   ConsumerState<BrewPage> createState() => _BrewPageState();
@@ -112,6 +125,12 @@ class _BrewPageState extends ConsumerState<BrewPage> with WidgetsBindingObserver
     // Последний открытый рецепт переживает пропажу сети (ответ C5): офлайн
     // покажут его. Пишется при входе — дальше сети может уже не быть.
     LastBrewCache.save(widget.recipe, widget.pack);
+
+    if (widget.autoStart && _engine.steps.isNotEmpty) {
+      _engine.start();
+      _startTicker();
+      _snapshot = _engine.snapshot();
+    }
   }
 
   @override

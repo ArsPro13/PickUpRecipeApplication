@@ -65,7 +65,12 @@ class _RatingPageState extends ConsumerState<RatingPage> {
   /// Звёзды 1…5 → шкала 0…10, в которой живёт recipes_estimations.
   double get _overall => _stars * 2;
 
-  Future<void> _submit() async {
+  /// Отправляет оценку; [wantCorrection] — ещё и открыть рецепт с поправкой.
+  ///
+  /// Отдельной страницы «что изменилось» нет: по макету diff убран, и
+  /// «Поправить рецепт» ведёт прямо в конструктор, где поправка уже
+  /// применена, изменения помечены точками и её можно отменить целиком.
+  Future<void> _submit({required bool wantCorrection}) async {
     if (_stars == 0) {
       setState(() => _error = 'Поставьте общую оценку — по ней рецепт попадёт в историю');
       return;
@@ -103,18 +108,47 @@ class _RatingPageState extends ConsumerState<RatingPage> {
 
       if (!mounted) return;
 
-      // Жалоб нет — поправку просить не за что: чашка получилась.
-      if (_point.complaints.isEmpty) {
+      if (!wantCorrection || _point.complaints.isEmpty) {
         await context.router.maybePop();
         return;
       }
 
-      await context.router.push(
-        CorrectionReviewRoute(
-          recipe: widget.recipe,
+      // Сервер отвечает и списком изменений, и готовым поправленным
+      // рецептом: числа считает он, клиент их не выдумывает.
+      final correction = await _service.suggestCorrection(
+        recipeId: widget.recipe.id,
+        complaints: _point.complaints,
+      );
+
+      if (!mounted) return;
+
+      // Жалобы тянут в разные стороны — сначала техника, не цифры (S15/S16).
+      if (correction.hasConflicts) {
+        await context.router.replace(
+          RatingConflictRoute(
+            recipe: widget.recipe,
+            pack: widget.pack,
+            summary: _point.summary,
+            correction: correction,
+          ),
+        );
+        return;
+      }
+
+      if (correction.isEmpty || correction.recipe == null) {
+        _say('Менять нечего: рецепт уже на границе своих значений');
+        await context.router.maybePop();
+        return;
+      }
+
+      // replace, а не push: возврат из конструктора должен вести к списку
+      // рецептов, а не на уже отправленную оценку.
+      await context.router.replace(
+        RecipeBuilderRoute(
+          recipe: correction.recipe!,
+          original: widget.recipe,
+          correctionLabel: _point.summary,
           pack: widget.pack,
-          complaints: _point.complaints,
-          summary: _point.summary,
         ),
       );
     } catch (error) {
@@ -122,6 +156,10 @@ class _RatingPageState extends ConsumerState<RatingPage> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  void _say(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override
@@ -225,11 +263,26 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         ),
       ],
       bottom: [
-        AppButton(
-          label: _point.complaints.isEmpty ? 'Сохранить' : 'Что поправить',
-          loading: _busy,
-          onPressed: _busy ? null : _submit,
-        ),
+        if (_point.complaints.isEmpty)
+          AppButton(
+            label: 'Сохранить',
+            loading: _busy,
+            onPressed: _busy ? null : () => _submit(wantCorrection: false),
+          )
+        else ...[
+          AppButton(
+            label: 'Поправить рецепт',
+            icon: AppIcons.uiEdit,
+            loading: _busy,
+            onPressed: _busy ? null : () => _submit(wantCorrection: true),
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          AppButton(
+            label: 'Просто сохранить отзыв',
+            kind: AppButtonKind.secondary,
+            onPressed: _busy ? null : () => _submit(wantCorrection: false),
+          ),
+        ],
       ],
     );
   }
