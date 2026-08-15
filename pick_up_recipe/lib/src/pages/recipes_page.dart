@@ -1,14 +1,16 @@
 // Экран 07 «Мои рецепты» — вторая вкладка.
 //
 // Группа — пара «кофе + метод» (ответ Q23b), а не цепочка prev_id/next_id: на
-// экране это выглядит одинаково, но владелец выбрал пару. Внутри группы версии
-// листаются вбок: прошлые лежат справа, край следующей карточки виден всегда,
-// поэтому пролистнуть догадываются без подписи.
+// экране это выглядит одинаково, но владелец выбрал пару. Версии внутри
+// группы лежат барабаном: стопка карточек, верхнюю уводят свайпом вбок, она
+// улетает с наклоном, а следующая поднимается на её место — по кругу.
 //
-// Раньше версии лежали стопкой с торчащими краями: толщина стопки читалась
-// как число правок, но добраться до прошлой версии можно было только точным
-// тычком в узкую полоску. Прокрутка отвечает на тот же вопрос и попадает
-// пальцем с первого раза.
+// Две прошлые попытки и чем они не подошли:
+//   * стопка с торчащими краями — толщина читалась как число правок, но
+//     попасть в узкую полоску прошлой версии пальцем почти невозможно;
+//   * лента с прокруткой — попасть легко, но пропадает сама стопка: версии
+//     выглядели соседними карточками, а не историей одного рецепта.
+// Барабан оставляет стопку и делает её листаемой жестом, который знают все.
 //
 // Чего здесь нет: оценки. Она лежит в `/recipe/estimations` по одному запросу
 // на рецепт, и ради звезды в списке платить запросом за карточку рано —
@@ -33,9 +35,16 @@ import 'packs_page.dart';
 /// остальное, поэтому список не разъезжается.
 const double _cardHeight = 170;
 
-/// Ширина страницы прокрутки долей экрана: остаток — это край следующей
-/// версии. Без него прокрутка ничем себя не выдаёт.
-const double _pageFraction = 0.92;
+/// Сколько карточек видно под верхней. Больше двух не помогает: третий край
+/// уже не читается как «ещё есть», а выглядит мусором под карточкой.
+const int _deckDepth = 2;
+
+/// На сколько сдвинута и ужата каждая следующая карточка стопки.
+const double _deckStep = 10;
+const double _deckScale = 0.045;
+
+/// Насколько далеко нужно увести карточку, чтобы она улетела, а не вернулась.
+const double _flyThreshold = 90;
 
 @RoutePage()
 class RecipesPage extends ConsumerStatefulWidget {
@@ -119,7 +128,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.s5,
         AppSpacing.s4,
-        0,
+        AppSpacing.s5,
         AppSpacing.s5,
       ),
       itemCount: state.groups.length,
@@ -156,23 +165,80 @@ class _Group extends StatefulWidget {
   State<_Group> createState() => _GroupState();
 }
 
-class _GroupState extends State<_Group> {
-  late final PageController _pages = PageController(
-    viewportFraction: _pageFraction,
+class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
+  /// Полёт улетающей карточки и её же возврат на место. Один контроллер на
+  /// оба движения: одновременно они случиться не могут.
+  late final AnimationController _fly = AnimationController(
+    vsync: this,
+    duration: AppDuration.base,
   );
 
-  /// Версия, которая сейчас перед глазами. Нужна подписи «2 из 4» и точкам.
-  int _current = 0;
+  /// Верхняя карточка барабана. Барабан кольцевой: после последней версии
+  /// снова первая — иначе после третьего свайпа человек упирается в пустоту
+  /// и не понимает, сломалось или закончилось.
+  int _top = 0;
+
+  /// Насколько карточку увели пальцем прямо сейчас.
+  Offset _drag = Offset.zero;
+
+  /// Идёт полёт — жесты в это время не принимаем.
+  bool _flying = false;
 
   @override
   void dispose() {
-    _pages.dispose();
+    _fly.dispose();
     super.dispose();
+  }
+
+  int _at(int offset) {
+    final count = widget.group.versions.length;
+    return (_top + offset) % count;
+  }
+
+  void _animateDrag(Offset target, {VoidCallback? then}) {
+    final tween = Tween<Offset>(begin: _drag, end: target)
+        .animate(CurvedAnimation(parent: _fly, curve: AppCurves.out));
+
+    void tick() => setState(() => _drag = tween.value);
+
+    _fly
+      ..reset()
+      ..addListener(tick);
+
+    _fly.forward().whenComplete(() {
+      _fly.removeListener(tick);
+      then?.call();
+    });
+  }
+
+  void _release(double width) {
+    if (_drag.dx.abs() < _flyThreshold) {
+      // Не дотянули — карточка возвращается на место, а не остаётся косой.
+      _animateDrag(Offset.zero, then: () => setState(() => _flying = false));
+      return;
+    }
+
+    final direction = _drag.dx.isNegative ? -1 : 1;
+    setState(() => _flying = true);
+
+    _animateDrag(
+      Offset(direction * width * 1.4, _drag.dy),
+      then: () {
+        setState(() {
+          // Влево — к следующей версии, вправо — к предыдущей: барабан
+          // крутится в обе стороны, как его ни толкни.
+          _top = direction < 0 ? _at(1) : _at(widget.group.versions.length - 1);
+          _drag = Offset.zero;
+          _flying = false;
+        });
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final versions = widget.group.versions;
+    final single = versions.length == 1;
 
     return Container(
       padding: EdgeInsets.only(top: widget.first ? 0 : AppSpacing.s4),
@@ -184,36 +250,79 @@ class _GroupState extends State<_Group> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Отступ справа только у шапки: лента карточек обязана уходить
-          // под край экрана, иначе непонятно, что там есть продолжение.
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.s5),
-            child: _Header(group: widget.group, pack: widget.pack),
-          ),
+          _Header(group: widget.group, pack: widget.pack),
           const SizedBox(height: AppSpacing.s2),
-          SizedBox(
-            height: _cardHeight,
-            child: PageView.builder(
-              controller: _pages,
-              // Без этого первая и последняя карточки встают по центру, и
-              // лента выглядит съехавшей относительно всего остального.
-              padEnds: false,
-              onPageChanged: (index) => setState(() => _current = index),
-              itemCount: versions.length,
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.s3),
-                child: _VersionCard(
-                  version: versions[index],
-                  pack: widget.pack,
-                  hero: widget.hero && index == 0,
-                  latest: index == 0,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+
+              return SizedBox(
+                // Место под стопку: карточка плюс сдвиг задних краёв.
+                height: _cardHeight + _deckStep * _deckDepth,
+                child: Stack(
+                  children: [
+                    // Задние карточки рисуются с дальней: ближняя ложится
+                    // поверх неё, как в настоящей стопке.
+                    for (var depth = _deckDepth; depth >= 1; depth--)
+                      if (versions.length > depth)
+                        Positioned(
+                          top: _deckStep * depth,
+                          left: 0,
+                          right: 0,
+                          height: _cardHeight,
+                          child: Transform.scale(
+                            scale: 1 - _deckScale * depth,
+                            child: IgnorePointer(
+                              child: Opacity(
+                                opacity: 1 - 0.18 * depth,
+                                child: _VersionCard(
+                                  version: versions[_at(depth)],
+                                  pack: widget.pack,
+                                  hero: false,
+                                  latest: _at(depth) == 0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                    // Верхняя карточка: её и таскают.
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: _cardHeight,
+                      child: Transform.translate(
+                        offset: _drag,
+                        child: Transform.rotate(
+                          // Наклон от того, насколько увели: движение
+                          // читается как «карточку отбрасывают», а не как
+                          // «она едет по рельсам».
+                          angle: _drag.dx / width * 0.22,
+                          child: GestureDetector(
+                            onHorizontalDragUpdate: single || _flying
+                                ? null
+                                : (details) => setState(() => _drag += details.delta),
+                            onHorizontalDragEnd:
+                                single || _flying ? null : (_) => _release(width),
+                            child: _VersionCard(
+                              version: versions[_top],
+                              pack: widget.pack,
+                              hero: widget.hero && _top == 0,
+                              latest: _top == 0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
+              );
+            },
           ),
-          if (versions.length > 1) ...[
+          if (!single) ...[
             const SizedBox(height: AppSpacing.s2),
-            _Pager(count: versions.length, index: _current),
+            _Pager(count: versions.length, index: _top),
           ],
           const SizedBox(height: AppSpacing.s4),
         ],
@@ -313,7 +422,7 @@ class _Pager extends StatelessWidget {
         ],
         const SizedBox(width: AppSpacing.s3),
         Text(
-          index == 0 ? 'сейчас · листайте вбок' : 'версия ${index + 1} из $count',
+          index == 0 ? 'сейчас · смахните вбок' : 'версия ${index + 1} из $count',
           style: context.texts.labelSmall,
         ),
       ],

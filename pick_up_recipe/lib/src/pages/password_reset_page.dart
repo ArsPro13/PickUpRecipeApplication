@@ -134,6 +134,7 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
   @override
   Widget build(BuildContext context) {
     return AppScreen(
+      showNav: false,
       title: _step == ResetStep.done ? 'Готово' : 'Новый пароль',
       body: switch (_step) {
         ResetStep.requestCode => _requestCodeStep(),

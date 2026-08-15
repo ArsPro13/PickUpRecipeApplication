@@ -84,6 +84,10 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   int? _openStep;
   bool _saving = false;
 
+  /// Идентификатор сохранённой версии. Пока null — рецепт не сохранён, и
+  /// уходить с экрана не с чем.
+  int? _savedId;
+
   @override
   void initState() {
     super.initState();
@@ -173,6 +177,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         Row(
           children: [
             Expanded(
+              // Кнопка не гаснет после сохранения: правку можно продолжить
+              // и сохранить ещё раз — цепочка версий это и есть.
               child: AppButton(
                 label: 'Сохранить',
                 kind: AppButtonKind.secondary,
@@ -190,6 +196,15 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             ),
           ],
         ),
+        // Сохранение — конец дела, и после него нужен выход, а не молчание:
+        // «Сохранено» в снекбаре гасло, а человек оставался в редакторе,
+        // не понимая, закончил он или нет.
+        if (_savedId != null)
+          AppButton(
+            label: 'На главную',
+            icon: AppIcons.uiPack,
+            onPressed: () => context.router.navigate(const PacksRoute()),
+          ),
       ],
     );
   }
@@ -729,6 +744,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         // экране уже те, что уехали, — перечитывать их незачем, а «Заварить»
         // после сохранения должно вести на сохранённое, а не на прежнее.
         _recipe.id = savedId;
+        _savedId = savedId;
         _saving = false;
         _corrected = false;
       });

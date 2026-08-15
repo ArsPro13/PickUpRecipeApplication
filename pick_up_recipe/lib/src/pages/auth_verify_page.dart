@@ -116,6 +116,7 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
     final ready = _code.text.length == 6;
 
     return AppScreen(
+      showNav: false,
       title: 'Подтвердите почту',
       body: [
         Column(

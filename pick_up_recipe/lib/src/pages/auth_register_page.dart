@@ -96,6 +96,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   @override
   Widget build(BuildContext context) {
     return AppScreen(
+      showNav: false,
       title: 'Создать аккаунт',
       body: [
         HeroSurface(

@@ -88,6 +88,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
   @override
   Widget build(BuildContext context) {
     return AppScreen(
+      showNav: false,
       title: 'Вход',
       body: [
         HeroSurface(

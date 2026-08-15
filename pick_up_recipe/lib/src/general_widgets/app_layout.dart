@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
+import 'app_bottom_nav.dart';
 import 'app_icon.dart';
 
 /// Экран с шапкой и нижней панелью действий.
@@ -25,6 +26,7 @@ class AppScreen extends StatelessWidget {
     this.actions = const [],
     this.bottom = const [],
     this.showBack = true,
+    this.showNav = true,
     this.padding = const EdgeInsets.fromLTRB(
       AppSpacing.s5,
       AppSpacing.s5,
@@ -46,6 +48,11 @@ class AppScreen extends StatelessWidget {
   final List<Widget> bottom;
 
   final bool showBack;
+
+  /// Нижняя навигация. Выключена на входе и регистрации: вкладки там ведут
+  /// в закрытую часть, и гвард развернул бы человека обратно.
+  final bool showNav;
+
   final EdgeInsets padding;
 
   @override
@@ -73,6 +80,10 @@ class AppScreen extends StatelessWidget {
           if (bottom.isNotEmpty) AppBottomBar(children: bottom),
         ],
       ),
+      // Навигация видна на всех экранах, а не только в корне: иначе с
+      // третьего экрана ветки до «Моих пачек» приходится идти стрелкой
+      // назад несколько раз.
+      bottomNavigationBar: showNav ? const AppBottomNav() : null,
     );
   }
 }

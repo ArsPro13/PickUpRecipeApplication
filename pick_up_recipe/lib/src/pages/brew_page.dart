@@ -39,6 +39,7 @@ import '../features/recipes/domain/brew_engine.dart';
 import '../features/recipes/domain/brew_step.dart';
 import '../features/recipes/domain/brew_template.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
+import '../general_widgets/app_bottom_nav.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
@@ -312,6 +313,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
       appBar: AppBar(
         title: Text(_methodName(), style: context.texts.bodySmall),
       ),
+      bottomNavigationBar: const AppBottomNav(),
       body: _ResumeScreen(
         awayFor: _awayFor,
         stepLabel: stepLabel,
@@ -427,6 +429,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
                 step: 'шаг ${_snapshot.stepIndex + 1} из ${steps.length}',
               ),
       ),
+      bottomNavigationBar: const AppBottomNav(),
       body: Column(
         children: [
           if (deviceState.isNotEmpty)
@@ -586,6 +589,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
         ),
         title: const Text('Заваривание'),
       ),
+      bottomNavigationBar: const AppBottomNav(),
       body: AppState(
         icon: AppIcons.stateError,
         title: 'В рецепте нет шагов',

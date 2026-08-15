@@ -41,6 +41,7 @@ class AuthWelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScreen(
+      showNav: false,
       body: [
         const SizedBox(height: AppSpacing.s8),
         Column(
