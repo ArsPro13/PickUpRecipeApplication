@@ -22,8 +22,12 @@ class ApiClient {
       Future<http.Response> Function() request) async {
     var response = await request();
 
+    // Access-токен живёт 15 минут, и первый запрос после паузы почти всегда
+    // ловит 401. Одного «обновить и повторить» достаточно; без повтора каждый
+    // экран, загружающийся единожды, встречал утро пустым.
     if (response.statusCode == 401) {
       await onAuthError();
+      response = await request();
     }
 
     return response;

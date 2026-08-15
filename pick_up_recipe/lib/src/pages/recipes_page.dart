@@ -78,6 +78,26 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
+    // Ошибка загрузки — не то же самое, что «ещё ни одного заваривания»:
+    // пустой экран с бодрым текстом на месте сбоя врал бы человеку.
+    if (state.groups.isEmpty && state.error != null) {
+      return ListView(
+        children: [
+          SizedBox(height: MediaQuery.sizeOf(context).height / 6),
+          AppState(
+            icon: AppIcons.stateError,
+            title: 'Рецепты не загрузились',
+            description: state.error,
+            isError: true,
+            primaryAction: AppButton(
+              label: 'Повторить',
+              onPressed: () => ref.read(recipesListProvider.notifier).load(),
+            ),
+          ),
+        ],
+      );
+    }
+
     if (state.groups.isEmpty) {
       return ListView(
         children: [
