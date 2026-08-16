@@ -41,6 +41,12 @@ class _PacksPageState extends ConsumerState<PacksPage> {
       // того, какая пачка открыта. Провайдер общий со второй вкладкой, так
       // что запрос один на обе.
       ref.read(recipesListProvider.notifier).load();
+      // Справочник приборов нужен меткам: по нему они узнают семью и цвет.
+      // Загружается один раз на всё приложение, поэтому лишнего запроса
+      // при переходах не выходит.
+      if (ref.read(brewMethodsProvider).grouped.isEmpty) {
+        ref.read(brewMethodsProvider.notifier).load();
+      }
     });
   }
 
