@@ -26,6 +26,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../routing/app_router.dart';
@@ -33,6 +34,7 @@ import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/last_brew_cache.dart';
+import '../features/recipes/application/screen_wake.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/domain/models/grind_descriptor_model.dart';
 import '../features/recipes/domain/brew_engine.dart';
@@ -147,6 +149,10 @@ class _BrewPageState extends ConsumerState<BrewPage>
     // покажут его. Пишется при входе — дальше сети может уже не быть.
     LastBrewCache.save(widget.recipe, widget.pack);
 
+    // Пока этот экран открыт, телефон не засыпает: рецепт с паузой в
+    // пятьдесят секунд иначе гаснет ровно на ней.
+    ScreenWake.keepAwake(true);
+
     if (widget.autoStart && _engine.steps.isNotEmpty) {
       _engine.start();
       _startFrames();
@@ -156,6 +162,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
 
   @override
   void dispose() {
+    ScreenWake.keepAwake(false);
     WidgetsBinding.instance.removeObserver(this);
     _frames.dispose();
     _live.dispose();
@@ -205,6 +212,15 @@ class _BrewPageState extends ConsumerState<BrewPage>
     if (next.stepIndex != previous.stepIndex ||
         next.status != previous.status ||
         second != _shownSecond) {
+      // Смена шага — единственный момент, когда человек обязан заметить
+      // экран. На кухне шумно, звук теряется, а телефон в кармане фартука
+      // чувствуется. Вибрация только на смене шага и на финале: чаще —
+      // и её начнут игнорировать.
+      if (next.stepIndex != previous.stepIndex ||
+          (next.isFinished && !previous.isFinished)) {
+        HapticFeedback.mediumImpact();
+      }
+
       _shownSecond = second;
       setState(() {});
       _followActiveStep();
