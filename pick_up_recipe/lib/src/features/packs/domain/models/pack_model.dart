@@ -42,6 +42,10 @@ class PackData {
   @JsonKey(name: "roaster_name", defaultValue: '')
   late String roasterName;
 
+  /// Степень обжарки: light / medium / dark. Пусто — неизвестна.
+  @JsonKey(name: "roast_level", defaultValue: '')
+  late String roastLevel;
+
   PackData({
     required this.packId,
     required this.userId,
@@ -55,6 +59,7 @@ class PackData {
     required this.packScaScore,
     required this.isActive,
     this.roasterName = '',
+    this.roastLevel = '',
   });
 
   factory PackData.fromJson(Map<String, dynamic> json) =>
@@ -72,6 +77,7 @@ class PackData {
       packImage: response.packImage,
       packVariety: response.packVariety,
       packScaScore: response.packScaScore,
+      roastLevel: response.roastLevel,
       // Колонки «допита» в базе нет: по вопросу 33 закрывать пачку должен
       // человек кнопкой, но ни колонки, ни ручки под это пока не завели.
       // Карточка приглушённое состояние рисовать умеет — включать нечем.

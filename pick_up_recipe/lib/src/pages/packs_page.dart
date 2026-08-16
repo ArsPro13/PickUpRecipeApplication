@@ -224,7 +224,7 @@ class PackCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.s3),
         child: Row(
           children: [
-            _Photo(image: pack.packImage),
+            _Photo(image: pack.packImage, roastLevel: pack.roastLevel),
             const SizedBox(width: AppSpacing.s4),
             Expanded(
               child: Column(
@@ -357,9 +357,10 @@ class _Tag extends StatelessWidget {
 /// Пропорция 3:4 — как на упаковке: квадрат обрезает высокие пачки по самому
 /// заметному, по имени зерна.
 class _Photo extends StatelessWidget {
-  const _Photo({required this.image});
+  const _Photo({required this.image, required this.roastLevel});
 
   final String image;
+  final String roastLevel;
 
   @override
   Widget build(BuildContext context) {
@@ -371,7 +372,7 @@ class _Photo extends StatelessWidget {
         borderRadius: AppRadius.medium,
       ),
       clipBehavior: Clip.antiAlias,
-      child: PackImage(base64Image: image),
+      child: PackImage(base64Image: image, roastLevel: roastLevel),
     );
   }
 }
@@ -381,34 +382,91 @@ class _Photo extends StatelessWidget {
 /// Отдельным виджетом: битая или пустая строка встречается часто — фото
 /// хранится в базе, а не в файловом хранилище, и обрезается при переносах.
 class PackImage extends StatelessWidget {
-  const PackImage({super.key, required this.base64Image, this.fit = BoxFit.cover});
+  const PackImage({
+    super.key,
+    required this.base64Image,
+    this.fit = BoxFit.cover,
+    this.roastLevel = '',
+  });
 
   final String base64Image;
   final BoxFit fit;
+
+  /// Степень обжарки: ею закрашивается место фото, пока фото нет.
+  final String roastLevel;
 
   @override
   Widget build(BuildContext context) {
     final bytes = decodePackImage(base64Image);
 
-    if (bytes == null) {
-      return Center(
-        child: AppIcon(
-          AppIcons.uiPack,
-          size: AppSizes.icon24,
-          color: context.colors.secondary,
-        ),
-      );
-    }
+    // Фото у большинства пачек ещё нет, и серый прямоугольник со значком
+    // повторялся на всей полке — десять одинаковых пятен. Заливка цвета
+    // обжарки различает пачки с расстояния и ничего не обещает: это
+    // очевидно не фотография.
+    if (bytes == null) return _RoastFill(roastLevel: roastLevel);
 
     return Image.memory(
       bytes,
       fit: fit,
-      errorBuilder: (context, _, __) => Center(
-        child: AppIcon(
-          AppIcons.uiPack,
-          size: AppSizes.icon24,
-          color: context.colors.secondary,
+      errorBuilder: (context, _, __) => _RoastFill(roastLevel: roastLevel),
+    );
+  }
+}
+
+/// Заливка на месте фото: тёплый песок у светлой обжарки, тёмный кофе у
+/// тёмной. Подпись словом — чтобы цвет не пришлось расшифровывать.
+class _RoastFill extends StatelessWidget {
+  const _RoastFill({required this.roastLevel});
+
+  final String roastLevel;
+
+  static const _light = [Color(0xFFDCB68A), Color(0xFFB07E4F)];
+  static const _medium = [Color(0xFFB98A5F), Color(0xFF6D4426)];
+  static const _dark = [Color(0xFF6B4A34), Color(0xFF322115)];
+
+  @override
+  Widget build(BuildContext context) {
+    final (colors, label) = switch (roastLevel) {
+      'light' => (_light, 'светлая'),
+      'medium' || 'medium_light' || 'medium_dark' => (_medium, 'средняя'),
+      'dark' => (_dark, 'тёмная'),
+      _ => (_medium, ''),
+    };
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
         ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(
+            child: AppIcon(
+              AppIcons.uiPack,
+              size: AppSizes.icon24,
+              color: Colors.white.withValues(alpha: 0.55),
+            ),
+          ),
+          if (label.isNotEmpty)
+            Positioned(
+              left: AppSpacing.s1,
+              right: AppSpacing.s1,
+              bottom: AppSpacing.s1,
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: context.texts.labelSmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+        ],
       ),
     );
   }

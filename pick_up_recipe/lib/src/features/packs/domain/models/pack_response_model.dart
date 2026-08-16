@@ -36,6 +36,11 @@ class PackResponseBodyModel {
 
   /// Имя обжарщика текстом (ответ на вопрос 7). Пусто — обжарщика не знаем:
   /// пачку завели руками, а не по коду с упаковки.
+  /// Степень обжарки: light / medium / dark. Пусто — пачку завели руками.
+  /// По ней рисуется заливка на месте отсутствующего фото.
+  @JsonKey(name: "roast_level", defaultValue: '')
+  late String roastLevel;
+
   @JsonKey(name: "roaster_name", defaultValue: '')
   late String roasterName;
 

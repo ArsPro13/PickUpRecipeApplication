@@ -547,7 +547,10 @@ class _Photo extends StatelessWidget {
       children: [
         ColoredBox(
           color: context.palette.border,
-          child: PackImage(base64Image: pack?.packImage ?? ''),
+          child: PackImage(
+            base64Image: pack?.packImage ?? '',
+            roastLevel: pack?.roastLevel ?? '',
+          ),
         ),
         // Подпись читается поверх любого фото только с затемнением: пачки
         // бывают и очень светлые, и очень тёмные.
