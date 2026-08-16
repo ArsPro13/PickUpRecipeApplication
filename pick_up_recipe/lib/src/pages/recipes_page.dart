@@ -27,6 +27,8 @@ import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../themes/app_icons.dart';
+import '../features/brew_methods/application/brew_methods_state.dart';
+import '../themes/method_family.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
 import 'packs_page.dart';
@@ -332,15 +334,20 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
 }
 
 /// Шапка группы: значок прибора в кружке, «кофе · метод» и число версий.
-class _Header extends StatelessWidget {
+class _Header extends ConsumerWidget {
   const _Header({required this.group, required this.pack});
 
   final RecipeGroup group;
   final PackData? pack;
 
   @override
-  Widget build(BuildContext context) {
-    final accent = context.colors.primary;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Кружок значка красится в цвет семьи прибора: воронка, пресс и холодные
+    // методы перестают выглядеть одинаково при беглом просмотре списка.
+    final family = methodFamilyColor(
+      ref.watch(brewMethodsProvider).groupSlugBySlug[group.method],
+    );
+    final accent = family ?? context.colors.primary;
 
     return Row(
       children: [

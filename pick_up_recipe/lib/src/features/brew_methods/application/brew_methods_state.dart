@@ -23,6 +23,7 @@ class BrewMethodsState {
     this.status = BrewMethodsStatus.loading,
     this.grouped = const [],
     this.iconKeyBySlug = const {},
+    this.groupSlugBySlug = const {},
     this.error,
   });
 
@@ -33,6 +34,11 @@ class BrewMethodsState {
   /// по icon_key (`v60`), и для двадцати методов этапа 1 они расходятся.
   /// Экраны, у которых в руках только slug, переводят его здесь, а не гадают.
   final Map<String, String> iconKeyBySlug;
+
+  /// Семья прибора по его slug: пуровер, иммерсия, давление, холодные.
+  /// По ней метка метода красится в свой цвет — семьдесят два прибора одним
+  /// коричневым выглядят однородной массой.
+  final Map<String, String> groupSlugBySlug;
 
   final String? error;
 }
@@ -47,11 +53,17 @@ class BrewMethodsNotifier extends StateNotifier<BrewMethodsState> {
     try {
       final methods = await _service.getMethods();
       final groups = await _service.getGroups();
+      final grouped = groupMethods(methods, groups);
+
       state = BrewMethodsState(
         status: BrewMethodsStatus.ready,
-        grouped: groupMethods(methods, groups),
+        grouped: grouped,
         iconKeyBySlug: {
           for (final method in methods) method.slug: method.iconKey,
+        },
+        groupSlugBySlug: {
+          for (final group in grouped)
+            for (final method in group.methods) method.slug: group.slug,
         },
       );
     } catch (error) {

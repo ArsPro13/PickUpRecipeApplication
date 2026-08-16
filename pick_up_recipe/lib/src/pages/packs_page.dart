@@ -17,6 +17,8 @@ import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../themes/app_icons.dart';
+import '../features/brew_methods/application/brew_methods_state.dart';
+import '../themes/method_family.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
 
@@ -193,8 +195,9 @@ class PackCard extends StatelessWidget {
   final PackData pack;
   final VoidCallback? onTap;
 
-  /// Приборы, которыми эту пачку уже заваривали.
-  final List<String> methods;
+  /// Приборы, которыми эту пачку уже заваривали: название для подписи,
+  /// slug — чтобы метка узнала семью прибора и покрасилась в её цвет.
+  final List<({String name, String slug})> methods;
 
   /// Открытая пачка — та, с которой заваривают сейчас. Обводка акцентом.
   final bool highlighted;
@@ -274,15 +277,23 @@ class PackCard extends StatelessWidget {
 
 /// Строка меток. Держит высоту, даже когда меток нет: иначе имя пачки
 /// у карточки без меток съезжает относительно соседей.
-class _Tags extends StatelessWidget {
+class _Tags extends ConsumerWidget {
   const _Tags({required this.methods, required this.done});
 
-  final List<String> methods;
+  final List<({String name, String slug})> methods;
   final bool done;
 
   @override
-  Widget build(BuildContext context) {
-    final labels = [if (done) 'допита', ...methods];
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Семья прибора приходит из справочника; пока он не загружен, метки
+    // остаются серыми — это лучше, чем мигать цветом на каждой загрузке.
+    final families = ref.watch(brewMethodsProvider).groupSlugBySlug;
+
+    final labels = <({String text, Color? color})>[
+      if (done) (text: 'допита', color: null),
+      for (final method in methods)
+        (text: method.name, color: methodFamilyColor(families[method.slug])),
+    ];
 
     return Container(
       height: AppSpacing.s6,
@@ -298,7 +309,7 @@ class _Tags extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               for (final label in labels) ...[
-                _Tag(label),
+                _Tag(label.text, color: label.color),
                 const SizedBox(width: AppSpacing.s2),
               ],
             ],
@@ -310,12 +321,18 @@ class _Tags extends StatelessWidget {
 }
 
 class _Tag extends StatelessWidget {
-  const _Tag(this.label);
+  const _Tag(this.label, {this.color});
 
   final String label;
 
+  /// Цвет семьи прибора. null — метка не про прибор («допита») или семья
+  /// ещё не приехала из справочника.
+  final Color? color;
+
   @override
   Widget build(BuildContext context) {
+    final family = color;
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.s2,
@@ -323,7 +340,12 @@ class _Tag extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         borderRadius: AppRadius.rounded,
-        border: Border.all(color: context.palette.border),
+        // Заливка в 12% и рамка в 40%: цвет должен читаться как принадлежность,
+        // а не спорить с текстом внутри метки.
+        color: family?.withValues(alpha: 0.12),
+        border: Border.all(
+          color: family?.withValues(alpha: 0.4) ?? context.palette.border,
+        ),
       ),
       child: Text(label, style: context.texts.labelSmall, maxLines: 1),
     );

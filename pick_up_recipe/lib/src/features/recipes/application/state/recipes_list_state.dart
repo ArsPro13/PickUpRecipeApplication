@@ -207,14 +207,16 @@ List<RecipeGroup> groupRecipes(
 /// Метка на карточке пачки: остаток в граммах с макета снят — под него нет ни
 /// исходного веса, ни расхода, — а методы берутся из той же истории и ничего
 /// не требуют от схемы.
-List<String> methodsOfPack(List<RecipeGroup> groups, int packId) {
-  final names = <String>[];
+/// Возвращает и название, и slug: по slug метка узнаёт семью прибора и
+/// красится в её цвет, а по названию подписывается.
+List<({String name, String slug})> methodsOfPack(List<RecipeGroup> groups, int packId) {
+  final found = <({String name, String slug})>[];
   for (final group in groups) {
     if (group.packId != packId) continue;
-    if (names.contains(group.methodName)) continue;
-    names.add(group.methodName);
+    if (found.any((item) => item.name == group.methodName)) continue;
+    found.add((name: group.methodName, slug: group.method));
   }
-  return names;
+  return found;
 }
 
 /// Дата рецепта человеческим языком: «28 июля».

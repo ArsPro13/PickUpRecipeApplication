@@ -146,8 +146,13 @@ void main() {
         },
       );
 
-      expect(methodsOfPack(groups, 1), ['Hario V60', 'Chemex']);
-      expect(methodsOfPack(groups, 2), ['AeroPress']);
+      // Метка знает и название, и slug: по slug она красится в цвет семьи.
+      expect(
+        methodsOfPack(groups, 1).map((it) => it.name).toList(),
+        ['Hario V60', 'Chemex'],
+      );
+      expect(methodsOfPack(groups, 1).map((it) => it.slug).toList(), ['hario_v60', 'chemex']);
+      expect(methodsOfPack(groups, 2).map((it) => it.name).toList(), ['AeroPress']);
       expect(methodsOfPack(groups, 3), isEmpty);
     });
   });
