@@ -64,6 +64,9 @@ List<BrewStep> brewStepsOf(RecipeData recipe) {
         stepKey: step.stepKey,
         tip: step.tip,
         isOptional: step.isOptional,
+        untilUser: step.untilUser,
+        untilSign: step.untilSign,
+        warning: step.warning,
       ),
   ];
 }
@@ -1154,11 +1157,51 @@ class _StepList extends StatelessWidget {
           AppSpacing.s5,
         ),
         itemCount: steps.length,
-        itemBuilder: (context, index) => _StepCard(
-          step: steps[index],
-          index: index,
-          snapshot: snapshot,
-        ),
+        itemBuilder: (context, index) {
+          final phase = brewPhaseOf(steps[index]);
+          final newPhase = index == 0 || brewPhaseOf(steps[index - 1]) != phase;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Заголовок фазы ставится только на её первом шаге, и только
+              // если фаз в рецепте больше одной: у трёхшагового дрип-пакета
+              // разделители были бы длиннее самих шагов.
+              if (newPhase && _hasPhases(steps)) _PhaseLabel(phase),
+              _StepCard(step: steps[index], index: index, snapshot: snapshot),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Есть ли в рецепте больше одной фазы.
+bool _hasPhases(List<BrewStep> steps) {
+  final phases = <String>{for (final step in steps) brewPhaseOf(step)};
+  return phases.length > 1;
+}
+
+/// Разделитель фазы: подпись и линия до края.
+class _PhaseLabel extends StatelessWidget {
+  const _PhaseLabel(this.phase);
+
+  final String phase;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.s2, bottom: AppSpacing.s2),
+      child: Row(
+        children: [
+          Text(
+            phase.toUpperCase(),
+            style: context.texts.labelSmall?.copyWith(letterSpacing: 1.2),
+          ),
+          const SizedBox(width: AppSpacing.s3),
+          Expanded(child: Divider(color: context.palette.border, height: 1)),
+        ],
       ),
     );
   }
@@ -1217,7 +1260,9 @@ class _StepCard extends StatelessWidget {
               Row(
                 children: [
                   AppIcon(
-                    icon,
+                    // Пройденный шаг помечается галочкой: тот же значок в
+                    // зелёном читается как «идёт», а не как «сделано».
+                    _isDone ? AppIcons.uiCheck : icon,
                     size: AppSizes.icon24,
                     color: _isDone
                         ? context.palette.success
@@ -1249,11 +1294,21 @@ class _StepCard extends StatelessWidget {
                       MetricTag(kind: MetricKind.water, label: '${step.waterG.round()} г'),
                       const SizedBox(width: AppSpacing.s2),
                     ],
-                    if (step.isOptional) const AppChip(label: 'не обязательно'),
+                    if (step.isOptional) ...[
+                      const AppChip(label: 'не обязательно'),
+                      const SizedBox(width: AppSpacing.s2),
+                    ],
+                    // Три механики конца шага — таймер, действие человека и
+                    // признак — выглядели одинаково, хотя ведут себя
+                    // по-разному. Отсюда вопрос «почему таймер стоит».
+                    _EndMark(step: step),
                   ],
                 ),
               ),
-              if (step.tip.isNotEmpty) ...[
+              if (step.warning.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.s1),
+                _WarningNote(text: step.warning),
+              ] else if (step.tip.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.s1),
                 Row(
                   children: [
@@ -1278,6 +1333,101 @@ class _StepCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Фаза заваривания, к которой относится шаг.
+///
+/// Семь шагов Origami читаются как семь дел; те же семь, разбитые на три
+/// фазы, — как три. Фаза выводится из типа шага: справочник её не хранит,
+/// а порядок в рецепте всегда один и тот же — подготовка, заваривание, финал.
+String brewPhaseOf(BrewStep step) {
+  return switch (step.type) {
+    BrewStepType.grind || BrewStepType.addIce => 'подготовка',
+    BrewStepType.serve || BrewStepType.dilute || BrewStepType.removeFilter => 'финал',
+    _ => 'заваривание',
+  };
+}
+
+/// Чем шаг кончится: таймером, действием человека или признаком.
+///
+/// Молча ничего не показываем только у обычного шага по таймеру — там метка
+/// была бы шумом: время и так стоит справа.
+class _EndMark extends StatelessWidget {
+  const _EndMark({required this.step});
+
+  final BrewStep step;
+
+  @override
+  Widget build(BuildContext context) {
+    final (icon, label) = switch (step) {
+      _ when step.untilSign.isNotEmpty => (AppIcons.uiEye, step.untilSign),
+      _ when step.untilUser => (AppIcons.uiCheck, 'пока не скажете «сделал»'),
+      _ => (null, ''),
+    };
+
+    if (icon == null) return const SizedBox.shrink();
+
+    return Flexible(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s2,
+          vertical: AppSpacing.s1 / 2,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.rounded,
+          color: context.colors.primary.withValues(alpha: 0.12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppIcon(icon, size: AppSizes.icon16, color: context.colors.primary),
+            const SizedBox(width: AppSpacing.s1),
+            Flexible(
+              child: Text(
+                label,
+                style: context.texts.labelSmall?.copyWith(color: context.colors.primary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Предупреждение обжарщика — пометкой на полях.
+///
+/// Красная плашка на шаге пугает и читается как ошибка приложения; полоска
+/// на поле — как заметка на полях книги, которой она и является.
+class _WarningNote extends StatelessWidget {
+  const _WarningNote({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: AppStroke.thick,
+          height: AppSizes.icon16,
+          margin: const EdgeInsets.only(right: AppSpacing.s2),
+          color: context.colors.tertiary,
+        ),
+        Expanded(
+          child: Text(
+            text,
+            style: context.texts.labelSmall?.copyWith(color: context.colors.tertiary),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

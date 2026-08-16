@@ -76,6 +76,9 @@ class BrewStep {
     this.waterG = 0,
     this.tip = '',
     this.isOptional = false,
+    this.untilUser = false,
+    this.untilSign = '',
+    this.warning = '',
   });
 
   final String id;
@@ -88,6 +91,16 @@ class BrewStep {
 
   final String tip;
   final bool isOptional;
+
+  /// Шаг заканчивается не по таймеру, а по человеку: он сам говорит «сделал».
+  final bool untilUser;
+
+  /// Признак, по которому шаг кончается: «пока воронка не опустеет».
+  /// Пусто — признака нет, ориентир только время.
+  final String untilSign;
+
+  /// Предупреждение обжарщика: «не дави до упора — горечь».
+  final String warning;
 
   /// Собирает шаг из того, что отдаёт сервер.
   ///
@@ -103,6 +116,9 @@ class BrewStep {
     String? stepKey,
     String? tip,
     bool isOptional = false,
+    bool untilUser = false,
+    String? untilSign,
+    String? warning,
   }) {
     final type = BrewStepType.fromWire(stepType);
 
@@ -111,6 +127,9 @@ class BrewStep {
       type: type,
       label: instruction,
       duration: Duration(seconds: timeSec),
+      untilUser: untilUser,
+      untilSign: untilSign ?? '',
+      warning: warning ?? '',
       // Вода приписывается только тем типам, которым она разрешена схемой.
       // Историческая строка могла содержать воду у шага размешивания —
       // повторять эту ошибку в плеере незачем.
