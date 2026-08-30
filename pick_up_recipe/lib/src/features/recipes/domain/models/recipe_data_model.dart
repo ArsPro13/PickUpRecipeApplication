@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_response_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
@@ -89,4 +91,18 @@ class RecipeData {
         agitationLevel: response.agitationLevel,
         steps: response.steps.map((e) => RecipeStep.fromResponse(e)).toList(),
       );
+}
+
+/// Глубокая копия рецепта.
+///
+/// Через JSON, а не полем за полем: у рецепта есть список шагов, и копия,
+/// сделанная присваиванием, делила бы его с оригиналом — правка одной версии
+/// молча меняла бы другую.
+///
+/// Именно `jsonEncode(recipe)`, а не `recipe.toJson()`: генератор оставляет в
+/// карте сами объекты шагов (`'steps': instance.steps`), и разбор такой карты
+/// падает на приведении типа. jsonEncode проходит по шагам сам и превращает
+/// их в карты — как это делает отправка на сервер.
+RecipeData copyRecipe(RecipeData recipe) {
+  return RecipeData.fromJson(jsonDecode(jsonEncode(recipe)) as Map<String, dynamic>);
 }

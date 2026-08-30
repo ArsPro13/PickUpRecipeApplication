@@ -33,6 +33,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Только ради тестов офлайна: очередь и кэш живут в настройках, а без
+  # мока настроек их не проверить. В приложении пакет уже есть — под
+  # encrypt_shared_preferences.
+  shared_preferences: ^2.3.4
   flutter_lints: ^3.0.2
   json_serializable: ^6.8.0
   auto_route_generator: ^8.0.0

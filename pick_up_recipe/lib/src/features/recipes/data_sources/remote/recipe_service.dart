@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/core/logger.dart';
+import 'package:pick_up_recipe/core/offline/local_recipes.dart';
+import 'package:pick_up_recipe/core/offline/offline_exception.dart';
+import 'package:pick_up_recipe/core/offline/outbox.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/correction_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
@@ -43,7 +46,11 @@ class RecipeService {
   /// Справочный рецепт метода — с него начинается ветка «у обжарщика нет
   /// рецепта под ваш прибор». null — у метода нет базового рецепта.
   Future<RecipeData?> getBaseRecipe(String device) async {
-    final response = await _apiClient.get('/recipe/base', {'device': device});
+    final response = await _apiClient.getCached(
+      '/recipe/base',
+      {'device': device},
+      cacheKey: 'recipe_base:$device',
+    );
 
     if (response.statusCode == 404) return null;
     if (response.statusCode != 200) {
@@ -68,23 +75,27 @@ class RecipeService {
     bool allVersions = false,
   }) async {
     try {
-      final response = await _apiClient.get(
+      final query = {
+        if (packId != null) 'pack_id': packId.toString(),
+        if (grinderId != null) 'grinder_id': grinderId.toString(),
+        if (grindStep != null) 'grind_step': grindStep.toString(),
+        if (grindSubStep != null) 'grind_sub_step': grindSubStep.toString(),
+        if (device != null) 'device': device,
+        if (startDate != null) 'start_date': startDate,
+        if (endDate != null) 'end_date': endDate,
+        if (offset != null) 'offset': offset.toString(),
+        if (limit != null) 'limit': limit.toString(),
+        if (sortBy != null) 'sort_by': sortBy,
+        // Без этого список отдаёт по одному рецепту на цепочку правок, и
+        // стопке версий на экране «Мои рецепты» взяться неоткуда.
+        if (allVersions) 'all_versions': 'true',
+      };
+
+      final response = await _apiClient.getCached(
         '/recipe/params',
-        {
-          if (packId != null) 'pack_id': packId.toString(),
-          if (grinderId != null) 'grinder_id': grinderId.toString(),
-          if (grindStep != null) 'grind_step': grindStep.toString(),
-          if (grindSubStep != null) 'grind_sub_step': grindSubStep.toString(),
-          if (device != null) 'device': device,
-          if (startDate != null) 'start_date': startDate,
-          if (endDate != null) 'end_date': endDate,
-          if (offset != null) 'offset': offset.toString(),
-          if (limit != null) 'limit': limit.toString(),
-          if (sortBy != null) 'sort_by': sortBy,
-          // Без этого список отдаёт по одному рецепту на цепочку правок, и
-          // стопке версий на экране «Мои рецепты» взяться неоткуда.
-          if (allVersions) 'all_versions': 'true',
-        },
+        query,
+        cacheKey:
+            'recipes:${query.entries.map((e) => '${e.key}=${e.value}').join('&')}',
       );
 
       if (response.statusCode == 200) {
@@ -99,7 +110,13 @@ class RecipeService {
 
           recipes.add(RecipeData.fromResponse(recipeResponseData));
         }
-        return recipes;
+
+        return withUnsentRecipes(
+          recipes,
+          LocalRecipes.all(),
+          packId: packId,
+          device: device,
+        );
       } else if (response.statusCode == 401) {
         AuthService authService = AuthService();
         authService.refreshTokens();
@@ -118,32 +135,45 @@ class RecipeService {
   ///
   /// Шкала в базе 0…10, а на экране пять звёзд — перевод делает вызывающий,
   /// потому что звёзды знает только он (открытый вопрос макета 05).
+  ///
+  /// Все семь осей необязательны и уезжают только те, что человек правда
+  /// назвал. Пустая ось — это `null` в базе, а не ноль: ноль на шкале 0…10
+  /// значит «отвратительно» и попал бы в среднюю по позиции у обжарщика.
   Future<void> postEstimation({
     required int recipeId,
-    required double aroma,
-    required double flavor,
-    required double aftertaste,
-    required double acidity,
-    required double bitterness,
-    required double sweetness,
-    required double overall,
+    double? aroma,
+    double? flavor,
+    double? aftertaste,
+    double? acidity,
+    double? bitterness,
+    double? sweetness,
+    double? overall,
     String comment = '',
   }) async {
-    final response = await _apiClient.post('/recipe/estimation', {
+    final payload = {
       'recipe_id': recipeId,
-      'aroma': aroma,
-      'flavor': flavor,
-      'aftertaste': aftertaste,
-      'acidity': acidity,
-      'bitterness': bitterness,
-      'sweetness': sweetness,
-      'overall': overall,
+      if (aroma != null) 'aroma': aroma,
+      if (flavor != null) 'flavor': flavor,
+      if (aftertaste != null) 'aftertaste': aftertaste,
+      if (acidity != null) 'acidity': acidity,
+      if (bitterness != null) 'bitterness': bitterness,
+      if (sweetness != null) 'sweetness': sweetness,
+      if (overall != null) 'overall': overall,
       'comment': comment,
       'date': DateTime.now().toUtc().toIso8601String(),
-    });
+    };
 
-    if (response.statusCode != 200) {
-      throw Exception('Оценка не сохранилась: ${response.statusCode}');
+    try {
+      final response = await _apiClient.post('/recipe/estimation', payload);
+
+      if (response.statusCode != 200) {
+        throw Exception('Оценка не сохранилась: ${response.statusCode}');
+      }
+    } on OfflineException {
+      // Оценку ставят сразу после чашки и ровно там, где заваривали, — то
+      // есть чаще всего без сети. Потерять её значит потерять единственное,
+      // ради чего человек вернулся к экрану.
+      await Outbox.enqueueEstimation(payload);
     }
   }
 
@@ -176,15 +206,58 @@ class RecipeService {
   /// отдаёт `BaseRecipe`, то есть шапку **без шагов**, и собирать из неё
   /// `RecipeData` значило бы стереть шаги на экране сразу после сохранения.
   Future<int> evolveRecipe(RecipeData recipe) async {
-    final response = await _apiClient.post('/recipe/evolve', evolvePayload(recipe));
+    final payload = evolvePayload(recipe);
 
-    if (response.statusCode != 200) {
-      throw Exception('Рецепт не сохранился: ${response.statusCode}');
+    try {
+      final response = await _apiClient.post('/recipe/evolve', payload);
+
+      if (response.statusCode != 200) {
+        throw Exception('Рецепт не сохранился: ${response.statusCode}');
+      }
+
+      final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      return (data['id'] as num?)?.toInt() ?? recipe.id;
+    } on OfflineException {
+      // Версия встаёт в очередь и получает отрицательный идентификатор.
+      // До отправки она живёт на телефоне и ведёт себя как обычный рецепт:
+      // открывается, заваривается, принимает оценку — та уедет следом.
+      //
+      // Копия делается до постановки в очередь: если она не соберётся,
+      // человек увидит отказ — и в очереди не останется дела, про которое
+      // ему сказали, что оно не сохранилось.
+      final local = copyRecipe(recipe)
+        ..date = DateTime.now().toUtc().toIso8601String();
+
+      final localId = await Outbox.enqueueEvolve(payload);
+      local.id = localId;
+      await LocalRecipes.add(local);
+
+      return localId;
     }
-
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-    return (data['id'] as num?)?.toInt() ?? recipe.id;
   }
+}
+
+/// Подмешивает к списку с сервера версии, которые ещё не уехали.
+///
+/// Вынесено функцией ради теста: без неё правка, сделанная в лесу, пропадала
+/// бы из «Моих рецептов» до первой сети — то есть ровно тогда, когда человек
+/// на неё смотрит.
+List<RecipeData> withUnsentRecipes(
+  List<RecipeData> fromServer,
+  List<RecipeData> unsentAll, {
+  int? packId,
+  String? device,
+}) {
+  final unsent = unsentAll.where((recipe) {
+    if (packId != null && recipe.packId != packId) return false;
+    if (device != null && recipe.device != device) return false;
+    return true;
+  }).toList();
+
+  if (unsent.isEmpty) return fromServer;
+
+  // Свои неотправленные — сверху: они самые свежие по определению.
+  return [...unsent, ...fromServer];
 }
 
 /// Тело запроса на сохранение версии.
@@ -200,6 +273,10 @@ Map<String, dynamic> evolvePayload(RecipeData recipe) {
   return {
     'id': recipe.id,
     'pack_id': recipe.packId,
+    // Дата версии — когда человек её сохранил, а не когда она доехала до
+    // сервера: без сети правка лежит в очереди до утра, и подписать её
+    // утренним временем значило бы соврать про вчерашнюю чашку.
+    'date': DateTime.now().toUtc().toIso8601String(),
     'grinder_id': recipe.grinderId,
     'grind_step': recipe.grindStep,
     'water': recipe.water,

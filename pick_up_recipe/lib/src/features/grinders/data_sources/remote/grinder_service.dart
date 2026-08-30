@@ -14,10 +14,16 @@ import '../../domain/models/grinder_model.dart';
 class GrinderService {
   final ApiClient _apiClient = GetIt.instance<ApiClient>();
 
-  /// Весь справочник кофемолок. Пятьдесят записей, кэшировать незачем —
-  /// экран выбора открывается редко.
+  /// Весь справочник кофемолок.
+  ///
+  /// Сохраняется на телефон: без справочника экран выбора пуст, а щелчки в
+  /// рецепте не во что перевести.
   Future<List<Grinder>> getAllGrinders() async {
-    final response = await _apiClient.get('/recipe/grinders', const {});
+    final response = await _apiClient.getCached(
+      '/recipe/grinders',
+      const {},
+      cacheKey: 'grinders',
+    );
 
     if (response.statusCode != 200) {
       throw Exception('Не удалось получить справочник кофемолок: ${response.statusCode}');
@@ -29,7 +35,11 @@ class GrinderService {
 
   /// Кофемолки пользователя вместе с признаком основной.
   Future<List<UserGrinder>> getUserGrinders() async {
-    final response = await _apiClient.get('/auth/profile', const {});
+    final response = await _apiClient.getCached(
+      '/auth/profile',
+      const {},
+      cacheKey: 'profile',
+    );
 
     if (response.statusCode != 200) {
       throw Exception('Не удалось получить профиль: ${response.statusCode}');

@@ -102,6 +102,15 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
             withdrawnName = packName;
             withdrawnRoaster = roasterName;
             targetPackId = found;
+          case CodeOffline():
+            // Код разбирает сервер, и другого способа нет. Сказать «такого
+            // кода не существует», не сумев спросить, — соврать; поэтому
+            // экран показывает офлайн, а не «не найдено».
+            state = const CoffeeState(
+              status: CoffeeStatus.failed,
+              error: 'Код проверяет сервер — без сети его не разобрать',
+            );
+            return;
         }
       }
 

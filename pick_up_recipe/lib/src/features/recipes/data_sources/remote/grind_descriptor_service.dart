@@ -10,7 +10,11 @@ class GrindDescriptorService {
   final ApiClient _apiClient = GetIt.instance<ApiClient>();
 
   Future<List<GrindDescriptor>> getDescriptors() async {
-    final response = await _apiClient.get('/reference/grind_descriptors', const {});
+    final response = await _apiClient.getCached(
+      '/reference/grind_descriptors',
+      const {},
+      cacheKey: 'grind_descriptors',
+    );
     if (response.statusCode != 200) {
       throw Exception('Не удалось получить крупность помола: ${response.statusCode}');
     }

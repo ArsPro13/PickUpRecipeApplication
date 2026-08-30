@@ -137,6 +137,17 @@ class AuthService {
     }
   }
 
+  /// Лежит ли на телефоне сессия, которой можно пользоваться без сети.
+  ///
+  /// Нужна ровно для офлайна: подтвердить токен у сервера нельзя, но и
+  /// выбрасывать человека на экран входа за то, что на кухне нет вайфая,
+  /// нельзя тем более — он остался бы без всего, что уже сохранено.
+  bool hasStoredSession() {
+    final prefs = EncryptedSharedPreferences.getInstance();
+    final refresh = prefs.getString('refresh_token');
+    return refresh != null && refresh.isNotEmpty;
+  }
+
   Future<String?> getAccessToken() async {
     final prefs = EncryptedSharedPreferences.getInstance();
     return prefs.getString('access_token');
