@@ -8,6 +8,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/offline/outbox.dart';
 import '../../routing/app_router.dart';
 import '../features/authentication/provider/authentication_state_notifier.dart';
 import '../features/grinders/application/grinder_state.dart';
@@ -90,6 +91,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               icon: AppIcons.uiUser,
               divider: false,
               onTap: () async {
+                // Выход стирает и очередь отправки. Если в ней что-то есть,
+                // человек об этом узнаёт до, а не после: оценка, поставленная
+                // в лесу, иначе просто исчезнет вместе с аккаунтом.
+                if (Outbox.pending.value > 0 && !await _confirmLogout(context)) {
+                  return;
+                }
+
                 await ref.read(authenticationStateNotifierProvider.notifier).logout();
                 if (context.mounted) {
                   await context.router.replaceAll([const AuthWelcomeRoute()]);
@@ -101,4 +109,32 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       ),
     );
   }
+}
+
+/// Предупреждение о несделанной отправке перед выходом.
+Future<bool> _confirmLogout(BuildContext context) async {
+  final waiting = Outbox.pending.value;
+
+  final leave = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Выйти, не отправив?'),
+      content: Text(
+        'Связи не было, и $waiting ${waiting == 1 ? 'дело ждёт' : 'дел ждут'} отправки — '
+        'оценки и правки рецептов. Выход сотрёт их вместе с аккаунтом.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Остаться'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Выйти'),
+        ),
+      ],
+    ),
+  );
+
+  return leave ?? false;
 }

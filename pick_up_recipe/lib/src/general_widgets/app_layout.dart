@@ -26,6 +26,7 @@ class AppScreen extends StatelessWidget {
     this.actions = const [],
     this.bottom = const [],
     this.showBack = true,
+    this.onBack,
     this.showNav = true,
     this.padding = const EdgeInsets.fromLTRB(
       AppSpacing.s5,
@@ -49,6 +50,11 @@ class AppScreen extends StatelessWidget {
 
   final bool showBack;
 
+  /// Что делает стрелка «назад». По умолчанию — обычный возврат; экран с
+  /// несохранённой работой подставляет сюда свой вопрос, чтобы стрелка и
+  /// кнопка телефона вели себя одинаково.
+  final VoidCallback? onBack;
+
   /// Нижняя навигация. Выключена на входе и регистрации: вкладки там ведут
   /// в закрытую часть, и гвард развернул бы человека обратно.
   final bool showNav;
@@ -65,7 +71,7 @@ class AppScreen extends StatelessWidget {
               automaticallyImplyLeading: false,
               leading: showBack && context.router.canPop()
                   ? IconButton(
-                      onPressed: () => context.router.maybePop(),
+                      onPressed: onBack ?? () => context.router.maybePop(),
                       icon: const AppIcon(AppIcons.uiBack, size: AppSizes.icon24),
                       tooltip: 'Назад',
                     )

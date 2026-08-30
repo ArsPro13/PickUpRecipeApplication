@@ -275,6 +275,50 @@ class _BrewPageState extends ConsumerState<BrewPage>
     _steps.animateTo(target, duration: AppDuration.base, curve: AppCurves.out);
   }
 
+  /// Идёт ли заваривание прямо сейчас.
+  ///
+  /// «Идёт» — это и пауза тоже: человек, поставивший на паузу, чтобы долить
+  /// чайник, заваривания не бросал.
+  bool get _brewing => _engine.isStarted && !_snapshot.isFinished;
+
+  /// Спрашивает, точно ли уходим с идущего заваривания.
+  ///
+  /// Кнопка «назад» на телефоне лежит там же, где палец держит корпус, и
+  /// мокрой рукой нажимается сама. Без вопроса одно касание стирало отсчёт
+  /// посреди пролива — вернуться в ту же секунду уже нельзя.
+  Future<bool> _confirmLeave() async {
+    if (!_brewing) return true;
+
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Прервать заваривание?'),
+        content: const Text(
+          'Отсчёт остановится, и вернуться к нему на этой же секунде не выйдет.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Остаться'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Прервать'),
+          ),
+        ],
+      ),
+    );
+
+    return leave ?? false;
+  }
+
+  /// Уход стрелкой в шапке — через тот же вопрос, что и кнопкой телефона.
+  Future<void> _leave() async {
+    if (await _confirmLeave() && mounted) {
+      await context.router.maybePop();
+    }
+  }
+
   void _toggle() {
     if (!_engine.isStarted) {
       _engine.start();
@@ -415,10 +459,12 @@ class _BrewPageState extends ConsumerState<BrewPage>
     final template = _template;
     final deviceState = template == BrewTemplate.valve ? _deviceState() : '';
 
-    return Scaffold(
+    // Отдельной переменной, чтобы обернуть готовый экран в PopScope, не
+    // сдвигая двести строк разметки.
+    final screen = Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => context.router.maybePop(),
+          onPressed: _leave,
           icon: const AppIcon(AppIcons.uiBack, size: AppSizes.icon24),
           tooltip: 'Назад',
         ),
@@ -553,6 +599,17 @@ class _BrewPageState extends ConsumerState<BrewPage>
           ),
         ],
       ),
+    );
+
+    return PopScope(
+      // Пока заваривание идёт, кнопка телефона не уводит молча: сначала
+      // вопрос. Доигранный рецепт отпускает сразу — терять там нечего.
+      canPop: !_brewing,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await _leave();
+      },
+      child: screen,
     );
   }
 

@@ -88,6 +88,15 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   /// уходить с экрана не с чем.
   int? _savedId;
 
+  /// Рецепт, каким он был на последнем сохранении (или при открытии).
+  ///
+  /// Сравнением с ним и определяется, есть ли что терять. Хранится строкой,
+  /// а не копией модели: у RecipeData нет равенства по значению, а списки
+  /// шагов пришлось бы сравнивать вручную.
+  late String _saved = jsonEncode(_recipe.toJson());
+
+  bool get _dirty => jsonEncode(_recipe.toJson()) != _saved;
+
   @override
   void initState() {
     super.initState();
@@ -134,8 +143,9 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     final method = _method;
     final grinder = ref.watch(grinderStateProvider).primary;
 
-    return AppScreen(
+    final screen = AppScreen(
       title: 'Ваш рецепт',
+      onBack: _leave,
       body: [
         Text(_subtitle(), style: context.texts.labelSmall),
         const SizedBox(height: AppSpacing.s3),
@@ -206,6 +216,17 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             onPressed: () => context.router.navigate(const PacksRoute()),
           ),
       ],
+    );
+
+    return PopScope(
+      // Несохранённые правки не должны уходить по нажатию кнопки телефона:
+      // экран открывается и с готовой поправкой, а она стоит человеку чашки.
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await _leave();
+      },
+      child: screen,
     );
   }
 
@@ -732,6 +753,40 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
 
   // ── Действия ─────────────────────────────────────────────────────────────
 
+  /// Спрашивает, точно ли уходим, пока правки не сохранены.
+  ///
+  /// Экран открывается и с уже применённой поправкой — уйти с него молча
+  /// значит выбросить её вместе со всем, что человек поправил руками.
+  Future<bool> _confirmLeave() async {
+    if (!_dirty) return true;
+
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Уйти без сохранения?'),
+        content: const Text('Правки не сохранены — новая версия не появится.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Остаться'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Уйти'),
+          ),
+        ],
+      ),
+    );
+
+    return leave ?? false;
+  }
+
+  Future<void> _leave() async {
+    if (await _confirmLeave() && mounted) {
+      await context.router.maybePop();
+    }
+  }
+
   Future<void> _save() async {
     if (_saving) return;
     setState(() => _saving = true);
@@ -747,8 +802,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         _savedId = savedId;
         _saving = false;
         _corrected = false;
+        _saved = jsonEncode(_recipe.toJson());
       });
-      _say('Сохранено новой версией');
+      _say(savedId < 0
+          ? 'Сохранено на телефоне — уедет, когда появится связь'
+          : 'Сохранено новой версией');
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -1096,13 +1154,3 @@ int? parseDuration(String text) {
   return minutes * 60 + seconds;
 }
 
-/// Глубокая копия рецепта: у модели нет `copyWith`, а править чужой объект
-/// нельзя — уйти отсюда назад значит отказаться от правок, а не унести их.
-///
-/// Через настоящую кодировку, а не через `fromJson(recipe.toJson())`:
-/// сгенерированный `toJson` кладёт в `steps` сами объекты `RecipeStep`, а не
-/// карты — на них рассчитывает `jsonEncode`, который позовёт `toJson` у
-/// каждого. Разбор такой «карты» падает приведением типа на первом же шаге.
-RecipeData copyRecipe(RecipeData recipe) {
-  return RecipeData.fromJson(jsonDecode(jsonEncode(recipe)) as Map<String, dynamic>);
-}

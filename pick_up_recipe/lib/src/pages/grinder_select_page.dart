@@ -10,6 +10,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/offline/network_status.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/grinders/domain/models/grinder_model.dart';
 import '../general_widgets/app_icon.dart';
@@ -185,8 +186,17 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
 
     final error = ref.read(grinderStateProvider).error;
     if (error != null) {
+      // Набор кофемолок живёт на сервере (ответ на вопрос 19), и в очередь
+      // он не встаёт: выбор делают дома, а не у чайника, и «сохраню потом»
+      // здесь означало бы, что человек ушёл, считая дело сделанным.
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Не удалось сохранить кофемолки')),
+        SnackBar(
+          content: Text(
+            NetworkStatus.online.value
+                ? 'Не удалось сохранить кофемолки'
+                : 'Без сети кофемолку не сохранить — она хранится в аккаунте',
+          ),
+        ),
       );
       return;
     }

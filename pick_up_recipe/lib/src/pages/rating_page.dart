@@ -1,8 +1,15 @@
 // Экран 05 «Как получилось» — оценка чашки.
 //
-// Обязательного здесь ровно два элемента: карта вкуса и звёзды. Всё, что нужно
-// правилам поправки, лежит выше разделителя «Необязательно», и человек,
-// который закроет экран сразу после звёзд, ничего не потеряет.
+// Обязательного здесь нет вовсе. Карта вкуса всегда в каком-то положении,
+// звёзды можно не ставить, оси можно не трогать — и кнопка внизу работает
+// при любом их сочетании. Так и должно быть: оценку ставят через минуту
+// после чашки, часто одной рукой, и экран, который отказывается закрываться,
+// пока в него не ткнули в нужное место, просто закроют силой.
+//
+// Раньше звёзды были обязательны, и кнопка на них молча ничего не делала:
+// объяснение появлялось строкой ниже, за краем экрана. Незаполненные звёзды
+// теперь уезжают как «не сказал» (в базе NULL), а не как ноль — ноль на шкале
+// 0…10 значит «отвратительно» и попал бы в среднюю по позиции у обжарщика.
 //
 // Карта вместо анкеты потому, что одна точка отвечает на оба вопроса правил:
 // горизонталь — экстракция (помол, температура, время), вертикаль —
@@ -17,8 +24,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/offline/network_status.dart';
+import '../../core/offline/offline_exception.dart';
 import '../../routing/app_router.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/domain/models/correction_model.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../features/recipes/domain/taste_map.dart';
@@ -45,25 +55,26 @@ class _RatingPageState extends ConsumerState<RatingPage> {
 
   TastePoint _point = TastePoint.center;
 
-  /// Общее впечатление в звёздах. 0 — ещё не поставили.
+  /// Общее впечатление в звёздах. 0 — не поставили, и это нормально.
   int _stars = 0;
 
   bool _busy = false;
   String? _error;
 
-  /// Шесть осей раскрываются по требованию: в обязательную часть они не
-  /// входят, а развёрнутые сразу превращают экран в анкету.
-  bool _detailsOpen = false;
+  /// Трогали ли ползунки. Нетронутые оси не уезжают вовсе: середина шкалы —
+  /// это положение ползунка по умолчанию, а не то, что человек сказал.
+  bool _axesTouched = false;
 
-  late double _aroma = 5;
-  late double _flavor = 5;
-  late double _aftertaste = 5;
-  late double _acidity = 5;
-  late double _bitterness = 5;
-  late double _sweetness = 5;
+  double _aroma = 5;
+  double _flavor = 5;
+  double _aftertaste = 5;
+  double _acidity = 5;
+  double _bitterness = 5;
+  double _sweetness = 5;
 
   /// Звёзды 1…5 → шкала 0…10, в которой живёт recipes_estimations.
-  double get _overall => _stars * 2;
+  /// null — звёзд не ставили.
+  double? get _overall => _stars == 0 ? null : _stars * 2;
 
   /// Отправляет оценку; [wantCorrection] — ещё и открыть рецепт с поправкой.
   ///
@@ -71,11 +82,6 @@ class _RatingPageState extends ConsumerState<RatingPage> {
   /// «Поправить рецепт» ведёт прямо в конструктор, где поправка уже
   /// применена, изменения помечены точками и её можно отменить целиком.
   Future<void> _submit({required bool wantCorrection}) async {
-    if (_stars == 0) {
-      setState(() => _error = 'Поставьте общую оценку — по ней рецепт попадёт в историю');
-      return;
-    }
-
     setState(() {
       _busy = true;
       _error = null;
@@ -93,15 +99,15 @@ class _RatingPageState extends ConsumerState<RatingPage> {
 
       await _service.postEstimation(
         recipeId: widget.recipe.id,
-        // Развёрнутые оси необязательны. Если их не трогали, все шесть идут
-        // общей оценкой: человек сказал одно число, и растаскивать его на
-        // шесть разных выдуманных — хуже, чем повторить honest-но одно.
-        aroma: _detailsOpen ? _aroma : _overall,
-        flavor: _detailsOpen ? _flavor : _overall,
-        aftertaste: _detailsOpen ? _aftertaste : _overall,
-        acidity: _detailsOpen ? _acidity : _overall,
-        bitterness: _detailsOpen ? _bitterness : _overall,
-        sweetness: _detailsOpen ? _sweetness : _overall,
+        // Уезжает только сказанное. Нетронутые оси не размазываются общей
+        // оценкой и не подменяются серединой шкалы: и то, и другое — числа,
+        // которых человек не называл.
+        aroma: _axesTouched ? _aroma : null,
+        flavor: _axesTouched ? _flavor : null,
+        aftertaste: _axesTouched ? _aftertaste : null,
+        acidity: _axesTouched ? _acidity : null,
+        bitterness: _axesTouched ? _bitterness : null,
+        sweetness: _axesTouched ? _sweetness : null,
         overall: _overall,
         comment: _point.isCenter ? '' : _point.summary,
       );
@@ -109,16 +115,30 @@ class _RatingPageState extends ConsumerState<RatingPage> {
       if (!mounted) return;
 
       if (!wantCorrection || _point.complaints.isEmpty) {
+        if (!NetworkStatus.online.value) {
+          _say('Оценка сохранена и уедет, когда появится связь');
+        }
         await context.router.maybePop();
         return;
       }
 
       // Сервер отвечает и списком изменений, и готовым поправленным
       // рецептом: числа считает он, клиент их не выдумывает.
-      final correction = await _service.suggestCorrection(
-        recipeId: widget.recipe.id,
-        complaints: _point.complaints,
-      );
+      final RecipeCorrection correction;
+      try {
+        correction = await _service.suggestCorrection(
+          recipeId: widget.recipe.id,
+          complaints: _point.complaints,
+        );
+      } on OfflineException {
+        // Поправку считает сервер по своим правилам — повторить их на
+        // телефоне значит завести вторые правила, которые разойдутся с
+        // первыми. Оценка уже в очереди; рецепт можно поправить руками.
+        if (!mounted) return;
+        _say('Оценка сохранена. Поправку посчитает сервер — она будет, когда появится связь');
+        await context.router.maybePop();
+        return;
+      }
 
       if (!mounted) return;
 
@@ -156,6 +176,17 @@ class _RatingPageState extends ConsumerState<RatingPage> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Ползунок подвинули: запоминаем это отдельно от значения.
+  ///
+  /// Без такого признака нетронутая середина шкалы уехала бы как «пятёрка по
+  /// аромату» — число, которого никто не называл.
+  void _axis(VoidCallback change) {
+    setState(() {
+      change();
+      _axesTouched = true;
+    });
   }
 
   void _say(String text) {
@@ -219,45 +250,39 @@ class _RatingPageState extends ConsumerState<RatingPage> {
 
         const _OptionalDivider(),
 
+        Text('Разобрать по осям', style: context.texts.bodyMedium),
+        const SizedBox(height: AppSpacing.s1),
+        Text(
+          'Можно не трогать — уедет только то, что подвинете',
+          style: context.texts.labelSmall,
+        ),
+        const SizedBox(height: AppSpacing.s3),
+
         QuietSurface(
           child: Column(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('Разобрать по осям', style: context.texts.bodyMedium),
-                  ),
-                  Switch(
-                    value: _detailsOpen,
-                    onChanged: (value) => setState(() => _detailsOpen = value),
-                  ),
-                ],
+              _Axis(label: 'Аромат', value: _aroma, onChanged: (v) => _axis(() => _aroma = v)),
+              _Axis(label: 'Вкус', value: _flavor, onChanged: (v) => _axis(() => _flavor = v)),
+              _Axis(
+                label: 'Послевкусие',
+                value: _aftertaste,
+                onChanged: (v) => _axis(() => _aftertaste = v),
               ),
-              if (_detailsOpen) ...[
-                const SizedBox(height: AppSpacing.s2),
-                _Axis(label: 'Аромат', value: _aroma, onChanged: (v) => setState(() => _aroma = v)),
-                _Axis(label: 'Вкус', value: _flavor, onChanged: (v) => setState(() => _flavor = v)),
-                _Axis(
-                  label: 'Послевкусие',
-                  value: _aftertaste,
-                  onChanged: (v) => setState(() => _aftertaste = v),
-                ),
-                _Axis(
-                  label: 'Кислотность',
-                  value: _acidity,
-                  onChanged: (v) => setState(() => _acidity = v),
-                ),
-                _Axis(
-                  label: 'Горечь',
-                  value: _bitterness,
-                  onChanged: (v) => setState(() => _bitterness = v),
-                ),
-                _Axis(
-                  label: 'Сладость',
-                  value: _sweetness,
-                  onChanged: (v) => setState(() => _sweetness = v),
-                ),
-              ],
+              _Axis(
+                label: 'Кислотность',
+                value: _acidity,
+                onChanged: (v) => _axis(() => _acidity = v),
+              ),
+              _Axis(
+                label: 'Горечь',
+                value: _bitterness,
+                onChanged: (v) => _axis(() => _bitterness = v),
+              ),
+              _Axis(
+                label: 'Сладость',
+                value: _sweetness,
+                onChanged: (v) => _axis(() => _sweetness = v),
+              ),
             ],
           ),
         ),

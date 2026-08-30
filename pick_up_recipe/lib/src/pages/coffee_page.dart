@@ -111,16 +111,19 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           ),
         ],
         const SizedBox(height: AppSpacing.s6),
+        // navigate, а не maybePop: по коду с пачки сюда приходят диплинком,
+        // и тогда под этим экраном нет ничего — обе кнопки просто молчали.
+        // Ввод и камера живут на одной вкладке, поэтому кнопка одна.
         AppButton(
           label: 'Сканировать ещё раз',
           icon: AppIcons.uiScan,
-          onPressed: () => context.router.maybePop(),
+          onPressed: () => context.router.navigate(const ScanRoute()),
         ),
         const SizedBox(height: AppSpacing.s3),
         AppButton(
-          label: 'Ввести снова',
+          label: 'К моим пачкам',
           kind: AppButtonKind.secondary,
-          onPressed: () => context.router.maybePop(),
+          onPressed: () => context.router.navigate(const PacksRoute()),
         ),
       ],
     );
@@ -141,7 +144,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
         AppButton(
           label: 'К моим пачкам',
           kind: AppButtonKind.secondary,
-          onPressed: () => context.router.maybePop(),
+          onPressed: () => context.router.navigate(const PacksRoute()),
         ),
       ],
     );
