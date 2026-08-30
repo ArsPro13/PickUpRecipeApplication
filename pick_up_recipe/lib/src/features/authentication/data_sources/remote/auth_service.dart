@@ -112,7 +112,24 @@ class AuthService {
     }
   }
 
-  Future<void> refreshTokens() async {
+  /// Обновление токенов, которое не спорит само с собой.
+  ///
+  /// Сервер помнит только последний выданный refresh (он лежит в
+  /// `users.refresh_token`), и два параллельных обновления кончаются тем, что
+  /// второе приходит с уже отданным токеном и получает 401 — а это для
+  /// приложения «сессии нет», то есть человека выбрасывает на экран входа
+  /// посреди работы.
+  ///
+  /// Параллельные 401 — обычное дело: экран поднимает три запроса сразу, и
+  /// каждый зовёт обновление. Поэтому поход за токенами один на всех: кто
+  /// пришёл вторым, ждёт того же ответа.
+  static Future<void>? _refreshing;
+
+  Future<void> refreshTokens() {
+    return _refreshing ??= _refreshTokens().whenComplete(() => _refreshing = null);
+  }
+
+  Future<void> _refreshTokens() async {
     try {
       final response = await _apiClient.postRefresh('/auth/refresh');
 

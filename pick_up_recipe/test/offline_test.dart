@@ -18,6 +18,7 @@ import 'package:pick_up_recipe/core/offline/network_status.dart';
 import 'package:pick_up_recipe/core/offline/offline_cache.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
 import 'package:pick_up_recipe/core/offline/outbox.dart';
+import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
@@ -40,6 +41,18 @@ class FakeApiClient extends ApiClient {
 
   /// Сеть «пропала»: любой запрос отваливается, как в лесу.
   bool offline = false;
+
+  /// Что отвечать на обновление токенов.
+  http.Response Function()? refreshReply;
+
+  @override
+  Future<http.Response> postRefresh(String endpoint) async {
+    if (offline) throw const OfflineException();
+    calls.add((endpoint, const {}));
+
+    final reply = refreshReply;
+    return reply == null ? http.Response('{}', 200) : reply();
+  }
 
   /// Что отвечать на GET по адресу.
   final Map<String, http.Response Function()> getReplies = {};
@@ -404,6 +417,49 @@ void main() {
       expect(offlineBarText(online: false, waiting: 5), contains('5 дел уедут'));
       expect(offlineBarText(online: false, waiting: 11), contains('11 дел уедут'));
       expect(offlineBarText(online: false, waiting: 21), contains('21 дело уедет'));
+    });
+  });
+
+  group('обновление токенов', () {
+    test('параллельные 401 обновляют токены один раз', () async {
+      var refreshes = 0;
+      api.refreshReply = () {
+        refreshes++;
+        return http.Response(
+          '{"access_token":"a","refresh_token":"r"}',
+          200,
+          headers: const {'content-type': 'application/json; charset=utf-8'},
+        );
+      };
+
+      final service = AuthService();
+      await Future.wait([
+        service.refreshTokens(),
+        service.refreshTokens(),
+        service.refreshTokens(),
+      ]);
+
+      expect(refreshes, 1,
+          reason: 'сервер помнит только последний refresh — второй запрос'
+              ' с тем же токеном означал бы выход из аккаунта');
+    });
+
+    test('следующее обновление ходит заново', () async {
+      var refreshes = 0;
+      api.refreshReply = () {
+        refreshes++;
+        return http.Response(
+          '{"access_token":"a","refresh_token":"r"}',
+          200,
+          headers: const {'content-type': 'application/json; charset=utf-8'},
+        );
+      };
+
+      final service = AuthService();
+      await service.refreshTokens();
+      await service.refreshTokens();
+
+      expect(refreshes, 2);
     });
   });
 

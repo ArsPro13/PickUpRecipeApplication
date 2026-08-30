@@ -61,9 +61,12 @@ class _RatingPageState extends ConsumerState<RatingPage> {
   bool _busy = false;
   String? _error;
 
-  /// Трогали ли ползунки. Нетронутые оси не уезжают вовсе: середина шкалы —
+  /// Какие ползунки трогали. Нетронутая ось не уезжает вовсе: середина шкалы —
   /// это положение ползунка по умолчанию, а не то, что человек сказал.
-  bool _axesTouched = false;
+  ///
+  /// По одной оси, а не общим признаком: подпись обещает, что уедет только
+  /// подвинутое, и «тронул аромат — поехали все шесть» было бы обманом.
+  final Set<String> _touched = {};
 
   double _aroma = 5;
   double _flavor = 5;
@@ -102,12 +105,12 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         // Уезжает только сказанное. Нетронутые оси не размазываются общей
         // оценкой и не подменяются серединой шкалы: и то, и другое — числа,
         // которых человек не называл.
-        aroma: _axesTouched ? _aroma : null,
-        flavor: _axesTouched ? _flavor : null,
-        aftertaste: _axesTouched ? _aftertaste : null,
-        acidity: _axesTouched ? _acidity : null,
-        bitterness: _axesTouched ? _bitterness : null,
-        sweetness: _axesTouched ? _sweetness : null,
+        aroma: _touched.contains('aroma') ? _aroma : null,
+        flavor: _touched.contains('flavor') ? _flavor : null,
+        aftertaste: _touched.contains('aftertaste') ? _aftertaste : null,
+        acidity: _touched.contains('acidity') ? _acidity : null,
+        bitterness: _touched.contains('bitterness') ? _bitterness : null,
+        sweetness: _touched.contains('sweetness') ? _sweetness : null,
         overall: _overall,
         comment: _point.isCenter ? '' : _point.summary,
       );
@@ -182,10 +185,10 @@ class _RatingPageState extends ConsumerState<RatingPage> {
   ///
   /// Без такого признака нетронутая середина шкалы уехала бы как «пятёрка по
   /// аромату» — число, которого никто не называл.
-  void _axis(VoidCallback change) {
+  void _axis(String axis, VoidCallback change) {
     setState(() {
       change();
-      _axesTouched = true;
+      _touched.add(axis);
     });
   }
 
@@ -261,27 +264,35 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         QuietSurface(
           child: Column(
             children: [
-              _Axis(label: 'Аромат', value: _aroma, onChanged: (v) => _axis(() => _aroma = v)),
-              _Axis(label: 'Вкус', value: _flavor, onChanged: (v) => _axis(() => _flavor = v)),
+              _Axis(
+                label: 'Аромат',
+                value: _aroma,
+                onChanged: (v) => _axis('aroma', () => _aroma = v),
+              ),
+              _Axis(
+                label: 'Вкус',
+                value: _flavor,
+                onChanged: (v) => _axis('flavor', () => _flavor = v),
+              ),
               _Axis(
                 label: 'Послевкусие',
                 value: _aftertaste,
-                onChanged: (v) => _axis(() => _aftertaste = v),
+                onChanged: (v) => _axis('aftertaste', () => _aftertaste = v),
               ),
               _Axis(
                 label: 'Кислотность',
                 value: _acidity,
-                onChanged: (v) => _axis(() => _acidity = v),
+                onChanged: (v) => _axis('acidity', () => _acidity = v),
               ),
               _Axis(
                 label: 'Горечь',
                 value: _bitterness,
-                onChanged: (v) => _axis(() => _bitterness = v),
+                onChanged: (v) => _axis('bitterness', () => _bitterness = v),
               ),
               _Axis(
                 label: 'Сладость',
                 value: _sweetness,
-                onChanged: (v) => _axis(() => _sweetness = v),
+                onChanged: (v) => _axis('sweetness', () => _sweetness = v),
               ),
             ],
           ),
