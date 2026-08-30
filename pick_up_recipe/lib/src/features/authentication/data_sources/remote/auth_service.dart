@@ -145,6 +145,14 @@ class AuthService {
           throw Exception('Invalid response format: tokens are missing');
         }
       } else {
+        // Сервер отверг refresh — он мёртв: у сервера лежит только последний
+        // выданный, и этот им уже не является. Держать его на телефоне значит
+        // при каждом запуске считать сессию своей и показывать пустые экраны
+        // вместо экрана входа.
+        if (response.statusCode == 401 || response.statusCode == 403) {
+          await logout();
+        }
+
         throw Exception(
             'Failed to refresh tokens: ${response.statusCode} ${response.reasonPhrase}');
       }

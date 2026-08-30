@@ -7,6 +7,7 @@ import 'package:pick_up_recipe/core/offline/network_status.dart';
 import 'package:pick_up_recipe/core/offline/offline_sync.dart';
 import 'package:pick_up_recipe/prefs_key.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
+import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
 import 'package:pick_up_recipe/src/general_widgets/offline_bar.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_surface.dart';
@@ -32,6 +33,11 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   final getIt = GetIt.instance;
+
+  /// Роутер живёт полем, а не создаётся в build: иначе каждая перерисовка
+  /// заводила новый, и позвать его снаружи (например, чтобы увести на вход)
+  /// было не у кого.
+  late final AppRouter _router = AppRouter(ref);
 
   void setupGetIt(WidgetRef ref) {
     if (!getIt.isRegistered<ApiClient>()) {
@@ -83,9 +89,20 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     setupGetIt(ref);
+
+    // Сессия кончилась не по нашей воле — сервер отверг токены. Гвард к этому
+    // моменту уже пропустил человека внутрь и второй раз не сработает: без
+    // этого он остаётся на экране, который больше ничего не покажет.
+    ref.listen(authenticationStateNotifierProvider, (previous, next) {
+      if (previous?.status == AuthState.isAuthenticated &&
+          next.status == AuthState.needsAuthentication) {
+        _router.replaceAll([const AuthWelcomeRoute()]);
+      }
+    });
+
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      routerConfig: AppRouter(ref).config(),
+      routerConfig: _router.config(),
       scaffoldMessengerKey: messengerKey,
       theme: lightTheme,
       darkTheme: darkTheme,
