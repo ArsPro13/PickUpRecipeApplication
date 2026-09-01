@@ -1,13 +1,13 @@
 // СГЕНЕРИРОВАНО scripts/extract-icons.js — НЕ ПРАВИТЬ РУКАМИ.
 //
-// Источник — design/tokens/icons.js, 161 иконок (ADR 0005).
+// Источник — design/tokens/icons.js, 160 иконок (ADR 0005).
 // Перегенерировать: node scripts/extract-icons.js
 
 /// Пути к иконкам набора. Ключи совпадают с id в спрайте макетов.
 abstract final class AppIcons {
   static const String _base = 'assets/icons';
 
-  // ── method (72) ──
+  // ── method (71) ──
   static const String methodV60 = '$_base/ico-method-v60.svg';
   static const String methodOrigami = '$_base/ico-method-origami.svg';
   static const String methodChemex = '$_base/ico-method-chemex.svg';
@@ -16,7 +16,6 @@ abstract final class AppIcons {
   static const String methodMelitta = '$_base/ico-method-melitta.svg';
   static const String methodDaiso = '$_base/ico-method-daiso.svg';
   static const String methodLilydrip = '$_base/ico-method-lilydrip.svg';
-  static const String methodKoar = '$_base/ico-method-koar.svg';
   static const String methodTorch = '$_base/ico-method-torch.svg';
   static const String methodPhoenix = '$_base/ico-method-phoenix.svg';
   static const String methodGina = '$_base/ico-method-gina.svg';
@@ -191,7 +190,6 @@ abstract final class AppIcons {
     '$_base/ico-method-melitta.svg',
     '$_base/ico-method-daiso.svg',
     '$_base/ico-method-lilydrip.svg',
-    '$_base/ico-method-koar.svg',
     '$_base/ico-method-torch.svg',
     '$_base/ico-method-phoenix.svg',
     '$_base/ico-method-gina.svg',

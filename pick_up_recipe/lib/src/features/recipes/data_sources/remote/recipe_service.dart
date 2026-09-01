@@ -87,7 +87,7 @@ class RecipeService {
         if (limit != null) 'limit': limit.toString(),
         if (sortBy != null) 'sort_by': sortBy,
         // Без этого список отдаёт по одному рецепту на цепочку правок, и
-        // стопке версий на экране «Мои рецепты» взяться неоткуда.
+        // стопке версий на экране «Рецепты» взяться неоткуда.
         if (allVersions) 'all_versions': 'true',
       };
 

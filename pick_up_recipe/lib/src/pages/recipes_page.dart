@@ -1,4 +1,4 @@
-// Экран 07 «Мои рецепты» — вторая вкладка.
+// Экран 07 «Рецепты» — вторая вкладка.
 //
 // Группа — пара «кофе + метод» (ответ Q23b), а не цепочка prev_id/next_id: на
 // экране это выглядит одинаково, но владелец выбрал пару. Версии внутри
@@ -74,7 +74,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
     final packs = ref.watch(activePacksNotifierProvider).activePacks;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Мои рецепты')),
+      appBar: AppBar(title: const Text('Рецепты')),
       body: RefreshIndicator(
         onRefresh: () => ref.read(recipesListProvider.notifier).load(),
         child: _body(state, packs),
