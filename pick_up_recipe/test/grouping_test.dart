@@ -4,6 +4,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/application/brew_methods_state.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/domain/brew_method.dart';
+import 'package:pick_up_recipe/src/features/codes/application/coffee_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_list_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 
@@ -156,4 +157,79 @@ void main() {
       expect(methodsOfPack(groups, 3), isEmpty);
     });
   });
+
+  group('экран кофе: чем заварить', () {
+    const groups = [
+      BrewMethodGroup(id: 1, slug: 'pour_over', name: 'Пуровер', iconKey: 'v60', sortOrder: 1),
+    ];
+
+    RecipeData packRecipe(String device) => RecipeData(
+          id: device.hashCode,
+          device: device,
+          date: '2026-09-01T08:00:00Z',
+          packId: 44,
+          grinderId: 1,
+          grindStep: '26',
+          grindSubStep: null,
+          water: 250,
+          time: 150,
+          temperature: 93,
+          load: 15,
+          title: '',
+          notes: '',
+          grindDescriptor: '',
+          agitationLevel: null,
+          steps: const [],
+        );
+
+    test('приборы с рецептом обжарщика стоят в начале группы', () {
+      // В справочнике orea тридцатая: без подъёма её белая строка тонет
+      // между двумя десятками прозрачных, и листать до неё надо руками.
+      final grouped = groupMethods([
+        method('hario_v60', groupId: 1, sortOrder: 1),
+        method('chemex', groupId: 1, sortOrder: 2),
+        method('origami', groupId: 1, sortOrder: 3),
+        method('orea', groupId: 1, sortOrder: 30),
+      ], groups);
+
+      final (result, _) = buildCoffeeMethods(grouped, [packRecipe('orea')]);
+
+      expect(result.single.methods.first.slug, 'orea');
+      expect(result.single.methods.first.hasRecipe, isTrue);
+    });
+
+    test('порядок справочника внутри половин сохраняется', () {
+      final grouped = groupMethods([
+        method('hario_v60', groupId: 1, sortOrder: 1),
+        method('chemex', groupId: 1, sortOrder: 2),
+        method('origami', groupId: 1, sortOrder: 3),
+        method('orea', groupId: 1, sortOrder: 30),
+      ], groups);
+
+      final (result, _) = buildCoffeeMethods(
+        grouped,
+        [packRecipe('orea'), packRecipe('chemex')],
+      );
+
+      // Наверху — с рецептами, между собой в порядке справочника;
+      // ниже — остальные, тоже в своём порядке.
+      expect(
+        result.single.methods.map((m) => m.slug).toList(),
+        ['chemex', 'orea', 'hario_v60', 'origami'],
+      );
+    });
+
+    test('без рецептов порядок остаётся справочным', () {
+      final grouped = groupMethods([
+        method('hario_v60', groupId: 1, sortOrder: 1),
+        method('chemex', groupId: 1, sortOrder: 2),
+      ], groups);
+
+      final (result, _) = buildCoffeeMethods(grouped, const []);
+
+      expect(result.single.methods.map((m) => m.slug).toList(),
+          ['hario_v60', 'chemex']);
+    });
+  });
+
 }

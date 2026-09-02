@@ -159,7 +159,6 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
       final methods = await _methods.getMethods();
       final groups = await _methods.getGroups();
       final recipes = await _recipes.getByParams(packId: packId) ?? const <RecipeData>[];
-
       return buildCoffeeMethods(groupMethods(methods, groups), recipes);
     } catch (_) {
       return (const <CoffeeMethodGroup>[], null);
@@ -169,6 +168,21 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
   /// Разбирает код до похода на сервер.
   static bool isCodeUsable(String code) => PackCode.isValid(code);
 }
+
+/// Приборы с рецептом обжарщика — в начало своей группы.
+///
+/// В каталоге семьдесят один прибор, и рецепт обжарщика есть у двух-трёх.
+/// В порядке справочника они разбросаны между двумя десятками прозрачных
+/// строк: Orea с готовым рецептом стояла тридцатой, и до неё надо было
+/// листать. Белая строка отличается от прозрачной, только если её видно.
+///
+/// Порядок справочника внутри каждой половины сохраняется: это не сортировка
+/// по имени, а перенос вверх — привычные приборы остаются на привычных
+/// местах друг относительно друга.
+List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods) => [
+      ...methods.where((method) => method.hasRecipe),
+      ...methods.where((method) => !method.hasRecipe),
+    ];
 
 /// Раскладывает справочник методов и рецепты зерна в то, что рисует экран.
 ///
@@ -184,7 +198,7 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
     for (final group in grouped)
       CoffeeMethodGroup(
         name: group.name,
-        methods: [
+        methods: _withRecipesFirst([
           for (final method in group.methods)
             CoffeeMethod(
               slug: method.slug,
@@ -192,7 +206,7 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
               iconKey: method.iconKey,
               hasRecipe: withRecipe.contains(method.slug),
             ),
-        ],
+        ]),
       ),
   ];
 
