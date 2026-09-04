@@ -68,11 +68,16 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
     }
   }
 
-  Future<void> register(String email, String password) async {
+  Future<void> register(
+    String email,
+    String password,
+    String legalConsentVersion,
+  ) async {
     try {
       await _authService.register(
         email,
         password,
+        legalConsentVersion,
       );
     } catch (e) {
       rethrow;

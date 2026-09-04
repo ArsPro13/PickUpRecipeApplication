@@ -71,11 +71,22 @@ class AuthService {
     }
   }
 
-  Future<void> register(String email, String password) async {
+  /// Регистрация.
+  ///
+  /// [legalConsentVersion] — редакция правовых документов, с которой человек
+  /// согласился отметкой в форме. Сервер отвечает 422, если её нет или она
+  /// не совпадает с опубликованной: согласие без указания, с ЧЕМ именно
+  /// человек согласился, не доказывает ничего.
+  Future<void> register(
+    String email,
+    String password,
+    String legalConsentVersion,
+  ) async {
     try {
       final response = await _apiClient.post('/auth/register', {
         'email': email,
         'password': password,
+        'legal_consent_version': legalConsentVersion,
       });
 
       if (response.statusCode != 200) {
