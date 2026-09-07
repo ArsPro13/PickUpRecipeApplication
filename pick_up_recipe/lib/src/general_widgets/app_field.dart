@@ -69,18 +69,43 @@ class AppField extends StatefulWidget {
 
 class _AppFieldState extends State<AppField> {
   final FocusNode _focus = FocusNode();
+
+  /// Прокрутка строки внутри поля. Своя, а не внутренняя у TextField:
+  /// до внутренней снаружи не дотянуться, а отматывать её нужно нам.
+  final ScrollController _line = ScrollController();
+
   late bool _hidden = widget.obscure;
 
   @override
   void initState() {
     super.initState();
-    _focus.addListener(() => setState(() {}));
+    _focus.addListener(_onFocusChanged);
   }
 
   @override
   void dispose() {
+    _focus.removeListener(_onFocusChanged);
     _focus.dispose();
+    _line.dispose();
     super.dispose();
+  }
+
+  /// Ушли из поля — показываем начало строки.
+  ///
+  /// Пока в поле пишут, оно отмотано к курсору, то есть к концу: длинная
+  /// почта видна как «...@example.com». После перехода в следующее поле это
+  /// уже не курсор, а всё, что осталось от введённого, и по хвосту домена
+  /// человек не узнаёт, тот ли адрес он набрал. Начало строки отвечает на
+  /// вопрос «что здесь введено», конец — нет.
+  ///
+  /// Обратно ничего не прибивается: вернулся фокус — EditableText сам
+  /// отматывает строку к курсору, и дописывать с конца по-прежнему видно.
+  void _onFocusChanged() {
+    setState(() {});
+
+    if (_focus.hasFocus || !_line.hasClients) return;
+
+    _line.jumpTo(_line.position.minScrollExtent);
   }
 
   @override
@@ -125,6 +150,7 @@ class _AppFieldState extends State<AppField> {
                 child: TextField(
                   controller: widget.controller,
                   focusNode: _focus,
+                  scrollController: _line,
                   enabled: widget.enabled,
                   obscureText: _hidden,
                   autocorrect: false,
