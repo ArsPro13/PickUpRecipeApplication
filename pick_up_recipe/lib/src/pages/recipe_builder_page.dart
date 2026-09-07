@@ -33,9 +33,11 @@ import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../features/recipes/domain/models/recipe_step_model.dart';
 import '../features/recipes/domain/models/step_type_model.dart';
 import '../features/recipes/domain/models/user_step_type_model.dart';
+import '../general_widgets/amount_stepper.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import '../general_widgets/duration_wheel_sheet.dart';
 import '../general_widgets/step_type_sheet.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
@@ -356,12 +358,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             changed: _stepChanged(index),
             onToggle: () => setState(() => _openStep = _openStep == index ? null : index),
             onPickType: () => _pickType(index),
-            onEditWater: () => _editInt(
-              title: 'Вода на шаге',
-              suffix: 'г',
-              value: step.water,
-              apply: (value) => step.water = value,
-            ),
+            onWaterChanged: (value) => setState(() => step.water = value),
             onEditTime: () => _editDuration(step),
             onEditText: () => _editStepText(step),
             onRemove: () => _removeStep(index),
@@ -658,34 +655,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   }
 
   Future<void> _editDuration(RecipeStep step) async {
-    final controller = TextEditingController(text: formatDuration(step.time));
-
-    final seconds = await showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Длительность'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.datetime,
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9:]'))],
-          decoration: const InputDecoration(hintText: 'мин:сек, например 0:35'),
-          onSubmitted: (text) => Navigator.of(context).pop(parseDuration(text)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Отмена'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(parseDuration(controller.text)),
-            child: const Text('Готово'),
-          ),
-        ],
-      ),
-    );
-
-    if (seconds == null) return;
+    final seconds = await showDurationSheet(context, seconds: step.time);
+    if (seconds == null || !mounted) return;
     setState(() => step.time = seconds);
   }
 
@@ -882,6 +853,7 @@ class _ParamRow extends StatelessWidget {
     this.changed = false,
     this.readOnly = false,
     this.onTap,
+    this.control,
   });
 
   final MetricKind kind;
@@ -892,6 +864,11 @@ class _ParamRow extends StatelessWidget {
   final bool changed;
   final bool readOnly;
   final VoidCallback? onTap;
+
+  /// Чем значение правится, если тапом по числу этого не сделать: счётчик
+  /// с плюсом и минусом вместо поля. Задано — [value] не показывается,
+  /// число рисует само управление.
+  final Widget? control;
 
   @override
   Widget build(BuildContext context) {
@@ -912,7 +889,9 @@ class _ParamRow extends StatelessWidget {
               ],
             ),
           ),
-          if (readOnly)
+          if (control != null)
+            control!
+          else if (readOnly)
             Text(value, style: context.texts.bodyMedium?.copyWith(color: context.colors.secondary))
           else
             _ValueBox(value: value, changed: changed, onTap: onTap),
@@ -986,7 +965,7 @@ class _StepRow extends StatelessWidget {
     required this.changed,
     required this.onToggle,
     required this.onPickType,
-    required this.onEditWater,
+    required this.onWaterChanged,
     required this.onEditTime,
     required this.onEditText,
     required this.onRemove,
@@ -999,7 +978,7 @@ class _StepRow extends StatelessWidget {
   final bool changed;
   final VoidCallback onToggle;
   final VoidCallback onPickType;
-  final VoidCallback onEditWater;
+  final ValueChanged<int> onWaterChanged;
   final VoidCallback onEditTime;
   final VoidCallback onEditText;
   final VoidCallback onRemove;
@@ -1076,9 +1055,16 @@ class _StepRow extends StatelessWidget {
             if (stepTakesWater(step))
               _ParamRow(
                 kind: MetricKind.water,
-                name: 'Вода на шаге',
+                // Не «Вода на шаге»: со счётчиком строка занимает 176 точек
+                // справа, и на 360 подпись переехала бы на вторую строку.
+                // Внутри карточки шага другой воды всё равно нет.
+                name: 'Вода',
                 value: '${step.water} г',
-                onTap: onEditWater,
+                control: AmountStepper(
+                  value: step.water,
+                  suffix: 'г',
+                  onChanged: onWaterChanged,
+                ),
               ),
             // У шага, который ждёт человека, длительность не отсчёт, а
             // выдумка: показываем, чем он кончается, и править там нечего.
