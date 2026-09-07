@@ -319,5 +319,33 @@
 
   "customStepNote": "The step is tied to {device}: it will not show up in recipes for other devices. A step like this does not count water — water has its own «pour».",
 
-  "customStepSave": "Save the type"
+  "customStepSave": "Save the type",
+
+  "remove": "Remove",
+
+  "packsTitle": "My packs",
+
+  "packsEmpty": "No packs yet",
+
+  "packsEmptyNote": "Scan the code on the packaging — the roaster's recipe will follow on its own",
+
+  "packsScanCode": "Scan the code",
+
+  "packsAdd": "Add a pack",
+
+  "packsChangeGrinder": "Change the grinder",
+
+  "packsFinished": "finished",
+
+  "roastLight": "light",
+
+  "roastMedium": "medium",
+
+  "roastDark": "dark",
+
+  "ratingDraftTitle": "The rating is unfinished",
+
+  "ratingDraftContinue": "continue where you left off",
+
+  "ratingDraftContinueWith": "{summary} — continue"
 }

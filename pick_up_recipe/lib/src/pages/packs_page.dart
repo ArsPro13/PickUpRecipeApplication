@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/utils.dart';
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/application/state/active_packs_state.dart';
@@ -60,7 +61,7 @@ class _PacksPageState extends ConsumerState<PacksPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Мои пачки'),
+        title: Text(AppLocalizations.of(context).packsTitle),
         actions: const [GrinderButton(), SizedBox(width: AppSpacing.s4)],
       ),
       // Плашка стоит над списком, а не строкой в нём: недосказанная оценка не
@@ -93,10 +94,10 @@ class _PacksPageState extends ConsumerState<PacksPage> {
           SizedBox(height: MediaQuery.sizeOf(context).height / 6),
           AppState(
             icon: AppIcons.stateEmpty,
-            title: 'Пачек пока нет',
-            description: 'Отсканируйте код с упаковки — рецепт обжарщика подтянется сам',
+            title: AppLocalizations.of(context).packsEmpty,
+            description: AppLocalizations.of(context).packsEmptyNote,
             primaryAction: AppButton(
-              label: 'Сканировать код',
+              label: AppLocalizations.of(context).packsScanCode,
               icon: AppIcons.uiScan,
               onPressed: () => AutoTabsRouter.of(context).setActiveIndex(2),
             ),
@@ -119,7 +120,7 @@ class _PacksPageState extends ConsumerState<PacksPage> {
           return Padding(
             padding: const EdgeInsets.only(top: AppSpacing.s1),
             child: AppButton(
-              label: 'Добавить пачку',
+              label: AppLocalizations.of(context).packsAdd,
               icon: AppIcons.uiPlus,
               kind: AppButtonKind.secondary,
               onPressed: () => AutoTabsRouter.of(context).setActiveIndex(2),
@@ -163,6 +164,8 @@ class UnfinishedRatingPlate extends StatelessWidget {
       builder: (context, draft, _) {
         if (draft == null) return const SizedBox.shrink();
 
+        final texts = AppLocalizations.of(context);
+
         return Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.s4,
@@ -190,11 +193,11 @@ class UnfinishedRatingPlate extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Оценка не дописана', style: context.texts.bodyMedium),
+                      Text(texts.ratingDraftTitle, style: context.texts.bodyMedium),
                       Text(
                         draft.summary.isEmpty
-                            ? 'продолжить с того же места'
-                            : '${draft.summary} — продолжить',
+                            ? texts.ratingDraftContinue
+                            : texts.ratingDraftContinueWith(draft.summary),
                         style: context.texts.labelSmall,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -204,7 +207,7 @@ class UnfinishedRatingPlate extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: RatingDrafts.clear,
-                  tooltip: 'Убрать',
+                  tooltip: texts.remove,
                   icon: AppIcon(
                     AppIcons.uiClose,
                     size: AppSizes.icon16,
@@ -233,7 +236,7 @@ class GrinderButton extends ConsumerWidget {
 
     return Semantics(
       button: true,
-      label: 'Сменить кофемолку',
+      label: AppLocalizations.of(context).packsChangeGrinder,
       child: InkWell(
         onTap: () => context.router.push(const GrinderSelectRoute()),
         borderRadius: AppRadius.rounded,
@@ -259,7 +262,7 @@ class GrinderButton extends ConsumerWidget {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 140),
                 child: Text(
-                  primary?.name ?? 'Выбрать кофемолку',
+                  primary?.name ?? AppLocalizations.of(context).profileChooseGrinder,
                   style: context.texts.bodySmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -386,7 +389,7 @@ class _Tags extends ConsumerWidget {
     final families = ref.watch(brewMethodsProvider).groupSlugBySlug;
 
     final labels = <({String text, Color? color})>[
-      if (done) (text: 'допита', color: null),
+      if (done) (text: AppLocalizations.of(context).packsFinished, color: null),
       for (final method in methods)
         (text: method.name, color: methodFamilyColor(families[method.slug])),
     ];
@@ -522,10 +525,11 @@ class _RoastFill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
     final (colors, label) = switch (roastLevel) {
-      'light' => (_light, 'светлая'),
-      'medium' || 'medium_light' || 'medium_dark' => (_medium, 'средняя'),
-      'dark' => (_dark, 'тёмная'),
+      'light' => (_light, texts.roastLight),
+      'medium' || 'medium_light' || 'medium_dark' => (_medium, texts.roastMedium),
+      'dark' => (_dark, texts.roastDark),
       _ => (_medium, ''),
     };
 

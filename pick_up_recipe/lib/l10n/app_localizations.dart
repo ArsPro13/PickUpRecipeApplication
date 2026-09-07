@@ -1057,6 +1057,90 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Сохранить тип'**
   String get customStepSave;
+
+  /// Крестик, убирающий плашку с экрана. Читается голосовым помощником и всплывающей подсказкой.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать'**
+  String get remove;
+
+  /// Заголовок первой вкладки: полка пачек, с которой начинается приложение.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мои пачки'**
+  String get packsTitle;
+
+  /// Мои пачки: полка пуста.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пачек пока нет'**
+  String get packsEmpty;
+
+  /// Мои пачки: что сделать, чтобы полка перестала быть пустой.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отсканируйте код с упаковки — рецепт обжарщика подтянется сам'**
+  String get packsEmptyNote;
+
+  /// Мои пачки: кнопка с пустой полки, уводящая на вкладку сканирования.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сканировать код'**
+  String get packsScanCode;
+
+  /// Мои пачки: кнопка в конце списка.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить пачку'**
+  String get packsAdd;
+
+  /// Мои пачки: подпись кнопки кофемолки в шапке для голосового помощника.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сменить кофемолку'**
+  String get packsChangeGrinder;
+
+  /// Мои пачки: метка на карточке пачки, которая кончилась.
+  ///
+  /// In ru, this message translates to:
+  /// **'допита'**
+  String get packsFinished;
+
+  /// Степень обжарки словом на месте фотографии пачки. Слово рядом с цветом: цвет сам по себе пришлось бы расшифровывать.
+  ///
+  /// In ru, this message translates to:
+  /// **'светлая'**
+  String get roastLight;
+
+  /// Степень обжарки словом на месте фотографии пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'средняя'**
+  String get roastMedium;
+
+  /// Степень обжарки словом на месте фотографии пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'тёмная'**
+  String get roastDark;
+
+  /// Плашка на вкладке «Пачки»: у человека осталась недооценённая чашка.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оценка не дописана'**
+  String get ratingDraftTitle;
+
+  /// Плашка недописанной оценки: сказать про чашку человек ещё ничего не успел.
+  ///
+  /// In ru, this message translates to:
+  /// **'продолжить с того же места'**
+  String get ratingDraftContinue;
+
+  /// Плашка недописанной оценки: что человек успел сказать. {summary} складывает домен и по-английски пока не говорит — отдельная задача.
+  ///
+  /// In ru, this message translates to:
+  /// **'{summary} — продолжить'**
+  String ratingDraftContinueWith(String summary);
 }
 
 class _AppLocalizationsDelegate

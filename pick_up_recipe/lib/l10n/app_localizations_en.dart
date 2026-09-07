@@ -618,4 +618,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customStepSave => 'Save the type';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get packsTitle => 'My packs';
+
+  @override
+  String get packsEmpty => 'No packs yet';
+
+  @override
+  String get packsEmptyNote =>
+      'Scan the code on the packaging — the roaster\'s recipe will follow on its own';
+
+  @override
+  String get packsScanCode => 'Scan the code';
+
+  @override
+  String get packsAdd => 'Add a pack';
+
+  @override
+  String get packsChangeGrinder => 'Change the grinder';
+
+  @override
+  String get packsFinished => 'finished';
+
+  @override
+  String get roastLight => 'light';
+
+  @override
+  String get roastMedium => 'medium';
+
+  @override
+  String get roastDark => 'dark';
+
+  @override
+  String get ratingDraftTitle => 'The rating is unfinished';
+
+  @override
+  String get ratingDraftContinue => 'continue where you left off';
+
+  @override
+  String ratingDraftContinueWith(String summary) {
+    return '$summary — continue';
+  }
 }

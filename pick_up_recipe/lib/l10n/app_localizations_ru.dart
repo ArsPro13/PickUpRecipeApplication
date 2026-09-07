@@ -634,4 +634,49 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get customStepSave => 'Сохранить тип';
+
+  @override
+  String get remove => 'Убрать';
+
+  @override
+  String get packsTitle => 'Мои пачки';
+
+  @override
+  String get packsEmpty => 'Пачек пока нет';
+
+  @override
+  String get packsEmptyNote =>
+      'Отсканируйте код с упаковки — рецепт обжарщика подтянется сам';
+
+  @override
+  String get packsScanCode => 'Сканировать код';
+
+  @override
+  String get packsAdd => 'Добавить пачку';
+
+  @override
+  String get packsChangeGrinder => 'Сменить кофемолку';
+
+  @override
+  String get packsFinished => 'допита';
+
+  @override
+  String get roastLight => 'светлая';
+
+  @override
+  String get roastMedium => 'средняя';
+
+  @override
+  String get roastDark => 'тёмная';
+
+  @override
+  String get ratingDraftTitle => 'Оценка не дописана';
+
+  @override
+  String get ratingDraftContinue => 'продолжить с того же места';
+
+  @override
+  String ratingDraftContinueWith(String summary) {
+    return '$summary — продолжить';
+  }
 }
