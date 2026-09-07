@@ -92,7 +92,11 @@ void main() {
     });
   });
 
-  group('оба экрана отвечают одинаково', () {
+  // Одинаково оба экрана отвечают про то, кто заканчивает шаг. Про длительность
+  // и воду ответы расходятся намеренно: конструктор решает, есть ли смысл
+  // вводить значение, плеер — есть ли смысл его показывать. Подробности в
+  // step_ending.dart; проверки ролей — в группах ниже.
+  group('кто заканчивает шаг — оба экрана отвечают одинаково', () {
     // Все четыре сочетания признаков завершения: ни одного, кнопка, признак,
     // и то и другое сразу — так рецепт приходит с сервера.
     final endings = [
@@ -112,8 +116,6 @@ void main() {
         final played = _brewStep(step);
 
         expect(played.endsByHuman, step.endsByHuman);
-        expect(played.showsDuration, step.showsDuration);
-        expect(played.showsWater, step.showsWater);
 
         expect(step.endsByHuman, ending.untilUser || ending.untilSign.isNotEmpty);
       });
@@ -127,9 +129,13 @@ void main() {
       expect(_recipeStep(time: 45).showsDuration, isTrue);
     });
 
-    test('у шага по кнопке — только если время уже задано ориентиром', () {
+    test('у шага, который ждёт человека, её нет и с заданным временем', () {
+      // Ровно то, на что жаловался владелец: у шага «смахнуть пыль и нажать»
+      // стояло 0:09. Значение из рецепта не девается никуда — просто не
+      // показывается там, где ничего не решает.
       expect(_recipeStep(time: 0, untilUser: true).showsDuration, isFalse);
-      expect(_recipeStep(time: 90, untilUser: true).showsDuration, isTrue);
+      expect(_recipeStep(time: 90, untilUser: true).showsDuration, isFalse);
+      expect(_recipeStep(time: 90, untilSign: 'пока не осядет пена').showsDuration, isFalse);
     });
   });
 

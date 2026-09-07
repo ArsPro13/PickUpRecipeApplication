@@ -8,6 +8,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/brew_engine.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/brew_step.dart';
+import 'package:pick_up_recipe/src/features/recipes/domain/step_ending.dart';
 
 /// Управляемые часы.
 class FakeClock {
@@ -714,8 +715,8 @@ void main() {
         waterG: 100,
       );
 
-      expect(gate.endsByUser, isTrue);
-      expect(timed.endsByUser, isFalse);
+      expect(gate.waitsForTap, isTrue);
+      expect(timed.waitsForTap, isFalse);
     });
 
     test('длительность показывают, только когда она есть', () {

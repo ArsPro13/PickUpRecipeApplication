@@ -39,6 +39,7 @@ import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/domain/models/grind_descriptor_model.dart';
 import '../features/recipes/domain/brew_engine.dart';
 import '../features/recipes/domain/brew_step.dart';
+import '../features/recipes/domain/step_ending.dart';
 import '../features/recipes/domain/brew_template.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../general_widgets/app_bottom_nav.dart';
@@ -1104,7 +1105,7 @@ class _BrewFrame extends StatelessWidget {
   ///
   /// null — ждать нечего, в центре будет число.
   String? _waitingLabel() {
-    if (_isPrep || !step.endsByUser) return null;
+    if (_isPrep || !step.waitsForTap) return null;
     if (snapshot.status == BrewStatus.finished) return null;
 
     // Пока таймер-ориентир такого шага ещё идёт, в центре остаётся он:
@@ -1622,7 +1623,7 @@ String brewPhaseOf(BrewStep step) {
 String brewSkipLabel(BrewStep step) {
   // На ждущем шаге «Сделал» уже стоит на главной кнопке, и второй остаётся
   // честный пропуск: шаг не сделан, а выброшен.
-  if (step.endsByUser) return 'Пропустить';
+  if (step.waitsForTap) return 'Пропустить';
 
   // Признак видно и слышно — «случилось» это про него.
   if (step.untilSign.isNotEmpty) return 'Случилось';
@@ -1643,7 +1644,7 @@ String brewSkipLabel(BrewStep step) {
 String brewStepEndNote(BrewStep step) {
   if (step.showsDuration) return '';
   if (step.untilSign.isNotEmpty) return 'по признаку';
-  if (step.endsByUser) return 'по кнопке';
+  if (step.waitsForTap) return 'по кнопке';
   return '';
 }
 

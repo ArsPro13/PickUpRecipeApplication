@@ -221,7 +221,7 @@ class BrewEngine {
     final now = _clock();
     final snapshot = snapshotAt(now);
     if (snapshot.isFinished) return;
-    if (!_steps[snapshot.stepIndex].endsByUser) return;
+    if (!_steps[snapshot.stepIndex].waitsForTap) return;
 
     _passStep(now, snapshot);
   }
@@ -235,7 +235,7 @@ class BrewEngine {
     final index = snapshot.stepIndex;
     final step = _steps[index];
 
-    if (step.endsByUser && !_confirmedSteps.contains(index)) {
+    if (step.waitsForTap && !_confirmedSteps.contains(index)) {
       final waited = _rawElapsedAt(now, _startedAt!) - _endOffsetOf(index);
       if (waited > Duration.zero) _waitingTotal += waited;
       _confirmedSteps.add(index);
@@ -393,7 +393,7 @@ class BrewEngine {
   /// null — ждать некого, время идёт до конца рецепта.
   int? _pendingGate() {
     for (var i = 0; i < _steps.length; i++) {
-      if (_steps[i].endsByUser && !_confirmedSteps.contains(i)) return i;
+      if (_steps[i].waitsForTap && !_confirmedSteps.contains(i)) return i;
     }
     return null;
   }
@@ -443,7 +443,7 @@ class BrewEngine {
 
       // За шагом, который ждёт человека, расписания нет: когда начнётся
       // следующий, решит он, а уведомление невпопад хуже, чем его отсутствие.
-      if (_steps[i].endsByUser && !_confirmedSteps.contains(i)) break;
+      if (_steps[i].waitsForTap && !_confirmedSteps.contains(i)) break;
     }
 
     return times;
