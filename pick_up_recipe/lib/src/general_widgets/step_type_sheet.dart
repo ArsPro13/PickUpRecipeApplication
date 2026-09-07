@@ -22,6 +22,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/domain/models/step_type_model.dart';
 import '../features/recipes/domain/models/user_step_type_model.dart';
@@ -138,11 +139,11 @@ class _StepTypeSheet extends ConsumerWidget {
                 ),
                 error: (error, _) => AppState(
                   icon: AppIcons.stateError,
-                  title: 'Справочник не пришёл',
-                  description: 'Без него неизвестно, какие шаги умеет этот прибор.',
+                  title: AppLocalizations.of(context).stepTypesFailed,
+                  description: AppLocalizations.of(context).stepTypesFailedNote,
                   isError: true,
                   primaryAction: AppButton(
-                    label: 'Повторить',
+                    label: AppLocalizations.of(context).retry,
                     onPressed: () => ref.invalidate(stepTypesProvider),
                   ),
                 ),
@@ -176,9 +177,14 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+    // Склонение «1 тип / 2 типа / 5 типов» и «одна ваша заготовка / 3 ваших»
+    // считает ICU, а не эта шапка: таблица форм у каждого языка своя, и
+    // написанная руками была верной ровно для одного из них — на 21 своей
+    // заготовке она говорила «21 ваших».
     final counts = own > 0
-        ? '$shown ${_typesWord(shown)} из $total и ${_ownCount(own)}'
-        : '$shown ${_typesWord(shown)} из $total';
+        ? texts.stepTypesCountWithOwn(shown, total, own)
+        : texts.stepTypesCount(shown, total);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.s4),
@@ -186,7 +192,7 @@ class _Header extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
         children: [
-          Text('Тип шага', style: context.texts.bodyMedium),
+          Text(texts.stepTypeLabel, style: context.texts.bodyMedium),
           const SizedBox(width: AppSpacing.s2),
           Expanded(
             child: Text(
@@ -200,15 +206,6 @@ class _Header extends StatelessWidget {
       ),
     );
   }
-
-  static String _typesWord(int count) => switch (count % 10) {
-        1 when count % 100 != 11 => 'тип',
-        2 || 3 || 4 when count % 100 < 12 || count % 100 > 14 => 'типа',
-        _ => 'типов',
-      };
-
-  static String _ownCount(int count) =>
-      count == 1 ? 'одна ваша заготовка' : '$count ваших';
 }
 
 class _GrabHandle extends StatelessWidget {
@@ -249,7 +246,11 @@ class _Types extends StatelessWidget {
       shrinkWrap: true,
       children: [
         for (final group in head) ..._group(context, group),
-        _GroupHeader(own.isEmpty ? 'Ваши типы' : 'Ваши типы · только для этого прибора'),
+        _GroupHeader(
+          own.isEmpty
+              ? AppLocalizations.of(context).stepTypesOwnGroup
+              : AppLocalizations.of(context).stepTypesOwnGroupOnly,
+        ),
         _Grid(
           children: [
             for (final type in own)
@@ -262,7 +263,7 @@ class _Types extends StatelessWidget {
               ),
             _TypeCell(
               icon: AppIcons.uiPlus,
-              label: 'новый',
+              label: AppLocalizations.of(context).stepTypeNew,
               dashed: true,
               onTap: () => Navigator.of(context).pop(const CustomStepPick()),
             ),
@@ -282,7 +283,9 @@ class _Types extends StatelessWidget {
 
     return [
       _GroupHeader(
-        statefulGroup ? '${group.name} · меняет состояние прибора' : group.name,
+        statefulGroup
+            ? AppLocalizations.of(context).stepTypesStateful(group.name)
+            : group.name,
       ),
       _Grid(
         children: [

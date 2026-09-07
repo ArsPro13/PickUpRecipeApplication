@@ -377,4 +377,62 @@ class AppLocalizationsRu extends AppLocalizations {
   String chooseBrewWithTime(String time) {
     return 'Заварить · $time';
   }
+
+  @override
+  String get stepTypeLabel => 'Тип шага';
+
+  @override
+  String get stepTypesFailed => 'Справочник не пришёл';
+
+  @override
+  String get stepTypesFailedNote =>
+      'Без него неизвестно, какие шаги умеет этот прибор.';
+
+  @override
+  String stepTypesCount(int shown, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      shown,
+      locale: localeName,
+      other: '$shown типов',
+      many: '$shown типов',
+      few: '$shown типа',
+      one: '$shown тип',
+    );
+    return '$_temp0 из $total';
+  }
+
+  @override
+  String stepTypesCountWithOwn(int shown, int total, int own) {
+    String _temp0 = intl.Intl.pluralLogic(
+      shown,
+      locale: localeName,
+      other: '$shown типов',
+      many: '$shown типов',
+      few: '$shown типа',
+      one: '$shown тип',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      own,
+      locale: localeName,
+      other: '$own ваших',
+      many: '$own ваших',
+      few: '$own ваших',
+      one: '$own ваша заготовка',
+    );
+    return '$_temp0 из $total и $_temp1';
+  }
+
+  @override
+  String get stepTypesOwnGroup => 'Ваши типы';
+
+  @override
+  String get stepTypesOwnGroupOnly => 'Ваши типы · только для этого прибора';
+
+  @override
+  String stepTypesStateful(String name) {
+    return '$name · меняет состояние прибора';
+  }
+
+  @override
+  String get stepTypeNew => 'новый';
 }

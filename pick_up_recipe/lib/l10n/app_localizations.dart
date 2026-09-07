@@ -757,6 +757,60 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Заварить · {time}'**
   String chooseBrewWithTime(String time);
+
+  /// Подпись «что выбираем» — в шапке листа выбора типа и в карточке шага конструктора.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип шага'**
+  String get stepTypeLabel;
+
+  /// Лист выбора типа: справочник типов шагов не пришёл с сервера.
+  ///
+  /// In ru, this message translates to:
+  /// **'Справочник не пришёл'**
+  String get stepTypesFailed;
+
+  /// Лист выбора типа: чем плохо отсутствие справочника.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без него неизвестно, какие шаги умеет этот прибор.'**
+  String get stepTypesFailedNote;
+
+  /// Лист выбора типа: сколько типов показано из всех, что есть в справочнике. Склонение «1 тип / 2 типа / 5 типов» считает ICU, а не рука: таблица форм у каждого языка своя.
+  ///
+  /// In ru, this message translates to:
+  /// **'{shown, plural, one{{shown} тип} few{{shown} типа} many{{shown} типов} other{{shown} типов}} из {total}'**
+  String stepTypesCount(int shown, int total);
+
+  /// То же, но у прибора есть свои заготовки. Оба числа склоняет ICU: рука считала «21 ваших» и «2 типов».
+  ///
+  /// In ru, this message translates to:
+  /// **'{shown, plural, one{{shown} тип} few{{shown} типа} many{{shown} типов} other{{shown} типов}} из {total} и {own, plural, one{{own} ваша заготовка} few{{own} ваших} many{{own} ваших} other{{own} ваших}}'**
+  String stepTypesCountWithOwn(int shown, int total, int own);
+
+  /// Лист выбора типа: заголовок группы своих заготовок, когда их ещё нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваши типы'**
+  String get stepTypesOwnGroup;
+
+  /// Лист выбора типа: тот же заголовок, когда заготовки есть. Хвост объясняет, почему на другом приборе их не будет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваши типы · только для этого прибора'**
+  String get stepTypesOwnGroupOnly;
+
+  /// Лист выбора типа: подзаголовок у группы, чьи типы ставят строку состояния в шапку заваривания — иначе непонятно, чем «открыть клапан» отличается от ремарки.
+  ///
+  /// In ru, this message translates to:
+  /// **'{name} · меняет состояние прибора'**
+  String stepTypesStateful(String name);
+
+  /// Лист выбора типа: клетка, открывающая форму своего шага. Не тип, а выход за справочник.
+  ///
+  /// In ru, this message translates to:
+  /// **'новый'**
+  String get stepTypeNew;
 }
 
 class _AppLocalizationsDelegate

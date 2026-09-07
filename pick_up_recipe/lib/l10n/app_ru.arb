@@ -604,5 +604,74 @@
         "type": "String"
       }
     }
+  },
+
+  "stepTypeLabel": "Тип шага",
+  "@stepTypeLabel": {
+    "description": "Подпись «что выбираем» — в шапке листа выбора типа и в карточке шага конструктора."
+  },
+
+  "stepTypesFailed": "Справочник не пришёл",
+  "@stepTypesFailed": {
+    "description": "Лист выбора типа: справочник типов шагов не пришёл с сервера."
+  },
+
+  "stepTypesFailedNote": "Без него неизвестно, какие шаги умеет этот прибор.",
+  "@stepTypesFailedNote": {
+    "description": "Лист выбора типа: чем плохо отсутствие справочника."
+  },
+
+  "stepTypesCount": "{shown, plural, one{{shown} тип} few{{shown} типа} many{{shown} типов} other{{shown} типов}} из {total}",
+  "@stepTypesCount": {
+    "description": "Лист выбора типа: сколько типов показано из всех, что есть в справочнике. Склонение «1 тип / 2 типа / 5 типов» считает ICU, а не рука: таблица форм у каждого языка своя.",
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+
+  "stepTypesCountWithOwn": "{shown, plural, one{{shown} тип} few{{shown} типа} many{{shown} типов} other{{shown} типов}} из {total} и {own, plural, one{{own} ваша заготовка} few{{own} ваших} many{{own} ваших} other{{own} ваших}}",
+  "@stepTypesCountWithOwn": {
+    "description": "То же, но у прибора есть свои заготовки. Оба числа склоняет ICU: рука считала «21 ваших» и «2 типов».",
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "own": {
+        "type": "int"
+      }
+    }
+  },
+
+  "stepTypesOwnGroup": "Ваши типы",
+  "@stepTypesOwnGroup": {
+    "description": "Лист выбора типа: заголовок группы своих заготовок, когда их ещё нет."
+  },
+
+  "stepTypesOwnGroupOnly": "Ваши типы · только для этого прибора",
+  "@stepTypesOwnGroupOnly": {
+    "description": "Лист выбора типа: тот же заголовок, когда заготовки есть. Хвост объясняет, почему на другом приборе их не будет."
+  },
+
+  "stepTypesStateful": "{name} · меняет состояние прибора",
+  "@stepTypesStateful": {
+    "description": "Лист выбора типа: подзаголовок у группы, чьи типы ставят строку состояния в шапку заваривания — иначе непонятно, чем «открыть клапан» отличается от ремарки.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "stepTypeNew": "новый",
+  "@stepTypeNew": {
+    "description": "Лист выбора типа: клетка, открывающая форму своего шага. Не тип, а выход за справочник."
   }
 }

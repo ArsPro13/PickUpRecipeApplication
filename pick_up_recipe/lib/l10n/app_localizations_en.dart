@@ -378,4 +378,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String chooseBrewWithTime(String time) {
     return 'Brew · $time';
   }
+
+  @override
+  String get stepTypeLabel => 'Step type';
+
+  @override
+  String get stepTypesFailed => 'The reference book did not arrive';
+
+  @override
+  String get stepTypesFailedNote =>
+      'Without it there is no telling which steps this device can do.';
+
+  @override
+  String stepTypesCount(int shown, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      shown,
+      locale: localeName,
+      other: '$shown types',
+      one: '$shown type',
+    );
+    return '$_temp0 of $total';
+  }
+
+  @override
+  String stepTypesCountWithOwn(int shown, int total, int own) {
+    String _temp0 = intl.Intl.pluralLogic(
+      shown,
+      locale: localeName,
+      other: '$shown types',
+      one: '$shown type',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      own,
+      locale: localeName,
+      other: '$own presets of your own',
+      one: '$own preset of your own',
+    );
+    return '$_temp0 of $total and $_temp1';
+  }
+
+  @override
+  String get stepTypesOwnGroup => 'Your types';
+
+  @override
+  String get stepTypesOwnGroupOnly => 'Your types · only for this device';
+
+  @override
+  String stepTypesStateful(String name) {
+    return '$name · changes the state of the device';
+  }
+
+  @override
+  String get stepTypeNew => 'new';
 }

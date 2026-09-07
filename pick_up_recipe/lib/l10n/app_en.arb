@@ -219,5 +219,23 @@
 
   "chooseMineNote": "past versions",
 
-  "chooseBrewWithTime": "Brew · {time}"
+  "chooseBrewWithTime": "Brew · {time}",
+
+  "stepTypeLabel": "Step type",
+
+  "stepTypesFailed": "The reference book did not arrive",
+
+  "stepTypesFailedNote": "Without it there is no telling which steps this device can do.",
+
+  "stepTypesCount": "{shown, plural, one{{shown} type} other{{shown} types}} of {total}",
+
+  "stepTypesCountWithOwn": "{shown, plural, one{{shown} type} other{{shown} types}} of {total} and {own, plural, one{{own} preset of your own} other{{own} presets of your own}}",
+
+  "stepTypesOwnGroup": "Your types",
+
+  "stepTypesOwnGroupOnly": "Your types · only for this device",
+
+  "stepTypesStateful": "{name} · changes the state of the device",
+
+  "stepTypeNew": "new"
 }
