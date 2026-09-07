@@ -504,5 +504,105 @@
   "conflictOpenBuilder": "Всё равно открыть конструктор",
   "@conflictOpenBuilder": {
     "description": "Конфликт жалоб: второй выход — всё-таки подвинуть цифры."
+  },
+
+  "unitGrams": "{value} г",
+  "@unitGrams": {
+    "description": "Число с граммами. Число уже посчитано и записано на месте вызова — здесь только единица и её место в строке.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+
+  "unitMillilitres": "{value} мл",
+  "@unitMillilitres": {
+    "description": "Число с миллилитрами. Как и граммы: число приходит готовым, строка ставит единицу.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+
+  "edit": "Править",
+  "@edit": {
+    "description": "Кнопка правки рецепта. Одна на все экраны, где рецепт можно подвинуть."
+  },
+
+  "recipesTitle": "Рецепты",
+  "@recipesTitle": {
+    "description": "Заголовок экрана со списком рецептов. Отдельно от подписи вкладки: там ярлык, здесь название экрана."
+  },
+
+  "chooseFailed": "Рецепты не открылись",
+  "@chooseFailed": {
+    "description": "Выбор рецепта: список не пришёл с сервера."
+  },
+
+  "chooseNoBase": "У этого метода нет справочного рецепта",
+  "@chooseNoBase": {
+    "description": "Выбор рецепта: базового рецепта у метода в базе не оказалось."
+  },
+
+  "chooseBaseFailed": "Рецепт не открылся: {error}",
+  "@chooseBaseFailed": {
+    "description": "Выбор рецепта: базовый рецепт запрашивали, но запрос не прошёл.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "chooseRoaster": "От обжарщика",
+  "@chooseRoaster": {
+    "description": "Выбор рецепта: заголовок первого раздела."
+  },
+
+  "chooseRoasterNote": "под это зерно",
+  "@chooseRoasterNote": {
+    "description": "Выбор рецепта: пояснение к разделу обжарщика."
+  },
+
+  "chooseBase": "Базовый",
+  "@chooseBase": {
+    "description": "Выбор рецепта: заголовок второго раздела."
+  },
+
+  "chooseBaseNote": "из справочника",
+  "@chooseBaseNote": {
+    "description": "Выбор рецепта: пояснение к базовому разделу."
+  },
+
+  "chooseMethodRecipe": "Рецепт метода",
+  "@chooseMethodRecipe": {
+    "description": "Выбор рецепта: строка, ведущая на заваривание по справочному рецепту."
+  },
+
+  "chooseMethodRecipeNote": "зерно не учитывает",
+  "@chooseMethodRecipeNote": {
+    "description": "Выбор рецепта: чем справочный рецепт хуже рецепта обжарщика."
+  },
+
+  "chooseMine": "Ваши рецепты",
+  "@chooseMine": {
+    "description": "Выбор рецепта: заголовок третьего раздела."
+  },
+
+  "chooseMineNote": "прошлые версии",
+  "@chooseMineNote": {
+    "description": "Выбор рецепта: пояснение к разделу своих рецептов."
+  },
+
+  "chooseBrewWithTime": "Заварить · {time}",
+  "@chooseBrewWithTime": {
+    "description": "Выбор рецепта: кнопка заваривания с длительностью рецепта в виде м:сс.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
   }
 }

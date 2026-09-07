@@ -322,4 +322,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conflictOpenBuilder => 'Open the builder anyway';
+
+  @override
+  String unitGrams(String value) {
+    return '$value g';
+  }
+
+  @override
+  String unitMillilitres(String value) {
+    return '$value ml';
+  }
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get recipesTitle => 'Recipes';
+
+  @override
+  String get chooseFailed => 'The recipes did not open';
+
+  @override
+  String get chooseNoBase => 'This method has no reference recipe';
+
+  @override
+  String chooseBaseFailed(String error) {
+    return 'The recipe did not open: $error';
+  }
+
+  @override
+  String get chooseRoaster => 'From the roaster';
+
+  @override
+  String get chooseRoasterNote => 'made for this coffee';
+
+  @override
+  String get chooseBase => 'Basic';
+
+  @override
+  String get chooseBaseNote => 'from the reference book';
+
+  @override
+  String get chooseMethodRecipe => 'The method\'s recipe';
+
+  @override
+  String get chooseMethodRecipeNote => 'does not account for the coffee';
+
+  @override
+  String get chooseMine => 'Your recipes';
+
+  @override
+  String get chooseMineNote => 'past versions';
+
+  @override
+  String chooseBrewWithTime(String time) {
+    return 'Brew · $time';
+  }
 }

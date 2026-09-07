@@ -321,4 +321,60 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get conflictOpenBuilder => 'Всё равно открыть конструктор';
+
+  @override
+  String unitGrams(String value) {
+    return '$value г';
+  }
+
+  @override
+  String unitMillilitres(String value) {
+    return '$value мл';
+  }
+
+  @override
+  String get edit => 'Править';
+
+  @override
+  String get recipesTitle => 'Рецепты';
+
+  @override
+  String get chooseFailed => 'Рецепты не открылись';
+
+  @override
+  String get chooseNoBase => 'У этого метода нет справочного рецепта';
+
+  @override
+  String chooseBaseFailed(String error) {
+    return 'Рецепт не открылся: $error';
+  }
+
+  @override
+  String get chooseRoaster => 'От обжарщика';
+
+  @override
+  String get chooseRoasterNote => 'под это зерно';
+
+  @override
+  String get chooseBase => 'Базовый';
+
+  @override
+  String get chooseBaseNote => 'из справочника';
+
+  @override
+  String get chooseMethodRecipe => 'Рецепт метода';
+
+  @override
+  String get chooseMethodRecipeNote => 'зерно не учитывает';
+
+  @override
+  String get chooseMine => 'Ваши рецепты';
+
+  @override
+  String get chooseMineNote => 'прошлые версии';
+
+  @override
+  String chooseBrewWithTime(String time) {
+    return 'Заварить · $time';
+  }
 }

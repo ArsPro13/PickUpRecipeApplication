@@ -187,5 +187,37 @@
 
   "conflictBrewAgain": "Brew it the same way again",
 
-  "conflictOpenBuilder": "Open the builder anyway"
+  "conflictOpenBuilder": "Open the builder anyway",
+
+  "unitGrams": "{value} g",
+
+  "unitMillilitres": "{value} ml",
+
+  "edit": "Edit",
+
+  "recipesTitle": "Recipes",
+
+  "chooseFailed": "The recipes did not open",
+
+  "chooseNoBase": "This method has no reference recipe",
+
+  "chooseBaseFailed": "The recipe did not open: {error}",
+
+  "chooseRoaster": "From the roaster",
+
+  "chooseRoasterNote": "made for this coffee",
+
+  "chooseBase": "Basic",
+
+  "chooseBaseNote": "from the reference book",
+
+  "chooseMethodRecipe": "The method's recipe",
+
+  "chooseMethodRecipeNote": "does not account for the coffee",
+
+  "chooseMine": "Your recipes",
+
+  "chooseMineNote": "past versions",
+
+  "chooseBrewWithTime": "Brew · {time}"
 }

@@ -661,6 +661,102 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Всё равно открыть конструктор'**
   String get conflictOpenBuilder;
+
+  /// Число с граммами. Число уже посчитано и записано на месте вызова — здесь только единица и её место в строке.
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} г'**
+  String unitGrams(String value);
+
+  /// Число с миллилитрами. Как и граммы: число приходит готовым, строка ставит единицу.
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} мл'**
+  String unitMillilitres(String value);
+
+  /// Кнопка правки рецепта. Одна на все экраны, где рецепт можно подвинуть.
+  ///
+  /// In ru, this message translates to:
+  /// **'Править'**
+  String get edit;
+
+  /// Заголовок экрана со списком рецептов. Отдельно от подписи вкладки: там ярлык, здесь название экрана.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рецепты'**
+  String get recipesTitle;
+
+  /// Выбор рецепта: список не пришёл с сервера.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рецепты не открылись'**
+  String get chooseFailed;
+
+  /// Выбор рецепта: базового рецепта у метода в базе не оказалось.
+  ///
+  /// In ru, this message translates to:
+  /// **'У этого метода нет справочного рецепта'**
+  String get chooseNoBase;
+
+  /// Выбор рецепта: базовый рецепт запрашивали, но запрос не прошёл.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рецепт не открылся: {error}'**
+  String chooseBaseFailed(String error);
+
+  /// Выбор рецепта: заголовок первого раздела.
+  ///
+  /// In ru, this message translates to:
+  /// **'От обжарщика'**
+  String get chooseRoaster;
+
+  /// Выбор рецепта: пояснение к разделу обжарщика.
+  ///
+  /// In ru, this message translates to:
+  /// **'под это зерно'**
+  String get chooseRoasterNote;
+
+  /// Выбор рецепта: заголовок второго раздела.
+  ///
+  /// In ru, this message translates to:
+  /// **'Базовый'**
+  String get chooseBase;
+
+  /// Выбор рецепта: пояснение к базовому разделу.
+  ///
+  /// In ru, this message translates to:
+  /// **'из справочника'**
+  String get chooseBaseNote;
+
+  /// Выбор рецепта: строка, ведущая на заваривание по справочному рецепту.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рецепт метода'**
+  String get chooseMethodRecipe;
+
+  /// Выбор рецепта: чем справочный рецепт хуже рецепта обжарщика.
+  ///
+  /// In ru, this message translates to:
+  /// **'зерно не учитывает'**
+  String get chooseMethodRecipeNote;
+
+  /// Выбор рецепта: заголовок третьего раздела.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваши рецепты'**
+  String get chooseMine;
+
+  /// Выбор рецепта: пояснение к разделу своих рецептов.
+  ///
+  /// In ru, this message translates to:
+  /// **'прошлые версии'**
+  String get chooseMineNote;
+
+  /// Выбор рецепта: кнопка заваривания с длительностью рецепта в виде м:сс.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заварить · {time}'**
+  String chooseBrewWithTime(String time);
 }
 
 class _AppLocalizationsDelegate
