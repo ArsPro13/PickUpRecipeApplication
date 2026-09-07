@@ -4,7 +4,9 @@ import 'package:encrypt_shared_preferences/provider.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/core/logger.dart';
+import 'package:pick_up_recipe/core/offline/offline_exception.dart';
 import 'package:pick_up_recipe/src/features/authentication/domain/auth_rules.dart';
+import 'package:pick_up_recipe/src/features/authentication/domain/code_resend.dart';
 
 class AuthService {
   final ApiClient _apiClient = GetIt.instance<ApiClient>();
@@ -38,11 +40,21 @@ class AuthService {
   ///
   /// Без неё человек, у которого письмо не дошло, оказывался в тупике:
   /// ручка на бэкенде была, а клиент её не звал.
-  Future<void> resendVerificationCode(String email) async {
-    final response = await _apiClient.post('/mail/send_verify_email', {'email': email});
+  ///
+  /// Возвращает разобранный исход, а не бросает исключение: «слишком часто»,
+  /// «почта не работает» и «адрес не тот» — не одна ошибка на троих, а три
+  /// разных совета человеку, и различать их по тексту исключения нельзя.
+  ///
+  /// Отдельной ручки повтора нет и не нужно: письмо шлёт та же
+  /// `/mail/send_verify_email`, которая считает частоту по адресу получателя
+  /// и отвечает сроком до следующей попытки — и при отказе, и при успехе.
+  Future<ResendOutcome> resendVerificationCode(String email) async {
+    try {
+      final response = await _apiClient.post('/mail/send_verify_email', {'email': email});
 
-    if (response.statusCode != 200) {
-      throw AuthFailure.fromResponse(response, action: 'отправить код');
+      return ResendOutcome.fromResponse(response);
+    } on OfflineException {
+      return const ResendOutcome(ResendStatus.offline);
     }
   }
 

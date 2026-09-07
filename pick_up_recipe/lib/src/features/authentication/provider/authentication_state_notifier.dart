@@ -4,6 +4,7 @@ import 'package:pick_up_recipe/core/offline/offline_cache.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
 import 'package:pick_up_recipe/core/offline/outbox.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
+import 'package:pick_up_recipe/src/features/authentication/domain/code_resend.dart';
 
 import 'authentication_state.dart';
 
@@ -85,7 +86,7 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
   }
 
   /// Повторная отправка кода подтверждения.
-  Future<void> resendVerificationCode(String email) =>
+  Future<ResendOutcome> resendVerificationCode(String email) =>
       _authService.resendVerificationCode(email);
 
   /// Письмо для сброса пароля.

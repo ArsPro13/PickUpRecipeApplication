@@ -9,12 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config.dart';
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/authentication/domain/auth_rules.dart';
 import '../features/authentication/provider/authentication_state_notifier.dart';
 import '../general_widgets/app_field.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import 'auth_rule_texts.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -50,9 +52,11 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
   }
 
   Future<void> _submit() async {
+    final texts = AppLocalizations.of(context);
+
     setState(() {
-      _emailError = AuthRules.emailError(_email.text);
-      _passwordError = AuthRules.passwordError(_password.text);
+      _emailError = AuthRules.emailProblem(_email.text)?.text(texts);
+      _passwordError = AuthRules.passwordProblem(_password.text)?.text(texts);
     });
     if (_emailError != null || _passwordError != null) return;
 
@@ -87,16 +91,18 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return AppScreen(
       showNav: false,
-      title: 'Вход',
+      title: texts.loginTitle,
       body: [
         HeroSurface(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AppField(
-                label: 'Почта',
+                label: texts.fieldEmail,
                 controller: _email,
                 icon: AppIcons.uiMail,
                 hint: 'you@example.com',
@@ -110,7 +116,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
               ),
               const SizedBox(height: AppSpacing.s4),
               AppField(
-                label: 'Пароль',
+                label: texts.fieldPassword,
                 controller: _password,
                 icon: AppIcons.uiLock,
                 obscure: true,
@@ -130,7 +136,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
                     PasswordResetRoute(email: _email.text.trim()),
                   ),
                   child: Text(
-                    'Забыли пароль?',
+                    texts.loginForgot,
                     style: context.texts.bodySmall?.copyWith(color: context.colors.primary),
                   ),
                 ),
@@ -140,10 +146,10 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
         ),
       ],
       bottom: [
-        AppButton(label: 'Войти', loading: _busy, onPressed: _busy ? null : _submit),
+        AppButton(label: texts.authSignIn, loading: _busy, onPressed: _busy ? null : _submit),
         SwapLine(
-          question: 'Нет аккаунта?',
-          action: 'Создать',
+          question: texts.loginNoAccount,
+          action: texts.loginCreate,
           onTap: () => context.router.replace(const AuthRegisterRoute()),
         ),
       ],

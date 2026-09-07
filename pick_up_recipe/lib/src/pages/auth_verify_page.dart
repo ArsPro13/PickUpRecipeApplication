@@ -1,12 +1,16 @@
 // Подтверждение почты кодом из письма.
 //
-// Три вещи, без которых экран был тупиком:
+// Экран, на котором чаще всего заканчивается регистрация, — и заканчивается
+// молча: письмо не пришло, а перед человеком пустые шесть ячеек и никакого
+// объяснения. Поэтому здесь не только поле кода:
 //
-//   • повторная отправка — ручка на бэкенде была, клиент её не звал, и
-//     человек без письма не мог ничего;
-//   • отсчёт до повторной отправки: на всех почтовых ручках стоит ограничение
-//     в минуту, и кнопка, которая молча отвечает «слишком часто», хуже
-//     кнопки, которая честно показывает, сколько ждать;
+//   • повторная отправка с отсчётом — на почтовых ручках стоит ограничение в
+//     минуту, и кнопка, которая молча получает «слишком часто», хуже кнопки,
+//     которая честно показывает, сколько ждать;
+//   • список «если письмо не пришло»: спам, минута ожидания, опечатка в
+//     адресе, повторная отправка — других причин у не пришедшего письма нет;
+//   • отдельное объяснение, когда почта не работает на нашей стороне: человек
+//     обязан узнать, что дело не в нём, иначе он будет искать ошибку у себя;
 //   • правка адреса прямо отсюда — опечатка в почте самая частая причина,
 //     по которой код не приходит, и возвращать за ней в регистрацию жестоко.
 
@@ -16,8 +20,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/authentication/domain/auth_rules.dart';
+import '../features/authentication/domain/code_resend.dart';
 import '../features/authentication/provider/authentication_state_notifier.dart';
 import '../general_widgets/app_field.dart';
 import '../general_widgets/app_icon.dart';
@@ -26,6 +32,7 @@ import '../general_widgets/app_layout.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
+import 'auth_rule_texts.dart';
 
 @RoutePage()
 class AuthVerifyPage extends ConsumerStatefulWidget {
@@ -38,17 +45,29 @@ class AuthVerifyPage extends ConsumerStatefulWidget {
 }
 
 class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
-  /// Пауза между отправками писем. Совпадает с мидлваром OncePerMinute
-  /// на почтовых ручках: обещать раньше — значит обещать отказ.
-  static const Duration _resendCooldown = Duration(seconds: 60);
-
   final TextEditingController _code = TextEditingController();
 
   Timer? _ticker;
-  Duration _left = _resendCooldown;
+
+  /// Когда можно просить следующее письмо.
+  ///
+  /// Экран открывается сразу после регистрации, а её письмо уже ушло, —
+  /// значит минута идёт с открытия экрана, а не с первого нажатия.
+  ResendCooldown _cooldown = const ResendCooldown.idle();
 
   bool _busy = false;
+  bool _resending = false;
+
+  /// Почта на сервере не работает. Держится до удачной отправки: пока она не
+  /// прошла, объяснение остаётся правдой, и убирать его с экрана не за что.
+  bool _mailDown = false;
+
+  /// Ошибка набранного кода.
   String? _error;
+
+  /// Что случилось с письмом. Живёт отдельно от [_error]: одно про то, что
+  /// набрал человек, другое — про то, что сделал сервер.
+  _Notice? _notice;
 
   @override
   void initState() {
@@ -63,14 +82,17 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
     super.dispose();
   }
 
-  void _startCooldown() {
+  void _startCooldown([Duration pause = ResendCooldown.serverPause]) {
     _ticker?.cancel();
-    setState(() => _left = _resendCooldown);
+    setState(() => _cooldown = ResendCooldown.sentAt(DateTime.now(), pause: pause));
 
+    // Секунда здесь — шаг перерисовки, а не сам отсчёт: остаток считается от
+    // момента готовности, и приложение, свёрнутое на полминуты, возвращается
+    // с правильным числом, а не с тем, на котором его прервали.
     _ticker = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return timer.cancel();
-      setState(() => _left -= const Duration(seconds: 1));
-      if (_left <= Duration.zero) timer.cancel();
+      setState(() {});
+      if (_cooldown.ready(DateTime.now())) timer.cancel();
     });
   }
 
@@ -78,20 +100,54 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
     final email = widget.email;
     if (email == null || email.isEmpty) return;
 
-    setState(() => _error = null);
+    // В серверное ограничение вслепую не бьёмся: отказ ничего не даёт, а
+    // отсчёт после него пошёл бы заново — и ждать пришлось бы дольше.
+    if (_resending || !_cooldown.ready(DateTime.now())) return;
 
-    try {
-      await ref.read(authenticationStateNotifierProvider.notifier).resendVerificationCode(email);
-      if (mounted) _startCooldown();
-    } on AuthFailure catch (failure) {
-      if (mounted) setState(() => _error = failure.message);
-    } catch (_) {
-      if (mounted) setState(() => _error = AuthFailure.offline.message);
-    }
+    final texts = AppLocalizations.of(context);
+
+    setState(() {
+      _resending = true;
+      _notice = null;
+    });
+
+    final outcome =
+        await ref.read(authenticationStateNotifierProvider.notifier).resendVerificationCode(email);
+    if (!mounted) return;
+
+    final wait = outcome.retryAfter ?? ResendCooldown.serverPause;
+
+    setState(() {
+      _resending = false;
+
+      switch (outcome.status) {
+        case ResendStatus.sent:
+          _mailDown = false;
+          _notice = _Notice(texts.verifySentAgain, good: true);
+        case ResendStatus.tooOften:
+          // Не «слишком часто», а срок: со сроком понятно, что делать.
+          _notice = _Notice(texts.verifyTooOften(ResendCooldown.format(wait)));
+        case ResendStatus.mailDown:
+          _mailDown = true;
+          _notice = null;
+        case ResendStatus.rejected:
+          _notice = _Notice(texts.verifyAddressRejected);
+        case ResendStatus.offline:
+          _notice = _Notice(AuthFailure.offline.message);
+      }
+    });
+
+    // Отсчёт начинается после любого ответа, а не только после удачного:
+    // ограничение стоит мидлваром ПЕРЕД обработчиком, и неудачная попытка
+    // тратит минуту так же, как удачная. Исключение одно — запрос, который
+    // до сервера не дошёл: там тратить было нечего.
+    if (outcome.status != ResendStatus.offline) _startCooldown(wait);
   }
 
   Future<void> _submit() async {
-    setState(() => _error = AuthRules.codeError(_code.text));
+    final texts = AppLocalizations.of(context);
+
+    setState(() => _error = AuthRules.codeProblem(_code.text)?.text(texts));
     if (_error != null) return;
 
     setState(() => _busy = true);
@@ -112,12 +168,14 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
 
   @override
   Widget build(BuildContext context) {
-    final canResend = _left <= Duration.zero;
+    final texts = AppLocalizations.of(context);
+    final left = _cooldown.left(DateTime.now());
+    final canResend = left == Duration.zero && !_resending;
     final ready = _code.text.length == 6;
 
     return AppScreen(
       showNav: false,
-      title: 'Подтвердите почту',
+      title: texts.verifyTitle,
       body: [
         Column(
           children: [
@@ -127,7 +185,7 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
               color: context.colors.primary,
             ),
             const SizedBox(height: AppSpacing.s3),
-            Text('Отправили код из шести знаков', style: context.texts.bodyMedium),
+            Text(texts.verifySubtitle, style: context.texts.bodyMedium),
             const SizedBox(height: AppSpacing.s1),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -142,7 +200,7 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
                 const SizedBox(width: AppSpacing.s2),
                 Semantics(
                   button: true,
-                  label: 'Изменить адрес',
+                  label: texts.verifyChangeEmail,
                   child: InkResponse(
                     onTap: () => context.router.replace(const AuthRegisterRoute()),
                     radius: AppSizes.icon24,
@@ -175,34 +233,49 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
                 ),
               ],
               const SizedBox(height: AppSpacing.s4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              // Wrap, а не Row: на узком экране подпись кнопки с отсчётом в
+              // строку с вопросом не помещается и ломает разметку.
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text('Не пришёл?', style: context.texts.bodySmall),
+                  Text(texts.verifyNotArrived, style: context.texts.bodySmall),
                   TextButton(
                     onPressed: canResend ? _resend : null,
                     child: Text(
-                      canResend
-                          ? 'Отправить заново'
-                          : 'Отправить заново через ${_formatLeft(_left)}',
+                      switch ((_resending, canResend)) {
+                        (true, _) => texts.verifySending,
+                        (false, true) => texts.verifyResend,
+                        (false, false) => texts.verifyResendIn(ResendCooldown.format(left)),
+                      },
                     ),
                   ),
                 ],
               ),
+              if (_notice != null) ...[
+                const SizedBox(height: AppSpacing.s2),
+                Text(
+                  _notice!.text,
+                  style: context.texts.labelSmall?.copyWith(
+                    color: _notice!.good ? context.palette.success : context.colors.error,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.s5),
-        IconRow(
-          icon: AppIcons.uiInfo,
-          title: 'Письмо может лежать в «Спаме»',
-          subtitle: 'отправитель новый, почта его ещё не знает',
-          iconColor: context.colors.secondary,
-        ),
+        if (_mailDown) ...[
+          const SizedBox(height: AppSpacing.s5),
+          const _MailDownCard(),
+        ] else ...[
+          SectionTitle(texts.verifyHelpTitle),
+          const _WhatToDoCard(),
+        ],
       ],
       bottom: [
         AppButton(
-          label: 'Подтвердить',
+          label: texts.verifyConfirm,
           loading: _busy,
           onPressed: ready && !_busy ? _submit : null,
         ),
@@ -211,8 +284,90 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
   }
 }
 
-/// м:сс — как на таймере заваривания, чтобы формат времени был один на всё.
-String _formatLeft(Duration left) {
-  final seconds = left.inSeconds.remainder(60).toString().padLeft(2, '0');
-  return '${left.inMinutes}:$seconds';
+/// Сообщение о письме: удачная отправка или причина, по которой её не было.
+class _Notice {
+  const _Notice(this.text, {this.good = false});
+
+  final String text;
+  final bool good;
+}
+
+/// Что делать, если письма нет.
+///
+/// Четыре строки — четыре причины, других у не пришедшего письма не бывает:
+/// оно в спаме, оно ещё в пути, адрес набран с опечаткой, письма не было.
+class _WhatToDoCard extends StatelessWidget {
+  const _WhatToDoCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    return AppCard(
+      flat: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IconRow(
+            icon: AppIcons.uiInfo,
+            title: texts.verifyHelpSpam,
+            subtitle: texts.verifyHelpSpamNote,
+            iconColor: context.colors.secondary,
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          IconRow(
+            icon: AppIcons.uiHistory,
+            title: texts.verifyHelpWait,
+            subtitle: texts.verifyHelpWaitNote,
+            iconColor: context.colors.secondary,
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          IconRow(
+            icon: AppIcons.uiMail,
+            title: texts.verifyHelpAddress,
+            subtitle: texts.verifyHelpAddressNote,
+            iconColor: context.colors.secondary,
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          IconRow(
+            icon: AppIcons.uiRefresh,
+            title: texts.verifyHelpResend,
+            subtitle: texts.verifyHelpResendNote,
+            iconColor: context.colors.secondary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Почта не работает у нас.
+///
+/// Отдельная карточка вместо строки ошибки: человеку нужно не сообщение об
+/// отказе, а три вещи — что дело не в нём, что аккаунт уже создан и что
+/// делать дальше. Строкой этого не сказать.
+class _MailDownCard extends StatelessWidget {
+  const _MailDownCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    return AppCard(
+      borderColor: context.colors.error,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IconRow(
+            icon: AppIcons.uiWarning,
+            title: texts.verifyMailDownTitle,
+            subtitle: texts.verifyMailDownNote,
+            iconColor: context.colors.error,
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          Text(texts.verifyMailDownWhatToDo, style: context.texts.bodySmall),
+        ],
+      ),
+    );
+  }
 }

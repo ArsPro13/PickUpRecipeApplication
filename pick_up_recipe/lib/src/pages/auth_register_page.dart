@@ -16,6 +16,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/authentication/domain/auth_rules.dart';
 import '../features/authentication/provider/authentication_state_notifier.dart';
@@ -25,6 +26,7 @@ import '../general_widgets/legal_sheet.dart';
 import '../general_widgets/app_field.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import 'auth_rule_texts.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -88,11 +90,13 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   bool get _lengthMet => _password.text.runes.length >= AuthRules.minPasswordLength;
 
   Future<void> _submit() async {
+    final texts = AppLocalizations.of(context);
+
     setState(() {
-      _emailError = AuthRules.emailError(_email.text);
-      _passwordError = AuthRules.passwordError(_password.text);
-      _repeatError = AuthRules.repeatError(_password.text, _repeat.text);
-      _formError = _consent ? null : 'Без согласия зарегистрировать аккаунт нельзя';
+      _emailError = AuthRules.emailProblem(_email.text)?.text(texts);
+      _passwordError = AuthRules.passwordProblem(_password.text)?.text(texts);
+      _repeatError = AuthRules.repeatProblem(_password.text, _repeat.text)?.text(texts);
+      _formError = _consent ? null : texts.registerConsentRequired;
     });
     if (_emailError != null || _passwordError != null || _repeatError != null || !_consent) {
       return;
@@ -104,8 +108,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       await _loadConsentVersion();
       if (!mounted) return;
       if (_consentVersion.isEmpty) {
-        setState(() => _formError =
-            'Не удалось загрузить условия. Проверьте связь и попробуйте ещё раз.');
+        setState(() => _formError = texts.registerTermsUnavailable);
         return;
       }
     }
@@ -138,21 +141,23 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return AppScreen(
       showNav: false,
-      title: 'Создать аккаунт',
+      title: texts.authCreateAccount,
       body: [
         HeroSurface(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AppField(
-                label: 'Почта',
+                label: texts.fieldEmail,
                 controller: _email,
                 icon: AppIcons.uiMail,
                 hint: 'you@example.com',
                 error: _emailError,
-                valid: _emailError == null && AuthRules.emailError(_email.text) == null,
+                valid: _emailError == null && AuthRules.emailProblem(_email.text) == null,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
@@ -160,7 +165,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               ),
               const SizedBox(height: AppSpacing.s4),
               AppField(
-                label: 'Пароль',
+                label: texts.fieldPassword,
                 controller: _password,
                 icon: AppIcons.uiLock,
                 obscure: true,
@@ -171,12 +176,12 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
               ),
               const SizedBox(height: AppSpacing.s2),
               PasswordRule(
-                text: 'не короче ${AuthRules.minPasswordLength} знаков',
+                text: texts.registerPasswordRule(AuthRules.minPasswordLength),
                 met: _lengthMet,
               ),
               const SizedBox(height: AppSpacing.s4),
               AppField(
-                label: 'Ещё раз',
+                label: texts.registerRepeat,
                 controller: _repeat,
                 icon: AppIcons.uiLock,
                 obscure: true,
@@ -208,17 +213,21 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
         QuietSurface(
           child: IconRow(
             icon: AppIcons.uiMail,
-            title: 'Дальше — письмо с кодом',
-            subtitle: 'шесть знаков, чтобы подтвердить адрес',
+            title: texts.registerNextMail,
+            subtitle: texts.registerNextMailNote,
             iconColor: context.colors.secondary,
           ),
         ),
       ],
       bottom: [
-        AppButton(label: 'Создать аккаунт', loading: _busy, onPressed: _busy ? null : _submit),
+        AppButton(
+          label: texts.authCreateAccount,
+          loading: _busy,
+          onPressed: _busy ? null : _submit,
+        ),
         SwapLine(
-          question: 'Уже есть аккаунт?',
-          action: 'Войти',
+          question: texts.registerHaveAccount,
+          action: texts.authSignIn,
           onTap: () => context.router.replace(AuthLoginRoute()),
         ),
       ],
@@ -269,6 +278,8 @@ class _ConsentRowState extends State<_ConsentRow> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -290,12 +301,12 @@ class _ConsentRowState extends State<_ConsentRow> {
               children: [
                 // Сам текст переключает флажок, ссылки — открывают документ.
                 TextSpan(
-                  text: 'Соглашаюсь с ',
+                  text: texts.consentPrefix,
                   recognizer: TapGestureRecognizer()
                     ..onTap = () => widget.onChanged(!widget.value),
                 ),
                 TextSpan(
-                  text: 'политикой обработки данных',
+                  text: texts.consentPrivacy,
                   style: TextStyle(
                     color: context.colors.primary,
                     decoration: TextDecoration.underline,
@@ -303,12 +314,12 @@ class _ConsentRowState extends State<_ConsentRow> {
                   recognizer: _privacyTap,
                 ),
                 TextSpan(
-                  text: ' и ',
+                  text: texts.consentAnd,
                   recognizer: TapGestureRecognizer()
                     ..onTap = () => widget.onChanged(!widget.value),
                 ),
                 TextSpan(
-                  text: 'пользовательским соглашением',
+                  text: texts.consentAgreement,
                   style: TextStyle(
                     color: context.colors.primary,
                     decoration: TextDecoration.underline,
