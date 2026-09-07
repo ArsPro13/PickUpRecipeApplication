@@ -12,6 +12,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../general_widgets/app_icon.dart';
 import '../themes/app_icons.dart';
@@ -23,17 +24,26 @@ class RootScreen extends StatelessWidget {
   const RootScreen({super.key});
 
   /// Вкладки в порядке показа.
-  static const List<({PageRouteInfo<dynamic> route, String label, String icon})> tabs = [
-    (route: PacksRoute(), label: 'Пачки', icon: AppIcons.uiPack),
-    (route: RecipesRoute(), label: 'Рецепты', icon: AppIcons.uiHistory),
-    (route: ScanRoute(), label: 'Сканировать', icon: AppIcons.uiScan),
-    (route: ProfileRoute(), label: 'Профиль', icon: AppIcons.uiUser),
-  ];
+  ///
+  /// Список собирается по локали, а не лежит константой: подписи вкладок —
+  /// такой же перевод, как всё остальное, и знать их до появления контекста
+  /// неоткуда. Маршруты сравниваются по имени, поэтому пересобранный список
+  /// для вкладочного каркаса — тот же самый.
+  static List<({PageRouteInfo<dynamic> route, String label, String icon})> tabs(
+    AppLocalizations texts,
+  ) {
+    return [
+      (route: const PacksRoute(), label: texts.tabPacks, icon: AppIcons.uiPack),
+      (route: const RecipesRoute(), label: texts.tabRecipes, icon: AppIcons.uiHistory),
+      (route: const ScanRoute(), label: texts.tabScan, icon: AppIcons.uiScan),
+      (route: const ProfileRoute(), label: texts.tabProfile, icon: AppIcons.uiUser),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     return AutoTabsScaffold(
-      routes: tabs.map((tab) => tab.route).toList(),
+      routes: tabs(AppLocalizations.of(context)).map((tab) => tab.route).toList(),
       bottomNavigationBuilder: (_, tabsRouter) {
         return _TabBar(tabsRouter: tabsRouter);
       },
@@ -48,6 +58,8 @@ class _TabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tabs = RootScreen.tabs(AppLocalizations.of(context));
+
     return Container(
       decoration: BoxDecoration(
         color: context.colors.secondaryContainer,
@@ -60,10 +72,10 @@ class _TabBar extends StatelessWidget {
           height: AppSizes.tapTarget + AppSpacing.s4,
           child: Row(
             children: [
-              for (var index = 0; index < RootScreen.tabs.length; index++)
+              for (var index = 0; index < tabs.length; index++)
                 Expanded(
                   child: _TabItem(
-                    tab: RootScreen.tabs[index],
+                    tab: tabs[index],
                     selected: tabsRouter.activeIndex == index,
                     onTap: () => tabsRouter.setActiveIndex(index),
                   ),

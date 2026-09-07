@@ -601,6 +601,30 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Код состоит только из цифр'**
   String get ruleCodeDigits;
+
+  /// Первая вкладка внизу: полка своих пачек.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пачки'**
+  String get tabPacks;
+
+  /// Вторая вкладка внизу: история своих рецептов.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рецепты'**
+  String get tabRecipes;
+
+  /// Третья вкладка внизу: как добавить пачку — код, камера или без кода.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сканировать'**
+  String get tabScan;
+
+  /// Четвёртая вкладка внизу: счёт накопленного, кофемолки, выход.
+  ///
+  /// In ru, this message translates to:
+  /// **'Профиль'**
+  String get tabProfile;
 }
 
 class _AppLocalizationsDelegate

@@ -291,4 +291,16 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get ruleCodeDigits => 'Код состоит только из цифр';
+
+  @override
+  String get tabPacks => 'Пачки';
+
+  @override
+  String get tabRecipes => 'Рецепты';
+
+  @override
+  String get tabScan => 'Сканировать';
+
+  @override
+  String get tabProfile => 'Профиль';
 }

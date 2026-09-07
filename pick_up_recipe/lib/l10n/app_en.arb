@@ -167,5 +167,13 @@
 
   "ruleCodeLength": "The code has six digits",
 
-  "ruleCodeDigits": "The code is digits only"
+  "ruleCodeDigits": "The code is digits only",
+
+  "tabPacks": "Packs",
+
+  "tabRecipes": "Recipes",
+
+  "tabScan": "Scan",
+
+  "tabProfile": "Profile"
 }

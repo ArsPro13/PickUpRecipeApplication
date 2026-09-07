@@ -292,4 +292,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ruleCodeDigits => 'The code is digits only';
+
+  @override
+  String get tabPacks => 'Packs';
+
+  @override
+  String get tabRecipes => 'Recipes';
+
+  @override
+  String get tabScan => 'Scan';
+
+  @override
+  String get tabProfile => 'Profile';
 }
