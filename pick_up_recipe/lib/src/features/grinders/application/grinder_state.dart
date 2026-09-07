@@ -56,10 +56,20 @@ class GrinderStateNotifier extends StateNotifier<GrinderState> {
 
   final GrinderService _service;
 
+  // Ответ дожидается ДО присваивания — намеренно, и это не стилистика.
+  //
+  // В `state = state.copyWith(x: await …)` Dart вычисляет получатель раньше
+  // аргумента: копия снимается со старого состояния, а кладётся уже поверх
+  // нового. Экран выбора кофемолки запускает обе загрузки разом, и та, что
+  // ответила второй, затирала результат первой: набор кофемолок приходил
+  // позже справочника, и каталог на экране оказывался пустым — при живом
+  // сервере, отдавшем все пятьдесят одну запись.
+
   Future<void> loadUserGrinders() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      state = state.copyWith(userGrinders: await _service.getUserGrinders(), isLoading: false);
+      final loaded = await _service.getUserGrinders();
+      state = state.copyWith(userGrinders: loaded, isLoading: false);
     } catch (error) {
       state = state.copyWith(isLoading: false, error: error.toString());
     }
@@ -70,7 +80,8 @@ class GrinderStateNotifier extends StateNotifier<GrinderState> {
 
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      state = state.copyWith(catalog: await _service.getAllGrinders(), isLoading: false);
+      final loaded = await _service.getAllGrinders();
+      state = state.copyWith(catalog: loaded, isLoading: false);
     } catch (error) {
       state = state.copyWith(isLoading: false, error: error.toString());
     }
