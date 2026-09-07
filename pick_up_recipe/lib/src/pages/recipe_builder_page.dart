@@ -1125,7 +1125,13 @@ class _StepRow extends StatelessWidget {
 // конструктор обещает одно, а плеер делает другое.
 
 /// Шаг заканчивается человеком, а не таймером.
-bool stepEndsByUser(RecipeStep step) => step.untilUser;
+///
+/// Признак без флага — тоже человек: что воронка опустела, видит он, а
+/// приложение об этом не узнаёт никак, и таймер там в лучшем случае
+/// ориентир. Ровно так же эти два поля читает общий предикат `endsByHuman`
+/// из `domain/step_ending.dart` — расходиться с ним нельзя, иначе шаг,
+/// заведённый как «по кнопке», в плеере промотается сам.
+bool stepEndsByUser(RecipeStep step) => step.untilUser || step.untilSign.isNotEmpty;
 
 /// Шаг действительно льёт воду.
 ///
@@ -1141,8 +1147,8 @@ bool stepTakesWater(RecipeStep step) =>
 /// Признак отличает «по признаку» от «по кнопке»: и то и другое ждёт
 /// человека, но во втором случае он ждёт не себя, а воронку.
 StepEndsWith stepEnding(RecipeStep step) {
-  if (!step.untilUser) return StepEndsWith.timer;
-  return step.untilSign.isEmpty ? StepEndsWith.user : StepEndsWith.none;
+  if (step.untilSign.isNotEmpty) return StepEndsWith.none;
+  return step.untilUser ? StepEndsWith.user : StepEndsWith.timer;
 }
 
 /// Убирает воду у шагов, которые её не льют.
