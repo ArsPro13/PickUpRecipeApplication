@@ -110,11 +110,40 @@ void main() {
   });
 
   group('ответ сервера на повторную отправку', () {
-    test('200 — письмо ушло', () {
+    test('200 — письмо ушло, и сервер сам называет срок следующего', () {
+      // Тело ответа — CodeRequestResponse из controller/authhandler.go: срок
+      // приходит и при успехе, чтобы кнопка не придумывала свою минуту рядом
+      // с серверной.
+      final outcome = ResendOutcome.fromResponse(_response(200, body: '{"retry_after":60}'));
+
+      expect(outcome.status, ResendStatus.sent);
+      expect(outcome.retryAfter, const Duration(seconds: 60));
+    });
+
+    test('200 без срока — письмо всё равно ушло', () {
       final outcome = ResendOutcome.fromResponse(_response(200));
 
       expect(outcome.status, ResendStatus.sent);
-      expect(outcome.retryAfter, isNull, reason: 'ждать нечего, письмо уже в пути');
+      expect(outcome.retryAfter, isNull, reason: 'сервер промолчал — отсчёт возьмёт своё значение');
+    });
+
+    test('ответы ручки разбираются ровно так, как она отвечает', () {
+      // Оба тела списаны с обработчика: tooSoonForCode и mailFailureResponse.
+      final tooOften = ResendOutcome.fromResponse(_response(
+        429,
+        body: '{"retry_after":42,"message":"код уже отправлен, следующий можно запросить позже"}',
+        headers: {'retry-after': '42'},
+      ));
+
+      expect(tooOften.status, ResendStatus.tooOften);
+      expect(tooOften.retryAfter, const Duration(seconds: 42));
+
+      final disabled = ResendOutcome.fromResponse(_response(
+        503,
+        body: '{"message":"отправка писем не настроена, попробуйте позже"}',
+      ));
+
+      expect(disabled.status, ResendStatus.mailDown, reason: 'почта выключена — человек не виноват');
     });
 
     test('429 без срока — минута, ограничение сервера', () {
@@ -200,6 +229,8 @@ void main() {
     });
 
     test('уходит на почтовую ручку с тем же адресом', () async {
+      api.reply = _response(200, body: '{"retry_after":60}');
+
       final outcome = await AuthService().resendVerificationCode('me@example.com');
 
       expect(outcome.status, ResendStatus.sent);
