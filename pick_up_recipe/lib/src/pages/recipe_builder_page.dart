@@ -28,13 +28,16 @@ import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
+import '../features/recipes/domain/brew_step.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../features/recipes/domain/models/recipe_step_model.dart';
 import '../features/recipes/domain/models/step_type_model.dart';
 import '../features/recipes/domain/models/user_step_type_model.dart';
+import '../general_widgets/amount_stepper.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import '../general_widgets/duration_wheel_sheet.dart';
 import '../general_widgets/step_type_sheet.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
@@ -100,6 +103,10 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   @override
   void initState() {
     super.initState();
+    // Рецепт мог приехать с водой у шага, который её не льёт: до формата v1
+    // тип шага не хранился, а поле воды было у всех подряд. Чистим сразу, до
+    // первого показа, — иначе итог соврёт ещё до того, как что-то тронули.
+    dropStrayWater(_recipe);
     // Справочник методов нужен ради одного поля — allowed_step_types. Тот, кто
     // нас открыл, метод передать не обязан: у него на руках только рецепт.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -131,7 +138,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   /// у части методов часть воды не наливается шагом — она уже в приборе.
   bool get _waterMismatch => _stepWater != _recipe.water;
 
-  int get _stepWater => _recipe.steps.fold(0, (sum, step) => sum + step.water);
+  /// Вода по шагам — только с тех, которые её льют. Остальным она в рецепте
+  /// не нужна: плеер такую воду выбрасывает, и, считая её здесь, экран
+  /// предупреждал бы о расхождении, которого в заваривании не будет.
+  int get _stepWater =>
+      _recipe.steps.where(stepTakesWater).fold(0, (sum, step) => sum + step.water);
 
   int get _totalTime => _recipe.steps.fold(0, (sum, step) => sum + step.time);
 
@@ -347,12 +358,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             changed: _stepChanged(index),
             onToggle: () => setState(() => _openStep = _openStep == index ? null : index),
             onPickType: () => _pickType(index),
-            onEditWater: () => _editInt(
-              title: 'Вода на шаге',
-              suffix: 'г',
-              value: step.water,
-              apply: (value) => step.water = value,
-            ),
+            onWaterChanged: (value) => setState(() => step.water = value),
             onEditTime: () => _editDuration(step),
             onEditText: () => _editStepText(step),
             onRemove: () => _removeStep(index),
@@ -483,7 +489,13 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       step.stepType = replacement.stepType;
       if (untouched) step.instruction = replacement.instruction;
       if (step.warning.isEmpty) step.warning = replacement.warning;
+      // Чем шаг кончается — свойство типа, а не набранное человеком: старый
+      // признак от прежнего типа пережил бы смену и врал бы в строке.
       step.untilUser = replacement.untilUser;
+      step.untilSign = replacement.untilSign;
+      // Вода переживала смену типа: на паузе оставались «2 г» от пролива,
+      // и они же попадали в итог, хотя ни в какой чашке их уже нет.
+      dropStrayWater(_recipe);
     });
   }
 
@@ -643,34 +655,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   }
 
   Future<void> _editDuration(RecipeStep step) async {
-    final controller = TextEditingController(text: formatDuration(step.time));
-
-    final seconds = await showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Длительность'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.datetime,
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9:]'))],
-          decoration: const InputDecoration(hintText: 'мин:сек, например 0:35'),
-          onSubmitted: (text) => Navigator.of(context).pop(parseDuration(text)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Отмена'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(parseDuration(controller.text)),
-            child: const Text('Готово'),
-          ),
-        ],
-      ),
-    );
-
-    if (seconds == null) return;
+    final seconds = await showDurationSheet(context, seconds: step.time);
+    if (seconds == null || !mounted) return;
     setState(() => step.time = seconds);
   }
 
@@ -867,6 +853,7 @@ class _ParamRow extends StatelessWidget {
     this.changed = false,
     this.readOnly = false,
     this.onTap,
+    this.control,
   });
 
   final MetricKind kind;
@@ -877,6 +864,11 @@ class _ParamRow extends StatelessWidget {
   final bool changed;
   final bool readOnly;
   final VoidCallback? onTap;
+
+  /// Чем значение правится, если тапом по числу этого не сделать: счётчик
+  /// с плюсом и минусом вместо поля. Задано — [value] не показывается,
+  /// число рисует само управление.
+  final Widget? control;
 
   @override
   Widget build(BuildContext context) {
@@ -897,7 +889,9 @@ class _ParamRow extends StatelessWidget {
               ],
             ),
           ),
-          if (readOnly)
+          if (control != null)
+            control!
+          else if (readOnly)
             Text(value, style: context.texts.bodyMedium?.copyWith(color: context.colors.secondary))
           else
             _ValueBox(value: value, changed: changed, onTap: onTap),
@@ -971,7 +965,7 @@ class _StepRow extends StatelessWidget {
     required this.changed,
     required this.onToggle,
     required this.onPickType,
-    required this.onEditWater,
+    required this.onWaterChanged,
     required this.onEditTime,
     required this.onEditText,
     required this.onRemove,
@@ -984,7 +978,7 @@ class _StepRow extends StatelessWidget {
   final bool changed;
   final VoidCallback onToggle;
   final VoidCallback onPickType;
-  final VoidCallback onEditWater;
+  final ValueChanged<int> onWaterChanged;
   final VoidCallback onEditTime;
   final VoidCallback onEditText;
   final VoidCallback onRemove;
@@ -996,7 +990,8 @@ class _StepRow extends StatelessWidget {
 
     // Цветом воды помечены только те шаги, которые её льют. У паузы и ремарки
     // воды нет, и синий значок обещал бы то, чего на шаге не происходит.
-    final iconColor = step.water > 0 ? context.metrics.water : context.colors.onSurface;
+    final iconColor =
+        stepTakesWater(step) && step.water > 0 ? context.metrics.water : context.colors.onSurface;
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.s3),
@@ -1029,7 +1024,7 @@ class _StepRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Text(_summary(), style: context.texts.labelSmall),
+                Text(stepSummary(step), style: context.texts.labelSmall),
                 if (changed) ...[
                   const SizedBox(width: AppSpacing.s2),
                   Container(
@@ -1055,18 +1050,39 @@ class _StepRow extends StatelessWidget {
                 TextButton(onPressed: onPickType, child: Text(type?.name ?? 'выбрать')),
               ],
             ),
-            _ParamRow(
-              kind: MetricKind.water,
-              name: 'Вода на шаге',
-              value: '${step.water} г',
-              onTap: onEditWater,
-            ),
-            _ParamRow(
-              kind: MetricKind.time,
-              name: 'Длительность',
-              value: formatDuration(step.time),
-              onTap: onEditTime,
-            ),
+            // Вода — только у тех типов, что её льют. У остальных поле
+            // предлагало набрать число, которое всё равно уедет в мусор.
+            if (stepTakesWater(step))
+              _ParamRow(
+                kind: MetricKind.water,
+                // Не «Вода на шаге»: со счётчиком строка занимает 176 точек
+                // справа, и на 360 подпись переехала бы на вторую строку.
+                // Внутри карточки шага другой воды всё равно нет.
+                name: 'Вода',
+                value: '${step.water} г',
+                control: AmountStepper(
+                  value: step.water,
+                  suffix: 'г',
+                  onChanged: onWaterChanged,
+                ),
+              ),
+            // У шага, который ждёт человека, длительность не отсчёт, а
+            // выдумка: показываем, чем он кончается, и править там нечего.
+            if (stepEndsByUser(step))
+              _ParamRow(
+                kind: MetricKind.time,
+                icon: AppIcons.uiForward,
+                name: 'Заканчивается',
+                value: stepEnding(step).label,
+                readOnly: true,
+              )
+            else
+              _ParamRow(
+                kind: MetricKind.time,
+                name: 'Длительность',
+                value: formatDuration(step.time),
+                onTap: onEditTime,
+              ),
             const SizedBox(height: AppSpacing.s2),
             Row(
               children: [
@@ -1099,14 +1115,65 @@ class _StepRow extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _summary() {
-    final parts = [
-      if (step.water > 0) '${step.water} г',
-      if (step.time > 0) formatDuration(step.time),
-    ];
-    return parts.join(' · ');
+// ── Что шаг умеет ──────────────────────────────────────────────────────────
+//
+// Предикаты живут здесь функциями, а не геттерами в модели: RecipeStep
+// собирает кодогенератор, и дописанное в него пропадёт на следующей сборке.
+// Экран заваривания задаёт те же вопросы — правило должно быть одно, иначе
+// конструктор обещает одно, а плеер делает другое.
+
+/// Шаг заканчивается человеком, а не таймером.
+///
+/// Признак без флага — тоже человек: что воронка опустела, видит он, а
+/// приложение об этом не узнаёт никак, и таймер там в лучшем случае
+/// ориентир. Ровно так же эти два поля читает общий предикат `endsByHuman`
+/// из `domain/step_ending.dart` — расходиться с ним нельзя, иначе шаг,
+/// заведённый как «по кнопке», в плеере промотается сам.
+bool stepEndsByUser(RecipeStep step) => step.untilUser || step.untilSign.isNotEmpty;
+
+/// Шаг действительно льёт воду.
+///
+/// Правило то же, что у плеера: [BrewStep.fromResponse] приписывает воду
+/// только четырём типам, а у остальных обнуляет. Считать здесь иначе значит
+/// показывать итог, которого в чашке не будет.
+bool stepTakesWater(RecipeStep step) =>
+    BrewStepType.fromWire(step.stepType).addsWater;
+
+/// Чем шаг кончается — тем же перечислением, что и форма своего типа шага:
+/// формулировки в конструкторе и в форме должны совпадать дословно.
+///
+/// Признак отличает «по признаку» от «по кнопке»: и то и другое ждёт
+/// человека, но во втором случае он ждёт не себя, а воронку.
+StepEndsWith stepEnding(RecipeStep step) {
+  if (step.untilSign.isNotEmpty) return StepEndsWith.none;
+  return step.untilUser ? StepEndsWith.user : StepEndsWith.timer;
+}
+
+/// Убирает воду у шагов, которые её не льют.
+///
+/// Вызывается при открытии рецепта и после каждой смены типа: поля для такой
+/// воды на экране нет, а значение из прежнего типа осталось бы навсегда.
+void dropStrayWater(RecipeData recipe) {
+  for (final step in recipe.steps) {
+    if (!stepTakesWater(step)) step.water = 0;
   }
+}
+
+/// Правая часть свёрнутой строки шага: вода и время.
+///
+/// У шага, который ждёт человека, вместо времени стоит то, чем он кончается:
+/// «0:09» там ничего не отсчитывало и читалось как обещание таймера.
+String stepSummary(RecipeStep step) {
+  final parts = [
+    if (stepTakesWater(step) && step.water > 0) '${step.water} г',
+    if (stepEndsByUser(step))
+      stepEnding(step).label
+    else if (step.time > 0)
+      formatDuration(step.time),
+  ];
+  return parts.join(' · ');
 }
 
 // ── Разбор и показ чисел ───────────────────────────────────────────────────

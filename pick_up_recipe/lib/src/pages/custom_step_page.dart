@@ -18,6 +18,7 @@ import '../general_widgets/app_field.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import '../general_widgets/step_ending_choice.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -124,14 +125,9 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
         const SizedBox(height: AppSpacing.s5),
         Text('Чем шаг заканчивается', style: context.texts.labelSmall),
         const SizedBox(height: AppSpacing.s2),
-        SegmentedButton<StepEndsWith>(
-          segments: [
-            for (final option in StepEndsWith.values)
-              ButtonSegment(value: option, label: Text(option.label)),
-          ],
-          selected: {_endsWith},
-          onSelectionChanged: (selection) =>
-              setState(() => _endsWith = selection.first),
+        StepEndingChoice(
+          value: _endsWith,
+          onChanged: (option) => setState(() => _endsWith = option),
         ),
         const SizedBox(height: AppSpacing.s5),
         QuietSurface(
