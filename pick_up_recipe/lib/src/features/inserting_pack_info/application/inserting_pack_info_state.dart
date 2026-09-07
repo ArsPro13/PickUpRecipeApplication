@@ -8,60 +8,74 @@ class PackInfoFormState {
   final bool isLoading;
   final String? errorMessage;
   final String? imageErrorMessage;
-  final String? name;
   final String? country;
+
+  /// Регион внутри страны. Необязателен: на многих пачках его просто нет.
+  final String? region;
   final String? scaScore;
   final String? variety;
   final List<String>? processingMethod;
   final String? roastDate;
   final List<String>? descriptors;
+
+  /// Фотография пачки в base64 — ровно то, что уезжает в pack_image.
   final String? image;
-  final String? date;
+
+  /// Отправка прошла: экран уходит на главный, и повторно этого делать не надо.
+  final bool isSent;
 
   PackInfoFormState({
     this.isSubmitting = false,
     this.isLoading = false,
     this.errorMessage,
     this.imageErrorMessage,
-    this.name,
     this.country,
+    this.region,
     this.descriptors,
     this.processingMethod,
     this.roastDate,
     this.scaScore,
     this.variety,
     this.image,
-    this.date,
+    this.isSent = false,
   });
 
+  /// Правка одного-двух полей, остальные остаются как были.
+  ///
+  /// Раньше copyWith подставлял переданное значение напрямую, и любой вызов
+  /// с одним аргументом обнулял всю остальную форму: сохранить фотографию
+  /// значило потерять страну и дату.
   PackInfoFormState copyWith({
     bool? isSubmitting,
     bool? isLoading,
     String? errorMessage,
     String? imageErrorMessage,
-    String? name,
     String? country,
+    String? region,
     String? scaScore,
     String? variety,
     List<String>? processingMethod,
     String? roastDate,
     List<String>? descriptors,
     String? image,
-    String? date,
+    bool? isSent,
   }) {
     return PackInfoFormState(
       isSubmitting: isSubmitting ?? this.isSubmitting,
       isLoading: isLoading ?? this.isLoading,
+      // Сообщения об ошибках не наследуются: они про последнее действие,
+      // и молча дотащить вчерашнюю ошибку до следующего экрана — враньё.
       errorMessage: errorMessage,
       imageErrorMessage: imageErrorMessage,
-      name: name,
-      country: country,
-      descriptors: descriptors,
-      processingMethod: processingMethod,
-      roastDate: roastDate,
-      scaScore: scaScore,
-      variety: variety,
-      image: image,
+      country: country ?? this.country,
+      region: region ?? this.region,
+      descriptors: descriptors ?? this.descriptors,
+      processingMethod: processingMethod ?? this.processingMethod,
+      roastDate: roastDate ?? this.roastDate,
+      scaScore: scaScore ?? this.scaScore,
+      variety: variety ?? this.variety,
+      image: image ?? this.image,
+      isSent: isSent ?? this.isSent,
     );
   }
 }
