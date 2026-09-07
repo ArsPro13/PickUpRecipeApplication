@@ -13,6 +13,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/codes/application/coffee_state.dart';
 import '../features/codes/domain/pack_code.dart';
@@ -68,7 +69,9 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
     final state = ref.watch(coffeeStateProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(state.pack?.packName ?? 'Кофе')),
+      appBar: AppBar(
+        title: Text(state.pack?.packName ?? AppLocalizations.of(context).coffeeTitle),
+      ),
       body: switch (state.status) {
         CoffeeStatus.loading => const Center(child: CircularProgressIndicator()),
         CoffeeStatus.notFound => _notFound(),
@@ -83,6 +86,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
   /// символ уже сошёлся, значит код набран верно и его правда нет.
   Widget _notFound() {
     final code = widget.code;
+    final texts = AppLocalizations.of(context);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -94,12 +98,9 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
       children: [
         AppState(
           icon: AppIcons.stateError,
-          title: 'Такого кода нет',
-          description: code == null
-              ? 'Такого кофе нет в системе.'
-              : 'Код набран без опечаток — контрольный символ сходится, — '
-                  'но в системе его нет. Возможно, обжарщик ещё не выложил '
-                  'эту партию.',
+          title: texts.coffeeNotFound,
+          description:
+              code == null ? texts.coffeeNotFoundNoCode : texts.coffeeNotFoundNote,
         ),
         if (code != null) ...[
           const SizedBox(height: AppSpacing.s3),
@@ -115,13 +116,13 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
         // и тогда под этим экраном нет ничего — обе кнопки просто молчали.
         // Ввод и камера живут на одной вкладке, поэтому кнопка одна.
         AppButton(
-          label: 'Сканировать ещё раз',
+          label: texts.coffeeScanAgain,
           icon: AppIcons.uiScan,
           onPressed: () => context.router.navigate(const ScanRoute()),
         ),
         const SizedBox(height: AppSpacing.s3),
         AppButton(
-          label: 'К моим пачкам',
+          label: texts.coffeeToPacks,
           kind: AppButtonKind.secondary,
           onPressed: () => context.router.navigate(const PacksRoute()),
         ),
@@ -142,7 +143,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
         _WithdrawnPlate(name: state.withdrawnName, roaster: state.withdrawnRoaster),
         const SizedBox(height: AppSpacing.s6),
         AppButton(
-          label: 'К моим пачкам',
+          label: AppLocalizations.of(context).coffeeToPacks,
           kind: AppButtonKind.secondary,
           onPressed: () => context.router.navigate(const PacksRoute()),
         ),
@@ -180,9 +181,16 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           const SizedBox(height: AppSpacing.s4),
         ],
         _PackHeader(pack: pack),
-        if (descriptors.isNotEmpty) ...[
+        // Обещает именно обжарщик, а не мы. У пачки, заведённой руками,
+        // обжарщика нет: дескрипторы в неё вписал сам человек, и выдавать их
+        // за чужое обещание — неправда. Раньше блок показывался всегда, и на
+        // ручной пачке в нём висел одинокий чип с обрывком слова.
+        if (pack.roasterName.isNotEmpty && descriptors.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.s4),
-          Text('Обжарщик обещает', style: context.texts.bodySmall),
+          Text(
+            AppLocalizations.of(context).coffeeRoasterPromises,
+            style: context.texts.bodySmall,
+          ),
           const SizedBox(height: AppSpacing.s2),
           Wrap(
             spacing: AppSpacing.s2,
@@ -205,7 +213,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           // Счётчика «рецепт есть у 1 из 20» здесь нет намеренно: он считает
           // не то, что человек выбирает. Разницу несёт сама строка метода —
           // с рецептом поднятая и белая, без рецепта прозрачная.
-          Text('Чем заварить', style: context.texts.titleMedium),
+          Text(AppLocalizations.of(context).methodsTitle, style: context.texts.titleMedium),
           for (final group in state.groups) ...[
             _GroupHeader(group: group),
             for (final method in group.methods)
@@ -230,6 +238,7 @@ class _WithdrawnPlate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final what = [name, roaster].where((it) => it.isNotEmpty).join(' · ');
+    final texts = AppLocalizations.of(context);
 
     return QuietSurface(
       child: Row(
@@ -241,13 +250,11 @@ class _WithdrawnPlate extends StatelessWidget {
             child: Text.rich(
               TextSpan(children: [
                 TextSpan(
-                  text: 'Этой партии больше нет в продаже. ',
+                  text: texts.coffeeWithdrawnTitle,
                   style: context.texts.bodySmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 TextSpan(
-                  text: 'Обжарщик снял её${what.isEmpty ? '' : ' ($what)'} — обычно '
-                      'это значит, что зерно кончилось. Рецепты остаются: заварить '
-                      'пачку, которая уже стоит у вас на полке, ничто не мешает.',
+                  text: texts.coffeeWithdrawnNote(what.isEmpty ? '' : ' ($what)'),
                 ),
               ]),
               style: context.texts.bodySmall,
@@ -289,6 +296,7 @@ class _OfflineFallbackState extends State<_OfflineFallback> {
   @override
   Widget build(BuildContext context) {
     final cached = _cached;
+    final texts = AppLocalizations.of(context);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -307,11 +315,8 @@ class _OfflineFallbackState extends State<_OfflineFallback> {
               Expanded(
                 child: Text(
                   cached == null
-                      ? 'Сети нет, и сохранённого рецепта в памяти тоже: '
-                          'заваривать пока не из чего.'
-                      : 'Сети нет. В памяти лежит рецепт, сохранённый '
-                          '${_when(cached.savedAt)}, — заваривать по нему можно. '
-                          'Обновится сам, когда появится связь.',
+                      ? texts.coffeeOfflineNoCache
+                      : texts.coffeeOfflineCached(_when(cached.savedAt)),
                   style: context.texts.bodySmall,
                 ),
               ),
@@ -319,27 +324,27 @@ class _OfflineFallbackState extends State<_OfflineFallback> {
           ),
         ),
         const SizedBox(height: AppSpacing.s4),
-        Text('Что сейчас нельзя', style: context.texts.bodyMedium),
+        Text(texts.coffeeOfflineCantTitle, style: context.texts.bodyMedium),
         const SizedBox(height: AppSpacing.s2),
-        const _OfflineRow(
+        _OfflineRow(
           icon: AppIcons.uiScan,
-          title: 'Сканировать новую пачку',
-          note: 'код проверяется на сервере',
+          title: texts.coffeeOfflineScan,
+          note: texts.coffeeOfflineScanNote,
         ),
-        const _OfflineRow(
+        _OfflineRow(
           icon: AppIcons.uiStar,
-          title: 'Отправить оценку',
-          note: 'поставить можно, отправится позже',
+          title: texts.coffeeOfflineRating,
+          note: texts.coffeeOfflineRatingNote,
         ),
-        const _OfflineRow(
+        _OfflineRow(
           icon: AppIcons.uiRefresh,
-          title: 'Получить поправку',
-          note: 'считает сервер, не телефон',
+          title: texts.coffeeOfflineCorrection,
+          note: texts.coffeeOfflineCorrectionNote,
         ),
         const SizedBox(height: AppSpacing.s6),
         if (_checked && cached != null) ...[
           AppButton(
-            label: 'Заварить по сохранённому',
+            label: texts.coffeeBrewCached,
             icon: AppIcons.uiPlay,
             onPressed: () => context.router.push(
               BrewRoute(recipe: cached.recipe, pack: cached.pack),
@@ -348,7 +353,7 @@ class _OfflineFallbackState extends State<_OfflineFallback> {
           const SizedBox(height: AppSpacing.s3),
         ],
         AppButton(
-          label: 'Повторить',
+          label: texts.retry,
           kind: AppButtonKind.secondary,
           onPressed: widget.onRetry,
         ),
@@ -432,6 +437,8 @@ class _QuickStart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return HeroSurface(
       child: Row(
         children: [
@@ -450,12 +457,15 @@ class _QuickStart extends StatelessWidget {
                   style: context.texts.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
                 ),
-                Text('так вы заваривали ${formatRecipeDate(date)}', style: context.texts.bodySmall),
+                Text(
+                  texts.coffeeLastBrewed(formatRecipeDate(date)),
+                  style: context.texts.bodySmall,
+                ),
               ],
             ),
           ),
           const SizedBox(width: AppSpacing.s3),
-          _PlayButton(onTap: onStart, label: 'Заварить на ${method.name}'),
+          _PlayButton(onTap: onStart, label: texts.coffeeBrewOn(method.name)),
         ],
       ),
     );
@@ -594,7 +604,10 @@ class _MethodsUnavailable extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.s3),
             Expanded(
-              child: Text('Способы заваривания не загрузились', style: context.texts.bodySmall),
+              child: Text(
+                AppLocalizations.of(context).coffeeMethodsFailed,
+                style: context.texts.bodySmall,
+              ),
             ),
           ],
         ),

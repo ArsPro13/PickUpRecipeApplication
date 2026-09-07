@@ -5,14 +5,23 @@ class Config {
   //   flutter run --dart-define=BASE_URL=http://10.0.2.2:1324
   //
   // 10.0.2.2 — это хост-машина с точки зрения андроид-эмулятора.
+  //
+  // Умолчание https, а не http: открытый трафик запрещён политикой сети
+  // (android/app/src/main/res/xml/network_security_config.xml), и релизная
+  // сборка с http-умолчанием просто не достучалась бы до сервера — молча,
+  // с пустыми экранами вместо ошибки.
   static const String baseUrl = String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'http://84.201.180.72:1323',
+    defaultValue: 'https://recipetocup.ru',
   );
 
+  // Распознавание пачки по фото в прод не выкатывается (BACKLOG, п. 5):
+  // сервису нужно +2 ГБ памяти, а на машине их нет. Адрес указывает на
+  // тот же домен, чтобы клиент получил внятную ошибку от прокси, а не
+  // висел на несуществующем IP до тайм-аута.
   static const String packImageBaseUrl = String.fromEnvironment(
     'PACK_IMAGE_BASE_URL',
-    defaultValue: 'http://84.201.180.72:5003',
+    defaultValue: 'https://recipetocup.ru',
   );
 
   // Демо-аккаунт, которым заполняется форма входа при отладке. Умолчание

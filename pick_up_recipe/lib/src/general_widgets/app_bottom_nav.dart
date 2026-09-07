@@ -12,6 +12,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../pages/root_page.dart';
 import 'app_icon.dart';
 import '../themes/app_theme.dart';
@@ -22,6 +23,8 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tabs = RootScreen.tabs(AppLocalizations.of(context));
+
     return Container(
       decoration: BoxDecoration(
         color: context.colors.secondaryContainer,
@@ -34,7 +37,7 @@ class AppBottomNav extends StatelessWidget {
           height: AppSizes.tapTarget + AppSpacing.s4,
           child: Row(
             children: [
-              for (final tab in RootScreen.tabs)
+              for (final tab in tabs)
                 Expanded(
                   child: Semantics(
                     button: true,

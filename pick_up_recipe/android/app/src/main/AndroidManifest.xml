@@ -1,8 +1,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- INTERNET нужен релизной сборке.
+
+         Раньше это разрешение стояло только в src/debug и src/profile —
+         то есть релизный APK собирался БЕЗ доступа в сеть и не мог сделать
+         ни одного запроса к бэкенду. В отладке это не проявлялось никогда,
+         потому что там разрешение было. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
-        android:label="pick_up_recipe"
+        android:label="Recipe to Cup"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -41,8 +52,17 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+    <!-- Камера — распознавание пачки по фото и сканирование кода.
+         Хранилище — выбор снимка из галереи; на Android 13+ его заменяет
+         READ_MEDIA_IMAGES, поэтому старые разрешения ограничены по версии,
+         иначе Google Play спросит, зачем приложению доступ ко всем файлам. -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
 </manifest>

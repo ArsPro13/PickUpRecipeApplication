@@ -1,207 +1,152 @@
-import 'dart:math';
+// Поле формы с подсказками из справочника.
+//
+// Одно поле на все справочные значения: страна, регион, сорт, дескрипторы,
+// обработка. Раньше подсказки были только у части полей и показывались
+// собственным выпадающим списком с ручной анимацией — единственным таким
+// элементом во всём приложении. Теперь совпадения показываются метками
+// набора, теми же, какими на карточке пачки показаны дескрипторы: нажал —
+// поле заполнилось, и это законченный ввод.
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class TextInputWithHints extends StatefulWidget {
-  final List<String> hintsArray;
-  final String labelText;
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
+import 'package:pick_up_recipe/src/general_widgets/app_kit.dart';
+import 'package:pick_up_recipe/src/themes/app_theme.dart';
+import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 
+class TextInputWithHints extends StatefulWidget {
   const TextInputWithHints({
     super.key,
     required this.hintsArray,
     required this.labelText,
     required this.controller,
-    required this.onChanged,
+    this.hintText,
+    this.onChanged,
+    this.onEditingFinished,
+    this.validator,
+    this.keyboardType,
   });
+
+  /// Справочник значений с сервера. Пустой — поле работает как обычное.
+  final List<String> hintsArray;
+
+  /// Подпись над полем.
+  final String labelText;
+
+  final TextEditingController controller;
+
+  /// Бледная подсказка внутри пустого поля: пример значения.
+  final String? hintText;
+
+  final ValueChanged<String>? onChanged;
+
+  /// Ввод в поле закончен: человек нажал «далее», ушёл в соседнее поле или
+  /// выбрал подсказку. Значение уезжает в форму только здесь — пока идёт
+  /// набор, слова ещё нет, есть только его начало.
+  final VoidCallback? onEditingFinished;
+
+  final FormFieldValidator<String>? validator;
+  final TextInputType? keyboardType;
 
   @override
   State<TextInputWithHints> createState() => _TextInputWithHintsState();
 }
 
-class _TextInputWithHintsState extends State<TextInputWithHints>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late FocusNode _focusNode;
+class _TextInputWithHintsState extends State<TextInputWithHints> {
+  /// Сколько совпадений показывать. Больше трёх меток отталкивают следующее
+  /// поле вниз сильнее, чем помогают: справочник страны — одиннадцать строк,
+  /// а дескрипторов — под сотню.
+  static const int _maxHints = 3;
 
-  List<String> _filteredHints = [];
-  bool _isDropdownVisible = false;
-  bool _hintSelected = false;
+  late final FocusNode _focusNode;
+  List<String> _matches = const [];
 
   @override
   void initState() {
     super.initState();
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 150),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    );
-
-    _focusNode = FocusNode();
-    _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
-        _hideDropdown();
-      }
-    });
-
-    widget.controller.addListener(() {
-      if (!_hintSelected) {
-        _filterHints(widget.controller.text);
-      } else {
-        _hintSelected = false;
-      }
-    });
+    _focusNode = FocusNode()..addListener(_onFocusChanged);
+    widget.controller.addListener(_refreshMatches);
   }
 
-  void _filterHints(String input) {
-    if (!mounted) {
-      return;
-    }
-
-    if (input.isEmpty) {
-      setState(() {
-        _filteredHints = [];
-        _hideDropdown();
-      });
-      return;
-    }
-
-    setState(() {
-      _filteredHints = widget.hintsArray
-          .where((hint) =>
-              (hint.toLowerCase().contains(input.toLowerCase())) &&
-              hint != widget.controller.text)
-          .toList();
-      if (_filteredHints.isNotEmpty) {
-        _showDropdown();
-      } else {
-        _hideDropdown();
-      }
-    });
-  }
-
-  void _showDropdown() {
-    if (!_isDropdownVisible) {
-      setState(() {
-        _isDropdownVisible = true;
-        _animationController.forward();
-      });
-    }
-  }
-
-  void _hideDropdown() {
-    if (_isDropdownVisible) {
-      setState(() {
-        _animationController.reverse();
-        _isDropdownVisible = false;
-      });
-    }
+  @override
+  void didUpdateWidget(TextInputWithHints oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller == widget.controller) return;
+    oldWidget.controller.removeListener(_refreshMatches);
+    widget.controller.addListener(_refreshMatches);
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    widget.controller.removeListener(_refreshMatches);
     _focusNode.dispose();
     super.dispose();
   }
 
+  void _onFocusChanged() {
+    if (!mounted) return;
+    if (_focusNode.hasFocus) {
+      _refreshMatches();
+      return;
+    }
+    setState(() => _matches = const []);
+    widget.onEditingFinished?.call();
+  }
+
+  void _refreshMatches() {
+    if (!mounted) return;
+
+    final query = widget.controller.text.trim().toLowerCase();
+    final matches = query.isEmpty || !_focusNode.hasFocus
+        ? const <String>[]
+        : [
+            for (final hint in widget.hintsArray)
+              if (hint.toLowerCase().contains(query) && hint.toLowerCase() != query) hint,
+          ].take(_maxHints).toList();
+
+    if (listEquals(matches, _matches)) return;
+    setState(() => _matches = matches);
+  }
+
+  void _pick(String hint) {
+    widget.controller.value = TextEditingValue(
+      text: hint,
+      selection: TextSelection.collapsed(offset: hint.length),
+    );
+    setState(() => _matches = const []);
+    // Выбранная подсказка — законченный ввод: слово целиком, а не начало.
+    widget.onEditingFinished?.call();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final InputBorder inputBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.vertical(
-        top: const Radius.circular(12),
-        bottom: _isDropdownVisible
-            ? const Radius.circular(0)
-            : const Radius.circular(12.0),
-      ),
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.surface,
-      ),
-    );
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(12),
-            border: null,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        Text(widget.labelText, style: context.texts.labelSmall),
+        const SizedBox(height: AppSpacing.s1),
+        TextFormField(
+          controller: widget.controller,
+          focusNode: _focusNode,
+          validator: widget.validator,
+          keyboardType: widget.keyboardType,
+          textInputAction: TextInputAction.next,
+          onChanged: widget.onChanged,
+          onFieldSubmitted: (_) => widget.onEditingFinished?.call(),
+          style: context.texts.bodyMedium,
+          decoration: InputDecoration(hintText: widget.hintText),
+        ),
+        if (_matches.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.s2),
+          Wrap(
+            spacing: AppSpacing.s2,
+            runSpacing: AppSpacing.s2,
             children: [
-              TextField(
-                focusNode: _focusNode,
-                controller: widget.controller,
-                onChanged: (String query) {
-                  widget.onChanged(query);
-                  _filterHints(query);
-                },
-                decoration: InputDecoration(
-                  labelText: widget.labelText,
-                  enabledBorder: inputBorder,
-                  border: inputBorder,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 8.0,
-                  ),
-                ),
-              ),
-              SizeTransition(
-                sizeFactor: _fadeAnimation,
-                child: _buildDropdown(),
-              ),
+              for (final hint in _matches) AppChip(label: hint, onTap: () => _pick(hint)),
             ],
           ),
-        ),
+        ],
       ],
-    );
-  }
-
-  Widget _buildDropdown() {
-    return AnimatedContainer(
-      height: min(_filteredHints.length, 3) * 40,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondaryContainer,
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.surface,
-          width: 0.7,
-        ),
-      ),
-      duration: const Duration(milliseconds: 100),
-      child: ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: min(_filteredHints.length, 3),
-        itemBuilder: (context, index) {
-          return SizedBox(
-            height: 40,
-            child: ListTile(
-              title: SizedBox(
-                height: 40,
-                child: Text(_filteredHints[index]),
-              ),
-              onTap: () {
-                setState(() {
-                  _hintSelected = true;
-                  widget.controller.text = _filteredHints[index];
-                  widget.controller.selection = TextSelection.fromPosition(
-                    TextPosition(offset: widget.controller.text.length),
-                  );
-                  _hideDropdown();
-                });
-              },
-            ),
-          );
-        },
-      ),
     );
   }
 }

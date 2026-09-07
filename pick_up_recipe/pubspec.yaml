@@ -15,6 +15,10 @@ dependencies:
   encrypt_shared_preferences: ^0.8.2
   flutter:
     sdk: flutter
+  # Форматы дат, чисел и падежей для локалей, которых нет в самом Flutter:
+  # без этого делегата русские названия месяцев берутся из английских правил.
+  flutter_localizations:
+    sdk: flutter
   flutter_date_pickers: ^0.4.3
   flutter_riverpod: ^2.5.1
   flutter_spinkit: ^5.2.1
@@ -43,6 +47,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Строки экрана собираются из lib/l10n/*.arb: класс AppLocalizations
+  # генерируется при `flutter pub get` по правилам из l10n.yaml.
+  generate: true
 
   assets:
     # 109 иконок набора (ADR 0005). Генерируются из спрайта макетов:

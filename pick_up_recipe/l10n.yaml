@@ -1,0 +1,13 @@
+# Правила сборки локализации.
+#
+# Шаблон — русский: приложение пишется по-русски, и английский догоняет его,
+# а не наоборот. Проверку «обе локали заполнены» держит test/l10n_test.dart —
+# генератор такого не умеет и молча выдаёт русскую строку вместо перевода.
+arb-dir: lib/l10n
+template-arb-file: app_ru.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+
+# Обращение к строкам без вопросительного знака: AppLocalizations.of(context)
+# на экране всегда есть — делегаты подключены в MaterialApp.
+nullable-getter: false

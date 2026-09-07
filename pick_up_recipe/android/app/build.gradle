@@ -22,6 +22,19 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+// Ключ подписи. Боевой берётся из keystore.properties, которого в гите нет
+// (см. keystore.properties.example). Если файла нет — подписываем debug-ключом,
+// и это НАМЕРЕННО не молчаливое поведение: имя выходного APK и вывод сборки
+// говорят, чем он подписан. Тихая подмена ключа — способ однажды выложить
+// в Play сборку, которую нельзя обновить.
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withReader('UTF-8') { reader ->
+        keystoreProperties.load(reader)
+    }
+}
+
 android {
     namespace "com.example.pick_up_recipe"
     compileSdk flutter.compileSdkVersion
@@ -41,21 +54,66 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.example.pick_up_recipe"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
+        // com.example.* — идентификатор из шаблона. Google Play такой не
+        // принимает, и менять его после первой публикации уже нельзя:
+        // это будет другое приложение. Меняем сейчас, пока публикаций нет.
+        applicationId "ru.recipetocup.app"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
+    signingConfigs {
+        // Боевой ключ. Заводится, только если keystore.properties есть:
+        // иначе gradle упал бы на отсутствующем файле у всех, включая CI.
+        if (keystorePropertiesFile.exists()) {
+            release {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            // Подпись: боевая, если ключ есть; иначе debug — чтобы
+            // `flutter build apk --release` работал и без релизного ключа.
+            // Разница видна в имени файла (см. scripts/build-apk.sh) и в
+            // строке ниже, которую печатает сама сборка.
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            } else {
+                println '⚠️  keystore.properties не найден — release-сборка подписывается DEBUG-ключом'
+                signingConfig signingConfigs.debug
+            }
+
+            // Отладка выключена явно. Умолчание для release и так false, но
+            // это ровно тот флаг, который однажды включают «на пять минут»
+            // и забывают: с ним чужой процесс может подключиться к
+            // приложению отладчиком на любом устройстве.
+            debuggable false
+            jniDebuggable false
+
+            // Минификация и выбрасывание неиспользуемых ресурсов.
+            //
+            // Ради размера — но не только: без них в APK остаются имена
+            // классов и методов, по которым приложение разбирают, не приложив
+            // усилий. shrinkResources требует minifyEnabled и без него
+            // не включается.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            // Отладочная сборка ставится рядом с релизной, а не поверх:
+            // проверять «как в релизе» на устройстве, где стоит debug,
+            // иначе значит сначала удалить одно из них.
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
         }
     }
 }

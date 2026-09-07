@@ -13,6 +13,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/domain/models/correction_model.dart';
@@ -45,8 +46,10 @@ class RatingConflictPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final texts = AppLocalizations.of(context);
+
     return AppScreen(
-      title: 'Что проверить',
+      title: texts.conflictTitle,
       body: [
         Text(summary, style: context.texts.bodySmall),
         const SizedBox(height: AppSpacing.s4),
@@ -64,7 +67,7 @@ class RatingConflictPage extends ConsumerWidget {
         // Главный выход — перезаварить, следя за техникой: prep-состояние
         // экрана заваривания снова попросит смолоть.
         AppButton(
-          label: 'Заварить так же ещё раз',
+          label: texts.conflictBrewAgain,
           icon: AppIcons.uiPlay,
           onPressed: () => context.router.replace(
             BrewRoute(recipe: recipe, pack: pack),
@@ -72,7 +75,7 @@ class RatingConflictPage extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.s3),
         AppButton(
-          label: 'Всё равно открыть конструктор',
+          label: texts.conflictOpenBuilder,
           kind: AppButtonKind.secondary,
           onPressed: () => context.router.replace(
             RecipeBuilderRoute(

@@ -10,6 +10,7 @@ import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_s
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/step_type_model.dart';
+import 'package:pick_up_recipe/src/features/recipes/domain/models/user_step_type_model.dart';
 import 'package:pick_up_recipe/src/pages/recipe_builder_page.dart';
 import 'package:pick_up_recipe/src/themes/app_icons.dart';
 
@@ -32,6 +33,8 @@ RecipeStep step({
   int time = 30,
   String stepType = 'pour',
   String tip = '',
+  bool untilUser = false,
+  String untilSign = '',
 }) {
   return RecipeStep(
     seqNum: seqNum,
@@ -43,13 +46,148 @@ RecipeStep step({
     stepKey: '',
     tip: tip,
     isOptional: false,
-    untilUser: false,
-    untilSign: '',
+    untilUser: untilUser,
+    untilSign: untilSign,
     warning: '',
   );
 }
 
+/// Рецепт с произвольным набором шагов. Нужен там, где проверяется итог по
+/// воде: он и есть то, что расходится с общей водой рецепта.
+RecipeData recipeWith(List<RecipeStep> steps, {int water = 250}) => RecipeData(
+      id: 7,
+      device: 'v60',
+      date: '2026-08-09T10:00:00Z',
+      packId: 3,
+      grinderId: 12,
+      grindStep: '68',
+      grindSubStep: null,
+      water: water,
+      time: 160,
+      temperature: 95,
+      load: 15,
+      title: '',
+      notes: '',
+      grindDescriptor: '',
+      agitationLevel: null,
+      steps: steps,
+    );
+
 void main() {
+  group('чем шаг заканчивается', () {
+    test('шаг с таймером не ждёт человека, шаг с признаком — ждёт', () {
+      expect(stepEndsByUser(step()), isFalse);
+      expect(stepEndsByUser(step(stepType: 'custom', untilUser: true)), isTrue);
+    });
+
+    test('подпись берётся из того же перечисления, что и форма своего типа', () {
+      expect(stepEnding(step()), StepEndsWith.timer);
+      expect(stepEnding(step(stepType: 'custom', untilUser: true)), StepEndsWith.user);
+      expect(
+        stepEnding(step(stepType: 'custom', untilUser: true, untilSign: 'воронка пуста')),
+        StepEndsWith.none,
+      );
+
+      // Дословно те же слова, что в сегментах формы: разъехавшись, они
+      // рассказали бы про один и тот же шаг две разные истории.
+      expect(stepEnding(step(stepType: 'custom', untilUser: true)).label, 'по кнопке');
+    });
+
+    test('признак — тоже ожидание человека, даже без флага', () {
+      // Что воронка опустела, видит человек: приложение об этом не узнаёт
+      // никак. Общий предикат экрана заваривания читает эти два поля так же,
+      // и разойтись с ним значит промотать в плеере шаг, который ждал.
+      expect(stepEndsByUser(step(untilSign: 'воронка пуста')), isTrue);
+      expect(stepEnding(step(untilSign: 'воронка пуста')), StepEndsWith.none);
+    });
+  });
+
+  group('какие шаги льют воду', () {
+    test('вода — у тех же четырёх типов, что и в плеере', () {
+      for (final slug in ['pour', 'bloom', 'add_ice', 'dilute']) {
+        expect(stepTypeTakesWater(step(stepType: slug)), isTrue, reason: slug);
+      }
+    });
+
+    test('пауза, размешивание и свой шаг воду не льют', () {
+      for (final slug in ['wait', 'stir', 'press', 'note', 'custom', '']) {
+        expect(stepTypeTakesWater(step(stepType: slug)), isFalse, reason: slug);
+      }
+    });
+
+    test('чужая вода вычищается, своя остаётся', () {
+      // На фото у своего шага стоят «2 г»: они пережили смену типа с пролива
+      // и с тех пор врали в итоге, потому что в чашку не попадали.
+      final recipe = recipeWith([
+        step(water: 100),
+        step(seqNum: 2, stepType: 'custom', water: 2, untilUser: true),
+      ]);
+
+      dropStrayWater(recipe);
+
+      expect(recipe.steps.first.water, 100);
+      expect(recipe.steps.last.water, 0);
+    });
+
+    test('итог по воде складывает только льющие шаги', () {
+      final recipe = recipeWith([
+        step(water: 100),
+        step(seqNum: 2, stepType: 'bloom', water: 50),
+        step(seqNum: 3, stepType: 'custom', water: 2, untilUser: true),
+      ]);
+
+      dropStrayWater(recipe);
+      final sum = recipe.steps
+          .where(stepTypeTakesWater)
+          .fold<int>(0, (total, item) => total + item.water);
+
+      expect(sum, 150);
+    });
+
+    test('такой шаг уезжает на сервер без воды и с признаком ожидания', () {
+      final recipe = recipeWith([
+        step(seqNum: 1, stepType: 'custom', water: 2, time: 9, untilUser: true),
+      ]);
+
+      dropStrayWater(recipe);
+      final steps = evolvePayload(recipe)['steps'] as List<dynamic>;
+
+      expect((steps.single as Map)['water'], 0);
+      expect((steps.single as Map)['until_user'], isTrue);
+    });
+  });
+
+  group('подпись свёрнутой строки шага', () {
+    test('у пролива — вода и время', () {
+      expect(stepSummary(step(water: 100, time: 30)), '100 г · 0:30');
+    });
+
+    test('у паузы — только время', () {
+      expect(stepSummary(step(stepType: 'wait', water: 0, time: 65)), '1:05');
+    });
+
+    test('у шага по кнопке вместо времени — чем он кончается', () {
+      // Было «0:09»: девять секунд, которые никто не отсчитывал.
+      expect(
+        stepSummary(step(stepType: 'custom', water: 2, time: 9, untilUser: true)),
+        'по кнопке',
+      );
+    });
+
+    test('у шага по признаку — то же, но своими словами', () {
+      expect(
+        stepSummary(step(
+          stepType: 'custom',
+          water: 0,
+          time: 9,
+          untilUser: true,
+          untilSign: 'воронка пуста',
+        )),
+        'по признаку',
+      );
+    });
+  });
+
   group('показ чисел', () {
     test('целая доза идёт без хвоста', () {
       expect(formatDecimal(16), '16');

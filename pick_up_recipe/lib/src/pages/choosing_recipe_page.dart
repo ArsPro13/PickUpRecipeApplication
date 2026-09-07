@@ -12,9 +12,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
+import '../features/grinders/application/grinder_state.dart';
+import '../features/grinders/domain/grind_translation.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../general_widgets/app_icon.dart';
@@ -69,6 +73,12 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       if (ref.read(brewMethodsProvider).grouped.isEmpty) {
         ref.read(brewMethodsProvider.notifier).load();
       }
+      // Кофемолка нужна ради помола: без неё на плитке останется слово, а не
+      // деление. По диплинку сюда приходят мимо вкладки «Пачки», где набор
+      // загружается обычно.
+      if (!ref.read(grinderStateProvider).hasGrinder) {
+        ref.read(grinderStateProvider.notifier).loadUserGrinders();
+      }
     });
   }
 
@@ -111,13 +121,15 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       if (!mounted) return;
 
       if (recipe == null) {
-        _say('У этого метода нет справочного рецепта');
+        _say(AppLocalizations.of(context).chooseNoBase);
         return;
       }
 
       await context.router.push(BrewRoute(recipe: recipe, pack: widget.pack));
     } catch (error) {
-      if (mounted) _say('Рецепт не открылся: $error');
+      if (mounted) {
+        _say(AppLocalizations.of(context).chooseBaseFailed('$error'));
+      }
     } finally {
       if (mounted) setState(() => _openingBase = false);
     }
@@ -129,8 +141,10 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return AppScreen(
-      title: widget.methodName ?? 'Рецепты',
+      title: widget.methodName ?? texts.recipesTitle,
       body: _loading
           ? const [
               SizedBox(height: AppSpacing.s16),
@@ -141,17 +155,32 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
                   const SizedBox(height: AppSpacing.s12),
                   AppState(
                     icon: AppIcons.stateError,
-                    title: 'Рецепты не открылись',
+                    title: texts.chooseFailed,
                     description: _error,
                     isError: true,
-                    primaryAction: AppButton(label: 'Повторить', onPressed: _load),
+                    primaryAction: AppButton(label: texts.retry, onPressed: _load),
                   ),
                 ]
               : _content(),
     );
   }
 
+  /// Помол рецепта делениями основной кофемолки (пункт 8).
+  ///
+  /// Плитка показывала «${recipe.grindStep} щ.», а у справочного рецепта
+  /// grind_step пуст — на месте помола стояло «щ.» без числа.
+  GrindReading _grind(RecipeData recipe) {
+    return grindReading(
+      descriptorSlug: recipe.grindDescriptor,
+      reference: ref.watch(grindDescriptorsProvider).valueOrNull ?? const [],
+      recipeGrinderId: recipe.grinderId,
+      recipeGrindStep: recipe.grindStep,
+      grinder: ref.watch(grinderStateProvider).primary,
+    );
+  }
+
   List<Widget> _content() {
+    final texts = AppLocalizations.of(context);
     final roaster = _recipes.isEmpty ? null : _recipes.first;
     final mine = _recipes.length > 1 ? _recipes.sublist(1) : const <RecipeData>[];
 
@@ -160,14 +189,18 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
         Text(widget.pack!.packName, style: context.texts.bodySmall),
 
       if (roaster != null) ...[
-        const _Section(icon: AppIcons.uiPack, title: 'От обжарщика', note: 'под это зерно'),
-        _RoasterRecipe(recipe: roaster, pack: widget.pack),
+        _Section(
+          icon: AppIcons.uiPack,
+          title: texts.chooseRoaster,
+          note: texts.chooseRoasterNote,
+        ),
+        _RoasterRecipe(recipe: roaster, pack: widget.pack, grind: _grind(roaster)),
       ],
 
-      const _Section(
+      _Section(
         icon: AppIcons.metricRatio,
-        title: 'Базовый',
-        note: 'из справочника',
+        title: texts.chooseBase,
+        note: texts.chooseBaseNote,
       ),
       // Базовый рецепт лежит в базе у каждого метода (миграция
       // 20260813100000). Строка ведёт прямо на заваривание: до старта тот
@@ -194,9 +227,9 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Рецепт метода', style: context.texts.bodyMedium),
+                    Text(texts.chooseMethodRecipe, style: context.texts.bodyMedium),
                     const SizedBox(height: AppSpacing.s1),
-                    Text('зерно не учитывает', style: context.texts.labelSmall),
+                    Text(texts.chooseMethodRecipeNote, style: context.texts.labelSmall),
                   ],
                 ),
               ),
@@ -218,10 +251,10 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       ),
 
       if (mine.isNotEmpty) ...[
-        const _Section(
+        _Section(
           icon: AppIcons.uiHistory,
-          title: 'Ваши рецепты',
-          note: 'прошлые версии',
+          title: texts.chooseMine,
+          note: texts.chooseMineNote,
         ),
         for (final recipe in mine) _VersionRow(recipe: recipe, pack: widget.pack),
       ],
@@ -258,13 +291,18 @@ class _Section extends StatelessWidget {
 
 /// Рецепт обжарщика: показатели плитками и кнопка заваривания с длительностью.
 class _RoasterRecipe extends StatelessWidget {
-  const _RoasterRecipe({required this.recipe, this.pack});
+  const _RoasterRecipe({required this.recipe, this.pack, required this.grind});
 
   final RecipeData recipe;
   final PackData? pack;
 
+  /// Помол делениями кофемолки человека, уже переведённый.
+  final GrindReading grind;
+
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return HeroSurface(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -272,10 +310,17 @@ class _RoasterRecipe extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              MetricTile(kind: MetricKind.dose, value: '${recipe.load} г'),
-              MetricTile(kind: MetricKind.water, value: '${recipe.water} мл'),
+              MetricTile(kind: MetricKind.dose, value: texts.unitGrams('${recipe.load}')),
+              MetricTile(
+                kind: MetricKind.water,
+                value: texts.unitMillilitres('${recipe.water}'),
+              ),
               MetricTile(kind: MetricKind.temperature, value: '${recipe.temperature} °C'),
-              MetricTile(kind: MetricKind.grind, value: '${recipe.grindStep} щ.'),
+              MetricTile(
+                kind: MetricKind.grind,
+                value: grind.isEmpty ? '—' : grind.label,
+                caption: grind.caption,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.s4),
@@ -289,7 +334,7 @@ class _RoasterRecipe extends StatelessWidget {
               // от «Заварить · 2:30», и слово ужималось сначала до «П…»,
               // потом до «Прав…». Место делит тот, у кого подпись длиннее.
               AppButton(
-                label: 'Править',
+                label: texts.edit,
                 kind: AppButtonKind.secondary,
                 block: false,
                 onPressed: () => context.router.push(
@@ -299,7 +344,7 @@ class _RoasterRecipe extends StatelessWidget {
               const SizedBox(width: AppSpacing.s3),
               Expanded(
                 child: AppButton(
-                  label: 'Заварить · ${_formatTime(recipe.time)}',
+                  label: texts.chooseBrewWithTime(_formatTime(recipe.time)),
                   icon: AppIcons.uiPlay,
                   // Числа рецепта уже над кнопкой — таймер идёт сразу.
                   onPressed: () => context.router.push(

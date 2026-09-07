@@ -1,9 +1,13 @@
 // Поле ввода в том виде, в каком оно нарисовано: метка над вдавленной
 // строкой, иконка слева, ошибка под самим полем.
 //
-// Рамка появляется только на фокусе и на ошибке. Обводка у каждого поля
-// превращает форму в решётку — это и было главным замечанием к прошлой
-// вёрстке, где каждый TextFormField рисовал себе рамку сам.
+// В покое у строки тонкая рамка цветом границы, на фокусе и на ошибке —
+// цветная и вдвое толще. Когда-то рамки в покое не было вовсе: обводка у
+// каждого поля превращала форму в решётку, и это было главным замечанием к
+// прошлой вёрстке, где каждый TextFormField рисовал себе рамку сам. Но без
+// рамки пустое поле не отличалось от фона, и строку приходилось искать
+// глазами. Разница в толщине и цвете снимает оба возражения: поле видно, а
+// взгляд всё равно ведёт туда, где сейчас курсор.
 //
 // Ошибка живёт у того поля, в котором произошла: общая красная строка внизу
 // формы не говорит, что именно править.
@@ -69,28 +73,61 @@ class AppField extends StatefulWidget {
 
 class _AppFieldState extends State<AppField> {
   final FocusNode _focus = FocusNode();
+
+  /// Прокрутка строки внутри поля. Своя, а не внутренняя у TextField:
+  /// до внутренней снаружи не дотянуться, а отматывать её нужно нам.
+  final ScrollController _line = ScrollController();
+
   late bool _hidden = widget.obscure;
 
   @override
   void initState() {
     super.initState();
-    _focus.addListener(() => setState(() {}));
+    _focus.addListener(_onFocusChanged);
   }
 
   @override
   void dispose() {
+    _focus.removeListener(_onFocusChanged);
     _focus.dispose();
+    _line.dispose();
     super.dispose();
+  }
+
+  /// Ушли из поля — показываем начало строки.
+  ///
+  /// Пока в поле пишут, оно отмотано к курсору, то есть к концу: длинная
+  /// почта видна как «...@example.com». После перехода в следующее поле это
+  /// уже не курсор, а всё, что осталось от введённого, и по хвосту домена
+  /// человек не узнаёт, тот ли адрес он набрал. Начало строки отвечает на
+  /// вопрос «что здесь введено», конец — нет.
+  ///
+  /// Обратно ничего не прибивается: вернулся фокус — EditableText сам
+  /// отматывает строку к курсору, и дописывать с конца по-прежнему видно.
+  void _onFocusChanged() {
+    setState(() {});
+
+    if (_focus.hasFocus || !_line.hasClients) return;
+
+    _line.jumpTo(_line.position.minScrollExtent);
   }
 
   @override
   Widget build(BuildContext context) {
     final hasError = widget.error != null;
 
-    final borderColor = switch ((hasError, _focus.hasFocus)) {
-      (true, _) => context.colors.error,
-      (false, true) => context.colors.primary,
-      _ => Colors.transparent,
+    // В покое — тонкая рамка цветом границы. Раньше её не было вовсе, и
+    // пустое поле сливалось с фоном: на экране «Свой тип шага» строку
+    // «Название» приходилось искать глазами (пункт №12). Цвет границы едва
+    // заметен, поэтому несколько полей подряд не превращаются в решётку —
+    // ровно того боялись, когда рамку отсюда убирали.
+    //
+    // Фокус и ошибка остались прежними: цветом и удвоенной толщиной. Важно,
+    // что они по-прежнему заметнее покоя, — это проверяет app_field_test.
+    final (borderColor, borderWidth) = switch ((hasError, _focus.hasFocus)) {
+      (true, _) => (context.colors.error, AppStroke.thick),
+      (false, true) => (context.colors.primary, AppStroke.thick),
+      _ => (context.palette.border, AppStroke.thin),
     };
 
     return Column(
@@ -110,6 +147,7 @@ class _AppFieldState extends State<AppField> {
             context,
             borderRadius: AppRadius.medium,
             outline: borderColor,
+            outlineWidth: borderWidth,
           ),
           child: Row(
             children: [
@@ -125,6 +163,7 @@ class _AppFieldState extends State<AppField> {
                 child: TextField(
                   controller: widget.controller,
                   focusNode: _focus,
+                  scrollController: _line,
                   enabled: widget.enabled,
                   obscureText: _hidden,
                   autocorrect: false,

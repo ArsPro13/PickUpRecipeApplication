@@ -9,10 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/utils.dart';
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/application/state/active_packs_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/rating_draft.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
@@ -47,6 +49,9 @@ class _PacksPageState extends ConsumerState<PacksPage> {
       if (ref.read(brewMethodsProvider).grouped.isEmpty) {
         ref.read(brewMethodsProvider.notifier).load();
       }
+      // Незаконченная оценка ищется здесь: это первая вкладка, и после
+      // перезапуска человек оказывается ровно на ней.
+      RatingDrafts.load();
     });
   }
 
@@ -56,15 +61,24 @@ class _PacksPageState extends ConsumerState<PacksPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Мои пачки'),
+        title: Text(AppLocalizations.of(context).packsTitle),
         actions: const [GrinderButton(), SizedBox(width: AppSpacing.s4)],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await ref.read(activePacksNotifierProvider.notifier).fetchPacks();
-          await ref.read(recipesListProvider.notifier).load();
-        },
-        child: _body(packs),
+      // Плашка стоит над списком, а не строкой в нём: недосказанная оценка не
+      // должна уезжать вверх при первой же прокрутке полки.
+      body: Column(
+        children: [
+          const UnfinishedRatingPlate(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await ref.read(activePacksNotifierProvider.notifier).fetchPacks();
+                await ref.read(recipesListProvider.notifier).load();
+              },
+              child: _body(packs),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -80,10 +94,10 @@ class _PacksPageState extends ConsumerState<PacksPage> {
           SizedBox(height: MediaQuery.sizeOf(context).height / 6),
           AppState(
             icon: AppIcons.stateEmpty,
-            title: 'Пачек пока нет',
-            description: 'Отсканируйте код с упаковки — рецепт обжарщика подтянется сам',
+            title: AppLocalizations.of(context).packsEmpty,
+            description: AppLocalizations.of(context).packsEmptyNote,
             primaryAction: AppButton(
-              label: 'Сканировать код',
+              label: AppLocalizations.of(context).packsScanCode,
               icon: AppIcons.uiScan,
               onPressed: () => AutoTabsRouter.of(context).setActiveIndex(2),
             ),
@@ -106,7 +120,7 @@ class _PacksPageState extends ConsumerState<PacksPage> {
           return Padding(
             padding: const EdgeInsets.only(top: AppSpacing.s1),
             child: AppButton(
-              label: 'Добавить пачку',
+              label: AppLocalizations.of(context).packsAdd,
               icon: AppIcons.uiPlus,
               kind: AppButtonKind.secondary,
               onPressed: () => AutoTabsRouter.of(context).setActiveIndex(2),
@@ -130,6 +144,85 @@ class _PacksPageState extends ConsumerState<PacksPage> {
   }
 }
 
+/// Плашка «оценка не дописана».
+///
+/// Место выбрано так же, как у плашки офлайна на странице кофе: рядом с тем,
+/// ради чего экран открыли, и без своего экрана. Первая вкладка — то, что
+/// человек видит после перезапуска, и другого места, где он сам додумался бы
+/// искать позавчерашнюю недооценённую чашку, попросту нет.
+///
+/// Смотрит прямо за `RatingDrafts.current`, а не через провайдер: черновик
+/// пишет чужой экран, и второй источник правды между ними только разошёлся бы
+/// с первым.
+class UnfinishedRatingPlate extends StatelessWidget {
+  const UnfinishedRatingPlate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<RatingDraft?>(
+      valueListenable: RatingDrafts.current,
+      builder: (context, draft, _) {
+        if (draft == null) return const SizedBox.shrink();
+
+        final texts = AppLocalizations.of(context);
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.s4,
+            AppSpacing.s2,
+            AppSpacing.s4,
+            0,
+          ),
+          child: AppCard(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s4,
+              vertical: AppSpacing.s3,
+            ),
+            onTap: () => context.router.push(
+              RatingRoute(recipe: draft.recipe, pack: draft.pack),
+            ),
+            child: Row(
+              children: [
+                AppIcon(
+                  AppIcons.uiStar,
+                  size: AppSizes.icon20,
+                  color: context.colors.primary,
+                ),
+                const SizedBox(width: AppSpacing.s3),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(texts.ratingDraftTitle, style: context.texts.bodyMedium),
+                      Text(
+                        draft.summary.isEmpty
+                            ? texts.ratingDraftContinue
+                            : texts.ratingDraftContinueWith(draft.summary),
+                        style: context.texts.labelSmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: RatingDrafts.clear,
+                  tooltip: texts.remove,
+                  icon: AppIcon(
+                    AppIcons.uiClose,
+                    size: AppSizes.icon16,
+                    color: context.colors.secondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 /// Кнопка кофемолки в шапке.
 ///
 /// Показывает название основной кофемолки, а не значок с многоточием: человек
@@ -143,7 +236,7 @@ class GrinderButton extends ConsumerWidget {
 
     return Semantics(
       button: true,
-      label: 'Сменить кофемолку',
+      label: AppLocalizations.of(context).packsChangeGrinder,
       child: InkWell(
         onTap: () => context.router.push(const GrinderSelectRoute()),
         borderRadius: AppRadius.rounded,
@@ -169,7 +262,7 @@ class GrinderButton extends ConsumerWidget {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 140),
                 child: Text(
-                  primary?.name ?? 'Выбрать кофемолку',
+                  primary?.name ?? AppLocalizations.of(context).profileChooseGrinder,
                   style: context.texts.bodySmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -296,7 +389,7 @@ class _Tags extends ConsumerWidget {
     final families = ref.watch(brewMethodsProvider).groupSlugBySlug;
 
     final labels = <({String text, Color? color})>[
-      if (done) (text: 'допита', color: null),
+      if (done) (text: AppLocalizations.of(context).packsFinished, color: null),
       for (final method in methods)
         (text: method.name, color: methodFamilyColor(families[method.slug])),
     ];
@@ -432,10 +525,11 @@ class _RoastFill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
     final (colors, label) = switch (roastLevel) {
-      'light' => (_light, 'светлая'),
-      'medium' || 'medium_light' || 'medium_dark' => (_medium, 'средняя'),
-      'dark' => (_dark, 'тёмная'),
+      'light' => (_light, texts.roastLight),
+      'medium' || 'medium_light' || 'medium_dark' => (_medium, texts.roastMedium),
+      'dark' => (_dark, texts.roastDark),
       _ => (_medium, ''),
     };
 

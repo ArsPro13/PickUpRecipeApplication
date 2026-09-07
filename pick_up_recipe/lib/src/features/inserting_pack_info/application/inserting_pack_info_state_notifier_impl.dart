@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state_notifier.dart';
+import 'package:pick_up_recipe/src/features/inserting_pack_info/domain/pack_title.dart';
 import 'package:pick_up_recipe/src/features/packs/data_sources/remote/pack_service.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_request_model.dart';
 
@@ -11,8 +12,8 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
 
   @override
   Future<void> updateForm({
-    required String? name,
     required String? country,
+    required String? region,
     required String? scaScore,
     required String? variety,
     required List<String>? processingMethod,
@@ -22,9 +23,8 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
   }) async {
     state = state.copyWith(
       isSubmitting: false,
-      errorMessage: null,
-      name: name,
       country: country,
+      region: region,
       scaScore: scaScore,
       variety: variety,
       processingMethod: processingMethod,
@@ -36,8 +36,8 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
 
   @override
   Future<void> submitForm({
-    required String name,
     required String country,
+    required String region,
     required int scaScore,
     required String variety,
     required List<String>? processingMethod,
@@ -55,8 +55,17 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
           packCountry: country,
           packDate: roastDate,
           packDescriptors: descriptors,
+          // Фотография уезжает тем же base64, каким её отдал image_picker:
+          // на сервере pack_image — обычный текстовый столбец.
           packImage: image ?? '',
-          packName: name,
+          // Регион в запрос отдельным полем не уходит: такого столбца на
+          // сервере нет. Он виден в имени пачки — и это всё, что мы сейчас
+          // умеем про него сохранить.
+          packName: packTitleFrom(
+            country: country,
+            region: region,
+            variety: variety,
+          ),
           packProcessingMethod: processingMethod ?? [],
           packScaScore: scaScore,
           packVariety: variety,
@@ -65,7 +74,7 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
 
       logger.i('Added pack information: $answer');
 
-      state = state.copyWith(isSubmitting: false, errorMessage: null);
+      state = state.copyWith(isSubmitting: false, isSent: true);
     } catch (e) {
       state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
     }
@@ -73,87 +82,37 @@ class PackInfoFormStateNotifierImpl extends StateNotifier<PackInfoFormState>
 
   @override
   Future<void> cleanForm() async {
-    await updateForm(
-      name: null,
-      country: null,
-      scaScore: null,
-      variety: null,
-      processingMethod: null,
-      roastDate: null,
-      descriptors: null,
-      image: null,
-    );
+    state = PackInfoFormState();
   }
 
   @override
   Future<void> updateImage({
     required String image,
   }) async {
-    state = state.copyWith(
-      image: image,
-    );
+    state = state.copyWith(image: image);
   }
 
   @override
   Future<void> startScanning() async {
-    state = state.copyWith(
-      isLoading: true,
-      name: state.name,
-      country: state.country,
-      descriptors: state.descriptors,
-      processingMethod: state.processingMethod,
-      roastDate: state.roastDate,
-      scaScore: state.scaScore,
-      variety: state.variety,
-      image: state.image,
-    );
+    state = state.copyWith(isLoading: true);
   }
 
   @override
   Future<void> finishScanning({String? error}) async {
-    state = state.copyWith(
-      isLoading: false,
-      imageErrorMessage: error,
-      name: state.name,
-      country: state.country,
-      descriptors: state.descriptors,
-      processingMethod: state.processingMethod,
-      roastDate: state.roastDate,
-      scaScore: state.scaScore,
-      variety: state.variety,
-      image: state.image,
-    );
+    state = state.copyWith(isLoading: false, imageErrorMessage: error);
   }
 
   @override
   Future<void> updateDescriptors({
     required List<String> descriptors,
   }) async {
-    state = state.copyWith(
-      name: state.name,
-      country: state.country,
-      descriptors: descriptors,
-      processingMethod: state.processingMethod,
-      roastDate: state.roastDate,
-      scaScore: state.scaScore,
-      variety: state.variety,
-      image: state.image,
-    );
+    state = state.copyWith(descriptors: descriptors);
   }
 
   @override
   Future<void> updateProcessingMethods({
     required List<String> processingMethods,
   }) async {
-    state = state.copyWith(
-      name: state.name,
-      country: state.country,
-      descriptors: state.descriptors,
-      processingMethod: processingMethods,
-      roastDate: state.roastDate,
-      scaScore: state.scaScore,
-      variety: state.variety,
-      image: state.image,
-    );
+    state = state.copyWith(processingMethod: processingMethods);
   }
 }

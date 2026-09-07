@@ -11,6 +11,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -73,7 +74,7 @@ class AppScreen extends StatelessWidget {
                   ? IconButton(
                       onPressed: onBack ?? () => context.router.maybePop(),
                       icon: const AppIcon(AppIcons.uiBack, size: AppSizes.icon24),
-                      tooltip: 'Назад',
+                      tooltip: AppLocalizations.of(context).back,
                     )
                   : null,
               actions: actions,

@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../features/authentication/domain/auth_rules.dart';
 import '../features/authentication/provider/authentication_state_notifier.dart';
 import '../general_widgets/app_field.dart';
@@ -25,6 +26,7 @@ import '../general_widgets/app_layout.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
+import 'auth_rule_texts.dart';
 
 /// Шаг восстановления.
 enum ResetStep { requestCode, enterNewPassword, done }
@@ -79,7 +81,9 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
   }
 
   Future<void> _requestCode() async {
-    setState(() => _emailError = AuthRules.emailError(_email.text));
+    final texts = AppLocalizations.of(context);
+
+    setState(() => _emailError = AuthRules.emailProblem(_email.text)?.text(texts));
     if (_emailError != null) return;
 
     setState(() {
@@ -104,9 +108,11 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
   }
 
   Future<void> _applyNewPassword() async {
+    final texts = AppLocalizations.of(context);
+
     setState(() {
-      _codeError = AuthRules.codeError(_code.text);
-      _passwordError = AuthRules.passwordError(_password.text);
+      _codeError = AuthRules.codeProblem(_code.text)?.text(texts);
+      _passwordError = AuthRules.passwordProblem(_password.text)?.text(texts);
     });
     if (_codeError != null || _passwordError != null) return;
 
@@ -133,42 +139,48 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return AppScreen(
       showNav: false,
-      title: _step == ResetStep.done ? 'Готово' : 'Новый пароль',
+      title: _step == ResetStep.done ? texts.resetDoneTitle : texts.resetTitle,
       body: switch (_step) {
-        ResetStep.requestCode => _requestCodeStep(),
-        ResetStep.enterNewPassword => _newPasswordStep(),
-        ResetStep.done => _doneStep(),
+        ResetStep.requestCode => _requestCodeStep(texts),
+        ResetStep.enterNewPassword => _newPasswordStep(texts),
+        ResetStep.done => _doneStep(texts),
       },
       bottom: switch (_step) {
         ResetStep.requestCode => [
-            AppButton(label: 'Прислать код', loading: _busy, onPressed: _busy ? null : _requestCode),
+            AppButton(
+              label: texts.resetSendCode,
+              loading: _busy,
+              onPressed: _busy ? null : _requestCode,
+            ),
           ],
         ResetStep.enterNewPassword => [
             AppButton(
-              label: 'Сменить пароль',
+              label: texts.resetChangePassword,
               loading: _busy,
               onPressed: _busy ? null : _applyNewPassword,
             ),
           ],
         ResetStep.done => [
-            AppButton(label: 'К входу', onPressed: () => context.router.maybePop()),
+            AppButton(label: texts.resetToLogin, onPressed: () => context.router.maybePop()),
           ],
       },
     );
   }
 
-  List<Widget> _requestCodeStep() {
+  List<Widget> _requestCodeStep(AppLocalizations texts) {
     return [
-      const _Step(number: 1, title: 'Куда прислать код', current: true),
+      _Step(number: 1, title: texts.resetStepWhere, current: true),
       const SizedBox(height: AppSpacing.s3),
       HeroSurface(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AppField(
-              label: 'Почта',
+              label: texts.fieldEmail,
               controller: _email,
               icon: AppIcons.uiMail,
               hint: 'you@example.com',
@@ -191,29 +203,28 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
       const SizedBox(height: AppSpacing.s4),
       IconRow(
         icon: AppIcons.uiInfo,
-        title: 'Ответ будет одинаковым',
-        subtitle: 'и если адрес у нас есть, и если нет — так форма не выдаёт, '
-            'кто у нас зарегистрирован',
+        title: texts.resetSameAnswer,
+        subtitle: texts.resetSameAnswerNote,
         iconColor: context.colors.secondary,
       ),
     ];
   }
 
-  List<Widget> _newPasswordStep() {
+  List<Widget> _newPasswordStep(AppLocalizations texts) {
     final canResend = _left <= Duration.zero;
 
     return [
       // Пройденный шаг сворачивается в строку: видно, что письмо ушло и куда.
-      _Step(number: 1, title: 'Письмо отправлено', subtitle: _email.text.trim(), done: true),
+      _Step(number: 1, title: texts.resetStepSent, subtitle: _email.text.trim(), done: true),
       const SizedBox(height: AppSpacing.s3),
-      const _Step(number: 2, title: 'Придумайте новый пароль', current: true),
+      _Step(number: 2, title: texts.resetStepNewPassword, current: true),
       const SizedBox(height: AppSpacing.s3),
       HeroSurface(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AppField(
-              label: 'Код из письма',
+              label: texts.resetFieldCode,
               controller: _code,
               icon: AppIcons.uiMail,
               hint: '000000',
@@ -230,25 +241,23 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
             ),
             Row(
               children: [
-                Text('Не пришло?', style: context.texts.bodySmall),
+                Text(texts.resetNotArrived, style: context.texts.bodySmall),
                 TextButton(
                   onPressed: canResend && !_busy ? _requestCode : null,
                   child: Text(
-                    canResend
-                        ? 'Отправить заново'
-                        : 'Отправить заново через ${_formatLeft(_left)}',
+                    canResend ? texts.resetResend : texts.resetResendIn(_formatLeft(_left)),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.s2),
             AppField(
-              label: 'Новый пароль',
+              label: texts.resetFieldNewPassword,
               controller: _password,
               icon: AppIcons.uiLock,
               obscure: true,
               error: _passwordError,
-              helper: 'Не короче ${AuthRules.minPasswordLength} знаков',
+              helper: texts.resetPasswordHelper(AuthRules.minPasswordLength),
               textInputAction: TextInputAction.go,
               autofillHints: const [AutofillHints.newPassword],
               onSubmitted: (_) => _applyNewPassword(),
@@ -266,13 +275,13 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
     ];
   }
 
-  List<Widget> _doneStep() {
+  List<Widget> _doneStep(AppLocalizations texts) {
     return [
       const SizedBox(height: AppSpacing.s12),
-      const AppState(
+      AppState(
         icon: AppIcons.uiCheck,
-        title: 'Пароль сменён',
-        description: 'Войдите с новым паролем',
+        title: texts.resetDoneHeading,
+        description: texts.resetDoneNote,
       ),
     ];
   }

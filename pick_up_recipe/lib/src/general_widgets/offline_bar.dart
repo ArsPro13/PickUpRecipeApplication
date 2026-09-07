@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/offline/network_status.dart';
 import '../../core/offline/outbox.dart';
+import '../../l10n/app_localizations.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -82,7 +83,11 @@ class _Bar extends StatelessWidget {
               const SizedBox(width: AppSpacing.s2),
               Expanded(
                 child: Text(
-                  offlineBarText(online: online, waiting: waiting),
+                  offlineBarText(
+                    AppLocalizations.of(context),
+                    online: online,
+                    waiting: waiting,
+                  ),
                   style: context.texts.labelSmall,
                 ),
               ),
@@ -98,26 +103,17 @@ class _Bar extends StatelessWidget {
 ///
 /// Отдельной функцией ради теста: строк три, и каждая должна говорить правду
 /// про своё состояние, а не общее «что-то не так».
-String offlineBarText({required bool online, required int waiting}) {
-  if (online) {
-    return waiting == 0 ? '' : 'Связь есть — отправляем сохранённое';
-  }
+///
+/// Склонение «1 дело / 2 дела / 5 дел» считает ICU внутри `offlinePending`, а
+/// не эта функция: у каждого языка своя таблица форм, и написанная руками
+/// работала бы ровно для одного из них.
+String offlineBarText(
+  AppLocalizations l10n, {
+  required bool online,
+  required int waiting,
+}) {
+  if (online) return waiting == 0 ? '' : l10n.offlineSyncing;
+  if (waiting == 0) return l10n.offlineCached;
 
-  if (waiting == 0) return 'Нет сети. Показываем сохранённое';
-
-  final one = waiting % 10 == 1 && waiting % 100 != 11;
-  return 'Нет сети. ${_things(waiting)} ${one ? 'уедет' : 'уедут'}, '
-      'когда появится связь';
-}
-
-/// «1 дело», «2 дела», «5 дел» — по-русски.
-String _things(int count) {
-  final tail = count % 100;
-  if (tail >= 11 && tail <= 14) return '$count дел';
-
-  return switch (count % 10) {
-    1 => '$count дело',
-    2 || 3 || 4 => '$count дела',
-    _ => '$count дел',
-  };
+  return l10n.offlinePending(waiting);
 }

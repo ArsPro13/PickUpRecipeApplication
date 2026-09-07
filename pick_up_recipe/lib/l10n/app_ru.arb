@@ -1,0 +1,1208 @@
+{
+  "@@locale": "ru",
+
+  "back": "Назад",
+  "@back": {
+    "description": "Стрелка возврата в шапке экрана. Читается только голосовым помощником и всплывающей подсказкой."
+  },
+
+  "noNetwork": "Нет сети",
+  "@noNetwork": {
+    "description": "Запрос не дошёл до сервера. Коротко: строка встаёт в чужое сообщение об ошибке."
+  },
+
+  "offlineCached": "Нет сети. Показываем сохранённое",
+  "@offlineCached": {
+    "description": "Полоска связи наверху: сети нет, а отправлять нечего."
+  },
+
+  "offlineSyncing": "Связь есть — отправляем сохранённое",
+  "@offlineSyncing": {
+    "description": "Полоска связи наверху: сеть вернулась, очередь разбирается."
+  },
+
+  "offlinePending": "Нет сети. {count, plural, one{{count} дело уедет} few{{count} дела уедут} many{{count} дел уедут} other{{count} дела уедут}}, когда появится связь",
+  "@offlinePending": {
+    "description": "Полоска связи наверху: сети нет и в очереди что-то ждёт отправки. Склонение делает ICU, а не рука: правило «1 дело / 2 дела / 5 дел» у каждого языка своё, и в коде ему не место.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "authCreateAccount": "Создать аккаунт",
+  "@authCreateAccount": {
+    "description": "Кнопка и заголовок: завести новый аккаунт. Одна строка на приветствие и регистрацию."
+  },
+
+  "authSignIn": "Войти",
+  "@authSignIn": {
+    "description": "Кнопка входа. Стоит на приветствии, на входе и под формой регистрации."
+  },
+
+  "fieldEmail": "Почта",
+  "@fieldEmail": {
+    "description": "Подпись поля адреса — на входе, регистрации и восстановлении пароля."
+  },
+
+  "fieldPassword": "Пароль",
+  "@fieldPassword": {
+    "description": "Подпись поля пароля на входе и регистрации."
+  },
+
+  "welcomeTagline": "Рецепт от того, кто жарил это зерно",
+  "@welcomeTagline": {
+    "description": "Приветствие: строка под названием приложения."
+  },
+
+  "welcomeKeepsTitle": "Аккаунт хранит",
+  "@welcomeKeepsTitle": {
+    "description": "Приветствие: заголовок списка того, что даёт аккаунт."
+  },
+
+  "welcomeKeepsRecipes": "Ваши рецепты",
+  "@welcomeKeepsRecipes": {
+    "description": "Приветствие: первое, что хранит аккаунт."
+  },
+
+  "welcomeKeepsRecipesNote": "версии переживают смену телефона",
+  "@welcomeKeepsRecipesNote": {
+    "description": "Приветствие: пояснение к рецептам."
+  },
+
+  "welcomeKeepsGrinder": "Кофемолку",
+  "@welcomeKeepsGrinder": {
+    "description": "Приветствие: второе, что хранит аккаунт."
+  },
+
+  "welcomeKeepsGrinderNote": "помол пересчитывается в ваши щелчки",
+  "@welcomeKeepsGrinderNote": {
+    "description": "Приветствие: пояснение к кофемолке."
+  },
+
+  "welcomeKeepsPacks": "Историю пачек",
+  "@welcomeKeepsPacks": {
+    "description": "Приветствие: третье, что хранит аккаунт."
+  },
+
+  "welcomeKeepsPacksNote": "что и как заваривали полгода назад",
+  "@welcomeKeepsPacksNote": {
+    "description": "Приветствие: пояснение к истории пачек."
+  },
+
+  "loginTitle": "Вход",
+  "@loginTitle": {
+    "description": "Заголовок экрана входа. Отдельно от кнопки: заголовок называет экран, кнопка — действие."
+  },
+
+  "loginForgot": "Забыли пароль?",
+  "@loginForgot": {
+    "description": "Вход: ссылка на восстановление пароля."
+  },
+
+  "loginNoAccount": "Нет аккаунта?",
+  "@loginNoAccount": {
+    "description": "Вход: вопрос в строке перехода на регистрацию."
+  },
+
+  "loginCreate": "Создать",
+  "@loginCreate": {
+    "description": "Вход: действие в строке перехода на регистрацию."
+  },
+
+  "registerRepeat": "Ещё раз",
+  "@registerRepeat": {
+    "description": "Регистрация: подпись поля повтора пароля."
+  },
+
+  "registerPasswordRule": "не короче {length} знаков",
+  "@registerPasswordRule": {
+    "description": "Регистрация: правило пароля под полем. Длину задаёт сервер, поэтому она подставляется, а не вписана в строку.",
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+
+  "registerNextMail": "Дальше — письмо с кодом",
+  "@registerNextMail": {
+    "description": "Регистрация: что произойдёт после нажатия кнопки."
+  },
+
+  "registerNextMailNote": "шесть знаков, чтобы подтвердить адрес",
+  "@registerNextMailNote": {
+    "description": "Регистрация: пояснение к письму с кодом."
+  },
+
+  "registerHaveAccount": "Уже есть аккаунт?",
+  "@registerHaveAccount": {
+    "description": "Регистрация: вопрос в строке перехода на вход."
+  },
+
+  "registerConsentRequired": "Без согласия зарегистрировать аккаунт нельзя",
+  "@registerConsentRequired": {
+    "description": "Регистрация: отметки согласия нет, а без неё регистрация невозможна."
+  },
+
+  "registerTermsUnavailable": "Не удалось загрузить условия. Проверьте связь и попробуйте ещё раз.",
+  "@registerTermsUnavailable": {
+    "description": "Регистрация: редакцию документов не удалось получить с сервера, а без неё согласие ничего не доказывает."
+  },
+
+  "consentPrefix": "Соглашаюсь с ",
+  "@consentPrefix": {
+    "description": "Регистрация: начало строки согласия. Дальше идут две ссылки, поэтому строка обрывается пробелом."
+  },
+
+  "consentPrivacy": "политикой обработки данных",
+  "@consentPrivacy": {
+    "description": "Регистрация: ссылка на политику обработки данных внутри строки согласия."
+  },
+
+  "consentAnd": " и ",
+  "@consentAnd": {
+    "description": "Регистрация: союз между двумя ссылками в строке согласия. Пробелы по краям обязательны."
+  },
+
+  "consentAgreement": "пользовательским соглашением",
+  "@consentAgreement": {
+    "description": "Регистрация: ссылка на пользовательское соглашение внутри строки согласия."
+  },
+
+  "verifyTitle": "Подтвердите почту",
+  "@verifyTitle": {
+    "description": "Заголовок экрана подтверждения почты."
+  },
+
+  "verifySubtitle": "Отправили код из шести знаков",
+  "@verifySubtitle": {
+    "description": "Подтверждение почты: что человек должен искать в письме."
+  },
+
+  "verifyChangeEmail": "Изменить адрес",
+  "@verifyChangeEmail": {
+    "description": "Подтверждение почты: подпись карандаша рядом с адресом. Читается голосовым помощником."
+  },
+
+  "verifyConfirm": "Подтвердить",
+  "@verifyConfirm": {
+    "description": "Подтверждение почты: главная кнопка."
+  },
+
+  "verifyNotArrived": "Не пришёл?",
+  "@verifyNotArrived": {
+    "description": "Подтверждение почты: вопрос перед кнопкой повторной отправки. Речь о коде."
+  },
+
+  "verifySending": "Отправляем…",
+  "@verifySending": {
+    "description": "Подтверждение почты: письмо в пути, кнопка занята."
+  },
+
+  "verifyResend": "Отправить код ещё раз",
+  "@verifyResend": {
+    "description": "Подтверждение почты: кнопка повторной отправки, когда её уже можно нажать."
+  },
+
+  "verifyResendIn": "Ещё раз через {time}",
+  "@verifyResendIn": {
+    "description": "Подтверждение почты: та же кнопка, пока идёт отсчёт. {time} — остаток в виде м:сс.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "verifySentAgain": "Отправили ещё одно письмо",
+  "@verifySentAgain": {
+    "description": "Подтверждение почты: повторная отправка удалась."
+  },
+
+  "verifyTooOften": "Письмо уже уходило. Следующее — через {time}",
+  "@verifyTooOften": {
+    "description": "Подтверждение почты: сервер отказал по частоте. Человеку нужен срок, а не слово «часто».",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "verifyAddressRejected": "Сервер не принял этот адрес. Проверьте, тот ли он",
+  "@verifyAddressRejected": {
+    "description": "Подтверждение почты: сервер отверг сам запрос, а не почту."
+  },
+
+  "verifyHelpTitle": "Если письмо не пришло",
+  "@verifyHelpTitle": {
+    "description": "Подтверждение почты: заголовок списка того, что делать без письма."
+  },
+
+  "verifyHelpSpam": "Загляните в «Спам»",
+  "@verifyHelpSpam": {
+    "description": "Подтверждение почты: первая причина, по которой письма не видно."
+  },
+
+  "verifyHelpSpamNote": "отправитель новый, и почта его ещё не знает",
+  "@verifyHelpSpamNote": {
+    "description": "Подтверждение почты: пояснение про папку со спамом."
+  },
+
+  "verifyHelpWait": "Подождите минуту",
+  "@verifyHelpWait": {
+    "description": "Подтверждение почты: вторая причина — письмо ещё в пути."
+  },
+
+  "verifyHelpWaitNote": "письмо идёт не мгновенно, обычно меньше минуты",
+  "@verifyHelpWaitNote": {
+    "description": "Подтверждение почты: пояснение про время доставки."
+  },
+
+  "verifyHelpAddress": "Проверьте адрес",
+  "@verifyHelpAddress": {
+    "description": "Подтверждение почты: третья причина — опечатка в адресе."
+  },
+
+  "verifyHelpAddressNote": "опечатка в почте — самая частая причина; исправить адрес можно карандашом наверху",
+  "@verifyHelpAddressNote": {
+    "description": "Подтверждение почты: пояснение про опечатку в адресе."
+  },
+
+  "verifyHelpResend": "Отправьте код ещё раз",
+  "@verifyHelpResend": {
+    "description": "Подтверждение почты: четвёртое, что можно сделать. Отличается от подписи кнопки: здесь это совет, там действие."
+  },
+
+  "verifyHelpResendNote": "кнопка над этим списком; чаще раза в минуту письма не уходят",
+  "@verifyHelpResendNote": {
+    "description": "Подтверждение почты: пояснение к повторной отправке."
+  },
+
+  "verifyMailDownTitle": "Письма сейчас не уходят",
+  "@verifyMailDownTitle": {
+    "description": "Подтверждение почты: почта не работает на сервере."
+  },
+
+  "verifyMailDownNote": "дело не в вашем адресе: сервер не смог отправить письмо",
+  "@verifyMailDownNote": {
+    "description": "Подтверждение почты: главное про поломку почты — человек не виноват."
+  },
+
+  "verifyMailDownWhatToDo": "Аккаунт уже создан — проходить регистрацию заново не нужно. Подождите несколько минут и отправьте код ещё раз: как только почта заработает, письмо придёт на тот же адрес.",
+  "@verifyMailDownWhatToDo": {
+    "description": "Подтверждение почты: что делать, пока почта не работает."
+  },
+
+  "resetTitle": "Новый пароль",
+  "@resetTitle": {
+    "description": "Заголовок экрана восстановления пароля, пока он не пройден."
+  },
+
+  "resetDoneTitle": "Готово",
+  "@resetDoneTitle": {
+    "description": "Заголовок экрана восстановления пароля на последнем шаге."
+  },
+
+  "resetSendCode": "Прислать код",
+  "@resetSendCode": {
+    "description": "Восстановление пароля: кнопка первого шага."
+  },
+
+  "resetChangePassword": "Сменить пароль",
+  "@resetChangePassword": {
+    "description": "Восстановление пароля: кнопка второго шага."
+  },
+
+  "resetToLogin": "К входу",
+  "@resetToLogin": {
+    "description": "Восстановление пароля: кнопка после смены пароля."
+  },
+
+  "resetStepWhere": "Куда прислать код",
+  "@resetStepWhere": {
+    "description": "Восстановление пароля: подпись первого шага."
+  },
+
+  "resetSameAnswer": "Ответ будет одинаковым",
+  "@resetSameAnswer": {
+    "description": "Восстановление пароля: предупреждение о том, что форма не выдаёт чужие адреса."
+  },
+
+  "resetSameAnswerNote": "и если адрес у нас есть, и если нет — так форма не выдаёт, кто у нас зарегистрирован",
+  "@resetSameAnswerNote": {
+    "description": "Восстановление пароля: пояснение к одинаковому ответу."
+  },
+
+  "resetStepSent": "Письмо отправлено",
+  "@resetStepSent": {
+    "description": "Восстановление пароля: свёрнутый первый шаг."
+  },
+
+  "resetStepNewPassword": "Придумайте новый пароль",
+  "@resetStepNewPassword": {
+    "description": "Восстановление пароля: подпись второго шага."
+  },
+
+  "resetFieldCode": "Код из письма",
+  "@resetFieldCode": {
+    "description": "Восстановление пароля: подпись поля кода."
+  },
+
+  "resetNotArrived": "Не пришло?",
+  "@resetNotArrived": {
+    "description": "Восстановление пароля: вопрос перед повторной отправкой. Речь о письме."
+  },
+
+  "resetResend": "Отправить заново",
+  "@resetResend": {
+    "description": "Восстановление пароля: повторная отправка письма."
+  },
+
+  "resetResendIn": "Отправить заново через {time}",
+  "@resetResendIn": {
+    "description": "Восстановление пароля: повторная отправка, пока идёт отсчёт. {time} — остаток в виде м:сс.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "resetFieldNewPassword": "Новый пароль",
+  "@resetFieldNewPassword": {
+    "description": "Восстановление пароля: подпись поля нового пароля. Совпадает с заголовком экрана по-русски, но это разные строки."
+  },
+
+  "resetPasswordHelper": "Не короче {length} знаков",
+  "@resetPasswordHelper": {
+    "description": "Восстановление пароля: подсказка под полем нового пароля.",
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+
+  "resetDoneHeading": "Пароль сменён",
+  "@resetDoneHeading": {
+    "description": "Восстановление пароля: итог на последнем шаге."
+  },
+
+  "resetDoneNote": "Войдите с новым паролем",
+  "@resetDoneNote": {
+    "description": "Восстановление пароля: что делать после смены пароля."
+  },
+
+  "ruleEmailEmpty": "Введите почту",
+  "@ruleEmailEmpty": {
+    "description": "Правило формы: адрес не введён."
+  },
+
+  "ruleEmailAtSign": "В адресе должна быть одна собака",
+  "@ruleEmailAtSign": {
+    "description": "Правило формы: собаки нет или их больше одной."
+  },
+
+  "ruleEmailDomain": "После собаки должен быть домен: example.ru",
+  "@ruleEmailDomain": {
+    "description": "Правило формы: домена после собаки нет. Пример подставлен местный — .ru по-русски, .com по-английски."
+  },
+
+  "ruleEmailSpaces": "В адресе не бывает пробелов",
+  "@ruleEmailSpaces": {
+    "description": "Правило формы: в адресе пробел."
+  },
+
+  "rulePasswordEmpty": "Введите пароль",
+  "@rulePasswordEmpty": {
+    "description": "Правило формы: пароль не введён."
+  },
+
+  "rulePasswordTooShort": "Не короче {length} символов",
+  "@rulePasswordTooShort": {
+    "description": "Правило формы: пароль короче серверного порога.",
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+
+  "ruleRepeatEmpty": "Повторите пароль",
+  "@ruleRepeatEmpty": {
+    "description": "Правило формы: повтор пароля не введён."
+  },
+
+  "ruleRepeatMismatch": "Пароли не совпадают",
+  "@ruleRepeatMismatch": {
+    "description": "Правило формы: пароль и его повтор разные."
+  },
+
+  "ruleCodeEmpty": "Введите код из письма",
+  "@ruleCodeEmpty": {
+    "description": "Правило формы: код не введён."
+  },
+
+  "ruleCodeLength": "В коде шесть цифр",
+  "@ruleCodeLength": {
+    "description": "Правило формы: в коде не шесть знаков."
+  },
+
+  "ruleCodeDigits": "Код состоит только из цифр",
+  "@ruleCodeDigits": {
+    "description": "Правило формы: в коде есть не цифры."
+  },
+
+  "tabPacks": "Пачки",
+  "@tabPacks": {
+    "description": "Первая вкладка внизу: полка своих пачек."
+  },
+
+  "tabRecipes": "Рецепты",
+  "@tabRecipes": {
+    "description": "Вторая вкладка внизу: история своих рецептов."
+  },
+
+  "tabScan": "Сканировать",
+  "@tabScan": {
+    "description": "Третья вкладка внизу: как добавить пачку — код, камера или без кода."
+  },
+
+  "tabProfile": "Профиль",
+  "@tabProfile": {
+    "description": "Четвёртая вкладка внизу: счёт накопленного, кофемолки, выход."
+  },
+
+  "retry": "Повторить",
+  "@retry": {
+    "description": "Кнопка на экране, который не открылся: повторить тот же запрос. Одна на все такие экраны — просьба одна и та же."
+  },
+
+  "methodsTitle": "Чем заварить",
+  "@methodsTitle": {
+    "description": "Заголовок экрана выбора метода под конкретное зерно."
+  },
+
+  "methodsFailed": "Справочник методов не открылся",
+  "@methodsFailed": {
+    "description": "Выбор метода: справочник не пришёл с сервера, показывать нечего."
+  },
+
+  "conflictTitle": "Что проверить",
+  "@conflictTitle": {
+    "description": "Заголовок экрана конфликта жалоб: цифры сейчас не ответ, ответ — про технику."
+  },
+
+  "conflictBrewAgain": "Заварить так же ещё раз",
+  "@conflictBrewAgain": {
+    "description": "Конфликт жалоб: главный выход — перезаварить, следя за техникой."
+  },
+
+  "conflictOpenBuilder": "Всё равно открыть конструктор",
+  "@conflictOpenBuilder": {
+    "description": "Конфликт жалоб: второй выход — всё-таки подвинуть цифры."
+  },
+
+  "unitGrams": "{value} г",
+  "@unitGrams": {
+    "description": "Число с граммами. Число уже посчитано и записано на месте вызова — здесь только единица и её место в строке.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+
+  "unitMillilitres": "{value} мл",
+  "@unitMillilitres": {
+    "description": "Число с миллилитрами. Как и граммы: число приходит готовым, строка ставит единицу.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+
+  "edit": "Править",
+  "@edit": {
+    "description": "Кнопка правки рецепта. Одна на все экраны, где рецепт можно подвинуть."
+  },
+
+  "recipesTitle": "Рецепты",
+  "@recipesTitle": {
+    "description": "Заголовок экрана со списком рецептов. Отдельно от подписи вкладки: там ярлык, здесь название экрана."
+  },
+
+  "chooseFailed": "Рецепты не открылись",
+  "@chooseFailed": {
+    "description": "Выбор рецепта: список не пришёл с сервера."
+  },
+
+  "chooseNoBase": "У этого метода нет справочного рецепта",
+  "@chooseNoBase": {
+    "description": "Выбор рецепта: базового рецепта у метода в базе не оказалось."
+  },
+
+  "chooseBaseFailed": "Рецепт не открылся: {error}",
+  "@chooseBaseFailed": {
+    "description": "Выбор рецепта: базовый рецепт запрашивали, но запрос не прошёл.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "chooseRoaster": "От обжарщика",
+  "@chooseRoaster": {
+    "description": "Выбор рецепта: заголовок первого раздела."
+  },
+
+  "chooseRoasterNote": "под это зерно",
+  "@chooseRoasterNote": {
+    "description": "Выбор рецепта: пояснение к разделу обжарщика."
+  },
+
+  "chooseBase": "Базовый",
+  "@chooseBase": {
+    "description": "Выбор рецепта: заголовок второго раздела."
+  },
+
+  "chooseBaseNote": "из справочника",
+  "@chooseBaseNote": {
+    "description": "Выбор рецепта: пояснение к базовому разделу."
+  },
+
+  "chooseMethodRecipe": "Рецепт метода",
+  "@chooseMethodRecipe": {
+    "description": "Выбор рецепта: строка, ведущая на заваривание по справочному рецепту."
+  },
+
+  "chooseMethodRecipeNote": "зерно не учитывает",
+  "@chooseMethodRecipeNote": {
+    "description": "Выбор рецепта: чем справочный рецепт хуже рецепта обжарщика."
+  },
+
+  "chooseMine": "Ваши рецепты",
+  "@chooseMine": {
+    "description": "Выбор рецепта: заголовок третьего раздела."
+  },
+
+  "chooseMineNote": "прошлые версии",
+  "@chooseMineNote": {
+    "description": "Выбор рецепта: пояснение к разделу своих рецептов."
+  },
+
+  "chooseBrewWithTime": "Заварить · {time}",
+  "@chooseBrewWithTime": {
+    "description": "Выбор рецепта: кнопка заваривания с длительностью рецепта в виде м:сс.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "stepTypeLabel": "Тип шага",
+  "@stepTypeLabel": {
+    "description": "Подпись «что выбираем» — в шапке листа выбора типа и в карточке шага конструктора."
+  },
+
+  "stepTypesFailed": "Справочник не пришёл",
+  "@stepTypesFailed": {
+    "description": "Лист выбора типа: справочник типов шагов не пришёл с сервера."
+  },
+
+  "stepTypesFailedNote": "Без него неизвестно, какие шаги умеет этот прибор.",
+  "@stepTypesFailedNote": {
+    "description": "Лист выбора типа: чем плохо отсутствие справочника."
+  },
+
+  "stepTypesCount": "{shown, plural, one{{shown} тип} few{{shown} типа} many{{shown} типов} other{{shown} типов}} из {total}",
+  "@stepTypesCount": {
+    "description": "Лист выбора типа: сколько типов показано из всех, что есть в справочнике. Склонение «1 тип / 2 типа / 5 типов» считает ICU, а не рука: таблица форм у каждого языка своя.",
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+
+  "stepTypesCountWithOwn": "{shown, plural, one{{shown} тип} few{{shown} типа} many{{shown} типов} other{{shown} типов}} из {total} и {own, plural, one{{own} ваша заготовка} few{{own} ваших} many{{own} ваших} other{{own} ваших}}",
+  "@stepTypesCountWithOwn": {
+    "description": "То же, но у прибора есть свои заготовки. Оба числа склоняет ICU: рука считала «21 ваших» и «2 типов».",
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "own": {
+        "type": "int"
+      }
+    }
+  },
+
+  "stepTypesOwnGroup": "Ваши типы",
+  "@stepTypesOwnGroup": {
+    "description": "Лист выбора типа: заголовок группы своих заготовок, когда их ещё нет."
+  },
+
+  "stepTypesOwnGroupOnly": "Ваши типы · только для этого прибора",
+  "@stepTypesOwnGroupOnly": {
+    "description": "Лист выбора типа: тот же заголовок, когда заготовки есть. Хвост объясняет, почему на другом приборе их не будет."
+  },
+
+  "stepTypesStateful": "{name} · меняет состояние прибора",
+  "@stepTypesStateful": {
+    "description": "Лист выбора типа: подзаголовок у группы, чьи типы ставят строку состояния в шапку заваривания — иначе непонятно, чем «открыть клапан» отличается от ремарки.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "stepTypeNew": "новый",
+  "@stepTypeNew": {
+    "description": "Лист выбора типа: клетка, открывающая форму своего шага. Не тип, а выход за справочник."
+  },
+
+  "profileTitle": "Профиль",
+  "@profileTitle": {
+    "description": "Заголовок экрана профиля. Отдельно от подписи вкладки: там ярлык, здесь название экрана."
+  },
+
+  "profileStatsTitle": "Что накопилось",
+  "@profileStatsTitle": {
+    "description": "Профиль: заголовок раздела со счётом накопленного."
+  },
+
+  "profileCounting": "Считаем ваши пачки и рецепты…",
+  "@profileCounting": {
+    "description": "Профиль: списки ещё не приехали и сохранённого тоже нет — первый запуск."
+  },
+
+  "profileNothingYet": "Пока считать нечего. Отсканируйте пачку и заварите по рецепту — здесь появятся ваши цифры.",
+  "@profileNothingYet": {
+    "description": "Профиль: считать нечего — ни пачек, ни рецептов."
+  },
+
+  "profileRecipes": "{count, plural, one{рецепт} few{рецепта} many{рецептов} other{рецептов}}",
+  "@profileRecipes": {
+    "description": "Профиль: подпись под числом рецептов. Число стоит отдельной строкой крупным, здесь только слово в нужной форме — считает ICU, а не рука.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileVersions": "{count, plural, one{версия} few{версии} many{версий} other{версий}}",
+  "@profileVersions": {
+    "description": "Профиль: подпись под числом версий.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profilePacks": "{count, plural, one{пачка} few{пачки} many{пачек} other{пачек}}",
+  "@profilePacks": {
+    "description": "Профиль: подпись под числом пачек.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileCountries": "{count, plural, one{страна} few{страны} many{стран} other{стран}}",
+  "@profileCountries": {
+    "description": "Профиль: подпись под числом стран на полке.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileVarieties": "{count, plural, one{сорт} few{сорта} many{сортов} other{сортов}}",
+  "@profileVarieties": {
+    "description": "Профиль: подпись под числом сортов на полке.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileFavourite": "Чаще всего",
+  "@profileFavourite": {
+    "description": "Профиль: строка про прибор, которым рецептов сделано больше всего."
+  },
+
+  "profileFavouriteValue": "{name} · {count, plural, one{{count} рецепт} few{{count} рецепта} many{{count} рецептов} other{{count} рецептов}}",
+  "@profileFavouriteValue": {
+    "description": "Профиль: значение строки про любимый прибор — название и счёт рецептов под ним.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileFirstRecipe": "Первый рецепт",
+  "@profileFirstRecipe": {
+    "description": "Профиль: строка с датой самого раннего рецепта."
+  },
+
+  "profileGrindersTitle": "Мои кофемолки",
+  "@profileGrindersTitle": {
+    "description": "Профиль: заголовок раздела с кофемолками."
+  },
+
+  "profileNoGrinder": "Кофемолка не выбрана. Без неё рецепт показывает крупность словами, а не щелчками вашей кофемолки.",
+  "@profileNoGrinder": {
+    "description": "Профиль: кофемолок не выбрано ни одной, и чем это плохо."
+  },
+
+  "profileGrinderPrimary": "основная",
+  "@profileGrinderPrimary": {
+    "description": "Профиль: метка у той кофемолки, в щелчках которой пересчитываются рецепты."
+  },
+
+  "profileChooseGrinder": "Выбрать кофемолку",
+  "@profileChooseGrinder": {
+    "description": "Профиль: кнопка под списком, когда кофемолок нет."
+  },
+
+  "profileChangeGrinders": "Изменить набор",
+  "@profileChangeGrinders": {
+    "description": "Профиль: та же кнопка, когда кофемолки уже выбраны."
+  },
+
+  "profileAccountTitle": "Аккаунт",
+  "@profileAccountTitle": {
+    "description": "Профиль: заголовок раздела с выходом из аккаунта."
+  },
+
+  "profileLogout": "Выйти",
+  "@profileLogout": {
+    "description": "Профиль: выход из аккаунта. Одна строка на строку списка и на кнопку в вопросе перед выходом."
+  },
+
+  "profileLogoutTitle": "Выйти, не отправив?",
+  "@profileLogoutTitle": {
+    "description": "Профиль: заголовок вопроса перед выходом, когда в очереди отправки что-то есть."
+  },
+
+  "profileLogoutPending": "Связи не было, и {count, plural, one{{count} дело ждёт} few{{count} дела ждут} many{{count} дел ждут} other{{count} дел ждут}} отправки — оценки и правки рецептов. Выход сотрёт их вместе с аккаунтом.",
+  "@profileLogoutPending": {
+    "description": "Профиль: что человек потеряет, если выйдет с непустой очередью. Склонение считает ICU: рука знала два варианта и на двух делах говорила «2 дел ждут».",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileStay": "Остаться",
+  "@profileStay": {
+    "description": "Профиль: отказ от выхода в вопросе перед выходом."
+  },
+
+  "clear": "Очистить",
+  "@clear": {
+    "description": "Крестик в поле ввода. Читается голосовым помощником и всплывающей подсказкой."
+  },
+
+  "scanTitle": "Код с пачки",
+  "@scanTitle": {
+    "description": "Заголовок экрана-вкладки, с которого начинается добавление пачки."
+  },
+
+  "scanOpenCamera": "Открыть камеру",
+  "@scanOpenCamera": {
+    "description": "Код с пачки: подпись кадра-подсказки для голосового помощника. Живой камеры в кадре нет, он открывает сканер по нажатию."
+  },
+
+  "scanTapToAim": "нажмите, чтобы навести",
+  "@scanTapToAim": {
+    "description": "Код с пачки: подпись в углу кадра-подсказки."
+  },
+
+  "scanCodeIsSmall": "Код мелкий — ищите его в углу пачки",
+  "@scanCodeIsSmall": {
+    "description": "Код с пачки: где искать код на упаковке."
+  },
+
+  "scanManualTitle": "Ввести код руками",
+  "@scanManualTitle": {
+    "description": "Код с пачки: заголовок половины экрана с ручным вводом. Не запасной выход, а равноправный путь."
+  },
+
+  "scanOpenRecipe": "Открыть рецепт",
+  "@scanOpenRecipe": {
+    "description": "Код с пачки: кнопка под введённым кодом."
+  },
+
+  "scanNoCode": "На пачке нет кода",
+  "@scanNoCode": {
+    "description": "Код с пачки: третий путь — распознать пачку по фотографии. Сейчас он самый частый, поэтому это кнопка, а не ссылка."
+  },
+
+  "saving": "Сохраняем…",
+  "@saving": {
+    "description": "Кнопка сохранения, пока запрос в пути."
+  },
+
+  "customStepTitle": "Свой тип шага",
+  "@customStepTitle": {
+    "description": "Заголовок экрана, где заводят свой тип шага."
+  },
+
+  "customStepForMethod": "останется у вас для метода {method}",
+  "@customStepForMethod": {
+    "description": "Свой тип шага: к какому прибору он привязан. Название метода приходит с сервера и не переводится.",
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+
+  "customStepNoLabel": "Без названия шаг не встанет в список",
+  "@customStepNoLabel": {
+    "description": "Свой тип шага: подпись пустая, сохранять нечего."
+  },
+
+  "customStepLabelField": "Название · как оно встанет в список",
+  "@customStepLabelField": {
+    "description": "Свой тип шага: подпись поля названия."
+  },
+
+  "customStepLabelHint": "Продуть поршнем",
+  "@customStepLabelHint": {
+    "description": "Свой тип шага: пример названия в пустом поле."
+  },
+
+  "customStepIcon": "Значок · из набора, свои картинки нельзя",
+  "@customStepIcon": {
+    "description": "Свой тип шага: подпись набора значков. Чужой файл не перекрасится под тему и не отмасштабируется в строке списка."
+  },
+
+  "stepEndsWith": "Чем шаг заканчивается",
+  "@stepEndsWith": {
+    "description": "Подпись выбора «таймер / кнопка / признак»."
+  },
+
+  "customStepThisDevice": "этому прибору",
+  "@customStepThisDevice": {
+    "description": "Свой тип шага: чем заменить название прибора в пояснении, когда его не передали."
+  },
+
+  "customStepNote": "Шаг привязан к {device}: в рецептах на других приборах он не появится. Воду такой шаг не считает — для воды есть «пролив».",
+  "@customStepNote": {
+    "description": "Свой тип шага: что человек получит и чего не получит. {device} — название метода или «этому прибору».",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+
+  "customStepSave": "Сохранить тип",
+  "@customStepSave": {
+    "description": "Свой тип шага: кнопка сохранения."
+  },
+
+  "remove": "Убрать",
+  "@remove": {
+    "description": "Крестик, убирающий плашку с экрана. Читается голосовым помощником и всплывающей подсказкой."
+  },
+
+  "packsTitle": "Мои пачки",
+  "@packsTitle": {
+    "description": "Заголовок первой вкладки: полка пачек, с которой начинается приложение."
+  },
+
+  "packsEmpty": "Пачек пока нет",
+  "@packsEmpty": {
+    "description": "Мои пачки: полка пуста."
+  },
+
+  "packsEmptyNote": "Отсканируйте код с упаковки — рецепт обжарщика подтянется сам",
+  "@packsEmptyNote": {
+    "description": "Мои пачки: что сделать, чтобы полка перестала быть пустой."
+  },
+
+  "packsScanCode": "Сканировать код",
+  "@packsScanCode": {
+    "description": "Мои пачки: кнопка с пустой полки, уводящая на вкладку сканирования."
+  },
+
+  "packsAdd": "Добавить пачку",
+  "@packsAdd": {
+    "description": "Мои пачки: кнопка в конце списка."
+  },
+
+  "packsChangeGrinder": "Сменить кофемолку",
+  "@packsChangeGrinder": {
+    "description": "Мои пачки: подпись кнопки кофемолки в шапке для голосового помощника."
+  },
+
+  "packsFinished": "допита",
+  "@packsFinished": {
+    "description": "Мои пачки: метка на карточке пачки, которая кончилась."
+  },
+
+  "roastLight": "светлая",
+  "@roastLight": {
+    "description": "Степень обжарки словом на месте фотографии пачки. Слово рядом с цветом: цвет сам по себе пришлось бы расшифровывать."
+  },
+
+  "roastMedium": "средняя",
+  "@roastMedium": {
+    "description": "Степень обжарки словом на месте фотографии пачки."
+  },
+
+  "roastDark": "тёмная",
+  "@roastDark": {
+    "description": "Степень обжарки словом на месте фотографии пачки."
+  },
+
+  "ratingDraftTitle": "Оценка не дописана",
+  "@ratingDraftTitle": {
+    "description": "Плашка на вкладке «Пачки»: у человека осталась недооценённая чашка."
+  },
+
+  "ratingDraftContinue": "продолжить с того же места",
+  "@ratingDraftContinue": {
+    "description": "Плашка недописанной оценки: сказать про чашку человек ещё ничего не успел."
+  },
+
+  "ratingDraftContinueWith": "{summary} — продолжить",
+  "@ratingDraftContinueWith": {
+    "description": "Плашка недописанной оценки: что человек успел сказать. {summary} складывает домен и по-английски пока не говорит — отдельная задача.",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+
+  "recipesFailed": "Рецепты не загрузились",
+  "@recipesFailed": {
+    "description": "Вкладка «Рецепты»: список не пришёл с сервера. Отдельно от пустого списка: бодрый текст на месте сбоя врал бы."
+  },
+
+  "recipesEmpty": "Ещё ни одного заваривания",
+  "@recipesEmpty": {
+    "description": "Вкладка «Рецепты»: история пуста."
+  },
+
+  "recipesEmptyNote": "Заварите кофе по рецепту — он появится здесь вместе с оценкой",
+  "@recipesEmptyNote": {
+    "description": "Вкладка «Рецепты»: чем наполнить пустую историю."
+  },
+
+  "recipesToPacks": "К пачкам",
+  "@recipesToPacks": {
+    "description": "Вкладка «Рецепты»: кнопка с пустого экрана на первую вкладку."
+  },
+
+  "recipesVersionsCount": "{count, plural, one{{count} версия} few{{count} версии} many{{count} версий} other{{count} версий}}",
+  "@recipesVersionsCount": {
+    "description": "Вкладка «Рецепты»: сколько версий в стопке. Склонение считает ICU: рука знала русскую таблицу и говорила «2 версий».",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "recipesNow": "сейчас",
+  "@recipesNow": {
+    "description": "Вкладка «Рецепты»: подпись верхней карточки стопки."
+  },
+
+  "recipesNowSwipe": "сейчас · листается вбок",
+  "@recipesNowSwipe": {
+    "description": "То же, когда в системе выключены анимации: про жест рассказывала сама карточка, отходя вбок, и без движения о нём надо сказать словами."
+  },
+
+  "recipesVersionOf": "версия {number} из {count}",
+  "@recipesVersionOf": {
+    "description": "Вкладка «Рецепты»: какую по счёту версию стопки листает человек.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "recipesDraft": "не сохранён",
+  "@recipesDraft": {
+    "description": "Вкладка «Рецепты»: версия ещё не уехала на сервер."
+  },
+
+  "recipesCurrent": "так завариваю",
+  "@recipesCurrent": {
+    "description": "Вкладка «Рецепты»: верхняя версия стопки — та, по которой человек заваривает сейчас."
+  },
+
+  "recipesPastVersion": "прошлая версия",
+  "@recipesPastVersion": {
+    "description": "Вкладка «Рецепты»: версия из глубины стопки."
+  },
+
+  "recipesBrewAgain": "Заварить снова",
+  "@recipesBrewAgain": {
+    "description": "Вкладка «Рецепты»: кружок на карточке версии, пускающий таймер сразу. Подпись для голосового помощника."
+  },
+
+  "coffeeTitle": "Кофе",
+  "@coffeeTitle": {
+    "description": "Заголовок экрана кофе, когда название пачки ещё не приехало."
+  },
+
+  "coffeeNotFound": "Такого кода нет",
+  "@coffeeNotFound": {
+    "description": "Экран кофе: код набран верно, но такой пачки в системе нет."
+  },
+
+  "coffeeNotFoundNoCode": "Такого кофе нет в системе.",
+  "@coffeeNotFoundNoCode": {
+    "description": "Экран кофе: сюда пришли не по коду, и проверять нечего."
+  },
+
+  "coffeeNotFoundNote": "Код набран без опечаток — контрольный символ сходится, — но в системе его нет. Возможно, обжарщик ещё не выложил эту партию.",
+  "@coffeeNotFoundNote": {
+    "description": "Экран кофе: почему верный код всё-таки не нашёлся."
+  },
+
+  "coffeeScanAgain": "Сканировать ещё раз",
+  "@coffeeScanAgain": {
+    "description": "Экран кофе: вернуться к вводу кода."
+  },
+
+  "coffeeToPacks": "К моим пачкам",
+  "@coffeeToPacks": {
+    "description": "Экран кофе: уйти на полку пачек."
+  },
+
+  "coffeeRoasterPromises": "Обжарщик обещает",
+  "@coffeeRoasterPromises": {
+    "description": "Экран кофе: заголовок над дескрипторами вкуса. Обещает именно обжарщик, а не мы: у пачки, заведённой руками, дескрипторы вписал сам человек."
+  },
+
+  "coffeeWithdrawnTitle": "Этой партии больше нет в продаже. ",
+  "@coffeeWithdrawnTitle": {
+    "description": "Экран кофе: начало жёлтой плашки, выделенное жирным. Пробел на конце обязателен — дальше без разрыва идёт остальной текст."
+  },
+
+  "coffeeWithdrawnNote": "Обжарщик снял её{what} — обычно это значит, что зерно кончилось. Рецепты остаются: заварить пачку, которая уже стоит у вас на полке, ничто не мешает.",
+  "@coffeeWithdrawnNote": {
+    "description": "Экран кофе: продолжение плашки. {what} — название и обжарщик в скобках или пусто, если их не передали.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+
+  "coffeeOfflineNoCache": "Сети нет, и сохранённого рецепта в памяти тоже: заваривать пока не из чего.",
+  "@coffeeOfflineNoCache": {
+    "description": "Экран кофе: сеть не ответила и запасного рецепта нет."
+  },
+
+  "coffeeOfflineCached": "Сети нет. В памяти лежит рецепт, сохранённый {when}, — заваривать по нему можно. Обновится сам, когда появится связь.",
+  "@coffeeOfflineCached": {
+    "description": "Экран кофе: сети нет, но в памяти лежит рецепт. {when} — день сохранения; формат даты пока считается отдельно и по-русски.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+
+  "coffeeOfflineCantTitle": "Что сейчас нельзя",
+  "@coffeeOfflineCantTitle": {
+    "description": "Экран кофе: заголовок списка того, чего без сети не сделать."
+  },
+
+  "coffeeOfflineScan": "Сканировать новую пачку",
+  "@coffeeOfflineScan": {
+    "description": "Экран кофе: первое, чего без сети нельзя."
+  },
+
+  "coffeeOfflineScanNote": "код проверяется на сервере",
+  "@coffeeOfflineScanNote": {
+    "description": "Экран кофе: почему без сети нельзя сканировать."
+  },
+
+  "coffeeOfflineRating": "Отправить оценку",
+  "@coffeeOfflineRating": {
+    "description": "Экран кофе: второе, чего без сети нельзя."
+  },
+
+  "coffeeOfflineRatingNote": "поставить можно, отправится позже",
+  "@coffeeOfflineRatingNote": {
+    "description": "Экран кофе: оценка не пропадёт, она уедет из очереди."
+  },
+
+  "coffeeOfflineCorrection": "Получить поправку",
+  "@coffeeOfflineCorrection": {
+    "description": "Экран кофе: третье, чего без сети нельзя."
+  },
+
+  "coffeeOfflineCorrectionNote": "считает сервер, не телефон",
+  "@coffeeOfflineCorrectionNote": {
+    "description": "Экран кофе: почему без сети нет поправки."
+  },
+
+  "coffeeBrewCached": "Заварить по сохранённому",
+  "@coffeeBrewCached": {
+    "description": "Экран кофе: заварить по рецепту из памяти, пока сети нет."
+  },
+
+  "coffeeLastBrewed": "так вы заваривали {date}",
+  "@coffeeLastBrewed": {
+    "description": "Экран кофе: подпись быстрого повтора. {date} пока складывается отдельно и по-русски — формат дат правится своей задачей.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+
+  "coffeeBrewOn": "Заварить на {method}",
+  "@coffeeBrewOn": {
+    "description": "Экран кофе: подпись кружка быстрого повтора для голосового помощника. Название метода приходит с сервера.",
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+
+  "coffeeMethodsFailed": "Способы заваривания не загрузились",
+  "@coffeeMethodsFailed": {
+    "description": "Экран кофе: справочник методов не пришёл, выбирать не из чего."
+  }
+}

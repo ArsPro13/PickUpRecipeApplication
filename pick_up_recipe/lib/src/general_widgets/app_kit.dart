@@ -293,6 +293,7 @@ class AppRow extends StatelessWidget {
   const AppRow({
     super.key,
     required this.label,
+    this.labelSpan,
     this.value,
     this.icon,
     this.onTap,
@@ -301,6 +302,11 @@ class AppRow extends StatelessWidget {
   });
 
   final String label;
+
+  /// Та же подпись, но размеченная: нужна поиску, чтобы подсветить в имени
+  /// совпавший кусок. Пусто — рисуется обычный [label].
+  final InlineSpan? labelSpan;
+
   final String? value;
   final String? icon;
   final VoidCallback? onTap;
@@ -328,7 +334,11 @@ class AppRow extends StatelessWidget {
               AppIcon(icon!, size: AppSizes.icon20, color: context.colors.secondary),
               const SizedBox(width: AppSpacing.s3),
             ],
-            Expanded(child: Text(label, style: context.texts.bodyMedium)),
+            Expanded(
+              child: labelSpan == null
+                  ? Text(label, style: context.texts.bodyMedium)
+                  : Text.rich(labelSpan!, style: context.texts.bodyMedium),
+            ),
             if (value != null)
               Text(value!, style: context.texts.bodySmall, textAlign: TextAlign.right),
             if (trailing != null) trailing!,

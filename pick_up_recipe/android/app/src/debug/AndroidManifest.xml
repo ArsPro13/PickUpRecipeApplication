@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- The INTERNET permission is required for development. Specifically,
          the Flutter tool needs it to communicate with the running application
          to allow setting breakpoints, to provide hot reload, etc.
@@ -8,8 +9,13 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-    <!-- Бэкенд отвечает по http, без TLS, а Android 9+ рубит открытый трафик
-         по умолчанию. Разрешаем только в отладочной сборке: релизу нужен TLS,
-         и прятать это послабление в основной манифест нельзя. -->
-    <application android:usesCleartextTraffic="true" />
+    <!-- Открытый http разрешён только здесь: локальный бэкенд поднимается
+         без TLS, а Android 9+ рубит такой трафик по умолчанию.
+
+         Сам список правил лежит в src/debug/res/xml/network_security_config.xml
+         и перекрывает релизный файл с тем же именем. Атрибут дублирует
+         разрешение на случай устройств, где политика не применяется. -->
+    <application
+        android:usesCleartextTraffic="true"
+        tools:replace="android:usesCleartextTraffic" />
 </manifest>

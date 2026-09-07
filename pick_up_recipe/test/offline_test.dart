@@ -7,6 +7,8 @@
 // идентификатора на серверный и то, что происходит с оценкой, чей рецепт
 // сервер отверг.
 
+import 'dart:ui' show Locale;
+
 import 'package:encrypt_shared_preferences/provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -18,6 +20,7 @@ import 'package:pick_up_recipe/core/offline/network_status.dart';
 import 'package:pick_up_recipe/core/offline/offline_cache.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
 import 'package:pick_up_recipe/core/offline/outbox.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
@@ -403,20 +406,34 @@ void main() {
   });
 
   group('полоска связи', () {
+    // Строки уехали в lib/l10n/app_ru.arb, поэтому берём их через ту же
+    // локаль, что увидит человек с русским телефоном.
+    final ru = lookupAppLocalizations(const Locale('ru'));
+
     test('онлайн и пусто — молчит', () {
-      expect(offlineBarText(online: true, waiting: 0), isEmpty);
+      expect(offlineBarText(ru, online: true, waiting: 0), isEmpty);
     });
 
     test('офлайн без очереди — объясняет, откуда данные', () {
-      expect(offlineBarText(online: false, waiting: 0), 'Нет сети. Показываем сохранённое');
+      expect(
+        offlineBarText(ru, online: false, waiting: 0),
+        'Нет сети. Показываем сохранённое',
+      );
     });
 
     test('счёт по-русски', () {
-      expect(offlineBarText(online: false, waiting: 1), contains('1 дело уедет'));
-      expect(offlineBarText(online: false, waiting: 2), contains('2 дела уедут'));
-      expect(offlineBarText(online: false, waiting: 5), contains('5 дел уедут'));
-      expect(offlineBarText(online: false, waiting: 11), contains('11 дел уедут'));
-      expect(offlineBarText(online: false, waiting: 21), contains('21 дело уедет'));
+      expect(offlineBarText(ru, online: false, waiting: 1), contains('1 дело уедет'));
+      expect(offlineBarText(ru, online: false, waiting: 2), contains('2 дела уедут'));
+      expect(offlineBarText(ru, online: false, waiting: 5), contains('5 дел уедут'));
+      expect(offlineBarText(ru, online: false, waiting: 11), contains('11 дел уедут'));
+      expect(offlineBarText(ru, online: false, waiting: 21), contains('21 дело уедет'));
+    });
+
+    test('английская локаль считает по своим правилам', () {
+      final en = lookupAppLocalizations(const Locale('en'));
+
+      expect(offlineBarText(en, online: false, waiting: 1), contains('1 item'));
+      expect(offlineBarText(en, online: false, waiting: 5), contains('5 items'));
     });
   });
 

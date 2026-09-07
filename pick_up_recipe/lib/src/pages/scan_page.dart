@@ -7,11 +7,20 @@
 // Ручной ввод — равноправная половина экрана, а не запасной выход после
 // провала: код напечатан под QR буквами именно для того, чтобы его можно было
 // набрать, когда камера не берёт (тусклый свет, помятая упаковка, плёнка).
+//
+// Третий путь — «на пачке нет кода» — сейчас самый частый: код печатают
+// только наши обжарщики, а на полке у человека стоят чужие пачки. Поэтому он
+// вынесен вниз отдельной коричневой кнопкой и виден целиком на экране 360×640,
+// без прокрутки: путь, по которому пойдёт большинство, нельзя прятать
+// под сгибом.
+
+import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/codes/domain/pack_code.dart';
 import '../general_widgets/app_icon.dart';
@@ -72,8 +81,10 @@ class _ScanPageState extends State<ScanPage> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Код с пачки')),
+      appBar: AppBar(title: Text(texts.scanTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.s5,
@@ -85,7 +96,7 @@ class _ScanPageState extends State<ScanPage> {
           _CameraFrame(onTap: _openCamera),
           const SizedBox(height: AppSpacing.s3),
           Text(
-            'Наведите на код — он напечатан под QR',
+            texts.scanCodeIsSmall,
             style: context.texts.bodySmall,
             textAlign: TextAlign.center,
           ),
@@ -97,22 +108,30 @@ class _ScanPageState extends State<ScanPage> {
             onSubmit: _submit,
             onClear: () => _code.clear(),
           ),
-          const SizedBox(height: AppSpacing.s3),
-          _LocalCheckNote(),
           const SizedBox(height: AppSpacing.s5),
-          _NoCodeRow(onTap: _openCamera),
+          // Коричневая, а не строка-ссылка: пачек без нашего кода на полке
+          // сейчас больше, чем с кодом, и это главное действие экрана для
+          // большинства, а не запасной выход после провала.
+          AppButton(
+            label: texts.scanNoCode,
+            icon: AppIcons.uiCamera,
+            onPressed: _openCamera,
+          ),
         ],
       ),
     );
   }
 }
 
-/// Кадр камеры: рисунок пачки с QR, дышащие уголки и бегущая полоса.
+/// Кадр камеры: рисунок пачки с мелким кодом, прицел вокруг кода и полоса.
 ///
 /// Живого видоискателя здесь нет намеренно. Экран стоит на вкладке и
 /// открывается сам при каждом переключении; держать камеру включённой ради
 /// вкладки — это разрешение, индикатор записи и разряд батареи на пустом
 /// месте. Кадр объясняет, что будет, и открывает настоящий сканер по нажатию.
+///
+/// Пропорция 2:1, а не квадрат: квадратный кадр занимал всю верхнюю половину
+/// экрана и сталкивал кнопку «на пачке нет кода» за нижний край.
 class _CameraFrame extends StatefulWidget {
   const _CameraFrame({required this.onTap});
 
@@ -145,7 +164,7 @@ class _CameraFrameState extends State<_CameraFrame> with SingleTickerProviderSta
 
     return Semantics(
       button: true,
-      label: 'Открыть камеру',
+      label: AppLocalizations.of(context).scanOpenCamera,
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: AppRadius.large,
@@ -158,23 +177,27 @@ class _CameraFrameState extends State<_CameraFrame> with SingleTickerProviderSta
             child: InkWell(
               onTap: widget.onTap,
               child: AspectRatio(
-                aspectRatio: 1,
+                aspectRatio: 2,
                 child: Stack(
-                  alignment: Alignment.center,
                   children: [
-                    AnimatedBuilder(
-                      animation: _sweep,
-                      builder: (context, _) => CustomPaint(
-                        painter: _ScannerPainter(
-                          ink: ink,
-                          accent: context.colors.primary,
-                          sweep: Curves.easeInOut.transform(_sweep.value),
+                    Positioned.fill(
+                      child: AnimatedBuilder(
+                        animation: _sweep,
+                        builder: (context, _) => CustomPaint(
+                          painter: _ScannerPainter(
+                            ink: ink,
+                            accent: context.colors.primary,
+                            sweep: Curves.easeInOut.transform(_sweep.value),
+                          ),
+                          size: Size.infinite,
                         ),
-                        size: Size.infinite,
                       ),
                     ),
+                    // Подпись ушла в верхний правый угол: внизу теперь стоит
+                    // прицел вокруг кода, и посередине она легла бы на него.
                     Positioned(
-                      bottom: AppSpacing.s4,
+                      top: AppSpacing.s3,
+                      right: AppSpacing.s3,
                       child: _ScannerStatus(ink: ink),
                     ),
                   ],
@@ -207,14 +230,22 @@ class _ScannerStatus extends StatelessWidget {
         children: [
           AppIcon(AppIcons.uiScan, size: AppSizes.icon16, color: ink),
           const SizedBox(width: AppSpacing.s2),
-          Text('нажмите, чтобы навести', style: context.texts.labelSmall?.copyWith(color: ink)),
+          Text(
+            AppLocalizations.of(context).scanTapToAim,
+            style: context.texts.labelSmall?.copyWith(color: ink),
+          ),
         ],
       ),
     );
   }
 }
 
-/// Рисунок в кадре: пачка, QR, напечатанный под ним код и уголки прицела.
+/// Рисунок в кадре: пачка, надписи обжарщика и мелкий код в её нижнем углу.
+///
+/// Прежний рисунок показывал крупный QR по центру пачки и прицел во весь
+/// кадр — так код не печатают. На упаковке он мелкий и стоит в углу, обычно
+/// нижнем левом, рядом с составом; рисунок должен показывать именно это,
+/// иначе человек ищет большой квадрат и не находит.
 class _ScannerPainter extends CustomPainter {
   const _ScannerPainter({required this.ink, required this.accent, required this.sweep});
 
@@ -224,13 +255,22 @@ class _ScannerPainter extends CustomPainter {
   /// 0…1 — положение бегущей полосы.
   final double sweep;
 
+  /// Рисунок задуман в прямоугольнике 260×130. Все числа ниже — координаты
+  /// внутри него, а не пиксели экрана: масштаб считается один раз.
+  static const Size _art = Size(260, 130);
+
+  /// Прицел вокруг кода. Он маленький и сдвинут в левый нижний угол пачки —
+  /// это и есть главное, что рисунок должен объяснить.
+  static const Rect _codeFrame = Rect.fromLTRB(44, 88, 124, 111);
+
   @override
   void paint(Canvas canvas, Size size) {
-    // Рисунок задуман в квадрате 260×260 — тем же, что в макете. Масштаб
-    // считается один раз, дальше все числа совпадают с макетом один в один.
-    final scale = size.shortestSide / 260;
+    final scale = math.min(size.width / _art.width, size.height / _art.height);
     canvas.save();
-    canvas.translate((size.width - 260 * scale) / 2, (size.height - 260 * scale) / 2);
+    canvas.translate(
+      (size.width - _art.width * scale) / 2,
+      (size.height - _art.height * scale) / 2,
+    );
     canvas.scale(scale);
 
     final line = Paint()
@@ -242,73 +282,76 @@ class _ScannerPainter extends CustomPainter {
 
     final thin = Paint()
       ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
       ..color = ink.withValues(alpha: 0.4)
       ..strokeWidth = 1.6;
 
-    final solid = Paint()..color = ink;
-
-    // Пачка.
+    // Пачка: верх заварен планкой, низ чуть провис под зерном.
     canvas.drawPath(
       Path()
-        ..moveTo(56, 30)
-        ..lineTo(196, 26)
-        ..lineTo(201, 226)
-        ..quadraticBezierTo(126, 238, 50, 228)
+        ..moveTo(38, 34)
+        ..lineTo(152, 30)
+        ..lineTo(158, 120)
+        ..quadraticBezierTo(98, 130, 32, 122)
         ..close(),
       line,
     );
+    canvas.drawLine(const Offset(44, 42), const Offset(148, 39), thin);
 
-    // Рамка QR и его глазки.
-    canvas.drawRect(const Rect.fromLTWH(82, 78, 88, 80), thin);
-    for (final origin in const [Offset(90, 86), Offset(144, 86), Offset(90, 130)]) {
-      canvas.drawRect(Rect.fromLTWH(origin.dx, origin.dy, 19, 19), solid);
-    }
-    for (final origin in const [
-      Offset(117, 86),
-      Offset(129, 99),
-      Offset(117, 114),
-      Offset(144, 116),
-      Offset(157, 133),
-      Offset(130, 137),
-      Offset(117, 143),
-    ]) {
-      canvas.drawRect(Rect.fromLTWH(origin.dx, origin.dy, 9, 9), solid);
-    }
+    // Надписи обжарщика: крупные, читаются издалека. Они здесь ради контраста
+    // с кодом — рядом с ними видно, насколько он мелкий.
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(48, 52, 26, 24), const Radius.circular(4)),
+      thin,
+    );
+    canvas.drawLine(const Offset(84, 58), const Offset(142, 56), thin);
+    canvas.drawLine(const Offset(84, 70), const Offset(120, 69), thin);
+    canvas.drawLine(const Offset(48, 86), const Offset(140, 84), thin);
 
-    // Код, напечатанный под QR: ровно то, что предлагается набрать руками.
+    // Сам код — тем же кеглем, каким его печатают: мелким.
     final label = TextPainter(
       text: TextSpan(
         text: 'ABCD-2345-68',
-        style: TextStyle(color: ink.withValues(alpha: 0.85), fontSize: 12, letterSpacing: 2),
+        style: TextStyle(color: ink.withValues(alpha: 0.85), fontSize: 8, letterSpacing: 0.6),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    label.paint(canvas, Offset(127 - label.width / 2, 170));
+    label.paint(canvas, Offset(_codeFrame.center.dx - label.width / 2, 94));
 
-    canvas.drawLine(const Offset(74, 204), const Offset(138, 204), thin);
-    canvas.drawLine(const Offset(74, 214), const Offset(112, 214), thin);
-
-    // Уголки прицела.
+    // Уголки прицела: короткие, по размеру кода, а не по размеру кадра.
     final bracket = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..color = accent
-      ..strokeWidth = 3.4;
+      ..strokeWidth = 2.4;
 
-    canvas.drawPath(Path()..moveTo(66, 92)..lineTo(66, 62)..lineTo(94, 62), bracket);
-    canvas.drawPath(Path()..moveTo(190, 92)..lineTo(190, 62)..lineTo(162, 62), bracket);
-    canvas.drawPath(Path()..moveTo(66, 162)..lineTo(66, 192)..lineTo(94, 192), bracket);
-    canvas.drawPath(Path()..moveTo(190, 162)..lineTo(190, 192)..lineTo(162, 192), bracket);
+    const arm = 9.0;
+    final corners = <(Offset, double, double)>[
+      (_codeFrame.topLeft, 1, 1),
+      (_codeFrame.topRight, -1, 1),
+      (_codeFrame.bottomLeft, 1, -1),
+      (_codeFrame.bottomRight, -1, -1),
+    ];
+    for (final (origin, towardsX, towardsY) in corners) {
+      canvas.drawPath(
+        Path()
+          ..moveTo(origin.dx, origin.dy + arm * towardsY)
+          ..lineTo(origin.dx, origin.dy)
+          ..lineTo(origin.dx + arm * towardsX, origin.dy),
+        bracket,
+      );
+    }
 
-    // Бегущая полоса ходит внутри прицела, а не по всему кадру.
-    final y = 92 + (192 - 92) * sweep;
+    // Полоса ходит внутри прицела: она показывает, что читают именно код,
+    // а не пачку целиком.
+    final y = _codeFrame.top + _codeFrame.height * sweep;
     canvas.drawLine(
-      Offset(62, y),
-      Offset(194, y),
+      Offset(_codeFrame.left, y),
+      Offset(_codeFrame.right, y),
       Paint()
         ..color = accent.withValues(alpha: 0.7)
-        ..strokeWidth = 3.4
+        ..strokeWidth = 2.4
         ..strokeCap = StrokeCap.round,
     );
 
@@ -321,7 +364,11 @@ class _ScannerPainter extends CustomPainter {
   }
 }
 
-/// Ручной ввод кода: вдавленное поле, группы 4-4-2, подпись про контрольный знак.
+/// Ручной ввод кода: вдавленное поле и маска 4-4-2.
+///
+/// Пояснения про контрольный знак и локальную проверку здесь больше нет:
+/// человеку, который просто переписывает код с пачки, устройство алгоритма
+/// не нужно, а места на экране оно занимало столько же, сколько кнопка.
 class _ManualEntry extends StatelessWidget {
   const _ManualEntry({
     required this.controller,
@@ -339,6 +386,8 @@ class _ManualEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return QuietSurface(
       padding: const EdgeInsets.all(AppSpacing.s4),
       child: Column(
@@ -348,9 +397,13 @@ class _ManualEntry extends StatelessWidget {
             children: [
               AppIcon(AppIcons.uiEdit, size: AppSizes.icon20, color: context.colors.secondary),
               const SizedBox(width: AppSpacing.s2),
-              Text(
-                'Ввести код руками',
-                style: context.texts.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              // Expanded, а не голый Text: при крупном системном шрифте
+              // заголовок не влезал в строку и вылезал за карточку.
+              Expanded(
+                child: Text(
+                  texts.scanManualTitle,
+                  style: context.texts.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),
@@ -404,7 +457,7 @@ class _ManualEntry extends StatelessWidget {
                 if (controller.text.isNotEmpty)
                   IconButton(
                     onPressed: onClear,
-                    tooltip: 'Очистить',
+                    tooltip: texts.clear,
                     icon: AppIcon(
                       AppIcons.uiClose,
                       size: AppSizes.icon20,
@@ -413,11 +466,6 @@ class _ManualEntry extends StatelessWidget {
                   ),
               ],
             ),
-          ),
-          const SizedBox(height: AppSpacing.s1),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text('десятый знак — контрольный', style: context.texts.labelSmall),
           ),
           if (error != null) ...[
             const SizedBox(height: AppSpacing.s2),
@@ -437,91 +485,12 @@ class _ManualEntry extends StatelessWidget {
           ],
           const SizedBox(height: AppSpacing.s3),
           AppButton(
-            label: 'Открыть рецепт',
+            label: texts.scanOpenRecipe,
             icon: AppIcons.uiForward,
             kind: AppButtonKind.secondary,
             onPressed: canSubmit ? onSubmit : null,
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Пояснение, почему ошибка появилась мгновенно и без сети.
-class _LocalCheckNote extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: 0.55,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppIcon(AppIcons.uiInfo, size: AppSizes.icon16, color: context.colors.secondary),
-          const SizedBox(width: AppSpacing.s2),
-          Expanded(
-            child: Text(
-              'Проверяем на устройстве, к серверу не обращаемся. '
-              'В коде не бывает 0, O, 1, I, L, U и S.',
-              style: context.texts.labelSmall,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Второй путь: пачка без кода вовсе.
-///
-/// Не запасной выход и не ошибка — просто другая дорога, поэтому строка,
-/// а не пустое состояние после провала.
-class _NoCodeRow extends StatelessWidget {
-  const _NoCodeRow({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: AppRadius.medium,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.medium,
-        child: QuietSurface(
-          child: Row(
-            children: [
-              Opacity(
-                opacity: 0.7,
-                child: AppIcon(
-                  AppIcons.uiCamera,
-                  size: AppSizes.icon32,
-                  color: context.colors.secondary,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s3),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('На пачке нет кода', style: context.texts.bodyMedium),
-                    const SizedBox(height: AppSpacing.s1),
-                    Text('Снимем пачку и разберём надписи', style: context.texts.labelSmall),
-                  ],
-                ),
-              ),
-              Opacity(
-                opacity: 0.5,
-                child: AppIcon(
-                  AppIcons.uiForward,
-                  size: AppSizes.icon20,
-                  color: context.colors.secondary,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

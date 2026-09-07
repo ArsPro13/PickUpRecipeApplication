@@ -3,7 +3,10 @@ import 'package:pick_up_recipe/core/offline/local_recipes.dart';
 import 'package:pick_up_recipe/core/offline/offline_cache.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
 import 'package:pick_up_recipe/core/offline/outbox.dart';
+import 'package:pick_up_recipe/core/offline/recipe_drafts.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
+import 'package:pick_up_recipe/src/features/authentication/domain/code_resend.dart';
+import 'package:pick_up_recipe/src/features/recipes/application/rating_draft.dart';
 
 import 'authentication_state.dart';
 
@@ -68,11 +71,16 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
     }
   }
 
-  Future<void> register(String email, String password) async {
+  Future<void> register(
+    String email,
+    String password,
+    String legalConsentVersion,
+  ) async {
     try {
       await _authService.register(
         email,
         password,
+        legalConsentVersion,
       );
     } catch (e) {
       rethrow;
@@ -80,7 +88,7 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
   }
 
   /// Повторная отправка кода подтверждения.
-  Future<void> resendVerificationCode(String email) =>
+  Future<ResendOutcome> resendVerificationCode(String email) =>
       _authService.resendVerificationCode(email);
 
   /// Письмо для сброса пароля.
@@ -102,6 +110,8 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
     // заваривают вдвоём, и чужая полка после смены аккаунта — хуже пустой.
     await OfflineCache.clearAll();
     await LocalRecipes.clear();
+    await RecipeDrafts.clear();
+    await RatingDrafts.clear();
     await Outbox.clear();
 
     state = state.copyWith(status: AuthState.needsAuthentication);

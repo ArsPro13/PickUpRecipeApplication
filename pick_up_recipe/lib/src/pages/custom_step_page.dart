@@ -12,12 +12,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/domain/models/user_step_type_model.dart';
 import '../general_widgets/app_field.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import '../general_widgets/step_ending_choice.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -60,7 +62,7 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
   Future<void> _save() async {
     final label = _label.text.trim();
     if (label.isEmpty) {
-      setState(() => _error = 'Без названия шаг не встанет в список');
+      setState(() => _error = AppLocalizations.of(context).customStepNoLabel);
       return;
     }
 
@@ -93,21 +95,22 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
   @override
   Widget build(BuildContext context) {
     final method = widget.methodName;
+    final texts = AppLocalizations.of(context);
 
     return AppScreen(
-      title: 'Свой тип шага',
+      title: texts.customStepTitle,
       body: [
         if (method != null)
-          Text('останется у вас для метода $method', style: context.texts.bodySmall),
+          Text(texts.customStepForMethod(method), style: context.texts.bodySmall),
         const SizedBox(height: AppSpacing.s4),
         AppField(
           controller: _label,
-          label: 'Название · как оно встанет в список',
-          hint: 'Продуть поршнем',
+          label: texts.customStepLabelField,
+          hint: texts.customStepLabelHint,
           error: _error,
         ),
         const SizedBox(height: AppSpacing.s5),
-        Text('Значок · из набора, свои картинки нельзя', style: context.texts.labelSmall),
+        Text(texts.customStepIcon, style: context.texts.labelSmall),
         const SizedBox(height: AppSpacing.s2),
         Wrap(
           spacing: AppSpacing.s2,
@@ -122,16 +125,11 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
           ],
         ),
         const SizedBox(height: AppSpacing.s5),
-        Text('Чем шаг заканчивается', style: context.texts.labelSmall),
+        Text(texts.stepEndsWith, style: context.texts.labelSmall),
         const SizedBox(height: AppSpacing.s2),
-        SegmentedButton<StepEndsWith>(
-          segments: [
-            for (final option in StepEndsWith.values)
-              ButtonSegment(value: option, label: Text(option.label)),
-          ],
-          selected: {_endsWith},
-          onSelectionChanged: (selection) =>
-              setState(() => _endsWith = selection.first),
+        StepEndingChoice(
+          value: _endsWith,
+          onChanged: (option) => setState(() => _endsWith = option),
         ),
         const SizedBox(height: AppSpacing.s5),
         QuietSurface(
@@ -142,9 +140,7 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
               const SizedBox(width: AppSpacing.s3),
               Expanded(
                 child: Text(
-                  'Шаг привязан к ${method ?? 'этому прибору'}: в рецептах на '
-                  'других приборах он не появится. Воду такой шаг не считает — '
-                  'для воды есть «пролив».',
+                  texts.customStepNote(method ?? texts.customStepThisDevice),
                   style: context.texts.bodySmall,
                 ),
               ),
@@ -154,7 +150,7 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
       ],
       bottom: [
         AppButton(
-          label: _saving ? 'Сохраняем…' : 'Сохранить тип',
+          label: _saving ? texts.saving : texts.customStepSave,
           icon: AppIcons.uiCheck,
           onPressed: _saving ? null : _save,
         ),

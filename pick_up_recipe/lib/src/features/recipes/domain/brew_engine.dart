@@ -42,6 +42,10 @@ enum BrewStatus {
   /// Пауза. Время не идёт.
   paused,
 
+  /// Шаг ждёт человека: он сам скажет «сделал». Время шага уже вышло —
+  /// или его и не было, — но следующий шаг не начинается.
+  awaitingUser,
+
   /// Все шаги пройдены.
   finished,
 }
@@ -108,6 +112,9 @@ class BrewSnapshot {
 
   bool get isRunning => status == BrewStatus.running;
   bool get isFinished => status == BrewStatus.finished;
+
+  /// Ждём человека: заваривание стоит, пока он не скажет «сделал».
+  bool get isAwaitingUser => status == BrewStatus.awaitingUser;
 }
 
 /// Движок проигрывания рецепта.
@@ -141,6 +148,17 @@ class BrewEngine {
   /// Пропуск шага сдвигает шкалу вперёд — как будто он уже отыгран.
   /// Так пропуск не ломает связь между временем и номером шага.
   Duration _skippedTotal = Duration.zero;
+
+  /// Сколько суммарно простояли, ожидая человека. По образцу паузы:
+  /// вычитается из общего времени, иначе десять минут ожидания съели бы
+  /// оставшиеся шаги — они пошли бы «догоняя», уже отыгранными.
+  Duration _waitingTotal = Duration.zero;
+
+  /// Шаги, у которых человек уже сказал «сделал», по их номеру.
+  ///
+  /// Именно набор, а не счётчик: пропуск может открыть не ближайшие ворота,
+  /// а те, на которых стоим.
+  final Set<int> _confirmedSteps = <int>{};
 
   List<BrewStep> get steps => _steps;
 
@@ -179,12 +197,49 @@ class BrewEngine {
 
   /// Пропускает текущий шаг, перематывая на его начало плюс длительность.
   ///
-  /// Нужен необязательным шагам и тем, кто заваривает по-своему.
+  /// Нужен необязательным шагам и тем, кто заваривает по-своему. У шага,
+  /// который ждёт человека, до конца ноль секунд, и одной перемоткой его не
+  /// сдвинуть — поэтому пропуск ещё и открывает ворота, иначе экран завис бы
+  /// на нём навсегда.
   void skipCurrentStep() {
     if (_startedAt == null) return;
 
-    final snapshot = snapshotAt(_clock());
+    final now = _clock();
+    final snapshot = snapshotAt(now);
     if (snapshot.isFinished) return;
+
+    _passStep(now, snapshot);
+  }
+
+  /// Человек сказал «сделал»: шаг, который его ждал, закончен.
+  ///
+  /// На обычном шаге не делает ничего — подтверждать там нечего, время
+  /// само его закончит.
+  void confirmCurrentStep() {
+    if (_startedAt == null) return;
+
+    final now = _clock();
+    final snapshot = snapshotAt(now);
+    if (snapshot.isFinished) return;
+    if (!_steps[snapshot.stepIndex].waitsForTap) return;
+
+    _passStep(now, snapshot);
+  }
+
+  /// Закрывает текущий шаг здесь и сейчас — и пропуском, и словом «сделал».
+  ///
+  /// Порядок важен: сначала в свой накопитель уходит простой у ворот, потом
+  /// в свой — недоигранный остаток шага. Иначе одно время посчиталось бы
+  /// дважды.
+  void _passStep(DateTime now, BrewSnapshot snapshot) {
+    final index = snapshot.stepIndex;
+    final step = _steps[index];
+
+    if (step.waitsForTap && !_confirmedSteps.contains(index)) {
+      final waited = _rawElapsedAt(now, _startedAt!) - _endOffsetOf(index);
+      if (waited > Duration.zero) _waitingTotal += waited;
+      _confirmedSteps.add(index);
+    }
 
     _skippedTotal += snapshot.remainingInStep;
   }
@@ -195,6 +250,8 @@ class BrewEngine {
     _pausedAt = null;
     _pausedTotal = Duration.zero;
     _skippedTotal = Duration.zero;
+    _waitingTotal = Duration.zero;
+    _confirmedSteps.clear();
   }
 
   /// Восстанавливает движок после перезапуска приложения.
@@ -206,20 +263,32 @@ class BrewEngine {
     required DateTime startedAt,
     Duration pausedTotal = Duration.zero,
     Duration skippedTotal = Duration.zero,
+    Duration waitingTotal = Duration.zero,
+    Iterable<int> confirmedSteps = const <int>[],
     DateTime? pausedAt,
   }) {
     _startedAt = startedAt;
     _pausedTotal = pausedTotal;
     _skippedTotal = skippedTotal;
+    _waitingTotal = waitingTotal;
+    _confirmedSteps
+      ..clear()
+      ..addAll(confirmedSteps);
     _pausedAt = pausedAt;
   }
 
   /// Состояние, которое нужно сохранить, чтобы потом вызвать [restore].
+  ///
+  /// Подтверждённые шаги здесь обязательны: без них после возврата в
+  /// приложение ворота «пока не скажете сделал» закроются снова, и человек
+  /// будет подтверждать один и тот же шаг дважды.
   Map<String, dynamic> toPersistableState() => <String, dynamic>{
         'started_at': _startedAt?.toIso8601String(),
         'paused_at': _pausedAt?.toIso8601String(),
         'paused_total_ms': _pausedTotal.inMilliseconds,
         'skipped_total_ms': _skippedTotal.inMilliseconds,
+        'waiting_total_ms': _waitingTotal.inMilliseconds,
+        'confirmed_steps': _confirmedSteps.toList()..sort(),
       };
 
   /// Текущее состояние по часам движка.
@@ -245,10 +314,38 @@ class BrewEngine {
       );
     }
 
-    final elapsed = _elapsedAt(now, startedAt);
     final total = totalDuration;
 
-    if (elapsed >= total) {
+    // Ворота: первый шаг, который ждёт человека и ещё не дождался. Дальше
+    // них время не пускает, сколько бы его ни прошло по настенным часам.
+    final gate = _pendingGate();
+    final elapsed = _rawElapsedAt(now, startedAt);
+
+    if (gate != null && elapsed >= _endOffsetOf(gate)) {
+      final step = _steps[gate];
+      var waterBefore = 0.0;
+      for (var i = 0; i < gate; i++) {
+        waterBefore += _steps[i].waterG;
+      }
+
+      return BrewSnapshot(
+        // Пауза важнее ожидания: её поставил человек, и снять её должен он же.
+        status: _pausedAt == null ? BrewStatus.awaitingUser : BrewStatus.paused,
+        stepIndex: gate,
+        elapsedTotal: _endOffsetOf(gate),
+        // Шаг отыгран целиком — не хватает только слова «сделал».
+        elapsedInStep: step.duration,
+        stepDuration: step.duration,
+        totalDuration: total,
+        waterPouredG: waterBefore + step.waterG,
+        waterTotalG: waterTotalG,
+      );
+    }
+
+    // Законченным заваривание считается, только когда пройдены все шаги,
+    // включая ждущие: у последнего шага «по кнопке» ноль секунд, и по одному
+    // времени он выглядел бы отыгранным в тот же миг, что и начался.
+    if (elapsed >= total && gate == null) {
       return BrewSnapshot(
         status: BrewStatus.finished,
         stepIndex: _steps.isEmpty ? 0 : _steps.length - 1,
@@ -291,8 +388,28 @@ class BrewEngine {
     );
   }
 
-  /// Сколько прошло «полезного» времени: настенное минус паузы плюс пропуски.
-  Duration _elapsedAt(DateTime now, DateTime startedAt) {
+  /// Номер первого шага, который ждёт человека и ещё не получил «сделал».
+  ///
+  /// null — ждать некого, время идёт до конца рецепта.
+  int? _pendingGate() {
+    for (var i = 0; i < _steps.length; i++) {
+      if (_steps[i].waitsForTap && !_confirmedSteps.contains(i)) return i;
+    }
+    return null;
+  }
+
+  /// Момент конца шага на шкале рецепта, считая от старта.
+  Duration _endOffsetOf(int index) {
+    var offset = Duration.zero;
+    for (var i = 0; i <= index; i++) {
+      offset += _steps[i].duration;
+    }
+    return offset;
+  }
+
+  /// Сколько прошло «полезного» времени: настенное минус паузы и ожидания
+  /// плюс пропуски. Ворота здесь не учитываются — это делает [snapshotAt].
+  Duration _rawElapsedAt(DateTime now, DateTime startedAt) {
     final wall = now.difference(startedAt);
 
     // Время, накопленное текущей незавершённой паузой, тоже нужно вычесть,
@@ -301,7 +418,8 @@ class BrewEngine {
     final ongoingPause =
         pausedAt == null ? Duration.zero : now.difference(pausedAt);
 
-    final elapsed = wall - _pausedTotal - ongoingPause + _skippedTotal;
+    final elapsed =
+        wall - _pausedTotal - ongoingPause - _waitingTotal + _skippedTotal;
     return elapsed.isNegative ? Duration.zero : elapsed;
   }
 
@@ -318,9 +436,14 @@ class BrewEngine {
     final times = <DateTime>[];
     var offset = Duration.zero;
 
-    for (final step in _steps) {
-      offset += step.duration;
-      times.add(startedAt.add(offset + _pausedTotal - _skippedTotal));
+    for (var i = 0; i < _steps.length; i++) {
+      offset += _steps[i].duration;
+      times.add(startedAt
+          .add(offset + _pausedTotal + _waitingTotal - _skippedTotal));
+
+      // За шагом, который ждёт человека, расписания нет: когда начнётся
+      // следующий, решит он, а уведомление невпопад хуже, чем его отсутствие.
+      if (_steps[i].waitsForTap && !_confirmedSteps.contains(i)) break;
     }
 
     return times;
