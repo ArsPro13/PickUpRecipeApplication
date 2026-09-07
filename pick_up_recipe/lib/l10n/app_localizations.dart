@@ -991,6 +991,72 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'На пачке нет кода'**
   String get scanNoCode;
+
+  /// Кнопка сохранения, пока запрос в пути.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохраняем…'**
+  String get saving;
+
+  /// Заголовок экрана, где заводят свой тип шага.
+  ///
+  /// In ru, this message translates to:
+  /// **'Свой тип шага'**
+  String get customStepTitle;
+
+  /// Свой тип шага: к какому прибору он привязан. Название метода приходит с сервера и не переводится.
+  ///
+  /// In ru, this message translates to:
+  /// **'останется у вас для метода {method}'**
+  String customStepForMethod(String method);
+
+  /// Свой тип шага: подпись пустая, сохранять нечего.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без названия шаг не встанет в список'**
+  String get customStepNoLabel;
+
+  /// Свой тип шага: подпись поля названия.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название · как оно встанет в список'**
+  String get customStepLabelField;
+
+  /// Свой тип шага: пример названия в пустом поле.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продуть поршнем'**
+  String get customStepLabelHint;
+
+  /// Свой тип шага: подпись набора значков. Чужой файл не перекрасится под тему и не отмасштабируется в строке списка.
+  ///
+  /// In ru, this message translates to:
+  /// **'Значок · из набора, свои картинки нельзя'**
+  String get customStepIcon;
+
+  /// Подпись выбора «таймер / кнопка / признак».
+  ///
+  /// In ru, this message translates to:
+  /// **'Чем шаг заканчивается'**
+  String get stepEndsWith;
+
+  /// Свой тип шага: чем заменить название прибора в пояснении, когда его не передали.
+  ///
+  /// In ru, this message translates to:
+  /// **'этому прибору'**
+  String get customStepThisDevice;
+
+  /// Свой тип шага: что человек получит и чего не получит. {device} — название метода или «этому прибору».
+  ///
+  /// In ru, this message translates to:
+  /// **'Шаг привязан к {device}: в рецептах на других приборах он не появится. Воду такой шаг не считает — для воды есть «пролив».'**
+  String customStepNote(String device);
+
+  /// Свой тип шага: кнопка сохранения.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить тип'**
+  String get customStepSave;
 }
 
 class _AppLocalizationsDelegate

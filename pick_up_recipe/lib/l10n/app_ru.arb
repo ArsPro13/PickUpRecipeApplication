@@ -861,5 +861,70 @@
   "scanNoCode": "На пачке нет кода",
   "@scanNoCode": {
     "description": "Код с пачки: третий путь — распознать пачку по фотографии. Сейчас он самый частый, поэтому это кнопка, а не ссылка."
+  },
+
+  "saving": "Сохраняем…",
+  "@saving": {
+    "description": "Кнопка сохранения, пока запрос в пути."
+  },
+
+  "customStepTitle": "Свой тип шага",
+  "@customStepTitle": {
+    "description": "Заголовок экрана, где заводят свой тип шага."
+  },
+
+  "customStepForMethod": "останется у вас для метода {method}",
+  "@customStepForMethod": {
+    "description": "Свой тип шага: к какому прибору он привязан. Название метода приходит с сервера и не переводится.",
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+
+  "customStepNoLabel": "Без названия шаг не встанет в список",
+  "@customStepNoLabel": {
+    "description": "Свой тип шага: подпись пустая, сохранять нечего."
+  },
+
+  "customStepLabelField": "Название · как оно встанет в список",
+  "@customStepLabelField": {
+    "description": "Свой тип шага: подпись поля названия."
+  },
+
+  "customStepLabelHint": "Продуть поршнем",
+  "@customStepLabelHint": {
+    "description": "Свой тип шага: пример названия в пустом поле."
+  },
+
+  "customStepIcon": "Значок · из набора, свои картинки нельзя",
+  "@customStepIcon": {
+    "description": "Свой тип шага: подпись набора значков. Чужой файл не перекрасится под тему и не отмасштабируется в строке списка."
+  },
+
+  "stepEndsWith": "Чем шаг заканчивается",
+  "@stepEndsWith": {
+    "description": "Подпись выбора «таймер / кнопка / признак»."
+  },
+
+  "customStepThisDevice": "этому прибору",
+  "@customStepThisDevice": {
+    "description": "Свой тип шага: чем заменить название прибора в пояснении, когда его не передали."
+  },
+
+  "customStepNote": "Шаг привязан к {device}: в рецептах на других приборах он не появится. Воду такой шаг не считает — для воды есть «пролив».",
+  "@customStepNote": {
+    "description": "Свой тип шага: что человек получит и чего не получит. {device} — название метода или «этому прибору».",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+
+  "customStepSave": "Сохранить тип",
+  "@customStepSave": {
+    "description": "Свой тип шага: кнопка сохранения."
   }
 }

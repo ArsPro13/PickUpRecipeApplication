@@ -597,4 +597,41 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get scanNoCode => 'На пачке нет кода';
+
+  @override
+  String get saving => 'Сохраняем…';
+
+  @override
+  String get customStepTitle => 'Свой тип шага';
+
+  @override
+  String customStepForMethod(String method) {
+    return 'останется у вас для метода $method';
+  }
+
+  @override
+  String get customStepNoLabel => 'Без названия шаг не встанет в список';
+
+  @override
+  String get customStepLabelField => 'Название · как оно встанет в список';
+
+  @override
+  String get customStepLabelHint => 'Продуть поршнем';
+
+  @override
+  String get customStepIcon => 'Значок · из набора, свои картинки нельзя';
+
+  @override
+  String get stepEndsWith => 'Чем шаг заканчивается';
+
+  @override
+  String get customStepThisDevice => 'этому прибору';
+
+  @override
+  String customStepNote(String device) {
+    return 'Шаг привязан к $device: в рецептах на других приборах он не появится. Воду такой шаг не считает — для воды есть «пролив».';
+  }
+
+  @override
+  String get customStepSave => 'Сохранить тип';
 }

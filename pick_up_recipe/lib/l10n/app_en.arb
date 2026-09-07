@@ -297,5 +297,27 @@
 
   "scanOpenRecipe": "Open the recipe",
 
-  "scanNoCode": "There is no code on the pack"
+  "scanNoCode": "There is no code on the pack",
+
+  "saving": "Saving…",
+
+  "customStepTitle": "A step type of your own",
+
+  "customStepForMethod": "it will stay with you for {method}",
+
+  "customStepNoLabel": "Without a name the step will not go into the list",
+
+  "customStepLabelField": "Name · the way it will show up in the list",
+
+  "customStepLabelHint": "Blow through with the plunger",
+
+  "customStepIcon": "Icon · from the set, no pictures of your own",
+
+  "stepEndsWith": "How the step ends",
+
+  "customStepThisDevice": "this device",
+
+  "customStepNote": "The step is tied to {device}: it will not show up in recipes for other devices. A step like this does not count water — water has its own «pour».",
+
+  "customStepSave": "Save the type"
 }

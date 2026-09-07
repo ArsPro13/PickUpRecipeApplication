@@ -579,4 +579,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scanNoCode => 'There is no code on the pack';
+
+  @override
+  String get saving => 'Saving…';
+
+  @override
+  String get customStepTitle => 'A step type of your own';
+
+  @override
+  String customStepForMethod(String method) {
+    return 'it will stay with you for $method';
+  }
+
+  @override
+  String get customStepNoLabel =>
+      'Without a name the step will not go into the list';
+
+  @override
+  String get customStepLabelField =>
+      'Name · the way it will show up in the list';
+
+  @override
+  String get customStepLabelHint => 'Blow through with the plunger';
+
+  @override
+  String get customStepIcon => 'Icon · from the set, no pictures of your own';
+
+  @override
+  String get stepEndsWith => 'How the step ends';
+
+  @override
+  String get customStepThisDevice => 'this device';
+
+  @override
+  String customStepNote(String device) {
+    return 'The step is tied to $device: it will not show up in recipes for other devices. A step like this does not count water — water has its own «pour».';
+  }
+
+  @override
+  String get customStepSave => 'Save the type';
 }
