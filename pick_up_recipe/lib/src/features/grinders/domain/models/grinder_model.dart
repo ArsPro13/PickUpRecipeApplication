@@ -27,22 +27,54 @@ enum GrinderKind {
   }
 }
 
+/// Одно деление шкалы кофемолки.
+///
+/// Деление — строка, а не число: у части кофемолок шкала подписана словами
+/// («2 круг + 3» у Feld47, «2A» у Baratza Forte), и загнать её в число значит
+/// потерять пятую часть справочника.
+class GrinderMode {
+  const GrinderMode({required this.mode, required this.microns});
+
+  /// Подпись деления: «14.0», «2 круг + 3», «2A».
+  final String mode;
+
+  /// Средняя крупность помола на этом делении. Через неё и идёт перевод:
+  /// крупность рецепта → ближайшее деление шкалы.
+  final double microns;
+
+  factory GrinderMode.fromJson(Map<String, dynamic> json) {
+    return GrinderMode(
+      mode: json['mode'] as String? ?? '',
+      microns: (json['avg'] as num?)?.toDouble() ?? 0,
+    );
+  }
+}
+
 class Grinder {
   const Grinder({
     required this.id,
     required this.name,
     this.kind = GrinderKind.unknown,
+    this.modes = const [],
   });
 
   final int id;
   final String name;
   final GrinderKind kind;
 
+  /// Шкала кофемолки. Пусто — сервис пересчёта её не отдал, и помол
+  /// показывается словом: выдуманное деление хуже честного слова.
+  final List<GrinderMode> modes;
+
   factory Grinder.fromJson(Map<String, dynamic> json) {
     return Grinder(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String? ?? '',
       kind: GrinderKind.fromWire(json['kind'] as String?),
+      modes: [
+        for (final mode in json['modes'] as List<dynamic>? ?? const [])
+          GrinderMode.fromJson(mode as Map<String, dynamic>),
+      ],
     );
   }
 

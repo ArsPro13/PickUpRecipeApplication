@@ -14,7 +14,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
+import '../features/grinders/application/grinder_state.dart';
+import '../features/grinders/domain/grind_translation.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../general_widgets/app_icon.dart';
@@ -68,6 +71,12 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       // мимо экрана выбора, и загрузить его больше некому.
       if (ref.read(brewMethodsProvider).grouped.isEmpty) {
         ref.read(brewMethodsProvider.notifier).load();
+      }
+      // Кофемолка нужна ради помола: без неё на плитке останется слово, а не
+      // деление. По диплинку сюда приходят мимо вкладки «Пачки», где набор
+      // загружается обычно.
+      if (!ref.read(grinderStateProvider).hasGrinder) {
+        ref.read(grinderStateProvider.notifier).loadUserGrinders();
       }
     });
   }
@@ -151,6 +160,20 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
     );
   }
 
+  /// Помол рецепта делениями основной кофемолки (пункт 8).
+  ///
+  /// Плитка показывала «${recipe.grindStep} щ.», а у справочного рецепта
+  /// grind_step пуст — на месте помола стояло «щ.» без числа.
+  GrindReading _grind(RecipeData recipe) {
+    return grindReading(
+      descriptorSlug: recipe.grindDescriptor,
+      reference: ref.watch(grindDescriptorsProvider).valueOrNull ?? const [],
+      recipeGrinderId: recipe.grinderId,
+      recipeGrindStep: recipe.grindStep,
+      grinder: ref.watch(grinderStateProvider).primary,
+    );
+  }
+
   List<Widget> _content() {
     final roaster = _recipes.isEmpty ? null : _recipes.first;
     final mine = _recipes.length > 1 ? _recipes.sublist(1) : const <RecipeData>[];
@@ -161,7 +184,7 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
 
       if (roaster != null) ...[
         const _Section(icon: AppIcons.uiPack, title: 'От обжарщика', note: 'под это зерно'),
-        _RoasterRecipe(recipe: roaster, pack: widget.pack),
+        _RoasterRecipe(recipe: roaster, pack: widget.pack, grind: _grind(roaster)),
       ],
 
       const _Section(
@@ -258,10 +281,13 @@ class _Section extends StatelessWidget {
 
 /// Рецепт обжарщика: показатели плитками и кнопка заваривания с длительностью.
 class _RoasterRecipe extends StatelessWidget {
-  const _RoasterRecipe({required this.recipe, this.pack});
+  const _RoasterRecipe({required this.recipe, this.pack, required this.grind});
 
   final RecipeData recipe;
   final PackData? pack;
+
+  /// Помол делениями кофемолки человека, уже переведённый.
+  final GrindReading grind;
 
   @override
   Widget build(BuildContext context) {
@@ -275,7 +301,11 @@ class _RoasterRecipe extends StatelessWidget {
               MetricTile(kind: MetricKind.dose, value: '${recipe.load} г'),
               MetricTile(kind: MetricKind.water, value: '${recipe.water} мл'),
               MetricTile(kind: MetricKind.temperature, value: '${recipe.temperature} °C'),
-              MetricTile(kind: MetricKind.grind, value: '${recipe.grindStep} щ.'),
+              MetricTile(
+                kind: MetricKind.grind,
+                value: grind.isEmpty ? '—' : grind.label,
+                caption: grind.caption,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.s4),

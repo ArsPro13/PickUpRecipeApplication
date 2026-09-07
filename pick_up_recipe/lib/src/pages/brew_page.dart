@@ -32,11 +32,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/grinders/application/grinder_state.dart';
+import '../features/grinders/domain/grind_translation.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/last_brew_cache.dart';
 import '../features/recipes/application/screen_wake.dart';
 import '../features/recipes/application/step_types_state.dart';
-import '../features/recipes/domain/models/grind_descriptor_model.dart';
 import '../features/recipes/domain/brew_engine.dart';
 import '../features/recipes/domain/brew_step.dart';
 import '../features/recipes/domain/brew_template.dart';
@@ -615,31 +615,25 @@ class _BrewPageState extends ConsumerState<BrewPage>
 
   /// Числа рецепта для строки и для рамки до старта.
   ///
-  /// Имя кофемолки подставляется, только если рецепт записан в её делениях:
-  /// у человека мельниц может быть две, и подписать чужие щелчки именем
-  /// основной — соврать в единственном месте, где число нельзя перепутать.
+  /// Помол переводится в деления основной кофемолки (пункт 8): у человека
+  /// мельниц может быть две, и показать он хочет свою шкалу, а не слово из
+  /// справочника. Без выбранной кофемолки остаётся слово и приглашение её
+  /// выбрать — прятать помол нельзя, до пункта 8 он только словом и был.
   BrewParams _params() {
-    final grinders = ref.watch(grinderStateProvider).userGrinders;
-
-    String? name;
-    for (final owned in grinders) {
-      if (owned.grinder.id == widget.recipe.grinderId) {
-        name = owned.grinder.name;
-        break;
-      }
-    }
-
-    // Справочник крупности может не успеть приехать — тогда в подписи
-    // останется slug из рецепта. Некрасиво, но честно; пустое место на
-    // его месте читалось бы как «помол неизвестен».
+    // Справочник крупности может не успеть приехать — тогда на месте помола
+    // останется slug из рецепта. Некрасиво, но честно; пустое место
+    // читалось бы как «помол неизвестен».
     final reference = ref.watch(grindDescriptorsProvider).valueOrNull;
 
     return BrewParams.of(
       widget.recipe,
-      grinderName: name,
-      descriptorName: reference == null
-          ? null
-          : grindDescriptorName(reference, widget.recipe.grindDescriptor),
+      grind: grindReading(
+        descriptorSlug: widget.recipe.grindDescriptor,
+        reference: reference ?? const [],
+        recipeGrinderId: widget.recipe.grinderId,
+        recipeGrindStep: widget.recipe.grindStep,
+        grinder: ref.watch(grinderStateProvider).primary,
+      ),
       inCup: _template == BrewTemplate.shot,
     );
   }
@@ -1527,7 +1521,8 @@ class BrewParams {
   /// Доза кофе: «15 г».
   final String? dose;
 
-  /// Помол делениями кофемолки: «26 щ.».
+  /// Помол делениями кофемолки: «14», «примерно 14», «2 круг + 3». Без
+  /// выбранной кофемолки — слово справочника: «Средне-тонкий».
   final String? grind;
 
   /// Вода: «250 мл».
@@ -1536,13 +1531,10 @@ class BrewParams {
   /// Температура: «93 °C».
   final String? temperature;
 
-  /// Крупная строка рамки до старта: «15 г · 26» или «15 г · 26 щ.».
-  ///
-  /// Без имени кофемолки «щ.» дописывается прямо сюда: подпись под этой
-  /// строкой в таком случае пуста, и объяснять число будет нечему.
+  /// Крупная строка рамки до старта: «15 г · 14» или «15 г · Средне-тонкий».
   final String? prepValue;
 
-  /// Подпись под ней: «щелчков Comandante · средне-тонкий».
+  /// Подпись под ней: «делений Comandante C40 · средне-тонкий».
   final String? prepHint;
 
   /// Ни одного числа — строку и подготовку показывать не из чего.
@@ -1553,22 +1545,25 @@ class BrewParams {
 
   /// Собирает параметры из рецепта.
   ///
-  /// [grinderName] — имя кофемолки, в делениях которой записан помол. Его
-  /// подставляют, только если это та самая кофемолка: помол в щелчках чужой
-  /// мельницы — не то же число, и подписать его чужим именем значит соврать.
-  ///
-  /// [descriptorName] — крупность помола словом из справочника. В рецепте
-  /// лежит slug (`medium_fine`), и без справочника на экране оказывалась
-  /// английская строка посреди русского интерфейса.
+  /// [grind] — помол, уже переведённый в деления кофемолки человека. Разбор
+  /// вынесен в grind_translation.dart: то же преобразование показывают ещё
+  /// три экрана, и расходиться им нельзя. Без него берётся то, что записано
+  /// в самом рецепте, — так разбор остаётся проверяемым без кофемолки.
   static BrewParams of(
     RecipeData recipe, {
-    String? grinderName,
-    String? descriptorName,
+    GrindReading? grind,
     bool inCup = false,
   }) {
     final dose = recipe.load > 0 ? '${formatAmount(recipe.load)} г' : null;
-    final step = recipe.grindStep.trim();
-    final grind = step.isEmpty ? null : '$step щ.';
+
+    final reading = grind ??
+        grindReading(
+          descriptorSlug: recipe.grindDescriptor,
+          recipeGrinderId: recipe.grinderId,
+          recipeGrindStep: recipe.grindStep,
+        );
+    final grindValue = reading.isEmpty ? null : reading.label;
+
     // У эспрессо-семейства вода — вес напитка в чашке, и «мл» тут врали бы
     // дважды: и единицей, и смыслом (water_meaning = in_cup).
     final water = recipe.water > 0 ? '${recipe.water} ${inCup ? 'г' : 'мл'}' : null;
@@ -1576,25 +1571,13 @@ class BrewParams {
         ? null
         : '${formatAmount(recipe.temperature!)} °C';
 
-    final descriptor = (descriptorName ?? recipe.grindDescriptor).trim();
-    final named = grinderName != null && grinderName.trim().isNotEmpty;
-
-    // С именем кофемолки число щелчков объясняет подпись под ним, без имени
-    // оно обязано объяснить себя само — поэтому там остаётся «щ.».
-    final grindInPrep = named ? (step.isEmpty ? null : step) : grind;
-    final prepValue = _join([dose, grindInPrep]);
-    final prepHint = _join([
-      if (named && step.isNotEmpty) 'щелчков ${grinderName.trim()}',
-      if (descriptor.isNotEmpty) descriptor,
-    ]);
-
     return BrewParams(
       dose: dose,
-      grind: grind,
+      grind: grindValue,
       water: water,
       temperature: temperature,
-      prepValue: prepValue,
-      prepHint: prepHint,
+      prepValue: _join([dose, grindValue]),
+      prepHint: reading.hint,
     );
   }
 }
