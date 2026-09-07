@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:pick_up_recipe/core/api_client.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/pages/coffee_page.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 
@@ -63,7 +64,15 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(theme: lightTheme, home: const CoffeePage(packId: 1)),
+        child: MaterialApp(
+          theme: lightTheme,
+          // Подписи экран берёт из локали. Язык задан прямо: проверяются
+          // русские слова, а не системный язык машины с тестом.
+          locale: const Locale('ru'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const CoffeePage(packId: 1),
+        ),
       ),
     );
     await tester.pumpAndSettle();

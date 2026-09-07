@@ -728,4 +728,80 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get recipesBrewAgain => 'Заварить снова';
+
+  @override
+  String get coffeeTitle => 'Кофе';
+
+  @override
+  String get coffeeNotFound => 'Такого кода нет';
+
+  @override
+  String get coffeeNotFoundNoCode => 'Такого кофе нет в системе.';
+
+  @override
+  String get coffeeNotFoundNote =>
+      'Код набран без опечаток — контрольный символ сходится, — но в системе его нет. Возможно, обжарщик ещё не выложил эту партию.';
+
+  @override
+  String get coffeeScanAgain => 'Сканировать ещё раз';
+
+  @override
+  String get coffeeToPacks => 'К моим пачкам';
+
+  @override
+  String get coffeeRoasterPromises => 'Обжарщик обещает';
+
+  @override
+  String get coffeeWithdrawnTitle => 'Этой партии больше нет в продаже. ';
+
+  @override
+  String coffeeWithdrawnNote(String what) {
+    return 'Обжарщик снял её$what — обычно это значит, что зерно кончилось. Рецепты остаются: заварить пачку, которая уже стоит у вас на полке, ничто не мешает.';
+  }
+
+  @override
+  String get coffeeOfflineNoCache =>
+      'Сети нет, и сохранённого рецепта в памяти тоже: заваривать пока не из чего.';
+
+  @override
+  String coffeeOfflineCached(String when) {
+    return 'Сети нет. В памяти лежит рецепт, сохранённый $when, — заваривать по нему можно. Обновится сам, когда появится связь.';
+  }
+
+  @override
+  String get coffeeOfflineCantTitle => 'Что сейчас нельзя';
+
+  @override
+  String get coffeeOfflineScan => 'Сканировать новую пачку';
+
+  @override
+  String get coffeeOfflineScanNote => 'код проверяется на сервере';
+
+  @override
+  String get coffeeOfflineRating => 'Отправить оценку';
+
+  @override
+  String get coffeeOfflineRatingNote => 'поставить можно, отправится позже';
+
+  @override
+  String get coffeeOfflineCorrection => 'Получить поправку';
+
+  @override
+  String get coffeeOfflineCorrectionNote => 'считает сервер, не телефон';
+
+  @override
+  String get coffeeBrewCached => 'Заварить по сохранённому';
+
+  @override
+  String coffeeLastBrewed(String date) {
+    return 'так вы заваривали $date';
+  }
+
+  @override
+  String coffeeBrewOn(String method) {
+    return 'Заварить на $method';
+  }
+
+  @override
+  String get coffeeMethodsFailed => 'Способы заваривания не загрузились';
 }

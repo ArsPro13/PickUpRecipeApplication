@@ -710,4 +710,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipesBrewAgain => 'Brew it again';
+
+  @override
+  String get coffeeTitle => 'Coffee';
+
+  @override
+  String get coffeeNotFound => 'There is no such code';
+
+  @override
+  String get coffeeNotFoundNoCode => 'There is no such coffee in the system.';
+
+  @override
+  String get coffeeNotFoundNote =>
+      'The code has no typos — the check character matches — but it is not in the system. The roaster may not have published this batch yet.';
+
+  @override
+  String get coffeeScanAgain => 'Scan again';
+
+  @override
+  String get coffeeToPacks => 'To my packs';
+
+  @override
+  String get coffeeRoasterPromises => 'The roaster promises';
+
+  @override
+  String get coffeeWithdrawnTitle => 'This batch is no longer on sale. ';
+
+  @override
+  String coffeeWithdrawnNote(String what) {
+    return 'The roaster has pulled it$what — usually that means the beans have run out. The recipes stay: nothing stops you brewing the pack already standing on your shelf.';
+  }
+
+  @override
+  String get coffeeOfflineNoCache =>
+      'There is no connection, and no saved recipe in memory either: there is nothing to brew by yet.';
+
+  @override
+  String coffeeOfflineCached(String when) {
+    return 'There is no connection. Memory holds a recipe saved on $when — you can brew by it. It will refresh itself once the connection is back.';
+  }
+
+  @override
+  String get coffeeOfflineCantTitle => 'What is not possible right now';
+
+  @override
+  String get coffeeOfflineScan => 'Scan a new pack';
+
+  @override
+  String get coffeeOfflineScanNote => 'the code is checked on the server';
+
+  @override
+  String get coffeeOfflineRating => 'Send a rating';
+
+  @override
+  String get coffeeOfflineRatingNote =>
+      'you can give one, it will be sent later';
+
+  @override
+  String get coffeeOfflineCorrection => 'Get a correction';
+
+  @override
+  String get coffeeOfflineCorrectionNote =>
+      'the server does the maths, not the phone';
+
+  @override
+  String get coffeeBrewCached => 'Brew by the saved one';
+
+  @override
+  String coffeeLastBrewed(String date) {
+    return 'this is how you brewed it on $date';
+  }
+
+  @override
+  String coffeeBrewOn(String method) {
+    return 'Brew with $method';
+  }
+
+  @override
+  String get coffeeMethodsFailed => 'The brewing methods did not load';
 }

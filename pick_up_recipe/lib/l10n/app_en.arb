@@ -371,5 +371,49 @@
 
   "recipesPastVersion": "an earlier version",
 
-  "recipesBrewAgain": "Brew it again"
+  "recipesBrewAgain": "Brew it again",
+
+  "coffeeTitle": "Coffee",
+
+  "coffeeNotFound": "There is no such code",
+
+  "coffeeNotFoundNoCode": "There is no such coffee in the system.",
+
+  "coffeeNotFoundNote": "The code has no typos — the check character matches — but it is not in the system. The roaster may not have published this batch yet.",
+
+  "coffeeScanAgain": "Scan again",
+
+  "coffeeToPacks": "To my packs",
+
+  "coffeeRoasterPromises": "The roaster promises",
+
+  "coffeeWithdrawnTitle": "This batch is no longer on sale. ",
+
+  "coffeeWithdrawnNote": "The roaster has pulled it{what} — usually that means the beans have run out. The recipes stay: nothing stops you brewing the pack already standing on your shelf.",
+
+  "coffeeOfflineNoCache": "There is no connection, and no saved recipe in memory either: there is nothing to brew by yet.",
+
+  "coffeeOfflineCached": "There is no connection. Memory holds a recipe saved on {when} — you can brew by it. It will refresh itself once the connection is back.",
+
+  "coffeeOfflineCantTitle": "What is not possible right now",
+
+  "coffeeOfflineScan": "Scan a new pack",
+
+  "coffeeOfflineScanNote": "the code is checked on the server",
+
+  "coffeeOfflineRating": "Send a rating",
+
+  "coffeeOfflineRatingNote": "you can give one, it will be sent later",
+
+  "coffeeOfflineCorrection": "Get a correction",
+
+  "coffeeOfflineCorrectionNote": "the server does the maths, not the phone",
+
+  "coffeeBrewCached": "Brew by the saved one",
+
+  "coffeeLastBrewed": "this is how you brewed it on {date}",
+
+  "coffeeBrewOn": "Brew with {method}",
+
+  "coffeeMethodsFailed": "The brewing methods did not load"
 }

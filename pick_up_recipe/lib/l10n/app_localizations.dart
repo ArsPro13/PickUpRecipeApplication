@@ -1213,6 +1213,138 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Заварить снова'**
   String get recipesBrewAgain;
+
+  /// Заголовок экрана кофе, когда название пачки ещё не приехало.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кофе'**
+  String get coffeeTitle;
+
+  /// Экран кофе: код набран верно, но такой пачки в системе нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Такого кода нет'**
+  String get coffeeNotFound;
+
+  /// Экран кофе: сюда пришли не по коду, и проверять нечего.
+  ///
+  /// In ru, this message translates to:
+  /// **'Такого кофе нет в системе.'**
+  String get coffeeNotFoundNoCode;
+
+  /// Экран кофе: почему верный код всё-таки не нашёлся.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код набран без опечаток — контрольный символ сходится, — но в системе его нет. Возможно, обжарщик ещё не выложил эту партию.'**
+  String get coffeeNotFoundNote;
+
+  /// Экран кофе: вернуться к вводу кода.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сканировать ещё раз'**
+  String get coffeeScanAgain;
+
+  /// Экран кофе: уйти на полку пачек.
+  ///
+  /// In ru, this message translates to:
+  /// **'К моим пачкам'**
+  String get coffeeToPacks;
+
+  /// Экран кофе: заголовок над дескрипторами вкуса. Обещает именно обжарщик, а не мы: у пачки, заведённой руками, дескрипторы вписал сам человек.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обжарщик обещает'**
+  String get coffeeRoasterPromises;
+
+  /// Экран кофе: начало жёлтой плашки, выделенное жирным. Пробел на конце обязателен — дальше без разрыва идёт остальной текст.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этой партии больше нет в продаже. '**
+  String get coffeeWithdrawnTitle;
+
+  /// Экран кофе: продолжение плашки. {what} — название и обжарщик в скобках или пусто, если их не передали.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обжарщик снял её{what} — обычно это значит, что зерно кончилось. Рецепты остаются: заварить пачку, которая уже стоит у вас на полке, ничто не мешает.'**
+  String coffeeWithdrawnNote(String what);
+
+  /// Экран кофе: сеть не ответила и запасного рецепта нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сети нет, и сохранённого рецепта в памяти тоже: заваривать пока не из чего.'**
+  String get coffeeOfflineNoCache;
+
+  /// Экран кофе: сети нет, но в памяти лежит рецепт. {when} — день сохранения; формат даты пока считается отдельно и по-русски.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сети нет. В памяти лежит рецепт, сохранённый {when}, — заваривать по нему можно. Обновится сам, когда появится связь.'**
+  String coffeeOfflineCached(String when);
+
+  /// Экран кофе: заголовок списка того, чего без сети не сделать.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что сейчас нельзя'**
+  String get coffeeOfflineCantTitle;
+
+  /// Экран кофе: первое, чего без сети нельзя.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сканировать новую пачку'**
+  String get coffeeOfflineScan;
+
+  /// Экран кофе: почему без сети нельзя сканировать.
+  ///
+  /// In ru, this message translates to:
+  /// **'код проверяется на сервере'**
+  String get coffeeOfflineScanNote;
+
+  /// Экран кофе: второе, чего без сети нельзя.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправить оценку'**
+  String get coffeeOfflineRating;
+
+  /// Экран кофе: оценка не пропадёт, она уедет из очереди.
+  ///
+  /// In ru, this message translates to:
+  /// **'поставить можно, отправится позже'**
+  String get coffeeOfflineRatingNote;
+
+  /// Экран кофе: третье, чего без сети нельзя.
+  ///
+  /// In ru, this message translates to:
+  /// **'Получить поправку'**
+  String get coffeeOfflineCorrection;
+
+  /// Экран кофе: почему без сети нет поправки.
+  ///
+  /// In ru, this message translates to:
+  /// **'считает сервер, не телефон'**
+  String get coffeeOfflineCorrectionNote;
+
+  /// Экран кофе: заварить по рецепту из памяти, пока сети нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заварить по сохранённому'**
+  String get coffeeBrewCached;
+
+  /// Экран кофе: подпись быстрого повтора. {date} пока складывается отдельно и по-русски — формат дат правится своей задачей.
+  ///
+  /// In ru, this message translates to:
+  /// **'так вы заваривали {date}'**
+  String coffeeLastBrewed(String date);
+
+  /// Экран кофе: подпись кружка быстрого повтора для голосового помощника. Название метода приходит с сервера.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заварить на {method}'**
+  String coffeeBrewOn(String method);
+
+  /// Экран кофе: справочник методов не пришёл, выбирать не из чего.
+  ///
+  /// In ru, this message translates to:
+  /// **'Способы заваривания не загрузились'**
+  String get coffeeMethodsFailed;
 }
 
 class _AppLocalizationsDelegate

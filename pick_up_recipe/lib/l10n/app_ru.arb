@@ -1074,5 +1074,135 @@
   "recipesBrewAgain": "Заварить снова",
   "@recipesBrewAgain": {
     "description": "Вкладка «Рецепты»: кружок на карточке версии, пускающий таймер сразу. Подпись для голосового помощника."
+  },
+
+  "coffeeTitle": "Кофе",
+  "@coffeeTitle": {
+    "description": "Заголовок экрана кофе, когда название пачки ещё не приехало."
+  },
+
+  "coffeeNotFound": "Такого кода нет",
+  "@coffeeNotFound": {
+    "description": "Экран кофе: код набран верно, но такой пачки в системе нет."
+  },
+
+  "coffeeNotFoundNoCode": "Такого кофе нет в системе.",
+  "@coffeeNotFoundNoCode": {
+    "description": "Экран кофе: сюда пришли не по коду, и проверять нечего."
+  },
+
+  "coffeeNotFoundNote": "Код набран без опечаток — контрольный символ сходится, — но в системе его нет. Возможно, обжарщик ещё не выложил эту партию.",
+  "@coffeeNotFoundNote": {
+    "description": "Экран кофе: почему верный код всё-таки не нашёлся."
+  },
+
+  "coffeeScanAgain": "Сканировать ещё раз",
+  "@coffeeScanAgain": {
+    "description": "Экран кофе: вернуться к вводу кода."
+  },
+
+  "coffeeToPacks": "К моим пачкам",
+  "@coffeeToPacks": {
+    "description": "Экран кофе: уйти на полку пачек."
+  },
+
+  "coffeeRoasterPromises": "Обжарщик обещает",
+  "@coffeeRoasterPromises": {
+    "description": "Экран кофе: заголовок над дескрипторами вкуса. Обещает именно обжарщик, а не мы: у пачки, заведённой руками, дескрипторы вписал сам человек."
+  },
+
+  "coffeeWithdrawnTitle": "Этой партии больше нет в продаже. ",
+  "@coffeeWithdrawnTitle": {
+    "description": "Экран кофе: начало жёлтой плашки, выделенное жирным. Пробел на конце обязателен — дальше без разрыва идёт остальной текст."
+  },
+
+  "coffeeWithdrawnNote": "Обжарщик снял её{what} — обычно это значит, что зерно кончилось. Рецепты остаются: заварить пачку, которая уже стоит у вас на полке, ничто не мешает.",
+  "@coffeeWithdrawnNote": {
+    "description": "Экран кофе: продолжение плашки. {what} — название и обжарщик в скобках или пусто, если их не передали.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+
+  "coffeeOfflineNoCache": "Сети нет, и сохранённого рецепта в памяти тоже: заваривать пока не из чего.",
+  "@coffeeOfflineNoCache": {
+    "description": "Экран кофе: сеть не ответила и запасного рецепта нет."
+  },
+
+  "coffeeOfflineCached": "Сети нет. В памяти лежит рецепт, сохранённый {when}, — заваривать по нему можно. Обновится сам, когда появится связь.",
+  "@coffeeOfflineCached": {
+    "description": "Экран кофе: сети нет, но в памяти лежит рецепт. {when} — день сохранения; формат даты пока считается отдельно и по-русски.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+
+  "coffeeOfflineCantTitle": "Что сейчас нельзя",
+  "@coffeeOfflineCantTitle": {
+    "description": "Экран кофе: заголовок списка того, чего без сети не сделать."
+  },
+
+  "coffeeOfflineScan": "Сканировать новую пачку",
+  "@coffeeOfflineScan": {
+    "description": "Экран кофе: первое, чего без сети нельзя."
+  },
+
+  "coffeeOfflineScanNote": "код проверяется на сервере",
+  "@coffeeOfflineScanNote": {
+    "description": "Экран кофе: почему без сети нельзя сканировать."
+  },
+
+  "coffeeOfflineRating": "Отправить оценку",
+  "@coffeeOfflineRating": {
+    "description": "Экран кофе: второе, чего без сети нельзя."
+  },
+
+  "coffeeOfflineRatingNote": "поставить можно, отправится позже",
+  "@coffeeOfflineRatingNote": {
+    "description": "Экран кофе: оценка не пропадёт, она уедет из очереди."
+  },
+
+  "coffeeOfflineCorrection": "Получить поправку",
+  "@coffeeOfflineCorrection": {
+    "description": "Экран кофе: третье, чего без сети нельзя."
+  },
+
+  "coffeeOfflineCorrectionNote": "считает сервер, не телефон",
+  "@coffeeOfflineCorrectionNote": {
+    "description": "Экран кофе: почему без сети нет поправки."
+  },
+
+  "coffeeBrewCached": "Заварить по сохранённому",
+  "@coffeeBrewCached": {
+    "description": "Экран кофе: заварить по рецепту из памяти, пока сети нет."
+  },
+
+  "coffeeLastBrewed": "так вы заваривали {date}",
+  "@coffeeLastBrewed": {
+    "description": "Экран кофе: подпись быстрого повтора. {date} пока складывается отдельно и по-русски — формат дат правится своей задачей.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+
+  "coffeeBrewOn": "Заварить на {method}",
+  "@coffeeBrewOn": {
+    "description": "Экран кофе: подпись кружка быстрого повтора для голосового помощника. Название метода приходит с сервера.",
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+
+  "coffeeMethodsFailed": "Способы заваривания не загрузились",
+  "@coffeeMethodsFailed": {
+    "description": "Экран кофе: справочник методов не пришёл, выбирать не из чего."
   }
 }
