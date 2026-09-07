@@ -312,7 +312,10 @@ class _RatingPageState extends ConsumerState<RatingPage> {
             loading: _busy,
             onPressed: _busy ? null : () => _submit(wantCorrection: true),
           ),
-          const SizedBox(height: AppSpacing.s3),
+          // Своей распорки здесь нет: панель уже разводит соседей на
+          // AppSpacing.s2, и стоявший тут s3 только складывался с ним —
+          // выходило двадцать восемь точек, из-за которых вторая кнопка
+          // прижималась к нижней навигации.
           AppButton(
             label: 'Просто сохранить отзыв',
             kind: AppButtonKind.secondary,
@@ -339,7 +342,7 @@ class TasteMap extends StatelessWidget {
 
         void report(Offset local) {
           // Точка карты — доля от половины стороны: (0,0) в центре,
-          // ±1 у края. Ось Y перевёрнута: вверх на экране — это «крепче».
+          // ±1 у края. Ось Y перевёрнута: вверх на экране — это «крепко».
           final half = size / 2;
           onChanged(
             TastePoint(
@@ -439,9 +442,12 @@ class _TasteMapPainter extends CustomPainter {
     _label(canvas, 'кисло', Offset(center.dx - field - AppSpacing.s2, center.dy), ink,
         align: TextAlign.right, anchorRight: true);
     _label(canvas, 'горько', Offset(center.dx + field + AppSpacing.s2, center.dy), ink);
-    _label(canvas, 'крепче', Offset(center.dx, center.dy - field - AppSpacing.s5), ink,
+    // Все четыре подписи — наречия, одной частью речи. «Крепче» и «слабее»
+    // рядом с «кисло» и «горько» читались как два разных вопроса на одном
+    // круге: одна ось спрашивала «по сравнению с чем», вторая — «какое».
+    _label(canvas, 'крепко', Offset(center.dx, center.dy - field - AppSpacing.s5), ink,
         centered: true);
-    _label(canvas, 'слабее', Offset(center.dx, center.dy + field + AppSpacing.s3), ink,
+    _label(canvas, 'слабо', Offset(center.dx, center.dy + field + AppSpacing.s3), ink,
         centered: true);
 
     if (point.isCenter) return;

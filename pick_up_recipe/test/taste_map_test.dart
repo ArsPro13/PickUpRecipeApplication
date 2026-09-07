@@ -42,9 +42,26 @@ void main() {
     });
 
     test('подпись собирается словами, а не координатами', () {
-      expect(const TastePoint(-0.6, -0.3).summary, 'Заметно кисло, чуть слабее');
+      expect(const TastePoint(-0.6, -0.3).summary, 'Заметно кисло, чуть слабо');
       expect(const TastePoint(0.9, 0).summary, 'Сильно горько');
-      expect(const TastePoint(0, 0.6).summary, 'Заметно крепче');
+      expect(const TastePoint(0, 0.6).summary, 'Заметно крепко');
+    });
+
+    test('обе оси говорят одной частью речи — наречием, а не сравнением', () {
+      // «Крепче» и «слабее» на одном круге с «кисло» и «горько» читались как
+      // два разных вопроса. Проверяется здесь, а не глазами: подпись оси на
+      // карте и текст плашки собираются из одних и тех же слов.
+      final said = [
+        const TastePoint(0, 0.9).summary,
+        const TastePoint(0, -0.9).summary,
+        const TastePoint(0.9, 0).summary,
+        const TastePoint(-0.9, 0).summary,
+      ];
+
+      expect(said, ['Сильно крепко', 'Сильно слабо', 'Сильно горько', 'Сильно кисло']);
+      for (final line in said) {
+        expect(line, isNot(contains('ее')), reason: 'сравнительной степени быть не должно');
+      }
     });
 
     test('точка за краем карты подрезается, а не уезжает в бесконечность', () {
