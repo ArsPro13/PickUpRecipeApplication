@@ -1403,12 +1403,24 @@ class _StepCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Text(
-                    _isActive
-                        ? formatDuration(snapshot.remainingInStep)
-                        : formatDuration(step.duration),
-                    style: _isActive ? context.texts.bodySmall : context.texts.labelSmall,
-                  ),
+                  // Место справа отвечает на вопрос «сколько это длится».
+                  // У шага, который ждёт человека, длительности нет, и «0:00»
+                  // отвечало на этот вопрос неправдой — поэтому там стоит то,
+                  // чем шаг кончится.
+                  if (brewStepEndNote(step) case final note when note.isNotEmpty)
+                    Text(
+                      note,
+                      style: context.texts.labelSmall?.copyWith(
+                        color: context.colors.primary,
+                      ),
+                    )
+                  else
+                    Text(
+                      _isActive
+                          ? formatDuration(snapshot.remainingInStep)
+                          : formatDuration(step.duration),
+                      style: _isActive ? context.texts.bodySmall : context.texts.labelSmall,
+                    ),
                 ],
               ),
               const SizedBox(height: AppSpacing.s2),
@@ -1416,7 +1428,7 @@ class _StepCard extends StatelessWidget {
                 height: AppSizes.icon24,
                 child: Row(
                   children: [
-                    if (step.waterG > 0) ...[
+                    if (step.showsWater) ...[
                       MetricTag(kind: MetricKind.water, label: '${step.waterG.round()} г'),
                       const SizedBox(width: AppSpacing.s2),
                     ],
@@ -1498,6 +1510,16 @@ String brewSkipLabel(BrewStep step) {
       'Сделал',
     _ => 'Пропустить',
   };
+}
+
+/// Коротко, на место таймера: чем кончается шаг, у которого нет длительности.
+///
+/// Пусто — показывать нечего: у шага есть время, и оно там и стоит.
+String brewStepEndNote(BrewStep step) {
+  if (step.showsDuration) return '';
+  if (step.untilSign.isNotEmpty) return 'по признаку';
+  if (step.endsByUser) return 'по кнопке';
+  return '';
 }
 
 /// Чем шаг кончится: таймером, действием человека или признаком.

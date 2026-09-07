@@ -55,4 +55,30 @@ void main() {
       expect(brewSkipLabel(step(type: BrewStepType.pour)), 'Пропустить');
     });
   });
+
+  group('метка на месте таймера', () {
+    test('у шага по кнопке вместо «0:00» видно, чем он кончается', () {
+      expect(
+        brewStepEndNote(step(untilUser: true, duration: Duration.zero)),
+        'по кнопке',
+      );
+    });
+
+    test('признак важнее кнопки: он и есть ответ «когда»', () {
+      expect(
+        brewStepEndNote(step(
+          untilUser: true,
+          untilSign: 'воронка опустела',
+          duration: Duration.zero,
+        )),
+        'по признаку',
+      );
+    });
+
+    test('у шага со временем метки нет — там стоит время', () {
+      expect(brewStepEndNote(step()), isEmpty);
+      expect(brewStepEndNote(step(untilSign: 'пена поднялась')), isEmpty,
+          reason: 'признак — ориентир, но таймер у шага настоящий');
+    });
+  });
 }
