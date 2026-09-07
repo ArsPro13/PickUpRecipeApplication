@@ -28,6 +28,7 @@ import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
+import '../features/recipes/domain/brew_step.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../features/recipes/domain/models/recipe_step_model.dart';
 import '../features/recipes/domain/models/step_type_model.dart';
@@ -100,6 +101,10 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   @override
   void initState() {
     super.initState();
+    // Рецепт мог приехать с водой у шага, который её не льёт: до формата v1
+    // тип шага не хранился, а поле воды было у всех подряд. Чистим сразу, до
+    // первого показа, — иначе итог соврёт ещё до того, как что-то тронули.
+    dropStrayWater(_recipe);
     // Справочник методов нужен ради одного поля — allowed_step_types. Тот, кто
     // нас открыл, метод передать не обязан: у него на руках только рецепт.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -131,7 +136,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   /// у части методов часть воды не наливается шагом — она уже в приборе.
   bool get _waterMismatch => _stepWater != _recipe.water;
 
-  int get _stepWater => _recipe.steps.fold(0, (sum, step) => sum + step.water);
+  /// Вода по шагам — только с тех, которые её льют. Остальным она в рецепте
+  /// не нужна: плеер такую воду выбрасывает, и, считая её здесь, экран
+  /// предупреждал бы о расхождении, которого в заваривании не будет.
+  int get _stepWater =>
+      _recipe.steps.where(stepTakesWater).fold(0, (sum, step) => sum + step.water);
 
   int get _totalTime => _recipe.steps.fold(0, (sum, step) => sum + step.time);
 
@@ -483,7 +492,13 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       step.stepType = replacement.stepType;
       if (untouched) step.instruction = replacement.instruction;
       if (step.warning.isEmpty) step.warning = replacement.warning;
+      // Чем шаг кончается — свойство типа, а не набранное человеком: старый
+      // признак от прежнего типа пережил бы смену и врал бы в строке.
       step.untilUser = replacement.untilUser;
+      step.untilSign = replacement.untilSign;
+      // Вода переживала смену типа: на паузе оставались «2 г» от пролива,
+      // и они же попадали в итог, хотя ни в какой чашке их уже нет.
+      dropStrayWater(_recipe);
     });
   }
 
@@ -996,7 +1011,8 @@ class _StepRow extends StatelessWidget {
 
     // Цветом воды помечены только те шаги, которые её льют. У паузы и ремарки
     // воды нет, и синий значок обещал бы то, чего на шаге не происходит.
-    final iconColor = step.water > 0 ? context.metrics.water : context.colors.onSurface;
+    final iconColor =
+        stepTakesWater(step) && step.water > 0 ? context.metrics.water : context.colors.onSurface;
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.s3),
@@ -1029,7 +1045,7 @@ class _StepRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Text(_summary(), style: context.texts.labelSmall),
+                Text(stepSummary(step), style: context.texts.labelSmall),
                 if (changed) ...[
                   const SizedBox(width: AppSpacing.s2),
                   Container(
@@ -1055,18 +1071,32 @@ class _StepRow extends StatelessWidget {
                 TextButton(onPressed: onPickType, child: Text(type?.name ?? 'выбрать')),
               ],
             ),
-            _ParamRow(
-              kind: MetricKind.water,
-              name: 'Вода на шаге',
-              value: '${step.water} г',
-              onTap: onEditWater,
-            ),
-            _ParamRow(
-              kind: MetricKind.time,
-              name: 'Длительность',
-              value: formatDuration(step.time),
-              onTap: onEditTime,
-            ),
+            // Вода — только у тех типов, что её льют. У остальных поле
+            // предлагало набрать число, которое всё равно уедет в мусор.
+            if (stepTakesWater(step))
+              _ParamRow(
+                kind: MetricKind.water,
+                name: 'Вода на шаге',
+                value: '${step.water} г',
+                onTap: onEditWater,
+              ),
+            // У шага, который ждёт человека, длительность не отсчёт, а
+            // выдумка: показываем, чем он кончается, и править там нечего.
+            if (stepEndsByUser(step))
+              _ParamRow(
+                kind: MetricKind.time,
+                icon: AppIcons.uiForward,
+                name: 'Заканчивается',
+                value: stepEnding(step).label,
+                readOnly: true,
+              )
+            else
+              _ParamRow(
+                kind: MetricKind.time,
+                name: 'Длительность',
+                value: formatDuration(step.time),
+                onTap: onEditTime,
+              ),
             const SizedBox(height: AppSpacing.s2),
             Row(
               children: [
@@ -1099,14 +1129,59 @@ class _StepRow extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _summary() {
-    final parts = [
-      if (step.water > 0) '${step.water} г',
-      if (step.time > 0) formatDuration(step.time),
-    ];
-    return parts.join(' · ');
+// ── Что шаг умеет ──────────────────────────────────────────────────────────
+//
+// Предикаты живут здесь функциями, а не геттерами в модели: RecipeStep
+// собирает кодогенератор, и дописанное в него пропадёт на следующей сборке.
+// Экран заваривания задаёт те же вопросы — правило должно быть одно, иначе
+// конструктор обещает одно, а плеер делает другое.
+
+/// Шаг заканчивается человеком, а не таймером.
+bool stepEndsByUser(RecipeStep step) => step.untilUser;
+
+/// Шаг действительно льёт воду.
+///
+/// Правило то же, что у плеера: [BrewStep.fromResponse] приписывает воду
+/// только четырём типам, а у остальных обнуляет. Считать здесь иначе значит
+/// показывать итог, которого в чашке не будет.
+bool stepTakesWater(RecipeStep step) =>
+    BrewStepType.fromWire(step.stepType).addsWater;
+
+/// Чем шаг кончается — тем же перечислением, что и форма своего типа шага:
+/// формулировки в конструкторе и в форме должны совпадать дословно.
+///
+/// Признак отличает «по признаку» от «по кнопке»: и то и другое ждёт
+/// человека, но во втором случае он ждёт не себя, а воронку.
+StepEndsWith stepEnding(RecipeStep step) {
+  if (!step.untilUser) return StepEndsWith.timer;
+  return step.untilSign.isEmpty ? StepEndsWith.user : StepEndsWith.none;
+}
+
+/// Убирает воду у шагов, которые её не льют.
+///
+/// Вызывается при открытии рецепта и после каждой смены типа: поля для такой
+/// воды на экране нет, а значение из прежнего типа осталось бы навсегда.
+void dropStrayWater(RecipeData recipe) {
+  for (final step in recipe.steps) {
+    if (!stepTakesWater(step)) step.water = 0;
   }
+}
+
+/// Правая часть свёрнутой строки шага: вода и время.
+///
+/// У шага, который ждёт человека, вместо времени стоит то, чем он кончается:
+/// «0:09» там ничего не отсчитывало и читалось как обещание таймера.
+String stepSummary(RecipeStep step) {
+  final parts = [
+    if (stepTakesWater(step) && step.water > 0) '${step.water} г',
+    if (stepEndsByUser(step))
+      stepEnding(step).label
+    else if (step.time > 0)
+      formatDuration(step.time),
+  ];
+  return parts.join(' · ');
 }
 
 // ── Разбор и показ чисел ───────────────────────────────────────────────────
