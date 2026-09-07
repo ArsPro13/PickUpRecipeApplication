@@ -5,14 +5,20 @@ class TextInputWithHints extends StatefulWidget {
   final List<String> hintsArray;
   final String labelText;
   final TextEditingController controller;
-  final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onChanged;
+
+  /// Ввод в поле закончен: человек нажал Enter, ушёл в соседнее поле или
+  /// выбрал подсказку. Значение уезжает в форму только здесь — пока идёт
+  /// набор, слова ещё нет, есть только его начало.
+  final VoidCallback? onEditingFinished;
 
   const TextInputWithHints({
     super.key,
     required this.hintsArray,
     required this.labelText,
     required this.controller,
-    required this.onChanged,
+    this.onChanged,
+    this.onEditingFinished,
   });
 
   @override
@@ -44,9 +50,9 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
 
     _focusNode = FocusNode();
     _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
-        _hideDropdown();
-      }
+      if (_focusNode.hasFocus || !mounted) return;
+      _hideDropdown();
+      widget.onEditingFinished?.call();
     });
 
     widget.controller.addListener(() {
@@ -140,9 +146,10 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
                 focusNode: _focusNode,
                 controller: widget.controller,
                 onChanged: (String query) {
-                  widget.onChanged(query);
+                  widget.onChanged?.call(query);
                   _filterHints(query);
                 },
+                onSubmitted: (_) => widget.onEditingFinished?.call(),
                 decoration: InputDecoration(
                   labelText: widget.labelText,
                   enabledBorder: inputBorder,
@@ -197,6 +204,8 @@ class _TextInputWithHintsState extends State<TextInputWithHints>
                   );
                   _hideDropdown();
                 });
+                // Выбранная подсказка — законченный ввод: слово целиком.
+                widget.onEditingFinished?.call();
               },
             ),
           );

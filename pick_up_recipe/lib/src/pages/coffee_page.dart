@@ -180,7 +180,11 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           const SizedBox(height: AppSpacing.s4),
         ],
         _PackHeader(pack: pack),
-        if (descriptors.isNotEmpty) ...[
+        // Обещает именно обжарщик, а не мы. У пачки, заведённой руками,
+        // обжарщика нет: дескрипторы в неё вписал сам человек, и выдавать их
+        // за чужое обещание — неправда. Раньше блок показывался всегда, и на
+        // ручной пачке в нём висел одинокий чип с обрывком слова.
+        if (pack.roasterName.isNotEmpty && descriptors.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.s4),
           Text('Обжарщик обещает', style: context.texts.bodySmall),
           const SizedBox(height: AppSpacing.s2),
