@@ -1,8 +1,5 @@
 // Тесты движка проигрывания рецепта.
 //
-// ⚠️ НЕ ЗАПУСКАЛИСЬ: на машине, где они написаны, нет ни Flutter, ни Dart SDK.
-// Прогнать обязательно: `flutter test test/brew_engine_test.dart`.
-//
 // Ни одного реального таймера здесь нет. Движок считает состояние функцией от
 // переданного момента времени, поэтому «прошло 12 часов» — это просто другое
 // значение в фальшивых часах. Именно это и позволяет проверить поведение
@@ -55,6 +52,52 @@ List<BrewStep> v60Steps() => const <BrewStep>[
         type: BrewStepType.wait,
         label: 'Ждём пролива',
         duration: Duration(seconds: 45),
+      ),
+    ];
+
+/// Рецепт, у которого последний шаг кончается по кнопке.
+///
+/// Нулевая длительность здесь не случайность: конструктор именно её и даёт
+/// шагу «пока не скажете сделал» — сколько он продлится, решает человек.
+List<BrewStep> untilUserSteps() => const <BrewStep>[
+      BrewStep(
+        id: 's1',
+        type: BrewStepType.pour,
+        label: 'Пролив',
+        duration: Duration(seconds: 30),
+        waterG: 250,
+      ),
+      BrewStep(
+        id: 's2',
+        type: BrewStepType.wait,
+        label: 'Ждём пролива',
+        duration: Duration.zero,
+        untilUser: true,
+        untilSign: 'воронка опустела',
+      ),
+    ];
+
+/// Тот же шаг, но в середине: за ним есть чему ждать своей очереди.
+List<BrewStep> middleGateSteps() => const <BrewStep>[
+      BrewStep(
+        id: 's1',
+        type: BrewStepType.pour,
+        label: 'Пролив',
+        duration: Duration(seconds: 30),
+        waterG: 250,
+      ),
+      BrewStep(
+        id: 's2',
+        type: BrewStepType.wait,
+        label: 'Ждём пролива',
+        duration: Duration.zero,
+        untilUser: true,
+      ),
+      BrewStep(
+        id: 's3',
+        type: BrewStepType.serve,
+        label: 'Снять воронку и разлить',
+        duration: Duration(seconds: 20),
       ),
     ];
 
@@ -330,6 +373,47 @@ void main() {
       expect(restored.snapshot().stepIndex, engine.snapshot().stepIndex);
     });
 
+    test('подтверждённые шаги и ожидание переживают перезапуск', () {
+      final middle = BrewEngine(steps: middleGateSteps(), clock: clock.call);
+      middle.start();
+      clock.advance(const Duration(seconds: 30));
+      clock.advance(const Duration(minutes: 5)); // стояли у ворот
+      middle.confirmCurrentStep();
+      clock.advance(const Duration(seconds: 5));
+
+      final saved = middle.toPersistableState();
+
+      // Приложение свернули, система его убила, человек вернулся.
+      final restored = BrewEngine(steps: middleGateSteps(), clock: clock.call)
+        ..restore(
+          startedAt: DateTime.parse(saved['started_at'] as String),
+          pausedTotal: Duration(milliseconds: saved['paused_total_ms'] as int),
+          skippedTotal: Duration(milliseconds: saved['skipped_total_ms'] as int),
+          waitingTotal: Duration(milliseconds: saved['waiting_total_ms'] as int),
+          confirmedSteps: (saved['confirmed_steps'] as List).cast<int>(),
+        );
+
+      expect(restored.snapshot().stepIndex, 2,
+          reason: 'ворота, которые уже открыли, не закрываются обратно');
+      expect(restored.snapshot().elapsedTotal, middle.snapshot().elapsedTotal);
+      expect(restored.snapshot().status, BrewStatus.running);
+    });
+
+    test('без подтверждения ворота остаются закрытыми', () {
+      final middle = BrewEngine(steps: middleGateSteps(), clock: clock.call);
+      middle.start();
+      clock.advance(const Duration(seconds: 30));
+
+      final saved = middle.toPersistableState();
+      expect(saved['confirmed_steps'], isEmpty);
+
+      final restored = BrewEngine(steps: middleGateSteps(), clock: clock.call)
+        ..restore(startedAt: DateTime.parse(saved['started_at'] as String));
+
+      clock.advance(const Duration(minutes: 3));
+      expect(restored.snapshot().status, BrewStatus.awaitingUser);
+    });
+
     test('сохранённое состояние сериализуемо', () {
       engine.start();
       final saved = engine.toPersistableState();
@@ -337,6 +421,171 @@ void main() {
       expect(saved['started_at'], isA<String>());
       expect(saved['paused_total_ms'], isA<int>());
       expect(saved['skipped_total_ms'], isA<int>());
+      expect(saved['waiting_total_ms'], isA<int>());
+      expect(saved['confirmed_steps'], isA<List<int>>());
+    });
+  });
+
+  // Шаг «пока не скажете сделал» кончается не по секундомеру, а по человеку.
+  // Движок этого не знал: конструктор даёт такому шагу нулевую длительность,
+  // и последний шаг проглатывался мгновенно — заваривание уходило на оценку
+  // само, хотя человек ещё держал воронку.
+  group('шаг «пока не скажете сделал»', () {
+    late BrewEngine gated;
+
+    setUp(() {
+      gated = BrewEngine(steps: untilUserSteps(), clock: clock.call);
+    });
+
+    test('последний шаг по кнопке не заканчивает заваривание сам', () {
+      gated.start();
+
+      clock.advance(const Duration(seconds: 32));
+      expect(gated.snapshot().isFinished, isFalse,
+          reason: 'через две секунды после таймера ждём человека, а не оценку');
+
+      clock.advance(const Duration(minutes: 10));
+      expect(gated.snapshot().isFinished, isFalse,
+          reason: 'и через десять минут тоже: шаг кончает человек');
+    });
+
+    test('на таком шаге состояние — ожидание человека', () {
+      gated.start();
+      clock.advance(const Duration(seconds: 40));
+
+      final snapshot = gated.snapshot();
+
+      expect(snapshot.status, BrewStatus.awaitingUser);
+      expect(snapshot.isAwaitingUser, isTrue);
+      expect(snapshot.stepIndex, 1, reason: 'стоим на ждущем шаге, а не за ним');
+      expect(snapshot.remainingInStep, Duration.zero);
+      expect(snapshot.waterPouredG, 250, reason: 'вода предыдущих шагов уже налита');
+    });
+
+    test('«сделал» заканчивает заваривание', () {
+      gated.start();
+      clock.advance(const Duration(seconds: 40));
+
+      gated.confirmCurrentStep();
+
+      expect(gated.snapshot().isFinished, isTrue);
+    });
+
+    test('шаг по кнопке в середине держит следующий', () {
+      final middle = BrewEngine(steps: middleGateSteps(), clock: clock.call);
+      middle.start();
+
+      clock.advance(const Duration(seconds: 30));
+      expect(middle.snapshot().stepIndex, 1, reason: 'дошли до ворот');
+
+      clock.advance(const Duration(minutes: 3));
+      expect(middle.snapshot().stepIndex, 1,
+          reason: 'следующий шаг не начинается, пока не сказали «сделал»');
+      expect(middle.snapshot().status, BrewStatus.awaitingUser);
+
+      middle.confirmCurrentStep();
+      expect(middle.snapshot().stepIndex, 2);
+    });
+
+    test('долгое ожидание не съедает следующие шаги', () {
+      final middle = BrewEngine(steps: middleGateSteps(), clock: clock.call);
+      middle.start();
+
+      clock.advance(const Duration(seconds: 30));
+      clock.advance(const Duration(minutes: 10)); // человек ушёл за молоком
+      middle.confirmCurrentStep();
+
+      expect(middle.snapshot().remainingInStep, const Duration(seconds: 20),
+          reason: 'последний шаг начинается с нуля, а не догоняет ожидание');
+
+      clock.advance(const Duration(seconds: 5));
+      expect(middle.snapshot().remainingInStep, const Duration(seconds: 15));
+
+      clock.advance(const Duration(seconds: 15));
+      expect(middle.snapshot().isFinished, isTrue);
+    });
+
+    test('пропуск уводит с ждущего шага дальше', () {
+      final middle = BrewEngine(steps: middleGateSteps(), clock: clock.call);
+      middle.start();
+      clock.advance(const Duration(seconds: 30));
+
+      middle.skipCurrentStep();
+
+      expect(middle.snapshot().stepIndex, 2,
+          reason: 'до конца ждущего шага ноль секунд — перематывать нечего');
+      expect(middle.snapshot().status, BrewStatus.running);
+    });
+
+    test('пропуск последнего ждущего шага заканчивает заваривание', () {
+      gated.start();
+      clock.advance(const Duration(seconds: 40));
+
+      gated.skipCurrentStep();
+
+      expect(gated.snapshot().isFinished, isTrue);
+    });
+
+    test('«сделал» на обычном шаге ничего не двигает', () {
+      engine.start();
+      clock.advance(const Duration(seconds: 10));
+
+      engine.confirmCurrentStep();
+
+      expect(engine.snapshot().stepIndex, 0);
+      expect(engine.snapshot().elapsedTotal, const Duration(seconds: 10));
+    });
+
+    test('«сделал» до старта ничего не ломает', () {
+      gated.confirmCurrentStep();
+
+      expect(gated.snapshot().status, BrewStatus.idle);
+    });
+
+    test('ждущий шаг с таймером сначала отсчитывает, потом ждёт', () {
+      final timed = BrewEngine(
+        clock: clock.call,
+        steps: const <BrewStep>[
+          BrewStep(
+            id: 's1',
+            type: BrewStepType.press,
+            label: 'Отжим',
+            duration: Duration(seconds: 20),
+            untilUser: true,
+          ),
+        ],
+      );
+      timed.start();
+
+      clock.advance(const Duration(seconds: 10));
+      expect(timed.snapshot().status, BrewStatus.running,
+          reason: 'таймер шага ещё идёт — он ориентир');
+
+      clock.advance(const Duration(seconds: 15));
+      expect(timed.snapshot().status, BrewStatus.awaitingUser);
+
+      timed.confirmCurrentStep();
+      expect(timed.snapshot().isFinished, isTrue);
+    });
+
+    test('сброс закрывает ворота обратно', () {
+      gated.start();
+      clock.advance(const Duration(seconds: 40));
+      gated.confirmCurrentStep();
+
+      gated.reset();
+      gated.start();
+      clock.advance(const Duration(seconds: 40));
+
+      expect(gated.snapshot().status, BrewStatus.awaitingUser);
+    });
+
+    test('уведомления обрываются на неподтверждённом шаге', () {
+      final middle = BrewEngine(steps: middleGateSteps(), clock: clock.call);
+      middle.start();
+
+      // Когда начнётся шаг за воротами, не знает никто: это решит человек.
+      expect(middle.notificationTimes(), hasLength(2));
     });
   });
 
@@ -447,6 +696,68 @@ void main() {
       expect(BrewStepType.wait.addsWater, isFalse);
       expect(BrewStepType.stir.addsWater, isFalse);
       expect(BrewStepType.press.addsWater, isFalse);
+    });
+
+    test('шаг по кнопке кончается человеком, а не таймером', () {
+      const gate = BrewStep(
+        id: 's1',
+        type: BrewStepType.wait,
+        label: 'Ждём пролива',
+        duration: Duration.zero,
+        untilUser: true,
+      );
+      const timed = BrewStep(
+        id: 's2',
+        type: BrewStepType.pour,
+        label: 'Пролив',
+        duration: Duration(seconds: 30),
+        waterG: 100,
+      );
+
+      expect(gate.endsByUser, isTrue);
+      expect(timed.endsByUser, isFalse);
+    });
+
+    test('длительность показывают, только когда она есть', () {
+      const gate = BrewStep(
+        id: 's1',
+        type: BrewStepType.wait,
+        label: 'Ждём пролива',
+        duration: Duration.zero,
+        untilUser: true,
+      );
+      const timed = BrewStep(
+        id: 's2',
+        type: BrewStepType.pour,
+        label: 'Пролив',
+        duration: Duration(seconds: 30),
+        waterG: 100,
+      );
+
+      // Ноль на месте таймера читается как сбой приложения, а не как
+      // «столько, сколько нужно вам».
+      expect(gate.showsDuration, isFalse);
+      expect(timed.showsDuration, isTrue);
+    });
+
+    test('воду показывают только там, где она есть', () {
+      const pour = BrewStep(
+        id: 's1',
+        type: BrewStepType.pour,
+        label: 'Пролив',
+        duration: Duration(seconds: 30),
+        waterG: 100,
+      );
+      const stir = BrewStep(
+        id: 's2',
+        type: BrewStepType.stir,
+        label: 'Размешать',
+        duration: Duration(seconds: 5),
+        waterG: 30, // противоречие в исторических данных
+      );
+
+      expect(pour.showsWater, isTrue);
+      expect(stir.showsWater, isFalse);
     });
 
     test('предупреждения нужны действиям с горячей водой', () {
