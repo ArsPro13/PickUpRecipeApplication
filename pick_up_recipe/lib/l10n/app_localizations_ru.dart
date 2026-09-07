@@ -679,4 +679,53 @@ class AppLocalizationsRu extends AppLocalizations {
   String ratingDraftContinueWith(String summary) {
     return '$summary — продолжить';
   }
+
+  @override
+  String get recipesFailed => 'Рецепты не загрузились';
+
+  @override
+  String get recipesEmpty => 'Ещё ни одного заваривания';
+
+  @override
+  String get recipesEmptyNote =>
+      'Заварите кофе по рецепту — он появится здесь вместе с оценкой';
+
+  @override
+  String get recipesToPacks => 'К пачкам';
+
+  @override
+  String recipesVersionsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count версий',
+      many: '$count версий',
+      few: '$count версии',
+      one: '$count версия',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recipesNow => 'сейчас';
+
+  @override
+  String get recipesNowSwipe => 'сейчас · листается вбок';
+
+  @override
+  String recipesVersionOf(int number, int count) {
+    return 'версия $number из $count';
+  }
+
+  @override
+  String get recipesDraft => 'не сохранён';
+
+  @override
+  String get recipesCurrent => 'так завариваю';
+
+  @override
+  String get recipesPastVersion => 'прошлая версия';
+
+  @override
+  String get recipesBrewAgain => 'Заварить снова';
 }

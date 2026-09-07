@@ -1141,6 +1141,78 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'{summary} — продолжить'**
   String ratingDraftContinueWith(String summary);
+
+  /// Вкладка «Рецепты»: список не пришёл с сервера. Отдельно от пустого списка: бодрый текст на месте сбоя врал бы.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рецепты не загрузились'**
+  String get recipesFailed;
+
+  /// Вкладка «Рецепты»: история пуста.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё ни одного заваривания'**
+  String get recipesEmpty;
+
+  /// Вкладка «Рецепты»: чем наполнить пустую историю.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заварите кофе по рецепту — он появится здесь вместе с оценкой'**
+  String get recipesEmptyNote;
+
+  /// Вкладка «Рецепты»: кнопка с пустого экрана на первую вкладку.
+  ///
+  /// In ru, this message translates to:
+  /// **'К пачкам'**
+  String get recipesToPacks;
+
+  /// Вкладка «Рецепты»: сколько версий в стопке. Склонение считает ICU: рука знала русскую таблицу и говорила «2 версий».
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} версия} few{{count} версии} many{{count} версий} other{{count} версий}}'**
+  String recipesVersionsCount(int count);
+
+  /// Вкладка «Рецепты»: подпись верхней карточки стопки.
+  ///
+  /// In ru, this message translates to:
+  /// **'сейчас'**
+  String get recipesNow;
+
+  /// То же, когда в системе выключены анимации: про жест рассказывала сама карточка, отходя вбок, и без движения о нём надо сказать словами.
+  ///
+  /// In ru, this message translates to:
+  /// **'сейчас · листается вбок'**
+  String get recipesNowSwipe;
+
+  /// Вкладка «Рецепты»: какую по счёту версию стопки листает человек.
+  ///
+  /// In ru, this message translates to:
+  /// **'версия {number} из {count}'**
+  String recipesVersionOf(int number, int count);
+
+  /// Вкладка «Рецепты»: версия ещё не уехала на сервер.
+  ///
+  /// In ru, this message translates to:
+  /// **'не сохранён'**
+  String get recipesDraft;
+
+  /// Вкладка «Рецепты»: верхняя версия стопки — та, по которой человек заваривает сейчас.
+  ///
+  /// In ru, this message translates to:
+  /// **'так завариваю'**
+  String get recipesCurrent;
+
+  /// Вкладка «Рецепты»: версия из глубины стопки.
+  ///
+  /// In ru, this message translates to:
+  /// **'прошлая версия'**
+  String get recipesPastVersion;
+
+  /// Вкладка «Рецепты»: кружок на карточке версии, пускающий таймер сразу. Подпись для голосового помощника.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заварить снова'**
+  String get recipesBrewAgain;
 }
 
 class _AppLocalizationsDelegate

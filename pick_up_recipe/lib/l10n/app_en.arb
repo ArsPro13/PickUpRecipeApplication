@@ -347,5 +347,29 @@
 
   "ratingDraftContinue": "continue where you left off",
 
-  "ratingDraftContinueWith": "{summary} — continue"
+  "ratingDraftContinueWith": "{summary} — continue",
+
+  "recipesFailed": "The recipes did not load",
+
+  "recipesEmpty": "Not a single brew yet",
+
+  "recipesEmptyNote": "Brew a coffee by a recipe — it will show up here along with your rating",
+
+  "recipesToPacks": "To the packs",
+
+  "recipesVersionsCount": "{count, plural, one{{count} version} other{{count} versions}}",
+
+  "recipesNow": "now",
+
+  "recipesNowSwipe": "now · swipe sideways",
+
+  "recipesVersionOf": "version {number} of {count}",
+
+  "recipesDraft": "not saved",
+
+  "recipesCurrent": "this is how I brew it",
+
+  "recipesPastVersion": "an earlier version",
+
+  "recipesBrewAgain": "Brew it again"
 }

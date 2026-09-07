@@ -1001,5 +1001,78 @@
         "type": "String"
       }
     }
+  },
+
+  "recipesFailed": "Рецепты не загрузились",
+  "@recipesFailed": {
+    "description": "Вкладка «Рецепты»: список не пришёл с сервера. Отдельно от пустого списка: бодрый текст на месте сбоя врал бы."
+  },
+
+  "recipesEmpty": "Ещё ни одного заваривания",
+  "@recipesEmpty": {
+    "description": "Вкладка «Рецепты»: история пуста."
+  },
+
+  "recipesEmptyNote": "Заварите кофе по рецепту — он появится здесь вместе с оценкой",
+  "@recipesEmptyNote": {
+    "description": "Вкладка «Рецепты»: чем наполнить пустую историю."
+  },
+
+  "recipesToPacks": "К пачкам",
+  "@recipesToPacks": {
+    "description": "Вкладка «Рецепты»: кнопка с пустого экрана на первую вкладку."
+  },
+
+  "recipesVersionsCount": "{count, plural, one{{count} версия} few{{count} версии} many{{count} версий} other{{count} версий}}",
+  "@recipesVersionsCount": {
+    "description": "Вкладка «Рецепты»: сколько версий в стопке. Склонение считает ICU: рука знала русскую таблицу и говорила «2 версий».",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "recipesNow": "сейчас",
+  "@recipesNow": {
+    "description": "Вкладка «Рецепты»: подпись верхней карточки стопки."
+  },
+
+  "recipesNowSwipe": "сейчас · листается вбок",
+  "@recipesNowSwipe": {
+    "description": "То же, когда в системе выключены анимации: про жест рассказывала сама карточка, отходя вбок, и без движения о нём надо сказать словами."
+  },
+
+  "recipesVersionOf": "версия {number} из {count}",
+  "@recipesVersionOf": {
+    "description": "Вкладка «Рецепты»: какую по счёту версию стопки листает человек.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "recipesDraft": "не сохранён",
+  "@recipesDraft": {
+    "description": "Вкладка «Рецепты»: версия ещё не уехала на сервер."
+  },
+
+  "recipesCurrent": "так завариваю",
+  "@recipesCurrent": {
+    "description": "Вкладка «Рецепты»: верхняя версия стопки — та, по которой человек заваривает сейчас."
+  },
+
+  "recipesPastVersion": "прошлая версия",
+  "@recipesPastVersion": {
+    "description": "Вкладка «Рецепты»: версия из глубины стопки."
+  },
+
+  "recipesBrewAgain": "Заварить снова",
+  "@recipesBrewAgain": {
+    "description": "Вкладка «Рецепты»: кружок на карточке версии, пускающий таймер сразу. Подпись для голосового помощника."
   }
 }

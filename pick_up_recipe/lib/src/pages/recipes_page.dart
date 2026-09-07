@@ -26,6 +26,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/packs/application/state/active_packs_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
@@ -87,7 +88,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
     final packs = ref.watch(activePacksNotifierProvider).activePacks;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Рецепты')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).recipesTitle)),
       body: RefreshIndicator(
         onRefresh: () => ref.read(recipesListProvider.notifier).load(),
         child: _body(state, packs),
@@ -108,11 +109,11 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
           SizedBox(height: MediaQuery.sizeOf(context).height / 6),
           AppState(
             icon: AppIcons.stateError,
-            title: 'Рецепты не загрузились',
+            title: AppLocalizations.of(context).recipesFailed,
             description: state.error,
             isError: true,
             primaryAction: AppButton(
-              label: 'Повторить',
+              label: AppLocalizations.of(context).retry,
               onPressed: () => ref.read(recipesListProvider.notifier).load(),
             ),
           ),
@@ -126,10 +127,10 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
           SizedBox(height: MediaQuery.sizeOf(context).height / 6),
           AppState(
             icon: AppIcons.uiHistory,
-            title: 'Ещё ни одного заваривания',
-            description: 'Заварите кофе по рецепту — он появится здесь вместе с оценкой',
+            title: AppLocalizations.of(context).recipesEmpty,
+            description: AppLocalizations.of(context).recipesEmptyNote,
             primaryAction: AppButton(
-              label: 'К пачкам',
+              label: AppLocalizations.of(context).recipesToPacks,
               onPressed: () => AutoTabsRouter.of(context).setActiveIndex(0),
             ),
           ),
@@ -450,7 +451,10 @@ class _Header extends ConsumerWidget {
                 _title(),
                 style: context.texts.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
-              Text(_subtitle(), style: context.texts.labelSmall),
+              Text(
+                _subtitle(AppLocalizations.of(context)),
+                style: context.texts.labelSmall,
+              ),
             ],
           ),
         ),
@@ -463,12 +467,13 @@ class _Header extends ConsumerWidget {
     return coffee.isEmpty ? group.methodName : '$coffee · ${group.methodName}';
   }
 
-  String _subtitle() {
+  String _subtitle(AppLocalizations texts) {
     final parts = [
       if (pack != null && pack!.roasterName.isNotEmpty) pack!.roasterName,
       formatRecipeDate(group.latest.date),
-      if (group.versions.length > 1)
-        '${group.versions.length} ${_versionWord(group.versions.length)}',
+      // Склонение «1 версия / 2 версии / 5 версий» считает ICU: таблица форм
+      // у каждого языка своя, и написанная руками была верной для одного.
+      if (group.versions.length > 1) texts.recipesVersionsCount(group.versions.length),
     ];
     return parts.join(' · ');
   }
@@ -489,8 +494,11 @@ class _Pager extends StatelessWidget {
   /// Обычно одно слово: про жест рассказывает сама карточка, отходя вбок.
   /// С выключенными в системе анимациями она этого не делает — и тогда про
   /// жест говорится словами, иначе смысл потерялся бы вместе с движением.
-  String _now(BuildContext context) =>
-      MediaQuery.disableAnimationsOf(context) ? 'сейчас · листается вбок' : 'сейчас';
+  String _now(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    return MediaQuery.disableAnimationsOf(context) ? texts.recipesNowSwipe : texts.recipesNow;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -511,7 +519,9 @@ class _Pager extends StatelessWidget {
         ],
         const SizedBox(width: AppSpacing.s3),
         Text(
-          index == 0 ? _now(context) : 'версия ${index + 1} из $count',
+          index == 0
+              ? _now(context)
+              : AppLocalizations.of(context).recipesVersionOf(index + 1, count),
           style: context.texts.labelSmall,
         ),
       ],
@@ -568,8 +578,10 @@ class _VersionCard extends StatelessWidget {
                     children: [
                       Text(
                         version.draft
-                            ? 'не сохранён'
-                            : (latest ? 'так завариваю' : 'прошлая версия'),
+                            ? AppLocalizations.of(context).recipesDraft
+                            : (latest
+                                ? AppLocalizations.of(context).recipesCurrent
+                                : AppLocalizations.of(context).recipesPastVersion),
                         style: context.texts.labelSmall?.copyWith(
                           color: version.draft ? context.colors.primary : null,
                         ),
@@ -583,11 +595,13 @@ class _VersionCard extends StatelessWidget {
                         children: [
                           MetricTag(
                             kind: MetricKind.dose,
-                            label: '${_formatDose(version.doseG)} г',
+                            label: AppLocalizations.of(context)
+                                .unitGrams(_formatDose(version.doseG)),
                           ),
                           MetricTag(
                             kind: MetricKind.water,
-                            label: '${version.waterG} мл',
+                            label: AppLocalizations.of(context)
+                                .unitMillilitres('${version.waterG}'),
                           ),
                           if (version.temperatureC != null)
                             MetricTag(
@@ -686,7 +700,7 @@ class _PlayButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: 'Заварить снова',
+      label: AppLocalizations.of(context).recipesBrewAgain,
       child: InkWell(
         onTap: () => context.router.push(
           BrewRoute(recipe: version.recipe, pack: pack, autoStart: true),
@@ -724,12 +738,4 @@ String _formatDose(double value) {
   final rounded = (value * 10).round() / 10;
   if (rounded == rounded.roundToDouble()) return rounded.round().toString();
   return rounded.toStringAsFixed(1).replaceAll('.', ',');
-}
-
-String _versionWord(int count) {
-  if (count % 10 == 1 && count % 100 != 11) return 'версия';
-  if ([2, 3, 4].contains(count % 10) && !(count % 100 >= 12 && count % 100 <= 14)) {
-    return 'версии';
-  }
-  return 'версий';
 }

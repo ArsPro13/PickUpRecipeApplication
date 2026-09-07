@@ -663,4 +663,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String ratingDraftContinueWith(String summary) {
     return '$summary — continue';
   }
+
+  @override
+  String get recipesFailed => 'The recipes did not load';
+
+  @override
+  String get recipesEmpty => 'Not a single brew yet';
+
+  @override
+  String get recipesEmptyNote =>
+      'Brew a coffee by a recipe — it will show up here along with your rating';
+
+  @override
+  String get recipesToPacks => 'To the packs';
+
+  @override
+  String recipesVersionsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count versions',
+      one: '$count version',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recipesNow => 'now';
+
+  @override
+  String get recipesNowSwipe => 'now · swipe sideways';
+
+  @override
+  String recipesVersionOf(int number, int count) {
+    return 'version $number of $count';
+  }
+
+  @override
+  String get recipesDraft => 'not saved';
+
+  @override
+  String get recipesCurrent => 'this is how I brew it';
+
+  @override
+  String get recipesPastVersion => 'an earlier version';
+
+  @override
+  String get recipesBrewAgain => 'Brew it again';
 }
