@@ -131,6 +131,11 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// каждую секунду — только на смене шага.
   int? _scrolledTo;
 
+  /// Ключ карточки текущего шага: по нему список находит её настоящее место.
+  /// Карточки разной высоты — подсказка текущего шага раскрыта целиком, — и
+  /// считать место умножением больше нельзя.
+  final GlobalKey _activeCard = GlobalKey();
+
   /// Когда приложение ушло в фон при идущем заваривании.
   DateTime? _wentBackground;
 
@@ -268,10 +273,30 @@ class _BrewPageState extends ConsumerState<BrewPage>
     if (_scrolledTo == _snapshot.stepIndex) return;
 
     _scrolledTo = _snapshot.stepIndex;
-    final target = (_snapshot.stepIndex * _StepCard.height)
-        .clamp(0.0, _steps.position.maxScrollExtent);
 
-    _steps.animateTo(target, duration: AppDuration.base, curve: AppCurves.out);
+    // Дерево на этот момент ещё не перестроено: ключ висит на карточке
+    // предыдущего шага. Ждём кадр — иначе прокрутка уедет на шаг назад.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_steps.hasClients) return;
+
+      final card = _activeCard.currentContext;
+      if (card != null) {
+        Scrollable.ensureVisible(
+          card,
+          alignment: 0,
+          duration: AppDuration.base,
+          curve: AppCurves.out,
+        );
+        return;
+      }
+
+      // Карточка ещё не построена — список унесли далеко от текущего шага.
+      // Тогда прежняя оценка по высоте свёрнутой карточки: она приводит
+      // достаточно близко, а точное место найдётся на следующей смене шага.
+      final target = (_snapshot.stepIndex * _StepCard.collapsedHeight)
+          .clamp(0.0, _steps.position.maxScrollExtent);
+      _steps.animateTo(target, duration: AppDuration.base, curve: AppCurves.out);
+    });
   }
 
   /// Идёт ли заваривание прямо сейчас.
@@ -557,6 +582,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
               controller: _steps,
               steps: steps,
               snapshot: _snapshot,
+              activeCard: _activeCard,
             ),
           ),
           SafeArea(
@@ -1256,11 +1282,15 @@ class _StepList extends StatelessWidget {
     required this.controller,
     required this.steps,
     required this.snapshot,
+    required this.activeCard,
   });
 
   final ScrollController controller;
   final List<BrewStep> steps;
   final BrewSnapshot snapshot;
+
+  /// Ключ карточки текущего шага — им список подводят к глазам.
+  final GlobalKey activeCard;
 
   @override
   Widget build(BuildContext context) {
@@ -1294,7 +1324,12 @@ class _StepList extends StatelessWidget {
               // если фаз в рецепте больше одной: у трёхшагового дрип-пакета
               // разделители были бы длиннее самих шагов.
               if (newPhase && _hasPhases(steps)) _PhaseLabel(phase),
-              _StepCard(step: steps[index], index: index, snapshot: snapshot),
+              _StepCard(
+                key: index == snapshot.stepIndex ? activeCard : null,
+                step: steps[index],
+                index: index,
+                snapshot: snapshot,
+              ),
             ],
           );
         },
@@ -1335,15 +1370,21 @@ class _PhaseLabel extends StatelessWidget {
 
 /// Карточка шага: значок, подпись, время, вода и подсказка.
 class _StepCard extends StatelessWidget {
-  const _StepCard({required this.step, required this.index, required this.snapshot});
+  const _StepCard({
+    super.key,
+    required this.step,
+    required this.index,
+    required this.snapshot,
+  });
 
-  /// Высота карточки вместе с отступом. Нужна прокрутке, чтобы подвести
-  /// текущий шаг к верхнему краю, не измеряя список.
+  /// Наименьшая высота карточки вместе с отступом.
   ///
-  /// Все карточки одной высоты намеренно: у шага может не быть ни воды, ни
-  /// подсказки, и от «сжатых» строк список превращается в лесенку. Высота
-  /// посчитана по самой полной карточке — подпись, метки и подсказка.
-  static const double height = 116;
+  /// Ровно такая же у всех карточек, кроме тех, где подсказка раскрыта:
+  /// у шага может не быть ни воды, ни подсказки, и от «сжатых» строк список
+  /// превращается в лесенку. Высота посчитана по самой полной свёрнутой
+  /// карточке — подпись, метки и строка подсказки. Раскрытая перерастает её,
+  /// и прокрутка поэтому ищет карточку по ключу, а не умножением.
+  static const double collapsedHeight = 116;
 
   final BrewStep step;
   final int index;
@@ -1366,7 +1407,9 @@ class _StepCard extends StatelessWidget {
         child: AnimatedContainer(
           duration: AppDuration.base,
           curve: AppCurves.out,
-          height: height - AppSpacing.s2,
+          constraints: const BoxConstraints(
+            minHeight: collapsedHeight - AppSpacing.s2,
+          ),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.s4,
             vertical: AppSpacing.s3,
@@ -1448,29 +1491,111 @@ class _StepCard extends StatelessWidget {
                 _WarningNote(text: step.warning),
               ] else if (step.tip.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.s1),
-                Row(
-                  children: [
-                    AppIcon(
-                      AppIcons.stepNote,
-                      size: AppSizes.icon16,
-                      color: context.colors.secondary,
-                    ),
-                    const SizedBox(width: AppSpacing.s1),
-                    Expanded(
-                      child: Text(
-                        step.tip,
-                        style: context.texts.labelSmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+                BrewStepTip(text: step.tip, alwaysOpen: _isActive),
               ],
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Подсказка шага, которая помещается не всегда.
+///
+/// У текущего шага она раскрыта всегда: это тот самый шаг, который человек
+/// делает прямо сейчас, и обрывать ему фразу на середине — то же, что не
+/// показать её вовсе. Так решает и макет (design/night4/brew.html): подсказка
+/// стоит только у текущего шага и целиком.
+///
+/// У остальных шагов длинная подсказка свёрнута в строку и раскрывается
+/// шевроном. Шеврон появляется, только если строка действительно не влезла:
+/// у коротких подсказок он превратил бы список в частокол стрелок.
+///
+/// Не приватный намеренно: решение «влезло или нет» проверяется тестом.
+class BrewStepTip extends StatefulWidget {
+  const BrewStepTip({super.key, required this.text, required this.alwaysOpen});
+
+  final String text;
+
+  /// Подсказка текущего шага: раскрыта всегда, шеврон ей не нужен.
+  final bool alwaysOpen;
+
+  @override
+  State<BrewStepTip> createState() => _BrewStepTipState();
+}
+
+class _BrewStepTipState extends State<BrewStepTip> {
+  bool _open = false;
+
+  /// Ширина, которую занимает шеврон вместе со своей мишенью для пальца.
+  static const double _chevron = AppSizes.icon16 + AppSpacing.s1 * 2;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.texts.labelSmall;
+    final open = widget.alwaysOpen || _open;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Меряем по той ширине, в которой текст живёт вместе с шевроном.
+        // Без шеврона текста поместилось бы только больше, поэтому решение
+        // «не влезло» само себя не переворачивает.
+        final free = constraints.maxWidth -
+            (AppSizes.icon16 + AppSpacing.s1) -
+            _chevron;
+
+        // Мерить надо ровно тем, чем рисуем: Text домешивает стиль по
+        // умолчанию, и без него замер разойдётся с разметкой на пограничных
+        // подсказках — там, где как раз и решается судьба шеврона.
+        final painter = TextPainter(
+          text: TextSpan(
+            text: widget.text,
+            style: DefaultTextStyle.of(context).style.merge(style),
+          ),
+          maxLines: 1,
+          textDirection: Directionality.of(context),
+        )..layout(maxWidth: free < 0 ? 0 : free);
+
+        final clipped = painter.didExceedMaxLines;
+        painter.dispose();
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppIcon(
+              AppIcons.stepNote,
+              size: AppSizes.icon16,
+              color: context.colors.secondary,
+            ),
+            const SizedBox(width: AppSpacing.s1),
+            Expanded(
+              child: Text(
+                widget.text,
+                style: style,
+                maxLines: open ? null : 1,
+                overflow: open ? TextOverflow.clip : TextOverflow.ellipsis,
+              ),
+            ),
+            if (clipped && !widget.alwaysOpen)
+              Tooltip(
+                message: _open ? 'Свернуть подсказку' : 'Показать подсказку целиком',
+                child: InkWell(
+                  borderRadius: AppRadius.rounded,
+                  onTap: () => setState(() => _open = !_open),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.s1),
+                    child: AppIcon(
+                      _open ? AppIcons.uiChevronUp : AppIcons.uiChevronDown,
+                      size: AppSizes.icon16,
+                      color: context.colors.secondary,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
