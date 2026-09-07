@@ -35,6 +35,7 @@ import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../features/recipes/domain/models/recipe_step_model.dart';
 import '../features/recipes/domain/models/step_type_model.dart';
 import '../features/recipes/domain/models/user_step_type_model.dart';
+import '../features/recipes/domain/step_ending.dart';
 import '../general_widgets/amount_stepper.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
@@ -144,7 +145,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   /// не нужна: плеер такую воду выбрасывает, и, считая её здесь, экран
   /// предупреждал бы о расхождении, которого в заваривании не будет.
   int get _stepWater =>
-      _recipe.steps.where(stepTakesWater).fold(0, (sum, step) => sum + step.water);
+      _recipe.steps.where(stepTypeTakesWater).fold(0, (sum, step) => sum + step.water);
 
   int get _totalTime => _recipe.steps.fold(0, (sum, step) => sum + step.time);
 
@@ -1008,7 +1009,7 @@ class _StepRow extends StatelessWidget {
     // Цветом воды помечены только те шаги, которые её льют. У паузы и ремарки
     // воды нет, и синий значок обещал бы то, чего на шаге не происходит.
     final iconColor =
-        stepTakesWater(step) && step.water > 0 ? context.metrics.water : context.colors.onSurface;
+        step.showsWater && step.water > 0 ? context.metrics.water : context.colors.onSurface;
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.s3),
@@ -1069,7 +1070,7 @@ class _StepRow extends StatelessWidget {
             ),
             // Вода — только у тех типов, что её льют. У остальных поле
             // предлагало набрать число, которое всё равно уедет в мусор.
-            if (stepTakesWater(step))
+            if (step.showsWater)
               _ParamRow(
                 kind: MetricKind.water,
                 // Не «Вода на шаге»: со счётчиком строка занимает 176 точек
@@ -1143,19 +1144,19 @@ class _StepRow extends StatelessWidget {
 
 /// Шаг заканчивается человеком, а не таймером.
 ///
-/// Признак без флага — тоже человек: что воронка опустела, видит он, а
-/// приложение об этом не узнаёт никак, и таймер там в лучшем случае
-/// ориентир. Ровно так же эти два поля читает общий предикат `endsByHuman`
-/// из `domain/step_ending.dart` — расходиться с ним нельзя, иначе шаг,
-/// заведённый как «по кнопке», в плеере промотается сам.
-bool stepEndsByUser(RecipeStep step) => step.untilUser || step.untilSign.isNotEmpty;
+/// Обёртка над общим предикатом `endsByHuman` из `domain/step_ending.dart`,
+/// оставленная ради читаемости условий на этом экране. Собственного правила
+/// здесь нет намеренно: второй ответ на тот же вопрос однажды разойдётся с
+/// первым, и шаг, заведённый как «по кнопке», в плеере промотается сам.
+bool stepEndsByUser(RecipeStep step) => step.endsByHuman;
 
-/// Шаг действительно льёт воду.
+/// Тип шага принимает воду.
 ///
-/// Правило то же, что у плеера: [BrewStep.fromResponse] приписывает воду
-/// только четырём типам, а у остальных обнуляет. Считать здесь иначе значит
-/// показывать итог, которого в чашке не будет.
-bool stepTakesWater(RecipeStep step) =>
+/// Это не то же, что «показывать поле воды»: показ спрашивают у
+/// `step.showsWater`, который не прячет уже налитые граммы у исторических
+/// шагов с пустым типом. Здесь вопрос уже: можно ли этому типу воду вообще —
+/// по нему чистятся граммы, оставшиеся от прежнего типа.
+bool stepTypeTakesWater(RecipeStep step) =>
     BrewStepType.fromWire(step.stepType).addsWater;
 
 /// Чем шаг кончается — тем же перечислением, что и форма своего типа шага:
@@ -1174,7 +1175,7 @@ StepEndsWith stepEnding(RecipeStep step) {
 /// воды на экране нет, а значение из прежнего типа осталось бы навсегда.
 void dropStrayWater(RecipeData recipe) {
   for (final step in recipe.steps) {
-    if (!stepTakesWater(step)) step.water = 0;
+    if (!stepTypeTakesWater(step)) step.water = 0;
   }
 }
 
@@ -1184,7 +1185,7 @@ void dropStrayWater(RecipeData recipe) {
 /// «0:09» там ничего не отсчитывало и читалось как обещание таймера.
 String stepSummary(RecipeStep step) {
   final parts = [
-    if (stepTakesWater(step) && step.water > 0) '${step.water} г',
+    if (step.showsWater && step.water > 0) '${step.water} г',
     if (stepEndsByUser(step))
       stepEnding(step).label
     else if (step.time > 0)

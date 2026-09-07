@@ -105,13 +105,13 @@ void main() {
   group('какие шаги льют воду', () {
     test('вода — у тех же четырёх типов, что и в плеере', () {
       for (final slug in ['pour', 'bloom', 'add_ice', 'dilute']) {
-        expect(stepTakesWater(step(stepType: slug)), isTrue, reason: slug);
+        expect(stepTypeTakesWater(step(stepType: slug)), isTrue, reason: slug);
       }
     });
 
     test('пауза, размешивание и свой шаг воду не льют', () {
       for (final slug in ['wait', 'stir', 'press', 'note', 'custom', '']) {
-        expect(stepTakesWater(step(stepType: slug)), isFalse, reason: slug);
+        expect(stepTypeTakesWater(step(stepType: slug)), isFalse, reason: slug);
       }
     });
 
@@ -138,7 +138,7 @@ void main() {
 
       dropStrayWater(recipe);
       final sum = recipe.steps
-          .where(stepTakesWater)
+          .where(stepTypeTakesWater)
           .fold<int>(0, (total, item) => total + item.water);
 
       expect(sum, 150);

@@ -162,12 +162,12 @@ void main() {
       expect(_brewStep(_recipeStep(stepType: 'custom')).showsWater, isFalse);
     });
 
-    test('исторический шаг с водой её не прячет', () {
-      // У рецептов до формата v1 тип пустой. Спрятать в конструкторе поле с
-      // налитыми граммами — значит убрать их с глаз, оставив в рецепте: сумма
-      // по шагам перестанет сходиться, а поправить будет нечего.
-      expect(_recipeStep(stepType: '', water: 40).showsWater, isTrue);
-      expect(_recipeStep(stepType: '', water: 0).showsWater, isFalse);
+    test('исторический шаг: воду решает тип, а не проставленное значение', () {
+      // У рецептов до формата v1 тип пустой, то есть «свой шаг», и плеер воду
+      // такому шагу обнуляет. Показать граммы в конструкторе значило бы
+      // обещать пролив, которого не будет.
+      expect(_recipeStep(stepType: '', water: 40).showsWater, isFalse);
+      expect(_recipeStep(stepType: 'pour', water: 0).showsWater, isTrue);
     });
   });
 }
