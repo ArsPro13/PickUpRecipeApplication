@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/pages/scan_page.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:pick_up_recipe/src/themes/app_tokens.dart';
@@ -21,7 +22,16 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(MaterialApp(theme: lightTheme, home: const ScanPage()));
+    await tester.pumpWidget(MaterialApp(
+      theme: lightTheme,
+      // Экран берёт подписи из локали, поэтому делегаты нужны и здесь.
+      // Язык задан прямо: проверяются русские подписи, а не системный язык
+      // машины, на которой запустили тест.
+      locale: const Locale('ru'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const ScanPage(),
+    ));
     // Не pumpAndSettle: полоса прицела бежит по кругу и не успокоится никогда.
     await tester.pump();
   }

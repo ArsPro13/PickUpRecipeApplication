@@ -943,6 +943,54 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Остаться'**
   String get profileStay;
+
+  /// Крестик в поле ввода. Читается голосовым помощником и всплывающей подсказкой.
+  ///
+  /// In ru, this message translates to:
+  /// **'Очистить'**
+  String get clear;
+
+  /// Заголовок экрана-вкладки, с которого начинается добавление пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код с пачки'**
+  String get scanTitle;
+
+  /// Код с пачки: подпись кадра-подсказки для голосового помощника. Живой камеры в кадре нет, он открывает сканер по нажатию.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть камеру'**
+  String get scanOpenCamera;
+
+  /// Код с пачки: подпись в углу кадра-подсказки.
+  ///
+  /// In ru, this message translates to:
+  /// **'нажмите, чтобы навести'**
+  String get scanTapToAim;
+
+  /// Код с пачки: где искать код на упаковке.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код мелкий — ищите его в углу пачки'**
+  String get scanCodeIsSmall;
+
+  /// Код с пачки: заголовок половины экрана с ручным вводом. Не запасной выход, а равноправный путь.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ввести код руками'**
+  String get scanManualTitle;
+
+  /// Код с пачки: кнопка под введённым кодом.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть рецепт'**
+  String get scanOpenRecipe;
+
+  /// Код с пачки: третий путь — распознать пачку по фотографии. Сейчас он самый частый, поэтому это кнопка, а не ссылка.
+  ///
+  /// In ru, this message translates to:
+  /// **'На пачке нет кода'**
+  String get scanNoCode;
 }
 
 class _AppLocalizationsDelegate

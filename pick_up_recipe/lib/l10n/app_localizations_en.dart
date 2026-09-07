@@ -554,4 +554,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileStay => 'Stay';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get scanTitle => 'The code from the pack';
+
+  @override
+  String get scanOpenCamera => 'Open the camera';
+
+  @override
+  String get scanTapToAim => 'tap to aim';
+
+  @override
+  String get scanCodeIsSmall =>
+      'The code is small — look for it in the corner of the pack';
+
+  @override
+  String get scanManualTitle => 'Enter the code by hand';
+
+  @override
+  String get scanOpenRecipe => 'Open the recipe';
+
+  @override
+  String get scanNoCode => 'There is no code on the pack';
 }

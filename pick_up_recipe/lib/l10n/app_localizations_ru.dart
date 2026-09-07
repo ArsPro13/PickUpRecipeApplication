@@ -573,4 +573,28 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get profileStay => 'Остаться';
+
+  @override
+  String get clear => 'Очистить';
+
+  @override
+  String get scanTitle => 'Код с пачки';
+
+  @override
+  String get scanOpenCamera => 'Открыть камеру';
+
+  @override
+  String get scanTapToAim => 'нажмите, чтобы навести';
+
+  @override
+  String get scanCodeIsSmall => 'Код мелкий — ищите его в углу пачки';
+
+  @override
+  String get scanManualTitle => 'Ввести код руками';
+
+  @override
+  String get scanOpenRecipe => 'Открыть рецепт';
+
+  @override
+  String get scanNoCode => 'На пачке нет кода';
 }

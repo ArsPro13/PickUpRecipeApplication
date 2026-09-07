@@ -20,6 +20,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/codes/domain/pack_code.dart';
 import '../general_widgets/app_icon.dart';
@@ -80,8 +81,10 @@ class _ScanPageState extends State<ScanPage> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Код с пачки')),
+      appBar: AppBar(title: Text(texts.scanTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.s5,
@@ -93,7 +96,7 @@ class _ScanPageState extends State<ScanPage> {
           _CameraFrame(onTap: _openCamera),
           const SizedBox(height: AppSpacing.s3),
           Text(
-            'Код мелкий — ищите его в углу пачки',
+            texts.scanCodeIsSmall,
             style: context.texts.bodySmall,
             textAlign: TextAlign.center,
           ),
@@ -110,7 +113,7 @@ class _ScanPageState extends State<ScanPage> {
           // сейчас больше, чем с кодом, и это главное действие экрана для
           // большинства, а не запасной выход после провала.
           AppButton(
-            label: 'На пачке нет кода',
+            label: texts.scanNoCode,
             icon: AppIcons.uiCamera,
             onPressed: _openCamera,
           ),
@@ -161,7 +164,7 @@ class _CameraFrameState extends State<_CameraFrame> with SingleTickerProviderSta
 
     return Semantics(
       button: true,
-      label: 'Открыть камеру',
+      label: AppLocalizations.of(context).scanOpenCamera,
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: AppRadius.large,
@@ -227,7 +230,10 @@ class _ScannerStatus extends StatelessWidget {
         children: [
           AppIcon(AppIcons.uiScan, size: AppSizes.icon16, color: ink),
           const SizedBox(width: AppSpacing.s2),
-          Text('нажмите, чтобы навести', style: context.texts.labelSmall?.copyWith(color: ink)),
+          Text(
+            AppLocalizations.of(context).scanTapToAim,
+            style: context.texts.labelSmall?.copyWith(color: ink),
+          ),
         ],
       ),
     );
@@ -380,6 +386,8 @@ class _ManualEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return QuietSurface(
       padding: const EdgeInsets.all(AppSpacing.s4),
       child: Column(
@@ -393,7 +401,7 @@ class _ManualEntry extends StatelessWidget {
               // заголовок не влезал в строку и вылезал за карточку.
               Expanded(
                 child: Text(
-                  'Ввести код руками',
+                  texts.scanManualTitle,
                   style: context.texts.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -449,7 +457,7 @@ class _ManualEntry extends StatelessWidget {
                 if (controller.text.isNotEmpty)
                   IconButton(
                     onPressed: onClear,
-                    tooltip: 'Очистить',
+                    tooltip: texts.clear,
                     icon: AppIcon(
                       AppIcons.uiClose,
                       size: AppSizes.icon20,
@@ -477,7 +485,7 @@ class _ManualEntry extends StatelessWidget {
           ],
           const SizedBox(height: AppSpacing.s3),
           AppButton(
-            label: 'Открыть рецепт',
+            label: texts.scanOpenRecipe,
             icon: AppIcons.uiForward,
             kind: AppButtonKind.secondary,
             onPressed: canSubmit ? onSubmit : null,

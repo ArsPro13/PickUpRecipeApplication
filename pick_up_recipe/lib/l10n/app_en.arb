@@ -281,5 +281,21 @@
 
   "profileLogoutPending": "There was no connection, and {count, plural, one{{count} item is} other{{count} items are}} waiting to be sent — ratings and recipe edits. Signing out will erase them along with the account.",
 
-  "profileStay": "Stay"
+  "profileStay": "Stay",
+
+  "clear": "Clear",
+
+  "scanTitle": "The code from the pack",
+
+  "scanOpenCamera": "Open the camera",
+
+  "scanTapToAim": "tap to aim",
+
+  "scanCodeIsSmall": "The code is small — look for it in the corner of the pack",
+
+  "scanManualTitle": "Enter the code by hand",
+
+  "scanOpenRecipe": "Open the recipe",
+
+  "scanNoCode": "There is no code on the pack"
 }
