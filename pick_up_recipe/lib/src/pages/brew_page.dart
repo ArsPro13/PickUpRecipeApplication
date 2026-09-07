@@ -155,8 +155,8 @@ class _BrewPageState extends ConsumerState<BrewPage>
 
     if (widget.autoStart && _engine.steps.isNotEmpty) {
       _engine.start();
-      _startFrames();
       _live.value = _engine.snapshot();
+      _syncFrames();
     }
   }
 
@@ -226,21 +226,20 @@ class _BrewPageState extends ConsumerState<BrewPage>
       _followActiveStep();
     }
 
-    if (next.isFinished) {
-      _stopFrames();
-      // Пока открыт экран возврата, на оценку не уводим: человек ещё не
-      // сказал, что заваривание вообще состоялось.
-      if (!_showResume) _scheduleRating();
-    }
+    // Кадры нужны только идущему завариванию: у ждущего шага и после финала
+    // картинка стоит на месте.
+    if (!next.isRunning) _stopFrames();
+
+    // Пока открыт экран возврата, на оценку не уводим: человек ещё не
+    // сказал, что заваривание вообще состоялось.
+    if (next.isFinished && !_showResume) _scheduleRating();
   }
 
   void _refresh() {
     if (!mounted) return;
     setState(() => _live.value = _engine.snapshot());
-    if (_snapshot.isFinished) {
-      _stopFrames();
-      if (!_showResume) _scheduleRating();
-    }
+    _syncFrames();
+    if (_snapshot.isFinished && !_showResume) _scheduleRating();
     _followActiveStep();
   }
 
@@ -322,15 +321,25 @@ class _BrewPageState extends ConsumerState<BrewPage>
   void _toggle() {
     if (!_engine.isStarted) {
       _engine.start();
-      _startFrames();
     } else if (_snapshot.status == BrewStatus.paused) {
       _engine.resume();
-      _startFrames();
     } else {
       _engine.pause();
-      _stopFrames();
     }
     _refresh();
+  }
+
+  /// Кадры идут только у идущего заваривания.
+  ///
+  /// До старта, на паузе, у шага, который ждёт человека, и после финала
+  /// перерисовывать нечего, а ждать человека можно долго — тикер всё это
+  /// время сажал бы батарею впустую.
+  void _syncFrames() {
+    if (_snapshot.isRunning) {
+      _startFrames();
+    } else {
+      _stopFrames();
+    }
   }
 
   void _startFrames() {
@@ -343,6 +352,12 @@ class _BrewPageState extends ConsumerState<BrewPage>
 
   void _skip() {
     _engine.skipCurrentStep();
+    _refresh();
+  }
+
+  /// «Сделал»: шаг, который ждал человека, закончен — время идёт дальше.
+  void _confirm() {
+    _engine.confirmCurrentStep();
     _refresh();
   }
 
@@ -563,6 +578,10 @@ class _BrewPageState extends ConsumerState<BrewPage>
                         BrewStatus.idle => params.hasPrep ? 'Смолол, начинаем' : 'Начать',
                         BrewStatus.running => 'Пауза',
                         BrewStatus.paused => 'Продолжить',
+                        // Шаг ждёт человека — и главная кнопка отвечает на
+                        // вопрос «куда нажимать, когда сделал». Раньше на
+                        // этом месте стояла «Пауза» при стоящем таймере.
+                        BrewStatus.awaitingUser => 'Сделал',
                         // Заваривание кончилось — дальше оценка, а не тупик.
                         // Кнопка «Готово», которая ничего не делает, была
                         // концом пути: рецепт заварен и забыт.
@@ -571,9 +590,14 @@ class _BrewPageState extends ConsumerState<BrewPage>
                       icon: switch (_snapshot.status) {
                         BrewStatus.finished => AppIcons.uiStar,
                         BrewStatus.running => AppIcons.uiPause,
+                        BrewStatus.awaitingUser => AppIcons.uiCheck,
                         _ => AppIcons.uiPlay,
                       },
-                      onPressed: _snapshot.isFinished ? _rate : _toggle,
+                      onPressed: switch (_snapshot.status) {
+                        BrewStatus.finished => _rate,
+                        BrewStatus.awaitingUser => _confirm,
+                        _ => _toggle,
+                      },
                     ),
                   ),
                   if (_engine.isStarted && !_snapshot.isFinished) ...[
@@ -582,11 +606,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
                       // У усилия и признака конец шага определяет человек,
                       // а не секундомер, — и кнопка называет это действие,
                       // а не извиняется словом «пропустить».
-                      label: switch (template) {
-                        BrewTemplate.press => 'Сделал',
-                        BrewTemplate.cue => 'Случилось',
-                        _ => 'Пропустить',
-                      },
+                      label: brewSkipLabel(current),
                       icon: AppIcons.uiForward,
                       kind: AppButtonKind.secondary,
                       block: false,
@@ -1013,16 +1033,25 @@ class _BrewFrame extends StatelessWidget {
                 const SizedBox(height: AppSpacing.s1),
                 // Доза и помол крупным кеглем таймера: до старта именно они
                 // и есть то, что читают с расстояния вытянутой руки.
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    _centralValue(),
-                    style: context.texts.displayLarge?.copyWith(
-                      height: 1,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                if (_waitingLabel() case final waiting?)
+                  Text(
+                    waiting,
+                    style: context.texts.headlineSmall,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                else
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      _centralValue(),
+                      style: context.texts.displayLarge?.copyWith(
+                        height: 1,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                   ),
-                ),
                 if (hint != null) ...[
                   const SizedBox(height: AppSpacing.s1),
                   Text(
@@ -1038,6 +1067,25 @@ class _BrewFrame extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Что стоит в центре рамки, когда таймера там нет.
+  ///
+  /// У шага «пока не скажете сделал» длительности не существует, и ноль на
+  /// главном месте экрана читается как сбой приложения. Если у шага задан
+  /// признак окончания — показываем признак: он и есть ответ на вопрос
+  /// «когда это кончится».
+  ///
+  /// null — ждать нечего, в центре будет число.
+  String? _waitingLabel() {
+    if (_isPrep || !step.endsByUser) return null;
+    if (snapshot.status == BrewStatus.finished) return null;
+
+    // Пока таймер-ориентир такого шага ещё идёт, в центре остаётся он:
+    // время человеку тоже нужно.
+    if (!snapshot.isAwaitingUser && step.duration > Duration.zero) return null;
+
+    return step.untilSign.isNotEmpty ? step.untilSign : 'ждём вас';
   }
 
   /// Крупное число в центре рамки. Что это за число — решает шаблон.
@@ -1092,8 +1140,13 @@ class _BrewFrame extends StatelessWidget {
       BrewStatus.idle => 'шаг ещё не начат',
       BrewStatus.running => 'осталось',
       BrewStatus.paused => 'на паузе',
+      BrewStatus.awaitingUser => 'нажмите «Сделал», когда закончите',
       BrewStatus.finished => 'готово',
     };
+
+    // У ждущего шага подпись — указание, куда нажимать; дописывать к нему
+    // граммы значит утопить указание в цифрах.
+    if (snapshot.isAwaitingUser) return head;
 
     return water == null ? head : '$head · $water';
   }
@@ -1420,6 +1473,30 @@ String brewPhaseOf(BrewStep step) {
     BrewStepType.grind || BrewStepType.addIce => 'подготовка',
     BrewStepType.serve || BrewStepType.dilute || BrewStepType.removeFilter => 'финал',
     _ => 'заваривание',
+  };
+}
+
+/// Надпись второй кнопки: чем закончить текущий шаг.
+///
+/// Раньше выбиралась по шаблону всего рецепта — и на шаге «пока не скажете
+/// сделал» получалось «Пропустить», то есть слово, обещающее выбросить шаг,
+/// а не подтвердить его. Шаблон отвечает за рецепт целиком, а на вопрос
+/// «что я делаю прямо сейчас» отвечает шаг.
+String brewSkipLabel(BrewStep step) {
+  // На ждущем шаге «Сделал» уже стоит на главной кнопке, и второй остаётся
+  // честный пропуск: шаг не сделан, а выброшен.
+  if (step.endsByUser) return 'Пропустить';
+
+  // Признак видно и слышно — «случилось» это про него.
+  if (step.untilSign.isNotEmpty) return 'Случилось';
+
+  return switch (step.type) {
+    // Усилие руки: конец шага определяет рука, а не секундомер.
+    BrewStepType.press ||
+    BrewStepType.invert ||
+    BrewStepType.flip =>
+      'Сделал',
+    _ => 'Пропустить',
   };
 }
 
