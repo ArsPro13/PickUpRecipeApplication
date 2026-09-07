@@ -3,7 +3,9 @@ import 'package:pick_up_recipe/core/offline/local_recipes.dart';
 import 'package:pick_up_recipe/core/offline/offline_cache.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
 import 'package:pick_up_recipe/core/offline/outbox.dart';
+import 'package:pick_up_recipe/core/offline/recipe_drafts.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
+import 'package:pick_up_recipe/src/features/recipes/application/rating_draft.dart';
 
 import 'authentication_state.dart';
 
@@ -107,6 +109,8 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
     // заваривают вдвоём, и чужая полка после смены аккаунта — хуже пустой.
     await OfflineCache.clearAll();
     await LocalRecipes.clear();
+    await RecipeDrafts.clear();
+    await RatingDrafts.clear();
     await Outbox.clear();
 
     state = state.copyWith(status: AuthState.needsAuthentication);

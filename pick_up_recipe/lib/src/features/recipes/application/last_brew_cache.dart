@@ -6,11 +6,18 @@
 //
 // Очереди отправки оценок здесь нет — это отдельная работа, и обещать её
 // экран офлайна не должен.
+//
+// Здесь же заводится черновик несохранённой версии. Не потому, что это одно и
+// то же, а потому, что момент один: экран заваривания зовёт этот кэш ровно
+// тогда, когда «начали заваривать», — и другого места, где видно рецепт,
+// с которым человек пошёл к чайнику, у приложения нет.
 
 import 'dart:convert';
 
 import 'package:encrypt_shared_preferences/provider.dart';
 
+import '../../../../core/library_revision.dart';
+import '../../../../core/offline/recipe_drafts.dart';
 import '../../packs/domain/models/pack_model.dart';
 import '../domain/models/recipe_data_model.dart';
 
@@ -37,6 +44,12 @@ abstract final class LastBrewCache {
         if (pack != null) 'pack': pack.toJson(),
       }),
     );
+
+    // Пошли заваривать — рецепт больше не должен пропасть, даже если его не
+    // сохраняли и заваривание бросили на втором шаге. Совпавший с уже
+    // сохранённой версией черновик отсеется при первом же чтении списка.
+    await RecipeDrafts.remember(recipe);
+    LibraryRevision.bump();
   }
 
   /// Последний рецепт, если он ещё не протух. null — показывать нечего.

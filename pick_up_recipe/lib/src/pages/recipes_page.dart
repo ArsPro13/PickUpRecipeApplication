@@ -15,6 +15,12 @@
 // Чего здесь нет: оценки. Она лежит в `/recipe/estimations` по одному запросу
 // на рецепт, и ради звезды в списке платить запросом за карточку рано —
 // на месте оценки стоит повтор заваривания.
+//
+// Про жест не написано, он показан: верхняя карточка первой стопки один раз
+// за сессию уходит вбок и возвращается. Прежняя подпись у точек объясняла
+// словами то, что делается пальцем, и всё равно читалась как их заголовок.
+// Когда движение в системе выключено, смысл держит подпись рядом с точками —
+// движение не может быть единственным носителем смысла.
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +53,13 @@ const double _deckScale = 0.045;
 
 /// Насколько далеко нужно увести карточку, чтобы она улетела, а не вернулась.
 const double _flyThreshold = 90;
+
+/// На сколько карточка отходит вбок, показывая, что её можно смахнуть.
+///
+/// Втрое меньше порога улёта — и это не запас, а условие: подсказка, дошедшая
+/// до порога, сама пролистала бы версию, и человек увидел бы не приглашение к
+/// жесту, а самопроизвольную перемотку.
+const double _hintShift = 30;
 
 @RoutePage()
 class RecipesPage extends ConsumerStatefulWidget {
@@ -149,6 +162,24 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
   }
 }
 
+/// Показывать ли жест движением.
+///
+/// Отдельной функцией, чтобы четыре условия проверялись тестом, а не на глаз:
+/// каждое из них — отдельный способ сделать список неприятным.
+///   • не первая группа — дёргались бы все стопки разом;
+///   • одна версия — жеста нет вовсе, и намекать на него значит соврать;
+///   • движение выключено в системе — тогда про жест говорит подпись у точек;
+///   • уже показали — подсказка при каждом взгляде это уже нервный тик.
+bool shouldHintSwipe({
+  required bool first,
+  required int versions,
+  required bool animationsDisabled,
+  required bool alreadyShown,
+}) {
+  if (alreadyShown || animationsDisabled) return false;
+  return first && versions > 1;
+}
+
 /// Одна группа: шапка и лента версий под ней.
 class _Group extends StatefulWidget {
   const _Group({
@@ -168,6 +199,11 @@ class _Group extends StatefulWidget {
 }
 
 class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
+  /// Подсказку показываем один раз за сессию, а не на каждом возврате к
+  /// списку: дёргающаяся при каждом взгляде карточка — это уже не подсказка,
+  /// а нервный тик.
+  static bool _hintShown = false;
+
   /// Полёт улетающей карточки и её же возврат на место. Один контроллер на
   /// оба движения: одновременно они случиться не могут.
   late final AnimationController _fly = AnimationController(
@@ -187,9 +223,47 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
   bool _flying = false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _hint());
+  }
+
+  @override
   void dispose() {
     _fly.dispose();
     super.dispose();
+  }
+
+  /// Показывает жест движением: карточка отходит вбок и возвращается.
+  ///
+  /// Тем же механизмом, что и палец, — иначе подсказка и настоящий свайп
+  /// разошлись бы в мелочах, и подсказка обещала бы не то движение.
+  void _hint() {
+    if (!mounted) return;
+    if (!shouldHintSwipe(
+      first: widget.first,
+      versions: widget.group.versions.length,
+      animationsDisabled: MediaQuery.disableAnimationsOf(context),
+      alreadyShown: _hintShown,
+    )) {
+      return;
+    }
+
+    _hintShown = true;
+    setState(() => _flying = true);
+
+    _animateDrag(
+      const Offset(-_hintShift, 0),
+      then: () {
+        if (!mounted) return;
+        _animateDrag(
+          Offset.zero,
+          then: () {
+            if (mounted) setState(() => _flying = false);
+          },
+        );
+      },
+    );
   }
 
   int _at(int offset) {
@@ -410,6 +484,14 @@ class _Pager extends StatelessWidget {
   final int count;
   final int index;
 
+  /// Подпись верхней версии.
+  ///
+  /// Обычно одно слово: про жест рассказывает сама карточка, отходя вбок.
+  /// С выключенными в системе анимациями она этого не делает — и тогда про
+  /// жест говорится словами, иначе смысл потерялся бы вместе с движением.
+  String _now(BuildContext context) =>
+      MediaQuery.disableAnimationsOf(context) ? 'сейчас · листается вбок' : 'сейчас';
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -429,7 +511,7 @@ class _Pager extends StatelessWidget {
         ],
         const SizedBox(width: AppSpacing.s3),
         Text(
-          index == 0 ? 'сейчас · смахните вбок' : 'версия ${index + 1} из $count',
+          index == 0 ? _now(context) : 'версия ${index + 1} из $count',
           style: context.texts.labelSmall,
         ),
       ],
@@ -485,8 +567,12 @@ class _VersionCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        latest ? 'так завариваю' : 'прошлая версия',
-                        style: context.texts.labelSmall,
+                        version.draft
+                            ? 'не сохранён'
+                            : (latest ? 'так завариваю' : 'прошлая версия'),
+                        style: context.texts.labelSmall?.copyWith(
+                          color: version.draft ? context.colors.primary : null,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.s2),
                       // Показатели метками, а не строкой текста: цвет метки

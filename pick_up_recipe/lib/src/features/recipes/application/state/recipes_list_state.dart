@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/library_revision.dart';
+import '../../../../../core/offline/recipe_drafts.dart';
 import '../../../brew_methods/application/brew_methods_state.dart';
 import '../../../brew_methods/data_sources/remote/brew_method_service.dart';
 import '../../data_sources/remote/recipe_service.dart';
@@ -19,6 +20,7 @@ class RecipeVersion {
     required this.date,
     required this.recipe,
     this.temperatureC,
+    this.draft = false,
   });
 
   /// Сам рецепт: с карточки его можно заварить снова, не ходя за ним заново.
@@ -43,6 +45,12 @@ class RecipeVersion {
   final String date;
 
   final double? temperatureC;
+
+  /// Версия изменена, но не сохранена: её заварили или начали заваривать прямо
+  /// из конструктора, не нажав «Сохранить». Карточка говорит об этом словом —
+  /// иначе такая версия выглядела бы обычной, и человек второй раз правил бы
+  /// то, что уже поправил.
+  final bool draft;
 }
 
 /// Группа истории — пара «кофе + метод» (ответ Q23b).
@@ -133,7 +141,14 @@ class RecipesListNotifier extends StateNotifier<RecipesListState> {
       }
 
       state = state.copyWith(
-        groups: groupRecipes(recipes, methodNames: names, methodIcons: icons),
+        groups: groupRecipes(
+          recipes,
+          methodNames: names,
+          methodIcons: icons,
+          // Отпечатки читаются после запроса: он же и вычищает те черновики,
+          // которые успели стать сохранёнными версиями.
+          draftKeys: RecipeDrafts.keys(),
+        ),
         isLoading: false,
       );
     } catch (error) {
@@ -150,10 +165,15 @@ class RecipesListNotifier extends StateNotifier<RecipesListState> {
 /// [methodNames] переводит slug прибора в человеческое название. Без него в
 /// карточке стоял бы `hario_v60` — именно так экран и выглядел, пока список
 /// не отдавал ни названия рецепта, ни справочника методов.
+/// [draftKeys] — отпечатки изменённых, но не сохранённых версий: по ним
+/// карточка получает пометку. Множеством отпечатков, а не идентификаторов:
+/// у незаконченной правки идентификатор тот же, что у версии, от которой её
+/// вели, — своего она не получала, потому что её не сохраняли.
 List<RecipeGroup> groupRecipes(
   List<RecipeData> recipes, {
   Map<String, String> methodNames = const {},
   Map<String, String> methodIcons = const {},
+  Set<String> draftKeys = const {},
 }) {
   final byKey = <String, List<RecipeData>>{};
 
@@ -189,6 +209,8 @@ List<RecipeGroup> groupRecipes(
                 date: recipe.date,
                 recipe: recipe,
                 temperatureC: recipe.temperature,
+                draft: draftKeys.isNotEmpty &&
+                    draftKeys.contains(recipeFingerprint(recipe)),
               ),
             )
             .toList(),
