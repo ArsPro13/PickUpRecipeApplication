@@ -1,142 +1,145 @@
+// Дата обжарки: набирается цифрами по маске дд.мм.гггг.
+//
+// Владелец назвал прежнее поле «покореженным», и по делу: в initState в него
+// подставлялась сама подпись, поэтому в значении поля стояло английское слово
+// вместо даты и оно же уезжало на сервер, где не разбиралось и подменялось
+// сегодняшним числом. Вдобавок нажатие ловили сразу два обработчика — свой у
+// поля и свой у обёртки, — и календарь открывался и тут же закрывался.
+//
+// Календаря здесь больше нет намеренно: Material берёт названия месяцев из
+// локали приложения, а русской локали в приложение ещё не завезли — календарь
+// остался бы единственным английским пятном на экране. Цифры с маской короче
+// и на телефоне набираются быстрее календаря на три года назад.
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-class DateInputField extends StatefulWidget {
-  final String hintText;
-  final TextEditingController controller;
+import 'package:pick_up_recipe/src/general_widgets/app_kit.dart';
+import 'package:pick_up_recipe/src/themes/app_theme.dart';
+import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 
-  const DateInputField(
-      {super.key, required this.hintText, required this.controller});
+/// Формат, в котором дата и показывается, и уезжает в запрос.
+final DateFormat packDateFormat = DateFormat('dd.MM.yyyy');
+
+/// Разбирает набранное. null — дата не набрана или набрана не полностью.
+DateTime? parsePackDate(String text) {
+  final trimmed = text.trim();
+  if (trimmed.length != 10) return null;
+
+  final parsed = packDateFormat.tryParseStrict(trimmed);
+  // Обжарка в будущем — почти всегда описка в годе: 2062 вместо 2026.
+  if (parsed == null || parsed.isAfter(DateTime.now())) return null;
+  return parsed;
+}
+
+class DateInputField extends StatefulWidget {
+  const DateInputField({
+    super.key,
+    required this.labelText,
+    required this.controller,
+    this.onEditingFinished,
+  });
+
+  final String labelText;
+  final TextEditingController controller;
+  final VoidCallback? onEditingFinished;
 
   @override
   State<DateInputField> createState() => _DateInputFieldState();
 }
 
-class _DateInputFieldState extends State<DateInputField>
-    with SingleTickerProviderStateMixin {
-  DateTime? selectedDate;
-  final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
-  late AnimationController _controller;
-  late Animation<double> _iconRotation;
-  bool isPickerVisible = false;
-  late Color _containerColor;
+class _DateInputFieldState extends State<DateInputField> {
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _iconRotation = Tween<double>(begin: 0.0, end: .5)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-
-    widget.controller.text = widget.hintText;
-  }
-
-  void _togglePicker() {
-    setState(() {
-      isPickerVisible = !isPickerVisible;
-      if (isPickerVisible) {
-        _controller.forward();
-        _containerColor = Theme.of(context).colorScheme.secondaryContainer;
-      } else {
-        _controller.reverse();
-        _containerColor = Theme.of(context).colorScheme.secondaryContainer;
-      }
-    });
-  }
-
-  void _onDateSelected(DateTime date) {
-    setState(() {
-      selectedDate = date;
-      widget.controller.text = _dateFormat.format(selectedDate!);
-      isPickerVisible = false;
-      _controller.reverse();
-      _containerColor = Theme.of(context).colorScheme.secondaryContainer;
-    });
+    _focusNode = FocusNode()..addListener(_onFocusChanged);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  void _onFocusChanged() {
+    if (!mounted || _focusNode.hasFocus) return;
+    widget.onEditingFinished?.call();
+  }
+
+  void _setToday() {
+    final today = packDateFormat.format(DateTime.now());
+    widget.controller.value = TextEditingValue(
+      text: today,
+      selection: TextSelection.collapsed(offset: today.length),
+    );
+    widget.onEditingFinished?.call();
   }
 
   @override
   Widget build(BuildContext context) {
-    _containerColor = Theme.of(context).colorScheme.secondaryContainer;
-    return GestureDetector(
-      onTap: _togglePicker,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondaryContainer,
-          borderRadius: BorderRadius.circular(15),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(widget.labelText, style: context.texts.labelSmall),
+        const SizedBox(height: AppSpacing.s1),
+        TextFormField(
+          controller: widget.controller,
+          focusNode: _focusNode,
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.next,
+          inputFormatters: [_DateMaskFormatter()],
+          onFieldSubmitted: (_) => widget.onEditingFinished?.call(),
+          style: context.texts.bodyMedium,
+          decoration: const InputDecoration(hintText: 'дд.мм.гггг'),
+          validator: (value) {
+            final text = value?.trim() ?? '';
+            // Пустое поле — не ошибка: дату обжарки печатают не на всякой
+            // пачке. Тогда сервер поставит сегодняшнее число.
+            if (text.isEmpty) return null;
+            return parsePackDate(text) == null ? 'Такой даты не бывает' : null;
+          },
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: AppSpacing.s2),
+        Row(
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              decoration: BoxDecoration(
-                color: _containerColor,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Row(
-                children: [
-                  RotationTransition(
-                    turns: _iconRotation,
-                    child: Icon(
-                      Icons.calendar_today,
-                      color: Theme.of(context).colorScheme.secondary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: SizedBox(
-                      height: 35,
-                      child: TextField(
-                        controller: widget.controller,
-                        onTap: _togglePicker,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          contentPadding: const EdgeInsets.only(top: 4),
-                          hintText: widget.hintText,
-                          hintStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary),
-                          border: InputBorder.none,
-                        ),
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
-                            fontSize: 16),
-                      ),
-                    ),
-                  ),
-                ],
+            Expanded(
+              child: Text(
+                'Не знаете — оставьте пустым, поставим сегодняшнюю',
+                style: context.texts.labelSmall,
               ),
             ),
-            SizeTransition(
-              sizeFactor: CurvedAnimation(
-                parent: _controller,
-                curve: Curves.easeInOut,
-              ),
-              child: Container(
-                margin: const EdgeInsets.only(top: 20),
-                child: CalendarDatePicker(
-                  initialDate: selectedDate ?? DateTime.now(),
-                  firstDate: DateTime(2010),
-                  lastDate: DateTime.now(),
-                  onDateChanged: _onDateSelected,
-                ),
-              ),
-            ),
+            const SizedBox(width: AppSpacing.s2),
+            AppChip(label: 'Сегодня', onTap: _setToday),
           ],
         ),
-      ),
+      ],
+    );
+  }
+}
+
+/// Точки расставляются сами: человек набирает восемь цифр подряд.
+class _DateMaskFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp('[^0-9]'), '');
+    final capped = digits.length > 8 ? digits.substring(0, 8) : digits;
+
+    final masked = StringBuffer();
+    for (var i = 0; i < capped.length; ++i) {
+      if (i == 2 || i == 4) masked.write('.');
+      masked.write(capped[i]);
+    }
+
+    final text = masked.toString();
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }

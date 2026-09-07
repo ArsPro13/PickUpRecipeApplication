@@ -1,10 +1,14 @@
-// Форма ручного добавления пачки: набор — это процесс, а не поток значений.
+// Форма ручного добавления пачки.
 //
-// Владелец увидел на карточке пачки «бразилия» единственный чип с буквой «м»
-// в разделе «Обжарщик обещает». Буква приехала не с карточки: форма клала в
-// состояние текст поля на каждое нажатие клавиши, а следующая перерисовка
-// возвращала этот огрызок обратно в поле. Человек печатал слово, в поле
-// оставалась первая буква, и она же уезжала на сервер.
+// Здесь проверяется то, на что жаловался владелец: набор — это процесс, а не
+// поток значений; на экране не должно быть английского; поля «Название» нет,
+// а «Регион» есть; дата доезжает до сервера; следующее поле появляется по
+// кнопке, а не само.
+//
+// Про «м» на карточке пачки: форма клала в состояние текст поля на каждое
+// нажатие клавиши, а следующая перерисовка возвращала огрызок обратно в поле.
+// Человек печатал слово, в поле оставалась первая буква, и она же уезжала
+// на сервер.
 
 import 'dart:convert';
 
@@ -89,6 +93,7 @@ void main() {
         ),
       ),
     );
+    // Не pumpAndSettle: рамка-подсказка над фотографией дышит без остановки.
     await tester.pump();
 
     return ProviderScope.containerOf(
@@ -96,12 +101,37 @@ void main() {
     );
   }
 
-  /// Поле дескриптора ищется по подписи, а не по ключу: тот же поиск должен
-  /// работать и на старом коде, иначе тест не докажет, что чинил настоящее.
-  Finder descriptorField(int number) => find.ancestor(
-        of: find.text('Descriptor $number'),
-        matching: find.byType(TextField),
+  Finder fieldByKey(String key) => find.descendant(
+        of: find.byKey(ValueKey(key)),
+        matching: find.byType(TextFormField),
       );
+
+  /// Что стоит в поле прямо сейчас. Через контроллер, а не через find.text:
+  /// бледная подсказка внутри поля остаётся в дереве и находится тоже.
+  String textOf(WidgetTester tester, String key) => tester
+      .widget<EditableText>(
+        find.descendant(
+          of: find.byKey(ValueKey(key)),
+          matching: find.byType(EditableText),
+        ),
+      )
+      .controller
+      .text;
+
+  Future<void> fill(WidgetTester tester, String key, String text) async {
+    await tester.enterText(fieldByKey(key), text);
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pump();
+  }
+
+  Future<Map<String, dynamic>> submit(WidgetTester tester) async {
+    await tester.ensureVisible(find.text('Отправить'));
+    await tester.tap(find.text('Отправить'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    return api.posts.firstWhere((call) => call.$1 == '/packs').$2;
+  }
 
   group('форма пачки без кода', () {
     testWidgets('посимвольный набор не кладёт в дескрипторы огрызки слова',
@@ -109,7 +139,7 @@ void main() {
       final container = await pumpForm(tester);
 
       for (final typed in ['м', 'ма', 'мал', 'мали', 'малин', 'малина']) {
-        await tester.enterText(descriptorField(1), typed);
+        await tester.enterText(fieldByKey('descriptor-0'), typed);
         await tester.pump();
 
         expect(
@@ -120,15 +150,13 @@ void main() {
       }
 
       // И поле не переписано огрызком: человек видит то, что набрал.
-      expect(find.text('малина'), findsOneWidget);
+      expect(textOf(tester, 'descriptor-0'), 'малина');
     });
 
     testWidgets('законченный ввод кладёт в форму слово целиком', (tester) async {
       final container = await pumpForm(tester);
 
-      await tester.enterText(descriptorField(1), 'малина');
-      await tester.testTextInput.receiveAction(TextInputAction.done);
-      await tester.pump();
+      await fill(tester, 'descriptor-0', 'малина');
 
       expect(container.read(formNotifierProvider).descriptors, ['малина']);
     });
@@ -136,17 +164,127 @@ void main() {
     testWidgets('однобуквенный дескриптор не уезжает на сервер', (tester) async {
       await pumpForm(tester);
 
-      await tester.enterText(descriptorField(1), 'м');
-      await tester.testTextInput.receiveAction(TextInputAction.done);
-      await tester.pump();
+      await fill(tester, 'country', 'Бразилия');
+      await fill(tester, 'descriptor-0', 'м');
 
+      expect((await submit(tester))['pack_descriptors'], isEmpty);
+    });
+
+    testWidgets('английского на экране не осталось', (tester) async {
+      await pumpForm(tester);
+
+      const english = [
+        'Add a new pack',
+        'Camera',
+        'Gallery',
+        'Name',
+        'Country',
+        'Variety',
+        'Descriptors',
+        'Processing methods',
+        'Roast date',
+      ];
+      for (final word in english) {
+        expect(find.text(word), findsNothing, reason: word);
+      }
+    });
+
+    testWidgets('поля «Название» нет, «Регион» есть и необязателен', (tester) async {
+      await pumpForm(tester);
+
+      expect(find.byKey(const ValueKey('region')), findsOneWidget);
+
+      // Одной страны достаточно, чтобы пачка уехала: регион не обязателен.
+      await fill(tester, 'country', 'Бразилия');
+      expect((await submit(tester))['pack_name'], 'Бразилия');
+    });
+
+    testWidgets('имя пачки собирается из страны и региона', (tester) async {
+      await pumpForm(tester);
+
+      await fill(tester, 'country', 'Бразилия');
+      await fill(tester, 'region', 'Серрадо');
+
+      expect((await submit(tester))['pack_name'], 'Бразилия · Серрадо');
+    });
+
+    testWidgets('без страны пачка не уезжает: имя было бы пустым', (tester) async {
+      await pumpForm(tester);
+
+      await fill(tester, 'descriptor-0', 'малина');
       await tester.ensureVisible(find.text('Отправить'));
       await tester.tap(find.text('Отправить'));
       await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
 
-      final sent = api.posts.firstWhere((call) => call.$1 == '/packs');
-      expect(sent.$2['pack_descriptors'], isEmpty);
+      expect(api.posts, isEmpty);
+      expect(find.text('Без страны пачку нечем назвать'), findsOneWidget);
+    });
+
+    testWidgets('дата обжарки доезжает до сервера', (tester) async {
+      await pumpForm(tester);
+
+      await fill(tester, 'country', 'Бразилия');
+      // Точки расставляются сами: человек набирает восемь цифр подряд.
+      await fill(tester, 'roast-date', '01092026');
+      expect(textOf(tester, 'roast-date'), '01.09.2026');
+
+      expect((await submit(tester))['pack_date'], '2026-09-01T00:00:00Z');
+    });
+
+    testWidgets('снимок пачки уезжает вместе с ней', (tester) async {
+      // Прозрачный пиксель в base64 — ровно то, что кладёт в форму камера.
+      const photo = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4'
+          '2mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+      final container = await pumpForm(tester);
+      await container.read(formNotifierProvider.notifier).updateImage(image: photo);
+      await tester.pump();
+
+      await fill(tester, 'country', 'Бразилия');
+
+      expect((await submit(tester))['pack_image'], photo);
+    });
+
+    testWidgets('на узком экране ничего не вылезает за край', (tester) async {
+      // 360 точек по ширине — самый тесный телефон, ради которого экран и
+      // проверяется. Шрифт в тестах шире настоящего, так что запас есть.
+      tester.view.physicalSize = const Size(360, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: lightTheme,
+            home: const Scaffold(
+              body: SingleChildScrollView(child: InsertingPackInfoWidget()),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Переполнение Flex приезжает исключением из разметки: молча оно только
+      // рисует жёлтую полоску в углу, которую в тесте никто не увидит.
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('следующее поле появляется по кнопке, а не само', (tester) async {
+      await pumpForm(tester);
+
+      await tester.enterText(fieldByKey('descriptor-0'), 'малина');
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey('descriptor-1')),
+        findsNothing,
+        reason: 'поле выскочило само, пока человек печатал',
+      );
+
+      await tester.ensureVisible(find.text('Добавить дескриптор'));
+      await tester.tap(find.text('Добавить дескриптор'));
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('descriptor-1')), findsOneWidget);
     });
   });
 }

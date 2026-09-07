@@ -3,9 +3,11 @@ import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inse
 
 abstract interface class PackInfoFormStateNotifier
     implements StateNotifier<PackInfoFormState> {
+  /// Отправить пачку на сервер. Имя пачки собирается из страны, региона и
+  /// сорта — отдельного поля под него в форме больше нет.
   Future<void> submitForm({
-    required String name,
     required String country,
+    required String region,
     required int scaScore,
     required String variety,
     required List<String>? processingMethod,
@@ -15,13 +17,13 @@ abstract interface class PackInfoFormStateNotifier
   });
 
   Future<void> updateForm({
-    required String name,
-    required String country,
-    required String scaScore,
-    required String variety,
-    required List<String> processingMethod,
-    required String roastDate,
-    required List<String> descriptors,
+    required String? country,
+    required String? region,
+    required String? scaScore,
+    required String? variety,
+    required List<String>? processingMethod,
+    required String? roastDate,
+    required List<String>? descriptors,
     required String? image,
   });
 

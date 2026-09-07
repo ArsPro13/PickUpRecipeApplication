@@ -9,8 +9,8 @@ class PackInfoFormStateMockedNotifierImpl
 
   @override
   Future<void> updateForm({
-    required String? name,
     required String? country,
+    required String? region,
     required String? scaScore,
     required String? variety,
     required List<String>? processingMethod,
@@ -20,21 +20,21 @@ class PackInfoFormStateMockedNotifierImpl
   }) async {
     state = state.copyWith(
       isSubmitting: false,
-      errorMessage: null,
-      name: name,
       country: country,
+      region: region,
       scaScore: scaScore,
       variety: variety,
       processingMethod: processingMethod,
       roastDate: roastDate,
       descriptors: descriptors,
+      image: image,
     );
   }
 
   @override
   Future<void> submitForm({
-    required String name,
     required String country,
+    required String region,
     required int scaScore,
     required String variety,
     required List<String>? processingMethod,
@@ -42,11 +42,11 @@ class PackInfoFormStateMockedNotifierImpl
     required List<String> descriptors,
     required String? image,
   }) async {
-    state = state.copyWith(isSubmitting: true, errorMessage: null);
+    state = state.copyWith(isSubmitting: true);
 
     try {
       await Future.delayed(const Duration(milliseconds: 3000));
-      state = state.copyWith(isSubmitting: false, errorMessage: null);
+      state = state.copyWith(isSubmitting: false, isSent: true);
     } catch (e) {
       state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
     }
@@ -54,71 +54,37 @@ class PackInfoFormStateMockedNotifierImpl
 
   @override
   Future<void> cleanForm() async {
-    await updateForm(
-      name: null,
-      country: null,
-      scaScore: null,
-      variety: null,
-      processingMethod: null,
-      roastDate: null,
-      descriptors: null,
-      image: null,
-    );
+    state = PackInfoFormState();
   }
 
   @override
   Future<void> updateImage({
     required String image,
   }) async {
-    state = state.copyWith(
-      image: image,
-    );
+    state = state.copyWith(image: image);
   }
 
   @override
   Future<void> startScanning() async {
-    state = state.copyWith(
-      isLoading: true,
-    );
+    state = state.copyWith(isLoading: true);
   }
 
   @override
   Future<void> finishScanning({String? error}) async {
-    state = state.copyWith(
-      isLoading: false,
-      imageErrorMessage: error,
-    );
+    state = state.copyWith(isLoading: false, imageErrorMessage: error);
   }
 
   @override
   Future<void> updateDescriptors({
     required List<String> descriptors,
   }) async {
-    state = state.copyWith(
-      name: state.name,
-      country: state.country,
-      descriptors: descriptors,
-      processingMethod: state.processingMethod,
-      roastDate: state.roastDate,
-      scaScore: state.scaScore,
-      variety: state.variety,
-      image: state.image,
-    );
+    state = state.copyWith(descriptors: descriptors);
   }
 
   @override
   Future<void> updateProcessingMethods({
     required List<String> processingMethods,
   }) async {
-    state = state.copyWith(
-      name: state.name,
-      country: state.country,
-      descriptors: state.descriptors,
-      processingMethod: processingMethods,
-      roastDate: state.roastDate,
-      scaScore: state.scaScore,
-      variety: state.variety,
-      image: state.image,
-    );
+    state = state.copyWith(processingMethod: processingMethods);
   }
 }
