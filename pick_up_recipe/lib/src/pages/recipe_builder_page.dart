@@ -25,6 +25,8 @@ import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/brew_methods/domain/brew_method.dart';
 import '../features/grinders/application/grinder_state.dart';
+import '../features/grinders/domain/grind_translation.dart';
+import '../features/grinders/domain/models/grinder_model.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
@@ -167,7 +169,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           ),
           const SizedBox(height: AppSpacing.s4),
         ],
-        _params(grinder?.name),
+        _params(grinder),
         const SizedBox(height: AppSpacing.s4),
         Row(
           children: [
@@ -252,7 +254,18 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
 
   // ── Параметры ────────────────────────────────────────────────────────────
 
-  Widget _params(String? grinderName) {
+  Widget _params(Grinder? grinder) {
+    // Помол показывается делением кофемолки человека (пункт 8): раньше на
+    // этой строке стояло значение grind_step, а у справочного рецепта оно
+    // пусто — оставался прочерк с подписью «средне-тонкий».
+    final grind = grindReading(
+      descriptorSlug: _recipe.grindDescriptor,
+      reference: ref.watch(grindDescriptorsProvider).valueOrNull ?? const [],
+      recipeGrinderId: _recipe.grinderId,
+      recipeGrindStep: _recipe.grindStep,
+      grinder: grinder,
+    );
+
     return HeroSurface(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,15 +313,19 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           _ParamRow(
             kind: MetricKind.grind,
             name: 'Помол',
-            caption: grinderName == null
-                ? (_recipe.grindDescriptor.isEmpty ? null : _recipe.grindDescriptor)
-                : '$grinderName, щелчки',
-            value: _recipe.grindStep.isEmpty ? '—' : _recipe.grindStep,
+            caption: grind.caption,
+            value: grind.isEmpty ? '—' : grind.label,
             changed: _changed('grind_step'),
             onTap: () => _editText(
               title: 'Помол',
               value: _recipe.grindStep,
-              apply: (value) => _recipe.grindStep = value,
+              // Человек правит помол в делениях своей кофемолки, поэтому
+              // вместе со значением запоминается и она: иначе следующая
+              // отрисовка снова показала бы пересчитанное «примерно».
+              apply: (value) {
+                _recipe.grindStep = value;
+                if (grinder != null) _recipe.grinderId = grinder.id;
+              },
             ),
           ),
           // Соотношение не правится: оно производное от дозы и воды, и дать
