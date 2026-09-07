@@ -100,15 +100,3 @@ ProfileStats buildProfileStats(List<RecipeGroup> groups, List<PackData> packs) {
     firstRecipeDate: earliest,
   );
 }
-
-/// «7 рецептов» — число со словом в нужном падеже.
-///
-/// Числительные здесь такие же, как в подписи стопки версий: «1 рецепт»,
-/// «2 рецепта», «5 рецептов». Без этого экран говорит «2 рецептов».
-String countWord(int count, String one, String few, String many) {
-  if (count % 10 == 1 && count % 100 != 11) return one;
-  if ([2, 3, 4].contains(count % 10) && !(count % 100 >= 12 && count % 100 <= 14)) {
-    return few;
-  }
-  return many;
-}

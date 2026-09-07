@@ -430,4 +430,128 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stepTypeNew => 'new';
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get profileStatsTitle => 'What you have gathered';
+
+  @override
+  String get profileCounting => 'Counting your packs and recipes…';
+
+  @override
+  String get profileNothingYet =>
+      'Nothing to count yet. Scan a pack and brew a recipe — your numbers will show up here.';
+
+  @override
+  String profileRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'recipes',
+      one: 'recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileVersions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'versions',
+      one: 'version',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profilePacks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'packs',
+      one: 'pack',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileCountries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'countries',
+      one: 'country',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileVarieties(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'varieties',
+      one: 'variety',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileFavourite => 'Most often';
+
+  @override
+  String profileFavouriteValue(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '$count recipe',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get profileFirstRecipe => 'First recipe';
+
+  @override
+  String get profileGrindersTitle => 'My grinders';
+
+  @override
+  String get profileNoGrinder =>
+      'No grinder selected. Without one a recipe shows grind size in words instead of the clicks of your grinder.';
+
+  @override
+  String get profileGrinderPrimary => 'primary';
+
+  @override
+  String get profileChooseGrinder => 'Choose a grinder';
+
+  @override
+  String get profileChangeGrinders => 'Change the set';
+
+  @override
+  String get profileAccountTitle => 'Account';
+
+  @override
+  String get profileLogout => 'Sign out';
+
+  @override
+  String get profileLogoutTitle => 'Sign out without sending?';
+
+  @override
+  String profileLogoutPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items are',
+      one: '$count item is',
+    );
+    return 'There was no connection, and $_temp0 waiting to be sent — ratings and recipe edits. Signing out will erase them along with the account.';
+  }
+
+  @override
+  String get profileStay => 'Stay';
 }

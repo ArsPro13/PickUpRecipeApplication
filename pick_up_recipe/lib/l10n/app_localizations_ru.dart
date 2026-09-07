@@ -435,4 +435,142 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get stepTypeNew => 'новый';
+
+  @override
+  String get profileTitle => 'Профиль';
+
+  @override
+  String get profileStatsTitle => 'Что накопилось';
+
+  @override
+  String get profileCounting => 'Считаем ваши пачки и рецепты…';
+
+  @override
+  String get profileNothingYet =>
+      'Пока считать нечего. Отсканируйте пачку и заварите по рецепту — здесь появятся ваши цифры.';
+
+  @override
+  String profileRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'рецептов',
+      many: 'рецептов',
+      few: 'рецепта',
+      one: 'рецепт',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileVersions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'версий',
+      many: 'версий',
+      few: 'версии',
+      one: 'версия',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profilePacks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'пачек',
+      many: 'пачек',
+      few: 'пачки',
+      one: 'пачка',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileCountries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'стран',
+      many: 'стран',
+      few: 'страны',
+      one: 'страна',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileVarieties(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'сортов',
+      many: 'сортов',
+      few: 'сорта',
+      one: 'сорт',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileFavourite => 'Чаще всего';
+
+  @override
+  String profileFavouriteValue(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count рецептов',
+      many: '$count рецептов',
+      few: '$count рецепта',
+      one: '$count рецепт',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get profileFirstRecipe => 'Первый рецепт';
+
+  @override
+  String get profileGrindersTitle => 'Мои кофемолки';
+
+  @override
+  String get profileNoGrinder =>
+      'Кофемолка не выбрана. Без неё рецепт показывает крупность словами, а не щелчками вашей кофемолки.';
+
+  @override
+  String get profileGrinderPrimary => 'основная';
+
+  @override
+  String get profileChooseGrinder => 'Выбрать кофемолку';
+
+  @override
+  String get profileChangeGrinders => 'Изменить набор';
+
+  @override
+  String get profileAccountTitle => 'Аккаунт';
+
+  @override
+  String get profileLogout => 'Выйти';
+
+  @override
+  String get profileLogoutTitle => 'Выйти, не отправив?';
+
+  @override
+  String profileLogoutPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count дел ждут',
+      many: '$count дел ждут',
+      few: '$count дела ждут',
+      one: '$count дело ждёт',
+    );
+    return 'Связи не было, и $_temp0 отправки — оценки и правки рецептов. Выход сотрёт их вместе с аккаунтом.';
+  }
+
+  @override
+  String get profileStay => 'Остаться';
 }

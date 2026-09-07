@@ -673,5 +673,153 @@
   "stepTypeNew": "новый",
   "@stepTypeNew": {
     "description": "Лист выбора типа: клетка, открывающая форму своего шага. Не тип, а выход за справочник."
+  },
+
+  "profileTitle": "Профиль",
+  "@profileTitle": {
+    "description": "Заголовок экрана профиля. Отдельно от подписи вкладки: там ярлык, здесь название экрана."
+  },
+
+  "profileStatsTitle": "Что накопилось",
+  "@profileStatsTitle": {
+    "description": "Профиль: заголовок раздела со счётом накопленного."
+  },
+
+  "profileCounting": "Считаем ваши пачки и рецепты…",
+  "@profileCounting": {
+    "description": "Профиль: списки ещё не приехали и сохранённого тоже нет — первый запуск."
+  },
+
+  "profileNothingYet": "Пока считать нечего. Отсканируйте пачку и заварите по рецепту — здесь появятся ваши цифры.",
+  "@profileNothingYet": {
+    "description": "Профиль: считать нечего — ни пачек, ни рецептов."
+  },
+
+  "profileRecipes": "{count, plural, one{рецепт} few{рецепта} many{рецептов} other{рецептов}}",
+  "@profileRecipes": {
+    "description": "Профиль: подпись под числом рецептов. Число стоит отдельной строкой крупным, здесь только слово в нужной форме — считает ICU, а не рука.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileVersions": "{count, plural, one{версия} few{версии} many{версий} other{версий}}",
+  "@profileVersions": {
+    "description": "Профиль: подпись под числом версий.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profilePacks": "{count, plural, one{пачка} few{пачки} many{пачек} other{пачек}}",
+  "@profilePacks": {
+    "description": "Профиль: подпись под числом пачек.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileCountries": "{count, plural, one{страна} few{страны} many{стран} other{стран}}",
+  "@profileCountries": {
+    "description": "Профиль: подпись под числом стран на полке.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileVarieties": "{count, plural, one{сорт} few{сорта} many{сортов} other{сортов}}",
+  "@profileVarieties": {
+    "description": "Профиль: подпись под числом сортов на полке.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileFavourite": "Чаще всего",
+  "@profileFavourite": {
+    "description": "Профиль: строка про прибор, которым рецептов сделано больше всего."
+  },
+
+  "profileFavouriteValue": "{name} · {count, plural, one{{count} рецепт} few{{count} рецепта} many{{count} рецептов} other{{count} рецептов}}",
+  "@profileFavouriteValue": {
+    "description": "Профиль: значение строки про любимый прибор — название и счёт рецептов под ним.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileFirstRecipe": "Первый рецепт",
+  "@profileFirstRecipe": {
+    "description": "Профиль: строка с датой самого раннего рецепта."
+  },
+
+  "profileGrindersTitle": "Мои кофемолки",
+  "@profileGrindersTitle": {
+    "description": "Профиль: заголовок раздела с кофемолками."
+  },
+
+  "profileNoGrinder": "Кофемолка не выбрана. Без неё рецепт показывает крупность словами, а не щелчками вашей кофемолки.",
+  "@profileNoGrinder": {
+    "description": "Профиль: кофемолок не выбрано ни одной, и чем это плохо."
+  },
+
+  "profileGrinderPrimary": "основная",
+  "@profileGrinderPrimary": {
+    "description": "Профиль: метка у той кофемолки, в щелчках которой пересчитываются рецепты."
+  },
+
+  "profileChooseGrinder": "Выбрать кофемолку",
+  "@profileChooseGrinder": {
+    "description": "Профиль: кнопка под списком, когда кофемолок нет."
+  },
+
+  "profileChangeGrinders": "Изменить набор",
+  "@profileChangeGrinders": {
+    "description": "Профиль: та же кнопка, когда кофемолки уже выбраны."
+  },
+
+  "profileAccountTitle": "Аккаунт",
+  "@profileAccountTitle": {
+    "description": "Профиль: заголовок раздела с выходом из аккаунта."
+  },
+
+  "profileLogout": "Выйти",
+  "@profileLogout": {
+    "description": "Профиль: выход из аккаунта. Одна строка на строку списка и на кнопку в вопросе перед выходом."
+  },
+
+  "profileLogoutTitle": "Выйти, не отправив?",
+  "@profileLogoutTitle": {
+    "description": "Профиль: заголовок вопроса перед выходом, когда в очереди отправки что-то есть."
+  },
+
+  "profileLogoutPending": "Связи не было, и {count, plural, one{{count} дело ждёт} few{{count} дела ждут} many{{count} дел ждут} other{{count} дел ждут}} отправки — оценки и правки рецептов. Выход сотрёт их вместе с аккаунтом.",
+  "@profileLogoutPending": {
+    "description": "Профиль: что человек потеряет, если выйдет с непустой очередью. Склонение считает ICU: рука знала два варианта и на двух делах говорила «2 дел ждут».",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileStay": "Остаться",
+  "@profileStay": {
+    "description": "Профиль: отказ от выхода в вопросе перед выходом."
   }
 }

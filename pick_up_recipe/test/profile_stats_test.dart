@@ -5,6 +5,7 @@
 // тот, кто станет считать, и после этого не поверит уже ни одной цифре.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations_ru.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 import 'package:pick_up_recipe/src/features/profile/application/profile_stats.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_list_state.dart';
@@ -152,13 +153,25 @@ void main() {
       expect(buildProfileStats(const [], [pack()]).isEmpty, isFalse);
     });
 
+    // Формы числительных считает ICU, а не экран. Проверяется всё равно
+    // здесь: правило то же самое, спрашивают его у другого исполнителя.
     test('числительные согласуются со счётом', () {
-      expect(countWord(1, 'рецепт', 'рецепта', 'рецептов'), 'рецепт');
-      expect(countWord(2, 'рецепт', 'рецепта', 'рецептов'), 'рецепта');
-      expect(countWord(5, 'рецепт', 'рецепта', 'рецептов'), 'рецептов');
-      expect(countWord(11, 'рецепт', 'рецепта', 'рецептов'), 'рецептов');
-      expect(countWord(21, 'рецепт', 'рецепта', 'рецептов'), 'рецепт');
-      expect(countWord(112, 'рецепт', 'рецепта', 'рецептов'), 'рецептов');
+      final ru = AppLocalizationsRu();
+
+      expect(ru.profileRecipes(1), 'рецепт');
+      expect(ru.profileRecipes(2), 'рецепта');
+      expect(ru.profileRecipes(5), 'рецептов');
+      expect(ru.profileRecipes(11), 'рецептов');
+      expect(ru.profileRecipes(21), 'рецепт');
+      expect(ru.profileRecipes(112), 'рецептов');
+    });
+
+    test('очередь перед выходом склоняется, а не «2 дел ждут»', () {
+      final ru = AppLocalizationsRu();
+
+      expect(ru.profileLogoutPending(1), contains('1 дело ждёт'));
+      expect(ru.profileLogoutPending(2), contains('2 дела ждут'));
+      expect(ru.profileLogoutPending(5), contains('5 дел ждут'));
     });
   });
 }

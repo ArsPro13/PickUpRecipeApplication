@@ -35,9 +35,17 @@ Map<String, String> _messages(Map<String, dynamic> arb) {
 /// английский текст вокруг них разный, а подстановки обязаны совпасть,
 /// иначе перевод упадёт при первом вызове.
 Set<String> _placeholders(String message) {
+  // Скобка, открывающая ветку множественного числа, подстановки не начинает:
+  // в `one{recipe}` в ней стоит английское слово. Иначе любая ветка из одного
+  // слова читалась бы как подстановка — и паритет не сходился бы никогда: в
+  // русской ветке на том же месте кириллица, а её этот разбор не видит.
+  final branches = RegExp(r'(?:zero|one|two|few|many|other|=\d+)\s*\{');
   final pattern = RegExp(r'\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*[,}]');
 
-  return pattern.allMatches(message).map((match) => match.group(1)!).toSet();
+  return pattern
+      .allMatches(message.replaceAll(branches, ''))
+      .map((match) => match.group(1)!)
+      .toSet();
 }
 
 void main() {
@@ -85,6 +93,14 @@ void main() {
           reason: 'ключ $key: подстановки разошлись',
         );
       }
+    });
+
+    test('ветка множественного числа — не подстановка', () {
+      expect(_placeholders('{count, plural, one{recipe} other{recipes}}'), {'count'});
+      expect(
+        _placeholders('{n, plural, one{{n} type} other{{n} types}} из {total}'),
+        {'n', 'total'},
+      );
     });
 
     test('у каждой подстановки описан тип', () {

@@ -811,6 +811,138 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'новый'**
   String get stepTypeNew;
+
+  /// Заголовок экрана профиля. Отдельно от подписи вкладки: там ярлык, здесь название экрана.
+  ///
+  /// In ru, this message translates to:
+  /// **'Профиль'**
+  String get profileTitle;
+
+  /// Профиль: заголовок раздела со счётом накопленного.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что накопилось'**
+  String get profileStatsTitle;
+
+  /// Профиль: списки ещё не приехали и сохранённого тоже нет — первый запуск.
+  ///
+  /// In ru, this message translates to:
+  /// **'Считаем ваши пачки и рецепты…'**
+  String get profileCounting;
+
+  /// Профиль: считать нечего — ни пачек, ни рецептов.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока считать нечего. Отсканируйте пачку и заварите по рецепту — здесь появятся ваши цифры.'**
+  String get profileNothingYet;
+
+  /// Профиль: подпись под числом рецептов. Число стоит отдельной строкой крупным, здесь только слово в нужной форме — считает ICU, а не рука.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{рецепт} few{рецепта} many{рецептов} other{рецептов}}'**
+  String profileRecipes(int count);
+
+  /// Профиль: подпись под числом версий.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{версия} few{версии} many{версий} other{версий}}'**
+  String profileVersions(int count);
+
+  /// Профиль: подпись под числом пачек.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{пачка} few{пачки} many{пачек} other{пачек}}'**
+  String profilePacks(int count);
+
+  /// Профиль: подпись под числом стран на полке.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{страна} few{страны} many{стран} other{стран}}'**
+  String profileCountries(int count);
+
+  /// Профиль: подпись под числом сортов на полке.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{сорт} few{сорта} many{сортов} other{сортов}}'**
+  String profileVarieties(int count);
+
+  /// Профиль: строка про прибор, которым рецептов сделано больше всего.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чаще всего'**
+  String get profileFavourite;
+
+  /// Профиль: значение строки про любимый прибор — название и счёт рецептов под ним.
+  ///
+  /// In ru, this message translates to:
+  /// **'{name} · {count, plural, one{{count} рецепт} few{{count} рецепта} many{{count} рецептов} other{{count} рецептов}}'**
+  String profileFavouriteValue(String name, int count);
+
+  /// Профиль: строка с датой самого раннего рецепта.
+  ///
+  /// In ru, this message translates to:
+  /// **'Первый рецепт'**
+  String get profileFirstRecipe;
+
+  /// Профиль: заголовок раздела с кофемолками.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мои кофемолки'**
+  String get profileGrindersTitle;
+
+  /// Профиль: кофемолок не выбрано ни одной, и чем это плохо.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кофемолка не выбрана. Без неё рецепт показывает крупность словами, а не щелчками вашей кофемолки.'**
+  String get profileNoGrinder;
+
+  /// Профиль: метка у той кофемолки, в щелчках которой пересчитываются рецепты.
+  ///
+  /// In ru, this message translates to:
+  /// **'основная'**
+  String get profileGrinderPrimary;
+
+  /// Профиль: кнопка под списком, когда кофемолок нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать кофемолку'**
+  String get profileChooseGrinder;
+
+  /// Профиль: та же кнопка, когда кофемолки уже выбраны.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить набор'**
+  String get profileChangeGrinders;
+
+  /// Профиль: заголовок раздела с выходом из аккаунта.
+  ///
+  /// In ru, this message translates to:
+  /// **'Аккаунт'**
+  String get profileAccountTitle;
+
+  /// Профиль: выход из аккаунта. Одна строка на строку списка и на кнопку в вопросе перед выходом.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выйти'**
+  String get profileLogout;
+
+  /// Профиль: заголовок вопроса перед выходом, когда в очереди отправки что-то есть.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выйти, не отправив?'**
+  String get profileLogoutTitle;
+
+  /// Профиль: что человек потеряет, если выйдет с непустой очередью. Склонение считает ICU: рука знала два варианта и на двух делах говорила «2 дел ждут».
+  ///
+  /// In ru, this message translates to:
+  /// **'Связи не было, и {count, plural, one{{count} дело ждёт} few{{count} дела ждут} many{{count} дел ждут} other{{count} дел ждут}} отправки — оценки и правки рецептов. Выход сотрёт их вместе с аккаунтом.'**
+  String profileLogoutPending(int count);
+
+  /// Профиль: отказ от выхода в вопросе перед выходом.
+  ///
+  /// In ru, this message translates to:
+  /// **'Остаться'**
+  String get profileStay;
 }
 
 class _AppLocalizationsDelegate

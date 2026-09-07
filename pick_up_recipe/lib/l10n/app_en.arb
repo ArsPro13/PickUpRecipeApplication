@@ -237,5 +237,49 @@
 
   "stepTypesStateful": "{name} · changes the state of the device",
 
-  "stepTypeNew": "new"
+  "stepTypeNew": "new",
+
+  "profileTitle": "Profile",
+
+  "profileStatsTitle": "What you have gathered",
+
+  "profileCounting": "Counting your packs and recipes…",
+
+  "profileNothingYet": "Nothing to count yet. Scan a pack and brew a recipe — your numbers will show up here.",
+
+  "profileRecipes": "{count, plural, one{recipe} other{recipes}}",
+
+  "profileVersions": "{count, plural, one{version} other{versions}}",
+
+  "profilePacks": "{count, plural, one{pack} other{packs}}",
+
+  "profileCountries": "{count, plural, one{country} other{countries}}",
+
+  "profileVarieties": "{count, plural, one{variety} other{varieties}}",
+
+  "profileFavourite": "Most often",
+
+  "profileFavouriteValue": "{name} · {count, plural, one{{count} recipe} other{{count} recipes}}",
+
+  "profileFirstRecipe": "First recipe",
+
+  "profileGrindersTitle": "My grinders",
+
+  "profileNoGrinder": "No grinder selected. Without one a recipe shows grind size in words instead of the clicks of your grinder.",
+
+  "profileGrinderPrimary": "primary",
+
+  "profileChooseGrinder": "Choose a grinder",
+
+  "profileChangeGrinders": "Change the set",
+
+  "profileAccountTitle": "Account",
+
+  "profileLogout": "Sign out",
+
+  "profileLogoutTitle": "Sign out without sending?",
+
+  "profileLogoutPending": "There was no connection, and {count, plural, one{{count} item is} other{{count} items are}} waiting to be sent — ratings and recipe edits. Signing out will erase them along with the account.",
+
+  "profileStay": "Stay"
 }
