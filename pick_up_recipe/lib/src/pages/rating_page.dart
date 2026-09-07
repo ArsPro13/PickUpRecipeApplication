@@ -19,6 +19,12 @@
 // Это не бланк SCA: там десять признаков с шагом 0,25 и нет горечи вовсе,
 // а у нас на ней держатся правила. Режим каппинга, если понадобится, —
 // отдельный экран.
+//
+// Всё натыканное переживает выход: экран пишет черновик в `RatingDrafts` и
+// поднимает его обратно при возврате. Оценку ставят отвлекаясь, и потерянная
+// половина работы не восстанавливается — чашка уже выпита.
+
+import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +34,7 @@ import '../../core/offline/network_status.dart';
 import '../../core/offline/offline_exception.dart';
 import '../../routing/app_router.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/rating_draft.dart';
 import '../features/recipes/domain/models/correction_model.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
@@ -75,9 +82,92 @@ class _RatingPageState extends ConsumerState<RatingPage> {
   double _bitterness = 5;
   double _sweetness = 5;
 
+  /// Отложенная запись черновика.
+  ///
+  /// Точку карты ведут пальцем, и запись на каждом кадре означала бы полсотни
+  /// обращений к хранилищу за один жест. Пишем, когда рука остановилась.
+  Timer? _draftWrite;
+
   /// Звёзды 1…5 → шкала 0…10, в которой живёт recipes_estimations.
   /// null — звёзд не ставили.
   double? get _overall => _stars == 0 ? null : _stars * 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreDraft();
+  }
+
+  @override
+  void dispose() {
+    // Уходят с этого экрана чаще всего именно посреди оценки — дописываем то,
+    // что не успел отложенный таймер, иначе последнее движение пропадёт.
+    if (_draftWrite?.isActive ?? false) {
+      _draftWrite!.cancel();
+      unawaited(RatingDrafts.save(_draft()));
+    }
+    super.dispose();
+  }
+
+  /// Поднимает незаконченную оценку этой же чашки.
+  ///
+  /// Сверяем и рецепт, и пачку: базовый рецепт обжарщика один на всех, и
+  /// перенести на другую пачку чужую половину оценки было бы хуже, чем
+  /// потерять её.
+  Future<void> _restoreDraft() async {
+    final draft = await RatingDrafts.load();
+    if (!mounted || draft == null) return;
+    if (draft.recipe.id != widget.recipe.id) return;
+    if (draft.pack?.packId != widget.pack?.packId) return;
+
+    setState(() {
+      _point = draft.point;
+      _stars = draft.stars;
+      for (final axis in draft.axes.entries) {
+        _touched.add(axis.key);
+        switch (axis.key) {
+          case 'aroma':
+            _aroma = axis.value;
+          case 'flavor':
+            _flavor = axis.value;
+          case 'aftertaste':
+            _aftertaste = axis.value;
+          case 'acidity':
+            _acidity = axis.value;
+          case 'bitterness':
+            _bitterness = axis.value;
+          case 'sweetness':
+            _sweetness = axis.value;
+        }
+      }
+    });
+  }
+
+  RatingDraft _draft() => RatingDraft(
+        recipe: widget.recipe,
+        pack: widget.pack,
+        point: _point,
+        stars: _stars,
+        axes: {
+          for (final axis in _touched) axis: _axisValue(axis),
+        },
+        savedAt: DateTime.now(),
+      );
+
+  double _axisValue(String axis) => switch (axis) {
+        'aroma' => _aroma,
+        'flavor' => _flavor,
+        'aftertaste' => _aftertaste,
+        'acidity' => _acidity,
+        'bitterness' => _bitterness,
+        _ => _sweetness,
+      };
+
+  /// Запомнить сказанное — не сразу, а как только рука остановится.
+  void _remember() {
+    _draftWrite?.cancel();
+    _draftWrite = Timer(AppDuration.slow, () => RatingDrafts.save(_draft()));
+  }
 
   /// Отправляет оценку; [wantCorrection] — ещё и открыть рецепт с поправкой.
   ///
@@ -114,6 +204,10 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         overall: _overall,
         comment: _point.isCenter ? '' : _point.summary,
       );
+
+      // Оценка уехала (или встала в очередь) — продолжать больше нечего.
+      _draftWrite?.cancel();
+      await RatingDrafts.clear();
 
       if (!mounted) return;
 
@@ -190,6 +284,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
       change();
       _touched.add(axis);
     });
+    _remember();
   }
 
   void _say(String text) {
@@ -215,23 +310,34 @@ class _RatingPageState extends ConsumerState<RatingPage> {
           padding: const EdgeInsets.all(AppSpacing.s4),
           child: TasteMap(
             point: _point,
-            onChanged: (point) => setState(() => _point = point),
+            onChanged: (point) {
+              setState(() => _point = point);
+              _remember();
+            },
           ),
         ),
 
         const SizedBox(height: AppSpacing.s3),
         _SummaryLine(
           point: _point,
-          onReset: _point.isCenter ? null : () => setState(() => _point = TastePoint.center),
+          onReset: _point.isCenter
+              ? null
+              : () {
+                  setState(() => _point = TastePoint.center);
+                  _remember();
+                },
         ),
 
         const SizedBox(height: AppSpacing.s3),
         _Stars(
           value: _stars,
-          onChanged: (value) => setState(() {
-            _stars = value;
-            _error = null;
-          }),
+          onChanged: (value) {
+            setState(() {
+              _stars = value;
+              _error = null;
+            });
+            _remember();
+          },
         ),
 
         if (_error != null) ...[
@@ -312,7 +418,10 @@ class _RatingPageState extends ConsumerState<RatingPage> {
             loading: _busy,
             onPressed: _busy ? null : () => _submit(wantCorrection: true),
           ),
-          const SizedBox(height: AppSpacing.s3),
+          // Своей распорки здесь нет: панель уже разводит соседей на
+          // AppSpacing.s2, и стоявший тут s3 только складывался с ним —
+          // выходило двадцать восемь точек, из-за которых вторая кнопка
+          // прижималась к нижней навигации.
           AppButton(
             label: 'Просто сохранить отзыв',
             kind: AppButtonKind.secondary,
@@ -339,7 +448,7 @@ class TasteMap extends StatelessWidget {
 
         void report(Offset local) {
           // Точка карты — доля от половины стороны: (0,0) в центре,
-          // ±1 у края. Ось Y перевёрнута: вверх на экране — это «крепче».
+          // ±1 у края. Ось Y перевёрнута: вверх на экране — это «крепко».
           final half = size / 2;
           onChanged(
             TastePoint(
@@ -439,9 +548,12 @@ class _TasteMapPainter extends CustomPainter {
     _label(canvas, 'кисло', Offset(center.dx - field - AppSpacing.s2, center.dy), ink,
         align: TextAlign.right, anchorRight: true);
     _label(canvas, 'горько', Offset(center.dx + field + AppSpacing.s2, center.dy), ink);
-    _label(canvas, 'крепче', Offset(center.dx, center.dy - field - AppSpacing.s5), ink,
+    // Все четыре подписи — наречия, одной частью речи. «Крепче» и «слабее»
+    // рядом с «кисло» и «горько» читались как два разных вопроса на одном
+    // круге: одна ось спрашивала «по сравнению с чем», вторая — «какое».
+    _label(canvas, 'крепко', Offset(center.dx, center.dy - field - AppSpacing.s5), ink,
         centered: true);
-    _label(canvas, 'слабее', Offset(center.dx, center.dy + field + AppSpacing.s3), ink,
+    _label(canvas, 'слабо', Offset(center.dx, center.dy + field + AppSpacing.s3), ink,
         centered: true);
 
     if (point.isCenter) return;

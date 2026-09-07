@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
+import 'package:pick_up_recipe/core/library_revision.dart';
 import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/core/offline/local_recipes.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
 import 'package:pick_up_recipe/core/offline/outbox.dart';
+import 'package:pick_up_recipe/core/offline/recipe_drafts.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/correction_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
@@ -111,9 +113,17 @@ class RecipeService {
           recipes.add(RecipeData.fromResponse(recipeResponseData));
         }
 
+        final unsent = LocalRecipes.all();
+
+        // Черновик, догнавший сохранённую версию, перестаёт быть черновиком.
+        // Проверка стоит здесь, на чтении списка: другого места, где видно и
+        // серверные версии, и свои, у приложения нет.
+        await RecipeDrafts.forgetKnown([...recipes, ...unsent]);
+
         return withUnsentRecipes(
           recipes,
-          LocalRecipes.all(),
+          unsent,
+          drafts: RecipeDrafts.all(),
           packId: packId,
           device: device,
         );
@@ -169,11 +179,17 @@ class RecipeService {
       if (response.statusCode != 200) {
         throw Exception('Оценка не сохранилась: ${response.statusCode}');
       }
+
+      // Оценку ставят с отдельного экрана, а видно её в списках. Сигнал
+      // подаётся отсюда, а не с экрана: путей к сохранению несколько
+      // (обычный, офлайн, досыл очереди), и списку важен любой из них.
+      LibraryRevision.bump();
     } on OfflineException {
       // Оценку ставят сразу после чашки и ровно там, где заваривали, — то
       // есть чаще всего без сети. Потерять её значит потерять единственное,
       // ради чего человек вернулся к экрану.
       await Outbox.enqueueEstimation(payload);
+      LibraryRevision.bump();
     }
   }
 
@@ -216,6 +232,11 @@ class RecipeService {
       }
 
       final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+
+      // Новая версия обязана появиться в «Рецептах» и в метках на карточке
+      // пачки сама — человек сохранил её и переключил вкладку.
+      LibraryRevision.bump();
+
       return (data['id'] as num?)?.toInt() ?? recipe.id;
     } on OfflineException {
       // Версия встаёт в очередь и получает отрицательный идентификатор.
@@ -231,6 +252,7 @@ class RecipeService {
       final localId = await Outbox.enqueueEvolve(payload);
       local.id = localId;
       await LocalRecipes.add(local);
+      LibraryRevision.bump();
 
       return localId;
     }
@@ -245,6 +267,7 @@ class RecipeService {
 List<RecipeData> withUnsentRecipes(
   List<RecipeData> fromServer,
   List<RecipeData> unsentAll, {
+  List<RecipeData> drafts = const [],
   int? packId,
   String? device,
 }) {
@@ -254,10 +277,19 @@ List<RecipeData> withUnsentRecipes(
     return true;
   }).toList();
 
-  if (unsent.isEmpty) return fromServer;
+  // Незаконченные правки идут следом за неотправленными и перед серверными:
+  // это самое свежее, что человек делал, но самое неготовое из всего списка.
+  final unsaved = unsavedDrafts(
+    drafts,
+    [...fromServer, ...unsent],
+    packId: packId,
+    device: device,
+  );
+
+  if (unsent.isEmpty && unsaved.isEmpty) return fromServer;
 
   // Свои неотправленные — сверху: они самые свежие по определению.
-  return [...unsent, ...fromServer];
+  return [...unsent, ...unsaved, ...fromServer];
 }
 
 /// Тело запроса на сохранение версии.

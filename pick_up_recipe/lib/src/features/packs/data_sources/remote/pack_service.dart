@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:pick_up_recipe/core/api_client.dart';
+import 'package:pick_up_recipe/core/library_revision.dart';
 import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
@@ -182,6 +183,10 @@ class PackService {
 
       final data = PackResponseBodyModel.fromJson(json.decode(response.body));
 
+      // Полка обязана показать новую пачку сама: человек добавляет её и
+      // возвращается на первую вкладку, а не тянет список вниз.
+      LibraryRevision.bump();
+
       return PackData.fromResponse(data);
     } catch (e) {
       logger.e('Error adding pack', error: e);
@@ -199,6 +204,7 @@ class PackService {
       }
 
       logger.i('Pack updated successfully.');
+      LibraryRevision.bump();
     } catch (e) {
       logger.e('Error updating pack', error: e);
       rethrow;
@@ -215,6 +221,7 @@ class PackService {
       }
 
       logger.i('Pack deleted successfully.');
+      LibraryRevision.bump();
     } catch (e) {
       logger.e('Error deleting pack', error: e);
       rethrow;

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pick_up_recipe/core/library_revision.dart';
 import 'package:pick_up_recipe/src/features/packs/application/state/active_packs_state_notifier.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 
@@ -20,5 +21,13 @@ class ActivePacksState {
 
 final activePacksNotifierProvider =
     StateNotifierProvider<ActivePacksStateNotifier, ActivePacksState>(
-  (ref) => ActivePacksStateNotifier(),
+  (ref) {
+    final notifier = ActivePacksStateNotifier();
+
+    // Тот же способ, что у списка рецептов: новая пачка или новое заваривание
+    // поднимают `LibraryRevision`, и полка перечитывает себя сама.
+    ref.listen<int>(libraryRevisionProvider, (_, __) => notifier.fetchPacks());
+
+    return notifier;
+  },
 );

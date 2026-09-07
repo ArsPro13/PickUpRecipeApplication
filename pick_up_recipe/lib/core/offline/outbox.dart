@@ -19,6 +19,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
 import '../api_client.dart';
+import '../library_revision.dart';
 import '../logger.dart';
 import 'local_recipes.dart';
 import 'offline_exception.dart';
@@ -350,6 +351,11 @@ abstract final class Outbox {
     } finally {
       _flushing = false;
     }
+
+    // Досыл меняет ровно то, что видно в списках: локальные версии становятся
+    // серверными, оценки перестают ждать. Тем же сигналом, что и всё
+    // остальное, — иначе после возвращения сети список остался бы вчерашним.
+    if (sent > 0 || dropped > 0) LibraryRevision.bump();
 
     return OutboxReport(sent: sent, dropped: dropped, left: queue.length);
   }
