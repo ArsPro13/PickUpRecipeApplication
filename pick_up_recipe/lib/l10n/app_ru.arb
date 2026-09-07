@@ -29,5 +29,430 @@
         "type": "int"
       }
     }
+  },
+
+  "authCreateAccount": "Создать аккаунт",
+  "@authCreateAccount": {
+    "description": "Кнопка и заголовок: завести новый аккаунт. Одна строка на приветствие и регистрацию."
+  },
+
+  "authSignIn": "Войти",
+  "@authSignIn": {
+    "description": "Кнопка входа. Стоит на приветствии, на входе и под формой регистрации."
+  },
+
+  "fieldEmail": "Почта",
+  "@fieldEmail": {
+    "description": "Подпись поля адреса — на входе, регистрации и восстановлении пароля."
+  },
+
+  "fieldPassword": "Пароль",
+  "@fieldPassword": {
+    "description": "Подпись поля пароля на входе и регистрации."
+  },
+
+  "welcomeTagline": "Рецепт от того, кто жарил это зерно",
+  "@welcomeTagline": {
+    "description": "Приветствие: строка под названием приложения."
+  },
+
+  "welcomeKeepsTitle": "Аккаунт хранит",
+  "@welcomeKeepsTitle": {
+    "description": "Приветствие: заголовок списка того, что даёт аккаунт."
+  },
+
+  "welcomeKeepsRecipes": "Ваши рецепты",
+  "@welcomeKeepsRecipes": {
+    "description": "Приветствие: первое, что хранит аккаунт."
+  },
+
+  "welcomeKeepsRecipesNote": "версии переживают смену телефона",
+  "@welcomeKeepsRecipesNote": {
+    "description": "Приветствие: пояснение к рецептам."
+  },
+
+  "welcomeKeepsGrinder": "Кофемолку",
+  "@welcomeKeepsGrinder": {
+    "description": "Приветствие: второе, что хранит аккаунт."
+  },
+
+  "welcomeKeepsGrinderNote": "помол пересчитывается в ваши щелчки",
+  "@welcomeKeepsGrinderNote": {
+    "description": "Приветствие: пояснение к кофемолке."
+  },
+
+  "welcomeKeepsPacks": "Историю пачек",
+  "@welcomeKeepsPacks": {
+    "description": "Приветствие: третье, что хранит аккаунт."
+  },
+
+  "welcomeKeepsPacksNote": "что и как заваривали полгода назад",
+  "@welcomeKeepsPacksNote": {
+    "description": "Приветствие: пояснение к истории пачек."
+  },
+
+  "loginTitle": "Вход",
+  "@loginTitle": {
+    "description": "Заголовок экрана входа. Отдельно от кнопки: заголовок называет экран, кнопка — действие."
+  },
+
+  "loginForgot": "Забыли пароль?",
+  "@loginForgot": {
+    "description": "Вход: ссылка на восстановление пароля."
+  },
+
+  "loginNoAccount": "Нет аккаунта?",
+  "@loginNoAccount": {
+    "description": "Вход: вопрос в строке перехода на регистрацию."
+  },
+
+  "loginCreate": "Создать",
+  "@loginCreate": {
+    "description": "Вход: действие в строке перехода на регистрацию."
+  },
+
+  "registerRepeat": "Ещё раз",
+  "@registerRepeat": {
+    "description": "Регистрация: подпись поля повтора пароля."
+  },
+
+  "registerPasswordRule": "не короче {length} знаков",
+  "@registerPasswordRule": {
+    "description": "Регистрация: правило пароля под полем. Длину задаёт сервер, поэтому она подставляется, а не вписана в строку.",
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+
+  "registerNextMail": "Дальше — письмо с кодом",
+  "@registerNextMail": {
+    "description": "Регистрация: что произойдёт после нажатия кнопки."
+  },
+
+  "registerNextMailNote": "шесть знаков, чтобы подтвердить адрес",
+  "@registerNextMailNote": {
+    "description": "Регистрация: пояснение к письму с кодом."
+  },
+
+  "registerHaveAccount": "Уже есть аккаунт?",
+  "@registerHaveAccount": {
+    "description": "Регистрация: вопрос в строке перехода на вход."
+  },
+
+  "registerConsentRequired": "Без согласия зарегистрировать аккаунт нельзя",
+  "@registerConsentRequired": {
+    "description": "Регистрация: отметки согласия нет, а без неё регистрация невозможна."
+  },
+
+  "registerTermsUnavailable": "Не удалось загрузить условия. Проверьте связь и попробуйте ещё раз.",
+  "@registerTermsUnavailable": {
+    "description": "Регистрация: редакцию документов не удалось получить с сервера, а без неё согласие ничего не доказывает."
+  },
+
+  "consentPrefix": "Соглашаюсь с ",
+  "@consentPrefix": {
+    "description": "Регистрация: начало строки согласия. Дальше идут две ссылки, поэтому строка обрывается пробелом."
+  },
+
+  "consentPrivacy": "политикой обработки данных",
+  "@consentPrivacy": {
+    "description": "Регистрация: ссылка на политику обработки данных внутри строки согласия."
+  },
+
+  "consentAnd": " и ",
+  "@consentAnd": {
+    "description": "Регистрация: союз между двумя ссылками в строке согласия. Пробелы по краям обязательны."
+  },
+
+  "consentAgreement": "пользовательским соглашением",
+  "@consentAgreement": {
+    "description": "Регистрация: ссылка на пользовательское соглашение внутри строки согласия."
+  },
+
+  "verifyTitle": "Подтвердите почту",
+  "@verifyTitle": {
+    "description": "Заголовок экрана подтверждения почты."
+  },
+
+  "verifySubtitle": "Отправили код из шести знаков",
+  "@verifySubtitle": {
+    "description": "Подтверждение почты: что человек должен искать в письме."
+  },
+
+  "verifyChangeEmail": "Изменить адрес",
+  "@verifyChangeEmail": {
+    "description": "Подтверждение почты: подпись карандаша рядом с адресом. Читается голосовым помощником."
+  },
+
+  "verifyConfirm": "Подтвердить",
+  "@verifyConfirm": {
+    "description": "Подтверждение почты: главная кнопка."
+  },
+
+  "verifyNotArrived": "Не пришёл?",
+  "@verifyNotArrived": {
+    "description": "Подтверждение почты: вопрос перед кнопкой повторной отправки. Речь о коде."
+  },
+
+  "verifySending": "Отправляем…",
+  "@verifySending": {
+    "description": "Подтверждение почты: письмо в пути, кнопка занята."
+  },
+
+  "verifyResend": "Отправить код ещё раз",
+  "@verifyResend": {
+    "description": "Подтверждение почты: кнопка повторной отправки, когда её уже можно нажать."
+  },
+
+  "verifyResendIn": "Ещё раз через {time}",
+  "@verifyResendIn": {
+    "description": "Подтверждение почты: та же кнопка, пока идёт отсчёт. {time} — остаток в виде м:сс.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "verifySentAgain": "Отправили ещё одно письмо",
+  "@verifySentAgain": {
+    "description": "Подтверждение почты: повторная отправка удалась."
+  },
+
+  "verifyTooOften": "Письмо уже уходило. Следующее — через {time}",
+  "@verifyTooOften": {
+    "description": "Подтверждение почты: сервер отказал по частоте. Человеку нужен срок, а не слово «часто».",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "verifyAddressRejected": "Сервер не принял этот адрес. Проверьте, тот ли он",
+  "@verifyAddressRejected": {
+    "description": "Подтверждение почты: сервер отверг сам запрос, а не почту."
+  },
+
+  "verifyHelpTitle": "Если письмо не пришло",
+  "@verifyHelpTitle": {
+    "description": "Подтверждение почты: заголовок списка того, что делать без письма."
+  },
+
+  "verifyHelpSpam": "Загляните в «Спам»",
+  "@verifyHelpSpam": {
+    "description": "Подтверждение почты: первая причина, по которой письма не видно."
+  },
+
+  "verifyHelpSpamNote": "отправитель новый, и почта его ещё не знает",
+  "@verifyHelpSpamNote": {
+    "description": "Подтверждение почты: пояснение про папку со спамом."
+  },
+
+  "verifyHelpWait": "Подождите минуту",
+  "@verifyHelpWait": {
+    "description": "Подтверждение почты: вторая причина — письмо ещё в пути."
+  },
+
+  "verifyHelpWaitNote": "письмо идёт не мгновенно, обычно меньше минуты",
+  "@verifyHelpWaitNote": {
+    "description": "Подтверждение почты: пояснение про время доставки."
+  },
+
+  "verifyHelpAddress": "Проверьте адрес",
+  "@verifyHelpAddress": {
+    "description": "Подтверждение почты: третья причина — опечатка в адресе."
+  },
+
+  "verifyHelpAddressNote": "опечатка в почте — самая частая причина; исправить адрес можно карандашом наверху",
+  "@verifyHelpAddressNote": {
+    "description": "Подтверждение почты: пояснение про опечатку в адресе."
+  },
+
+  "verifyHelpResend": "Отправьте код ещё раз",
+  "@verifyHelpResend": {
+    "description": "Подтверждение почты: четвёртое, что можно сделать. Отличается от подписи кнопки: здесь это совет, там действие."
+  },
+
+  "verifyHelpResendNote": "кнопка над этим списком; чаще раза в минуту письма не уходят",
+  "@verifyHelpResendNote": {
+    "description": "Подтверждение почты: пояснение к повторной отправке."
+  },
+
+  "verifyMailDownTitle": "Письма сейчас не уходят",
+  "@verifyMailDownTitle": {
+    "description": "Подтверждение почты: почта не работает на сервере."
+  },
+
+  "verifyMailDownNote": "дело не в вашем адресе: сервер не смог отправить письмо",
+  "@verifyMailDownNote": {
+    "description": "Подтверждение почты: главное про поломку почты — человек не виноват."
+  },
+
+  "verifyMailDownWhatToDo": "Аккаунт уже создан — проходить регистрацию заново не нужно. Подождите несколько минут и отправьте код ещё раз: как только почта заработает, письмо придёт на тот же адрес.",
+  "@verifyMailDownWhatToDo": {
+    "description": "Подтверждение почты: что делать, пока почта не работает."
+  },
+
+  "resetTitle": "Новый пароль",
+  "@resetTitle": {
+    "description": "Заголовок экрана восстановления пароля, пока он не пройден."
+  },
+
+  "resetDoneTitle": "Готово",
+  "@resetDoneTitle": {
+    "description": "Заголовок экрана восстановления пароля на последнем шаге."
+  },
+
+  "resetSendCode": "Прислать код",
+  "@resetSendCode": {
+    "description": "Восстановление пароля: кнопка первого шага."
+  },
+
+  "resetChangePassword": "Сменить пароль",
+  "@resetChangePassword": {
+    "description": "Восстановление пароля: кнопка второго шага."
+  },
+
+  "resetToLogin": "К входу",
+  "@resetToLogin": {
+    "description": "Восстановление пароля: кнопка после смены пароля."
+  },
+
+  "resetStepWhere": "Куда прислать код",
+  "@resetStepWhere": {
+    "description": "Восстановление пароля: подпись первого шага."
+  },
+
+  "resetSameAnswer": "Ответ будет одинаковым",
+  "@resetSameAnswer": {
+    "description": "Восстановление пароля: предупреждение о том, что форма не выдаёт чужие адреса."
+  },
+
+  "resetSameAnswerNote": "и если адрес у нас есть, и если нет — так форма не выдаёт, кто у нас зарегистрирован",
+  "@resetSameAnswerNote": {
+    "description": "Восстановление пароля: пояснение к одинаковому ответу."
+  },
+
+  "resetStepSent": "Письмо отправлено",
+  "@resetStepSent": {
+    "description": "Восстановление пароля: свёрнутый первый шаг."
+  },
+
+  "resetStepNewPassword": "Придумайте новый пароль",
+  "@resetStepNewPassword": {
+    "description": "Восстановление пароля: подпись второго шага."
+  },
+
+  "resetFieldCode": "Код из письма",
+  "@resetFieldCode": {
+    "description": "Восстановление пароля: подпись поля кода."
+  },
+
+  "resetNotArrived": "Не пришло?",
+  "@resetNotArrived": {
+    "description": "Восстановление пароля: вопрос перед повторной отправкой. Речь о письме."
+  },
+
+  "resetResend": "Отправить заново",
+  "@resetResend": {
+    "description": "Восстановление пароля: повторная отправка письма."
+  },
+
+  "resetResendIn": "Отправить заново через {time}",
+  "@resetResendIn": {
+    "description": "Восстановление пароля: повторная отправка, пока идёт отсчёт. {time} — остаток в виде м:сс.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "resetFieldNewPassword": "Новый пароль",
+  "@resetFieldNewPassword": {
+    "description": "Восстановление пароля: подпись поля нового пароля. Совпадает с заголовком экрана по-русски, но это разные строки."
+  },
+
+  "resetPasswordHelper": "Не короче {length} знаков",
+  "@resetPasswordHelper": {
+    "description": "Восстановление пароля: подсказка под полем нового пароля.",
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+
+  "resetDoneHeading": "Пароль сменён",
+  "@resetDoneHeading": {
+    "description": "Восстановление пароля: итог на последнем шаге."
+  },
+
+  "resetDoneNote": "Войдите с новым паролем",
+  "@resetDoneNote": {
+    "description": "Восстановление пароля: что делать после смены пароля."
+  },
+
+  "ruleEmailEmpty": "Введите почту",
+  "@ruleEmailEmpty": {
+    "description": "Правило формы: адрес не введён."
+  },
+
+  "ruleEmailAtSign": "В адресе должна быть одна собака",
+  "@ruleEmailAtSign": {
+    "description": "Правило формы: собаки нет или их больше одной."
+  },
+
+  "ruleEmailDomain": "После собаки должен быть домен: example.ru",
+  "@ruleEmailDomain": {
+    "description": "Правило формы: домена после собаки нет. Пример подставлен местный — .ru по-русски, .com по-английски."
+  },
+
+  "ruleEmailSpaces": "В адресе не бывает пробелов",
+  "@ruleEmailSpaces": {
+    "description": "Правило формы: в адресе пробел."
+  },
+
+  "rulePasswordEmpty": "Введите пароль",
+  "@rulePasswordEmpty": {
+    "description": "Правило формы: пароль не введён."
+  },
+
+  "rulePasswordTooShort": "Не короче {length} символов",
+  "@rulePasswordTooShort": {
+    "description": "Правило формы: пароль короче серверного порога.",
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+
+  "ruleRepeatEmpty": "Повторите пароль",
+  "@ruleRepeatEmpty": {
+    "description": "Правило формы: повтор пароля не введён."
+  },
+
+  "ruleRepeatMismatch": "Пароли не совпадают",
+  "@ruleRepeatMismatch": {
+    "description": "Правило формы: пароль и его повтор разные."
+  },
+
+  "ruleCodeEmpty": "Введите код из письма",
+  "@ruleCodeEmpty": {
+    "description": "Правило формы: код не введён."
+  },
+
+  "ruleCodeLength": "В коде шесть цифр",
+  "@ruleCodeLength": {
+    "description": "Правило формы: в коде не шесть знаков."
+  },
+
+  "ruleCodeDigits": "Код состоит только из цифр",
+  "@ruleCodeDigits": {
+    "description": "Правило формы: в коде есть не цифры."
   }
 }

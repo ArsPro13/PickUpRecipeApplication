@@ -1,6 +1,10 @@
 // Правила формы входа должны совпадать с серверными до знака (вопрос 8):
 // форма, пропускающая то, что сервер отвергнет, оставляет человека с ошибкой
 // без объяснения.
+//
+// Правило отвечает кодом, а не фразой, поэтому и спрашивается здесь код: тест
+// проверяет, ЧТО не так с полем, а не то, какими словами это сказано. Слова
+// живут в локалях и меняются без спроса у теста.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -16,68 +20,87 @@ void main() {
     });
 
     test('короткий отвергается', () {
-      expect(AuthRules.passwordError('qwer'), isNotNull);
-      expect(AuthRules.passwordError('12345'), isNotNull);
+      expect(AuthRules.passwordProblem('qwer'), PasswordProblem.tooShort);
+      expect(AuthRules.passwordProblem('12345'), PasswordProblem.tooShort);
     });
 
     test('шесть символов достаточно', () {
-      expect(AuthRules.passwordError('qwerty'), isNull);
-      expect(AuthRules.passwordError('123456'), isNull);
+      expect(AuthRules.passwordProblem('qwerty'), isNull);
+      expect(AuthRules.passwordProblem('123456'), isNull);
     });
 
     test('пароль без цифр и знаков принимается — сервер их не требует', () {
-      expect(AuthRules.passwordError('пароль'), isNull);
+      expect(AuthRules.passwordProblem('пароль'), isNull);
     });
 
     test('считаются символы, а не байты', () {
       // Шесть кириллических букв — это двенадцать байт, но шесть символов,
       // и сервер считает именно руны.
-      expect(AuthRules.passwordError('абвгде'), isNull);
-      expect(AuthRules.passwordError('абвгд'), isNotNull);
+      expect(AuthRules.passwordProblem('абвгде'), isNull);
+      expect(AuthRules.passwordProblem('абвгд'), PasswordProblem.tooShort);
     });
 
     test('пустой пароль объясняется отдельно', () {
-      expect(AuthRules.passwordError(''), contains('Введите'));
+      // Пустое поле и короткий пароль — разные беды: в первом случае человеку
+      // нечего исправлять, ему надо начать набирать.
+      expect(AuthRules.passwordProblem(''), PasswordProblem.empty);
     });
   });
 
   group('повтор пароля', () {
     test('несовпадение ловится', () {
-      expect(AuthRules.repeatError('qwerty', 'qwerti'), isNotNull);
+      expect(AuthRules.repeatProblem('qwerty', 'qwerti'), RepeatProblem.mismatch);
+    });
+
+    test('пустой повтор — не то же самое, что несовпадение', () {
+      expect(AuthRules.repeatProblem('qwerty', ''), RepeatProblem.empty);
     });
 
     test('совпадение проходит', () {
-      expect(AuthRules.repeatError('qwerty', 'qwerty'), isNull);
+      expect(AuthRules.repeatProblem('qwerty', 'qwerty'), isNull);
     });
   });
 
   group('почта', () {
     test('обычные адреса проходят', () {
       for (final email in ['a@a.ru', 'user.name@example.co.uk', 'x+tag@mail.ru']) {
-        expect(AuthRules.emailError(email), isNull, reason: email);
+        expect(AuthRules.emailProblem(email), isNull, reason: email);
       }
     });
 
     test('без собаки, без домена и с пробелом отвергаются', () {
-      for (final email in ['user', 'user@', '@mail.ru', 'user@mail', 'a b@mail.ru']) {
-        expect(AuthRules.emailError(email), isNotNull, reason: email);
-      }
+      // Каждый случай со своим объяснением: «адрес неверный» не говорит, что
+      // именно править.
+      expect(AuthRules.emailProblem('user'), EmailProblem.atSign);
+      expect(AuthRules.emailProblem('@mail.ru'), EmailProblem.atSign);
+      expect(AuthRules.emailProblem('user@'), EmailProblem.domain);
+      expect(AuthRules.emailProblem('user@mail'), EmailProblem.domain);
+      expect(AuthRules.emailProblem('a b@mail.ru'), EmailProblem.spaces);
+    });
+
+    test('пустое поле объясняется отдельно', () {
+      expect(AuthRules.emailProblem(''), EmailProblem.empty);
+      expect(AuthRules.emailProblem('   '), EmailProblem.empty);
     });
 
     test('две собаки отвергаются', () {
-      expect(AuthRules.emailError('a@b@c.ru'), isNotNull);
+      expect(AuthRules.emailProblem('a@b@c.ru'), EmailProblem.atSign);
     });
   });
 
   group('код из письма', () {
     test('шесть цифр', () {
-      expect(AuthRules.codeError('123456'), isNull);
+      expect(AuthRules.codeProblem('123456'), isNull);
     });
 
     test('другая длина и буквы отвергаются', () {
-      expect(AuthRules.codeError('12345'), isNotNull);
-      expect(AuthRules.codeError('1234567'), isNotNull);
-      expect(AuthRules.codeError('12345a'), isNotNull);
+      expect(AuthRules.codeProblem('12345'), CodeProblem.length);
+      expect(AuthRules.codeProblem('1234567'), CodeProblem.length);
+      expect(AuthRules.codeProblem('12345a'), CodeProblem.notDigits);
+    });
+
+    test('пустое поле объясняется отдельно', () {
+      expect(AuthRules.codeProblem(''), CodeProblem.empty);
     });
   });
 

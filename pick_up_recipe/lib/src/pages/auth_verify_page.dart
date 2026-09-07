@@ -20,6 +20,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/authentication/domain/auth_rules.dart';
 import '../features/authentication/domain/code_resend.dart';
@@ -31,6 +32,7 @@ import '../general_widgets/app_layout.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
+import 'auth_rule_texts.dart';
 
 @RoutePage()
 class AuthVerifyPage extends ConsumerStatefulWidget {
@@ -102,6 +104,8 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
     // отсчёт после него пошёл бы заново — и ждать пришлось бы дольше.
     if (_resending || !_cooldown.ready(DateTime.now())) return;
 
+    final texts = AppLocalizations.of(context);
+
     setState(() {
       _resending = true;
       _notice = null;
@@ -119,17 +123,15 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
       switch (outcome.status) {
         case ResendStatus.sent:
           _mailDown = false;
-          _notice = const _Notice('Отправили ещё одно письмо', good: true);
+          _notice = _Notice(texts.verifySentAgain, good: true);
         case ResendStatus.tooOften:
           // Не «слишком часто», а срок: со сроком понятно, что делать.
-          _notice = _Notice(
-            'Письмо уже уходило. Следующее — через ${ResendCooldown.format(wait)}',
-          );
+          _notice = _Notice(texts.verifyTooOften(ResendCooldown.format(wait)));
         case ResendStatus.mailDown:
           _mailDown = true;
           _notice = null;
         case ResendStatus.rejected:
-          _notice = const _Notice('Сервер не принял этот адрес. Проверьте, тот ли он');
+          _notice = _Notice(texts.verifyAddressRejected);
         case ResendStatus.offline:
           _notice = _Notice(AuthFailure.offline.message);
       }
@@ -143,7 +145,9 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
   }
 
   Future<void> _submit() async {
-    setState(() => _error = AuthRules.codeError(_code.text));
+    final texts = AppLocalizations.of(context);
+
+    setState(() => _error = AuthRules.codeProblem(_code.text)?.text(texts));
     if (_error != null) return;
 
     setState(() => _busy = true);
@@ -164,13 +168,14 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
     final left = _cooldown.left(DateTime.now());
     final canResend = left == Duration.zero && !_resending;
     final ready = _code.text.length == 6;
 
     return AppScreen(
       showNav: false,
-      title: 'Подтвердите почту',
+      title: texts.verifyTitle,
       body: [
         Column(
           children: [
@@ -180,7 +185,7 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
               color: context.colors.primary,
             ),
             const SizedBox(height: AppSpacing.s3),
-            Text('Отправили код из шести знаков', style: context.texts.bodyMedium),
+            Text(texts.verifySubtitle, style: context.texts.bodyMedium),
             const SizedBox(height: AppSpacing.s1),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -195,7 +200,7 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
                 const SizedBox(width: AppSpacing.s2),
                 Semantics(
                   button: true,
-                  label: 'Изменить адрес',
+                  label: texts.verifyChangeEmail,
                   child: InkResponse(
                     onTap: () => context.router.replace(const AuthRegisterRoute()),
                     radius: AppSizes.icon24,
@@ -234,14 +239,14 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
                 alignment: WrapAlignment.center,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text('Не пришёл?', style: context.texts.bodySmall),
+                  Text(texts.verifyNotArrived, style: context.texts.bodySmall),
                   TextButton(
                     onPressed: canResend ? _resend : null,
                     child: Text(
                       switch ((_resending, canResend)) {
-                        (true, _) => 'Отправляем…',
-                        (false, true) => 'Отправить код ещё раз',
-                        (false, false) => 'Ещё раз через ${ResendCooldown.format(left)}',
+                        (true, _) => texts.verifySending,
+                        (false, true) => texts.verifyResend,
+                        (false, false) => texts.verifyResendIn(ResendCooldown.format(left)),
                       },
                     ),
                   ),
@@ -264,13 +269,13 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
           const SizedBox(height: AppSpacing.s5),
           const _MailDownCard(),
         ] else ...[
-          const SectionTitle('Если письмо не пришло'),
+          SectionTitle(texts.verifyHelpTitle),
           const _WhatToDoCard(),
         ],
       ],
       bottom: [
         AppButton(
-          label: 'Подтвердить',
+          label: texts.verifyConfirm,
           loading: _busy,
           onPressed: ready && !_busy ? _submit : null,
         ),
@@ -296,6 +301,8 @@ class _WhatToDoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return AppCard(
       flat: true,
       child: Column(
@@ -303,30 +310,29 @@ class _WhatToDoCard extends StatelessWidget {
         children: [
           IconRow(
             icon: AppIcons.uiInfo,
-            title: 'Загляните в «Спам»',
-            subtitle: 'отправитель новый, и почта его ещё не знает',
+            title: texts.verifyHelpSpam,
+            subtitle: texts.verifyHelpSpamNote,
             iconColor: context.colors.secondary,
           ),
           const SizedBox(height: AppSpacing.s3),
           IconRow(
             icon: AppIcons.uiHistory,
-            title: 'Подождите минуту',
-            subtitle: 'письмо идёт не мгновенно, обычно меньше минуты',
+            title: texts.verifyHelpWait,
+            subtitle: texts.verifyHelpWaitNote,
             iconColor: context.colors.secondary,
           ),
           const SizedBox(height: AppSpacing.s3),
           IconRow(
             icon: AppIcons.uiMail,
-            title: 'Проверьте адрес',
-            subtitle: 'опечатка в почте — самая частая причина; исправить адрес '
-                'можно карандашом наверху',
+            title: texts.verifyHelpAddress,
+            subtitle: texts.verifyHelpAddressNote,
             iconColor: context.colors.secondary,
           ),
           const SizedBox(height: AppSpacing.s3),
           IconRow(
             icon: AppIcons.uiRefresh,
-            title: 'Отправьте код ещё раз',
-            subtitle: 'кнопка над этим списком; чаще раза в минуту письма не уходят',
+            title: texts.verifyHelpResend,
+            subtitle: texts.verifyHelpResendNote,
             iconColor: context.colors.secondary,
           ),
         ],
@@ -345,6 +351,8 @@ class _MailDownCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return AppCard(
       borderColor: context.colors.error,
       child: Column(
@@ -352,17 +360,12 @@ class _MailDownCard extends StatelessWidget {
         children: [
           IconRow(
             icon: AppIcons.uiWarning,
-            title: 'Письма сейчас не уходят',
-            subtitle: 'дело не в вашем адресе: сервер не смог отправить письмо',
+            title: texts.verifyMailDownTitle,
+            subtitle: texts.verifyMailDownNote,
             iconColor: context.colors.error,
           ),
           const SizedBox(height: AppSpacing.s3),
-          Text(
-            'Аккаунт уже создан — проходить регистрацию заново не нужно. '
-            'Подождите несколько минут и отправьте код ещё раз: как только '
-            'почта заработает, письмо придёт на тот же адрес.',
-            style: context.texts.bodySmall,
-          ),
+          Text(texts.verifyMailDownWhatToDo, style: context.texts.bodySmall),
         ],
       ),
     );

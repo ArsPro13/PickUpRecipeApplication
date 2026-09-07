@@ -9,5 +9,163 @@
 
   "offlineSyncing": "Back online — sending what was saved",
 
-  "offlinePending": "No connection. {count, plural, one{{count} item} other{{count} items}} will be sent once it is back"
+  "offlinePending": "No connection. {count, plural, one{{count} item} other{{count} items}} will be sent once it is back",
+
+  "authCreateAccount": "Create account",
+
+  "authSignIn": "Sign in",
+
+  "fieldEmail": "Email",
+
+  "fieldPassword": "Password",
+
+  "welcomeTagline": "A recipe from the person who roasted this coffee",
+
+  "welcomeKeepsTitle": "An account keeps",
+
+  "welcomeKeepsRecipes": "Your recipes",
+
+  "welcomeKeepsRecipesNote": "versions survive a change of phone",
+
+  "welcomeKeepsGrinder": "Your grinder",
+
+  "welcomeKeepsGrinderNote": "grind size is converted into your clicks",
+
+  "welcomeKeepsPacks": "Your pack history",
+
+  "welcomeKeepsPacksNote": "what you brewed six months ago, and how",
+
+  "loginTitle": "Sign in",
+
+  "loginForgot": "Forgot your password?",
+
+  "loginNoAccount": "No account yet?",
+
+  "loginCreate": "Create one",
+
+  "registerRepeat": "Again",
+
+  "registerPasswordRule": "at least {length} characters",
+
+  "registerNextMail": "Next: an email with a code",
+
+  "registerNextMailNote": "six characters to confirm the address",
+
+  "registerHaveAccount": "Already have an account?",
+
+  "registerConsentRequired": "Without your consent we cannot create an account",
+
+  "registerTermsUnavailable": "Could not load the terms. Check your connection and try again.",
+
+  "consentPrefix": "I agree to the ",
+
+  "consentPrivacy": "data processing policy",
+
+  "consentAnd": " and the ",
+
+  "consentAgreement": "user agreement",
+
+  "verifyTitle": "Confirm your email",
+
+  "verifySubtitle": "We sent a six-character code",
+
+  "verifyChangeEmail": "Change the address",
+
+  "verifyConfirm": "Confirm",
+
+  "verifyNotArrived": "Did not arrive?",
+
+  "verifySending": "Sending…",
+
+  "verifyResend": "Send the code again",
+
+  "verifyResendIn": "Again in {time}",
+
+  "verifySentAgain": "We sent another email",
+
+  "verifyTooOften": "An email has already gone out. The next one in {time}",
+
+  "verifyAddressRejected": "The server did not accept this address. Check that it is the right one",
+
+  "verifyHelpTitle": "If the email did not arrive",
+
+  "verifyHelpSpam": "Check the spam folder",
+
+  "verifyHelpSpamNote": "the sender is new, and your mail service does not know it yet",
+
+  "verifyHelpWait": "Wait a minute",
+
+  "verifyHelpWaitNote": "delivery is not instant, usually under a minute",
+
+  "verifyHelpAddress": "Check the address",
+
+  "verifyHelpAddressNote": "a typo in the address is the most common cause; you can fix it with the pencil above",
+
+  "verifyHelpResend": "Send the code again",
+
+  "verifyHelpResendNote": "the button above this list; emails go out no more than once a minute",
+
+  "verifyMailDownTitle": "Emails are not going out right now",
+
+  "verifyMailDownNote": "it is not your address: the server could not send the email",
+
+  "verifyMailDownWhatToDo": "Your account is already created — there is no need to register again. Wait a few minutes and send the code again: as soon as mail is working, the email will arrive at the same address.",
+
+  "resetTitle": "New password",
+
+  "resetDoneTitle": "Done",
+
+  "resetSendCode": "Send the code",
+
+  "resetChangePassword": "Change password",
+
+  "resetToLogin": "To sign-in",
+
+  "resetStepWhere": "Where to send the code",
+
+  "resetSameAnswer": "The answer will be the same",
+
+  "resetSameAnswerNote": "whether or not we know the address — this way the form does not reveal who is registered",
+
+  "resetStepSent": "Email sent",
+
+  "resetStepNewPassword": "Come up with a new password",
+
+  "resetFieldCode": "Code from the email",
+
+  "resetNotArrived": "Did not arrive?",
+
+  "resetResend": "Send again",
+
+  "resetResendIn": "Send again in {time}",
+
+  "resetFieldNewPassword": "New password",
+
+  "resetPasswordHelper": "At least {length} characters",
+
+  "resetDoneHeading": "Password changed",
+
+  "resetDoneNote": "Sign in with the new password",
+
+  "ruleEmailEmpty": "Enter your email",
+
+  "ruleEmailAtSign": "The address must contain exactly one @",
+
+  "ruleEmailDomain": "There must be a domain after the @: example.com",
+
+  "ruleEmailSpaces": "An address cannot contain spaces",
+
+  "rulePasswordEmpty": "Enter a password",
+
+  "rulePasswordTooShort": "At least {length} characters",
+
+  "ruleRepeatEmpty": "Repeat the password",
+
+  "ruleRepeatMismatch": "The passwords do not match",
+
+  "ruleCodeEmpty": "Enter the code from the email",
+
+  "ruleCodeLength": "The code has six digits",
+
+  "ruleCodeDigits": "The code is digits only"
 }

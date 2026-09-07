@@ -7,6 +7,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
@@ -19,27 +20,29 @@ import '../themes/app_tokens.dart';
 class AuthWelcomePage extends StatelessWidget {
   const AuthWelcomePage({super.key});
 
-  /// Что хранит аккаунт. Порядок по убыванию того, что больнее потерять.
-  static const List<({String icon, String title, String subtitle})> _keeps = [
-    (
-      icon: AppIcons.uiHistory,
-      title: 'Ваши рецепты',
-      subtitle: 'версии переживают смену телефона',
-    ),
-    (
-      icon: AppIcons.metricGrind,
-      title: 'Кофемолку',
-      subtitle: 'помол пересчитывается в ваши щелчки',
-    ),
-    (
-      icon: AppIcons.uiPack,
-      title: 'Историю пачек',
-      subtitle: 'что и как заваривали полгода назад',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    // Что хранит аккаунт. Порядок по убыванию того, что больнее потерять.
+    final keeps = <({String icon, String title, String subtitle})>[
+      (
+        icon: AppIcons.uiHistory,
+        title: texts.welcomeKeepsRecipes,
+        subtitle: texts.welcomeKeepsRecipesNote,
+      ),
+      (
+        icon: AppIcons.metricGrind,
+        title: texts.welcomeKeepsGrinder,
+        subtitle: texts.welcomeKeepsGrinderNote,
+      ),
+      (
+        icon: AppIcons.uiPack,
+        title: texts.welcomeKeepsPacks,
+        subtitle: texts.welcomeKeepsPacksNote,
+      ),
+    ];
+
     return AppScreen(
       showNav: false,
       body: [
@@ -55,27 +58,27 @@ class AuthWelcomePage extends StatelessWidget {
             Text('PickUpRecipe', style: context.texts.titleLarge),
             const SizedBox(height: AppSpacing.s2),
             Text(
-              'Рецепт от того, кто жарил это зерно',
+              texts.welcomeTagline,
               style: context.texts.bodyMedium?.copyWith(color: context.colors.secondary),
               textAlign: TextAlign.center,
             ),
           ],
         ),
         const SizedBox(height: AppSpacing.s6),
-        Text('Аккаунт хранит', style: context.texts.bodySmall),
+        Text(texts.welcomeKeepsTitle, style: context.texts.bodySmall),
         const SizedBox(height: AppSpacing.s2),
         HeroSurface(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s5),
           child: Column(
             children: [
-              for (var i = 0; i < _keeps.length; i++) ...[
+              for (var i = 0; i < keeps.length; i++) ...[
                 if (i > 0) Divider(height: 1, color: context.palette.border),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.s3),
                   child: IconRow(
-                    icon: _keeps[i].icon,
-                    title: _keeps[i].title,
-                    subtitle: _keeps[i].subtitle,
+                    icon: keeps[i].icon,
+                    title: keeps[i].title,
+                    subtitle: keeps[i].subtitle,
                   ),
                 ),
               ],
@@ -85,11 +88,11 @@ class AuthWelcomePage extends StatelessWidget {
       ],
       bottom: [
         AppButton(
-          label: 'Создать аккаунт',
+          label: texts.authCreateAccount,
           onPressed: () => context.router.push(const AuthRegisterRoute()),
         ),
         AppButton(
-          label: 'Войти',
+          label: texts.authSignIn,
           kind: AppButtonKind.secondary,
           onPressed: () => context.router.push(AuthLoginRoute()),
         ),

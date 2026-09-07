@@ -5,10 +5,52 @@
 // что сервер отвергнет, оставляет человека с ошибкой без объяснения.
 // Во-вторых, это единственная часть экранов входа, которую можно проверить
 // тестом без запуска приложения.
+//
+// Правило отвечает кодом, а не фразой: языка экрана домен не знает, а фраза у
+// каждого языка своя. Кодом же тест проверяет не формулировку, которую завтра
+// перепишут, а само правило. Перевод кода в текст живёт рядом с экранами —
+// lib/src/pages/auth_rule_texts.dart.
 
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+
+/// Что не так с почтой.
+enum EmailProblem {
+  /// Поле пустое.
+  empty,
+
+  /// Собаки нет, она в самом начале или их несколько.
+  atSign,
+
+  /// После собаки нет домена.
+  domain,
+
+  /// В адресе пробел.
+  spaces,
+}
+
+/// Что не так с паролем.
+enum PasswordProblem {
+  empty,
+
+  /// Короче серверного порога.
+  tooShort,
+}
+
+/// Что не так с повтором пароля.
+enum RepeatProblem { empty, mismatch }
+
+/// Что не так с кодом из письма.
+enum CodeProblem {
+  empty,
+
+  /// Знаков не шесть.
+  length,
+
+  /// Среди знаков есть не цифры.
+  notDigits,
+}
 
 /// Проверки полей входа и регистрации.
 abstract final class AuthRules {
@@ -24,28 +66,26 @@ abstract final class AuthRules {
   ///
   /// Сервер разбирает адрес через `mail.ParseAddress`, то есть требует
   /// синтаксически корректный адрес и не проверяет существование ящика.
-  static String? emailError(String email) {
+  static EmailProblem? emailProblem(String email) {
     final value = email.trim();
-    if (value.isEmpty) return 'Введите почту';
+    if (value.isEmpty) return EmailProblem.empty;
 
     final at = value.indexOf('@');
-    if (at <= 0 || at != value.lastIndexOf('@')) return 'В адресе должна быть одна собака';
+    if (at <= 0 || at != value.lastIndexOf('@')) return EmailProblem.atSign;
 
     final domain = value.substring(at + 1);
     if (!domain.contains('.') || domain.startsWith('.') || domain.endsWith('.')) {
-      return 'После собаки должен быть домен: example.ru';
+      return EmailProblem.domain;
     }
-    if (value.contains(' ')) return 'В адресе не бывает пробелов';
+    if (value.contains(' ')) return EmailProblem.spaces;
 
     return null;
   }
 
   /// Что не так с паролем. null — всё в порядке.
-  static String? passwordError(String password) {
-    if (password.isEmpty) return 'Введите пароль';
-    if (password.runes.length < minPasswordLength) {
-      return 'Не короче $minPasswordLength символов';
-    }
+  static PasswordProblem? passwordProblem(String password) {
+    if (password.isEmpty) return PasswordProblem.empty;
+    if (password.runes.length < minPasswordLength) return PasswordProblem.tooShort;
     return null;
   }
 
@@ -53,18 +93,18 @@ abstract final class AuthRules {
   ///
   /// Поле повтора оставлено, хотя рядом есть показ пароля (ответ 38): оно
   /// лишнее, но привычное, и убирать его отдельным решением незачем.
-  static String? repeatError(String password, String repeat) {
-    if (repeat.isEmpty) return 'Повторите пароль';
-    if (password != repeat) return 'Пароли не совпадают';
+  static RepeatProblem? repeatProblem(String password, String repeat) {
+    if (repeat.isEmpty) return RepeatProblem.empty;
+    if (password != repeat) return RepeatProblem.mismatch;
     return null;
   }
 
   /// Что не так с кодом из письма. null — всё в порядке.
-  static String? codeError(String code) {
+  static CodeProblem? codeProblem(String code) {
     final value = code.trim();
-    if (value.isEmpty) return 'Введите код из письма';
-    if (value.length != 6) return 'В коде шесть цифр';
-    if (int.tryParse(value) == null) return 'Код состоит только из цифр';
+    if (value.isEmpty) return CodeProblem.empty;
+    if (value.length != 6) return CodeProblem.length;
+    if (int.tryParse(value) == null) return CodeProblem.notDigits;
     return null;
   }
 }
