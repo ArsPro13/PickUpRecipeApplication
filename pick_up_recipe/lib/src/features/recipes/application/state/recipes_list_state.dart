@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/library_revision.dart';
 import '../../../brew_methods/application/brew_methods_state.dart';
 import '../../../brew_methods/data_sources/remote/brew_method_service.dart';
 import '../../data_sources/remote/recipe_service.dart';
@@ -240,8 +241,18 @@ String formatRecipeDate(String raw) {
 final recipeServiceProvider = Provider<RecipeService>((ref) => RecipeService());
 
 final recipesListProvider = StateNotifierProvider<RecipesListNotifier, RecipesListState>(
-  (ref) => RecipesListNotifier(
-    ref.watch(recipeServiceProvider),
-    ref.watch(brewMethodServiceProvider),
-  ),
+  (ref) {
+    final notifier = RecipesListNotifier(
+      ref.watch(recipeServiceProvider),
+      ref.watch(brewMethodServiceProvider),
+    );
+
+    // Подписка стоит здесь, а не во вкладке: вкладка живёт в
+    // `AutoTabsScaffold` и не пересоздаётся, а список обязан показать новое
+    // и тогда, когда его сохранили с другого экрана. Один и тот же приём у
+    // списка пачек — способ обновления на оба один.
+    ref.listen<int>(libraryRevisionProvider, (_, __) => notifier.load());
+
+    return notifier;
+  },
 );

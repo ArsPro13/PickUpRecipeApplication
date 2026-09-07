@@ -13,6 +13,7 @@ import '../../routing/app_router.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/application/state/active_packs_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/rating_draft.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
@@ -47,6 +48,9 @@ class _PacksPageState extends ConsumerState<PacksPage> {
       if (ref.read(brewMethodsProvider).grouped.isEmpty) {
         ref.read(brewMethodsProvider.notifier).load();
       }
+      // Незаконченная оценка ищется здесь: это первая вкладка, и после
+      // перезапуска человек оказывается ровно на ней.
+      RatingDrafts.load();
     });
   }
 
@@ -59,12 +63,21 @@ class _PacksPageState extends ConsumerState<PacksPage> {
         title: const Text('Мои пачки'),
         actions: const [GrinderButton(), SizedBox(width: AppSpacing.s4)],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await ref.read(activePacksNotifierProvider.notifier).fetchPacks();
-          await ref.read(recipesListProvider.notifier).load();
-        },
-        child: _body(packs),
+      // Плашка стоит над списком, а не строкой в нём: недосказанная оценка не
+      // должна уезжать вверх при первой же прокрутке полки.
+      body: Column(
+        children: [
+          const UnfinishedRatingPlate(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await ref.read(activePacksNotifierProvider.notifier).fetchPacks();
+                await ref.read(recipesListProvider.notifier).load();
+              },
+              child: _body(packs),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -124,6 +137,83 @@ class _PacksPageState extends ConsumerState<PacksPage> {
           // в схеме нет, а «с ней и заваривают» — ровно это и значит.
           highlighted: groups.isNotEmpty && groups.first.packId == pack.packId,
           onTap: () => context.router.push(CoffeeRoute(packId: pack.packId)),
+        );
+      },
+    );
+  }
+}
+
+/// Плашка «оценка не дописана».
+///
+/// Место выбрано так же, как у плашки офлайна на странице кофе: рядом с тем,
+/// ради чего экран открыли, и без своего экрана. Первая вкладка — то, что
+/// человек видит после перезапуска, и другого места, где он сам додумался бы
+/// искать позавчерашнюю недооценённую чашку, попросту нет.
+///
+/// Смотрит прямо за `RatingDrafts.current`, а не через провайдер: черновик
+/// пишет чужой экран, и второй источник правды между ними только разошёлся бы
+/// с первым.
+class UnfinishedRatingPlate extends StatelessWidget {
+  const UnfinishedRatingPlate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<RatingDraft?>(
+      valueListenable: RatingDrafts.current,
+      builder: (context, draft, _) {
+        if (draft == null) return const SizedBox.shrink();
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.s4,
+            AppSpacing.s2,
+            AppSpacing.s4,
+            0,
+          ),
+          child: AppCard(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s4,
+              vertical: AppSpacing.s3,
+            ),
+            onTap: () => context.router.push(
+              RatingRoute(recipe: draft.recipe, pack: draft.pack),
+            ),
+            child: Row(
+              children: [
+                AppIcon(
+                  AppIcons.uiStar,
+                  size: AppSizes.icon20,
+                  color: context.colors.primary,
+                ),
+                const SizedBox(width: AppSpacing.s3),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Оценка не дописана', style: context.texts.bodyMedium),
+                      Text(
+                        draft.summary.isEmpty
+                            ? 'продолжить с того же места'
+                            : '${draft.summary} — продолжить',
+                        style: context.texts.labelSmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: RatingDrafts.clear,
+                  tooltip: 'Убрать',
+                  icon: AppIcon(
+                    AppIcons.uiClose,
+                    size: AppSizes.icon16,
+                    color: context.colors.secondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
