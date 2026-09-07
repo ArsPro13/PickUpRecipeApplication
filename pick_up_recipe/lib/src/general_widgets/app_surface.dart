@@ -79,17 +79,22 @@ class _PaperPainter extends CustomPainter {
 /// У Flutter нет внутренней тени, поэтому вдавленность собирается из двух
 /// вещей: заливка темнее поднятой поверхности и градиент по верхней кромке.
 /// Вместе они читаются как углубление, хотя ни одна тень внутрь не уходит.
+///
+/// Толщина обводки — параметром: тонкая рамка отделяет поверхность от фона,
+/// а толстая говорит, что с ней сейчас работают, и путать эти два сообщения
+/// одной шириной нельзя.
 BoxDecoration sunkenDecoration(
   BuildContext context, {
   BorderRadius borderRadius = AppRadius.small,
   Color? color,
   Color? outline,
+  double outlineWidth = AppStroke.thick,
 }) {
   final surface = color ?? context.colors.surface;
 
   return BoxDecoration(
     borderRadius: borderRadius,
-    border: outline == null ? null : Border.all(color: outline, width: AppStroke.thick),
+    border: outline == null ? null : Border.all(color: outline, width: outlineWidth),
     gradient: LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,

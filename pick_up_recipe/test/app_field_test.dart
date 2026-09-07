@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_field.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
+import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 
 /// Два поля рядом — как в любой форме входа: из первого уходят во второе.
 Widget _twoFields(TextEditingController first, TextEditingController second) {
@@ -25,6 +26,30 @@ Widget _twoFields(TextEditingController first, TextEditingController second) {
       ),
     ),
   );
+}
+
+/// Одно поле — для проверок оформления, где второе только мешает.
+Widget _oneField(TextEditingController controller, {String? error}) {
+  return MaterialApp(
+    theme: lightTheme,
+    home: Scaffold(
+      body: SizedBox(
+        width: 200,
+        child: AppField(label: 'Название', controller: controller, error: error),
+      ),
+    ),
+  );
+}
+
+/// Рамка поля: её рисует контейнер вокруг строки, а не сам TextField.
+BorderSide _frame(WidgetTester tester) {
+  final box = tester.widget<Container>(
+    find
+        .ancestor(of: find.byType(TextField).first, matching: find.byType(Container))
+        .first,
+  );
+
+  return ((box.decoration! as BoxDecoration).border! as Border).top;
 }
 
 /// Прокрутка строки внутри поля. Своего контроллера у поля снаружи нет,
@@ -96,5 +121,47 @@ void main() {
 
     expect(_lineOffset(tester, 0).pixels, greaterThan(0));
     expect(email.text, endsWith('example-mail-server.com'));
+  });
+
+  testWidgets('в покое рамка видима', (tester) async {
+    final name = TextEditingController();
+    addTearDown(name.dispose);
+
+    await tester.pumpWidget(_oneField(name));
+
+    final frame = _frame(tester);
+
+    // Пустое поле без фокуса — это то, что человек видит, открыв экран
+    // «Свой тип шага». Прозрачная рамка оставляла на месте поля полосу фона.
+    expect(frame.color.a, greaterThan(0), reason: 'поле сливается с фоном');
+    expect(frame.color, lightTheme.extension<AppColors>()!.border);
+    expect(frame.width, AppStroke.thin, reason: 'форма из полей не должна стать решёткой');
+  });
+
+  testWidgets('покой, фокус и ошибка различимы', (tester) async {
+    final name = TextEditingController();
+    addTearDown(name.dispose);
+
+    await tester.pumpWidget(_oneField(name));
+    final calm = _frame(tester);
+
+    await tester.showKeyboard(find.byType(TextField).first);
+    await tester.pump();
+    final focused = _frame(tester);
+
+    await tester.pumpWidget(_oneField(name, error: 'Название не может быть пустым'));
+    await tester.pump();
+    final broken = _frame(tester);
+
+    // Три состояния — три разных ответа. Совпади любые два, и рамка
+    // перестанет что-либо сообщать: «поле есть», «пишут сюда», «здесь беда».
+    expect(calm.color, isNot(focused.color));
+    expect(calm.color, isNot(broken.color));
+    expect(focused.color, isNot(broken.color));
+
+    // Работа и беда весомее покоя не только цветом: цвет не единственное,
+    // чем человек различает состояния.
+    expect(focused.width, greaterThan(calm.width));
+    expect(broken.width, greaterThan(calm.width));
   });
 }
