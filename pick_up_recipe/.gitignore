@@ -39,6 +39,10 @@ migrate_working_dir/
 *.g.dart
 *.gr.dart
 
+# Исключение — lib/l10n/app_localizations*.dart: их делает `flutter pub get`
+# по .arb, а анализ и тесты — нет. Без них в репозитории дерево не собирается
+# сразу после клона, поэтому эти генераты лежат рядом с .arb.
+
 # Symbolication related
 app.*.symbols
 

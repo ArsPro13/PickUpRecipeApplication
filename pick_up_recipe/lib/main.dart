@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/core/offline/network_status.dart';
 import 'package:pick_up_recipe/core/offline/offline_sync.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/prefs_key.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state.dart';
@@ -104,6 +105,22 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
       routerConfig: _router.config(),
       scaffoldMessengerKey: messengerKey,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      // Язык берётся из системного: есть такой .arb — на нём и говорим.
+      //
+      // Для любого третьего языка запасной — английский, и он назван здесь
+      // прямо, а не взят первым элементом supportedLocales: список туда
+      // собирает генератор по именам файлов, и новый .arb молча сдвинул бы
+      // умолчание на язык, которого никто не выбирал. Человеку, не знающему
+      // русского, английский экран понятнее русского.
+      localeResolutionCallback: (locale, supported) {
+        for (final candidate in supported) {
+          if (candidate.languageCode == locale?.languageCode) return candidate;
+        }
+
+        return const Locale('en');
+      },
       theme: lightTheme,
       darkTheme: darkTheme,
       // Текстура бумаги лежит под всем приложением, а не под каждым экраном:

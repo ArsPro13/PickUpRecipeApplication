@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+
+  "back": "Back",
+
+  "noNetwork": "No connection",
+
+  "offlineCached": "No connection. Showing what was saved",
+
+  "offlineSyncing": "Back online — sending what was saved",
+
+  "offlinePending": "No connection. {count, plural, one{{count} item} other{{count} items}} will be sent once it is back"
+}
