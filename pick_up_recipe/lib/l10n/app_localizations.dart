@@ -625,6 +625,42 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Профиль'**
   String get tabProfile;
+
+  /// Кнопка на экране, который не открылся: повторить тот же запрос. Одна на все такие экраны — просьба одна и та же.
+  ///
+  /// In ru, this message translates to:
+  /// **'Повторить'**
+  String get retry;
+
+  /// Заголовок экрана выбора метода под конкретное зерно.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чем заварить'**
+  String get methodsTitle;
+
+  /// Выбор метода: справочник не пришёл с сервера, показывать нечего.
+  ///
+  /// In ru, this message translates to:
+  /// **'Справочник методов не открылся'**
+  String get methodsFailed;
+
+  /// Заголовок экрана конфликта жалоб: цифры сейчас не ответ, ответ — про технику.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что проверить'**
+  String get conflictTitle;
+
+  /// Конфликт жалоб: главный выход — перезаварить, следя за техникой.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заварить так же ещё раз'**
+  String get conflictBrewAgain;
+
+  /// Конфликт жалоб: второй выход — всё-таки подвинуть цифры.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё равно открыть конструктор'**
+  String get conflictOpenBuilder;
 }
 
 class _AppLocalizationsDelegate

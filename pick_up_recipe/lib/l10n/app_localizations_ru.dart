@@ -303,4 +303,22 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get tabProfile => 'Профиль';
+
+  @override
+  String get retry => 'Повторить';
+
+  @override
+  String get methodsTitle => 'Чем заварить';
+
+  @override
+  String get methodsFailed => 'Справочник методов не открылся';
+
+  @override
+  String get conflictTitle => 'Что проверить';
+
+  @override
+  String get conflictBrewAgain => 'Заварить так же ещё раз';
+
+  @override
+  String get conflictOpenBuilder => 'Всё равно открыть конструктор';
 }

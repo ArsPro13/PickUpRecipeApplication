@@ -8,6 +8,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../general_widgets/app_kit.dart';
@@ -36,18 +37,19 @@ class _RecipesForCoffeePageState extends ConsumerState<RecipesForCoffeePage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(brewMethodsProvider);
+    final texts = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Чем заварить')),
+      appBar: AppBar(title: Text(texts.methodsTitle)),
       body: switch (state.status) {
         BrewMethodsStatus.loading => const Center(child: CircularProgressIndicator()),
         BrewMethodsStatus.failed => AppState(
             icon: AppIcons.stateError,
-            title: 'Справочник методов не открылся',
+            title: texts.methodsFailed,
             description: state.error,
             isError: true,
             primaryAction: AppButton(
-              label: 'Повторить',
+              label: texts.retry,
               onPressed: () => ref.read(brewMethodsProvider.notifier).load(),
             ),
           ),

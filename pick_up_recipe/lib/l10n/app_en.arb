@@ -175,5 +175,17 @@
 
   "tabScan": "Scan",
 
-  "tabProfile": "Profile"
+  "tabProfile": "Profile",
+
+  "retry": "Try again",
+
+  "methodsTitle": "What to brew with",
+
+  "methodsFailed": "The list of methods did not open",
+
+  "conflictTitle": "What to check",
+
+  "conflictBrewAgain": "Brew it the same way again",
+
+  "conflictOpenBuilder": "Open the builder anyway"
 }

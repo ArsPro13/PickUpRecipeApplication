@@ -304,4 +304,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tabProfile => 'Profile';
+
+  @override
+  String get retry => 'Try again';
+
+  @override
+  String get methodsTitle => 'What to brew with';
+
+  @override
+  String get methodsFailed => 'The list of methods did not open';
+
+  @override
+  String get conflictTitle => 'What to check';
+
+  @override
+  String get conflictBrewAgain => 'Brew it the same way again';
+
+  @override
+  String get conflictOpenBuilder => 'Open the builder anyway';
 }
