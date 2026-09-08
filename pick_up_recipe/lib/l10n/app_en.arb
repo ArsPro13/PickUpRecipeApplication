@@ -445,5 +445,75 @@
 
   "dateDayMonth": "{month} {day}",
 
-  "dateDayMonthYear": "{month} {day}, {year}"
+  "dateDayMonthYear": "{month} {day}, {year}",
+
+  "rateTitle": "How did it turn out",
+
+  "rateOnTarget": "Turned out just as intended",
+
+  "rateSaid": "{strength} {taste}",
+
+  "rateDegreeSlight": "slightly",
+
+  "rateDegreeNoticeable": "noticeably",
+
+  "rateDegreeStrong": "very",
+
+  "rateTasteSour": "sour",
+
+  "rateTasteBitter": "bitter",
+
+  "rateTasteStrong": "strong",
+
+  "rateTasteWeak": "weak",
+
+  "rateMapSemantics": "Taste map. {summary}",
+
+  "rateOverall": "Overall",
+
+  "rateStarsOf": "{stars} of 5",
+
+  "rateOptional": "Optional",
+
+  "rateAxesTitle": "Break it down by axis",
+
+  "rateAxesHint": "You can leave these alone — only what you move gets sent",
+
+  "rateAxisAroma": "Aroma",
+
+  "rateAxisFlavor": "Flavor",
+
+  "rateAxisAftertaste": "Aftertaste",
+
+  "rateAxisAcidity": "Acidity",
+
+  "rateAxisBitterness": "Bitterness",
+
+  "rateAxisSweetness": "Sweetness",
+
+  "rateAxesCount": "{count, plural, one{{count} axis} other{{count} axes}}",
+
+  "rateSave": "Save",
+
+  "rateFixRecipe": "Adjust the recipe",
+
+  "rateJustSave": "Just save the rating",
+
+  "rateSavedOffline": "Rating saved — it will be sent once the connection is back",
+
+  "rateSavedCorrectionLater": "Rating saved. The fix is worked out on the server — it will be there once the connection is back",
+
+  "rateNothingToChange": "Nothing to change: the recipe is already at the edge of its range",
+
+  "rateParamGrind": "Grind",
+
+  "rateParamTemperature": "Temperature",
+
+  "rateParamRatio": "Ratio",
+
+  "rateParamAgitation": "Agitation",
+
+  "rateParamContactTime": "Contact time",
+
+  "rateParamDose": "Dose"
 }

@@ -1298,5 +1298,203 @@
         "type": "String"
       }
     }
+  },
+
+  "rateTitle": "Как получилось",
+  "@rateTitle": {
+    "description": "Шапка экрана оценки чашки: спрашивает, что получилось в чашке."
+  },
+
+  "rateOnTarget": "Получилось как задумано",
+  "@rateOnTarget": {
+    "description": "Плашка под картой вкуса, когда точка стоит в центре: жалоб нет."
+  },
+
+  "rateSaid": "{strength} {taste}",
+  "@rateSaid": {
+    "description": "Одна половина жалобы на карте вкуса: сила отклонения и его сторона — «чуть кисло». Порядок слов живёт в переводе, а не в коде: у языков он разный.",
+    "placeholders": {
+      "strength": {
+        "type": "String"
+      },
+      "taste": {
+        "type": "String"
+      }
+    }
+  },
+
+  "rateDegreeSlight": "чуть",
+  "@rateDegreeSlight": {
+    "description": "Первое кольцо карты вкуса: насколько сильно отклонение. Встаёт перед стороной отклонения — «чуть кисло»."
+  },
+
+  "rateDegreeNoticeable": "заметно",
+  "@rateDegreeNoticeable": {
+    "description": "Второе кольцо карты вкуса — «заметно горько»."
+  },
+
+  "rateDegreeStrong": "сильно",
+  "@rateDegreeStrong": {
+    "description": "Край карты вкуса — «сильно слабо»."
+  },
+
+  "rateTasteSour": "кисло",
+  "@rateTasteSour": {
+    "description": "Левый конец горизонтальной оси карты вкуса. Наречие, как и три соседних конца: круг задаёт один вопрос, и части речи на нём не смешиваются."
+  },
+
+  "rateTasteBitter": "горько",
+  "@rateTasteBitter": {
+    "description": "Правый конец горизонтальной оси карты вкуса — противоположность «кисло»."
+  },
+
+  "rateTasteStrong": "крепко",
+  "@rateTasteStrong": {
+    "description": "Верхний конец вертикальной оси карты вкуса: концентрация."
+  },
+
+  "rateTasteWeak": "слабо",
+  "@rateTasteWeak": {
+    "description": "Нижний конец вертикальной оси карты вкуса — противоположность «крепко»."
+  },
+
+  "rateMapSemantics": "Карта вкуса. {summary}",
+  "@rateMapSemantics": {
+    "description": "Подпись карты вкуса для голосового помощника: точку пальцем он не покажет, поэтому читает её словами.",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+
+  "rateOverall": "Общее",
+  "@rateOverall": {
+    "description": "Подпись строки со звёздами: общее впечатление от чашки."
+  },
+
+  "rateStarsOf": "{stars} из 5",
+  "@rateStarsOf": {
+    "description": "Сколько звёзд поставлено из пяти. Стоит подсказкой на звезде и в подписи недописанного черновика.",
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+
+  "rateOptional": "Необязательно",
+  "@rateOptional": {
+    "description": "Разделитель на экране оценки: всё, что нужно правилам поправки, осталось выше."
+  },
+
+  "rateAxesTitle": "Разобрать по осям",
+  "@rateAxesTitle": {
+    "description": "Заголовок необязательной части экрана оценки: шесть ползунков по признакам."
+  },
+
+  "rateAxesHint": "Можно не трогать — уедет только то, что подвинете",
+  "@rateAxesHint": {
+    "description": "Пояснение под заголовком «Разобрать по осям»: нетронутый ползунок не уезжает вовсе."
+  },
+
+  "rateAxisAroma": "Аромат",
+  "@rateAxisAroma": {
+    "description": "Ползунок развёрнутой оценки: аромат."
+  },
+
+  "rateAxisFlavor": "Вкус",
+  "@rateAxisFlavor": {
+    "description": "Ползунок развёрнутой оценки: вкус."
+  },
+
+  "rateAxisAftertaste": "Послевкусие",
+  "@rateAxisAftertaste": {
+    "description": "Ползунок развёрнутой оценки: послевкусие."
+  },
+
+  "rateAxisAcidity": "Кислотность",
+  "@rateAxisAcidity": {
+    "description": "Ползунок развёрнутой оценки: кислотность."
+  },
+
+  "rateAxisBitterness": "Горечь",
+  "@rateAxisBitterness": {
+    "description": "Ползунок развёрнутой оценки: горечь."
+  },
+
+  "rateAxisSweetness": "Сладость",
+  "@rateAxisSweetness": {
+    "description": "Ползунок развёрнутой оценки: сладость."
+  },
+
+  "rateAxesCount": "{count, plural, one{{count} ось} few{{count} оси} many{{count} осей} other{{count} оси}}",
+  "@rateAxesCount": {
+    "description": "Сколько ползунков тронуто — в подписи недописанного черновика. Склонение делает ICU, а не рука: правило «1 ось / 2 оси / 5 осей» у каждого языка своё.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "rateSave": "Сохранить",
+  "@rateSave": {
+    "description": "Кнопка экрана оценки, когда жалоб нет: отправить оценку и уйти."
+  },
+
+  "rateFixRecipe": "Поправить рецепт",
+  "@rateFixRecipe": {
+    "description": "Главная кнопка экрана оценки, когда жалоба есть: отправить оценку и открыть рецепт с поправкой."
+  },
+
+  "rateJustSave": "Просто сохранить отзыв",
+  "@rateJustSave": {
+    "description": "Вторая кнопка экрана оценки: оценку отправить, а рецепт не трогать."
+  },
+
+  "rateSavedOffline": "Оценка сохранена и уедет, когда появится связь",
+  "@rateSavedOffline": {
+    "description": "Сообщение после отправки оценки без сети: она встала в очередь."
+  },
+
+  "rateSavedCorrectionLater": "Оценка сохранена. Поправку посчитает сервер — она будет, когда появится связь",
+  "@rateSavedCorrectionLater": {
+    "description": "Сообщение, когда без сети попросили поправку: оценка в очереди, а поправку считает сервер, и повторять его правила на телефоне нечем."
+  },
+
+  "rateNothingToChange": "Менять нечего: рецепт уже на границе своих значений",
+  "@rateNothingToChange": {
+    "description": "Сообщение, когда правила не нашли, что подвинуть: параметры рецепта упёрлись в свои пределы."
+  },
+
+  "rateParamGrind": "Помол",
+  "@rateParamGrind": {
+    "description": "Название параметра в поправке рецепта: крупность помола."
+  },
+
+  "rateParamTemperature": "Температура",
+  "@rateParamTemperature": {
+    "description": "Название параметра в поправке рецепта: температура воды."
+  },
+
+  "rateParamRatio": "Соотношение",
+  "@rateParamRatio": {
+    "description": "Название параметра в поправке рецепта: соотношение кофе и воды."
+  },
+
+  "rateParamAgitation": "Размешивание",
+  "@rateParamAgitation": {
+    "description": "Название параметра в поправке рецепта: насколько сильно размешивают."
+  },
+
+  "rateParamContactTime": "Время контакта",
+  "@rateParamContactTime": {
+    "description": "Название параметра в поправке рецепта: сколько вода стоит на кофе."
+  },
+
+  "rateParamDose": "Доза",
+  "@rateParamDose": {
+    "description": "Название параметра в поправке рецепта: сколько кофе засыпают."
   }
 }

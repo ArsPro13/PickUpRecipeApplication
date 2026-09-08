@@ -837,4 +837,127 @@ class AppLocalizationsEn extends AppLocalizations {
   String dateDayMonthYear(String day, String month, String year) {
     return '$month $day, $year';
   }
+
+  @override
+  String get rateTitle => 'How did it turn out';
+
+  @override
+  String get rateOnTarget => 'Turned out just as intended';
+
+  @override
+  String rateSaid(String strength, String taste) {
+    return '$strength $taste';
+  }
+
+  @override
+  String get rateDegreeSlight => 'slightly';
+
+  @override
+  String get rateDegreeNoticeable => 'noticeably';
+
+  @override
+  String get rateDegreeStrong => 'very';
+
+  @override
+  String get rateTasteSour => 'sour';
+
+  @override
+  String get rateTasteBitter => 'bitter';
+
+  @override
+  String get rateTasteStrong => 'strong';
+
+  @override
+  String get rateTasteWeak => 'weak';
+
+  @override
+  String rateMapSemantics(String summary) {
+    return 'Taste map. $summary';
+  }
+
+  @override
+  String get rateOverall => 'Overall';
+
+  @override
+  String rateStarsOf(int stars) {
+    return '$stars of 5';
+  }
+
+  @override
+  String get rateOptional => 'Optional';
+
+  @override
+  String get rateAxesTitle => 'Break it down by axis';
+
+  @override
+  String get rateAxesHint =>
+      'You can leave these alone — only what you move gets sent';
+
+  @override
+  String get rateAxisAroma => 'Aroma';
+
+  @override
+  String get rateAxisFlavor => 'Flavor';
+
+  @override
+  String get rateAxisAftertaste => 'Aftertaste';
+
+  @override
+  String get rateAxisAcidity => 'Acidity';
+
+  @override
+  String get rateAxisBitterness => 'Bitterness';
+
+  @override
+  String get rateAxisSweetness => 'Sweetness';
+
+  @override
+  String rateAxesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count axes',
+      one: '$count axis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rateSave => 'Save';
+
+  @override
+  String get rateFixRecipe => 'Adjust the recipe';
+
+  @override
+  String get rateJustSave => 'Just save the rating';
+
+  @override
+  String get rateSavedOffline =>
+      'Rating saved — it will be sent once the connection is back';
+
+  @override
+  String get rateSavedCorrectionLater =>
+      'Rating saved. The fix is worked out on the server — it will be there once the connection is back';
+
+  @override
+  String get rateNothingToChange =>
+      'Nothing to change: the recipe is already at the edge of its range';
+
+  @override
+  String get rateParamGrind => 'Grind';
+
+  @override
+  String get rateParamTemperature => 'Temperature';
+
+  @override
+  String get rateParamRatio => 'Ratio';
+
+  @override
+  String get rateParamAgitation => 'Agitation';
+
+  @override
+  String get rateParamContactTime => 'Contact time';
+
+  @override
+  String get rateParamDose => 'Dose';
 }

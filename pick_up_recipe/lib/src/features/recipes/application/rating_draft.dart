@@ -18,8 +18,9 @@
 import 'dart:convert';
 
 import 'package:encrypt_shared_preferences/provider.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../packs/domain/models/pack_model.dart';
 import '../domain/models/recipe_data_model.dart';
 import '../domain/taste_map.dart';
@@ -54,14 +55,20 @@ class RatingDraft {
   bool get isEmpty => point.isCenter && stars == 0 && axes.isEmpty;
 
   /// Подпись для плашки: что именно осталось недосказанным.
-  String get summary {
+  ///
+  /// Словарь приходит параметром: черновик поднимают из хранилища, где
+  /// `BuildContext` взять неоткуда, а показывают его на экране со своим языком.
+  String summaryFor(AppLocalizations texts) {
     final parts = [
-      if (!point.isCenter) point.summary.toLowerCase(),
-      if (stars > 0) '$stars из 5',
-      if (axes.isNotEmpty) '${axes.length} ${_axisWord(axes.length)}',
+      if (!point.isCenter) point.summaryFor(texts).toLowerCase(),
+      if (stars > 0) texts.rateStarsOf(stars),
+      if (axes.isNotEmpty) texts.rateAxesCount(axes.length),
     ];
     return parts.join(' · ');
   }
+
+  /// Та же подпись по-русски — для вызова, у которого словаря под рукой нет.
+  String get summary => summaryFor(lookupAppLocalizations(const Locale('ru')));
 
   Map<String, dynamic> toJson() => {
         'saved_at': savedAt.toIso8601String(),
@@ -89,14 +96,6 @@ class RatingDraft {
         },
         savedAt: DateTime.tryParse(json['saved_at'] as String? ?? '') ?? DateTime(0),
       );
-}
-
-String _axisWord(int count) {
-  if (count % 10 == 1 && count % 100 != 11) return 'ось';
-  if ([2, 3, 4].contains(count % 10) && !(count % 100 >= 12 && count % 100 <= 14)) {
-    return 'оси';
-  }
-  return 'осей';
 }
 
 abstract final class RatingDrafts {

@@ -853,4 +853,129 @@ class AppLocalizationsRu extends AppLocalizations {
   String dateDayMonthYear(String day, String month, String year) {
     return '$day $month $year';
   }
+
+  @override
+  String get rateTitle => 'Как получилось';
+
+  @override
+  String get rateOnTarget => 'Получилось как задумано';
+
+  @override
+  String rateSaid(String strength, String taste) {
+    return '$strength $taste';
+  }
+
+  @override
+  String get rateDegreeSlight => 'чуть';
+
+  @override
+  String get rateDegreeNoticeable => 'заметно';
+
+  @override
+  String get rateDegreeStrong => 'сильно';
+
+  @override
+  String get rateTasteSour => 'кисло';
+
+  @override
+  String get rateTasteBitter => 'горько';
+
+  @override
+  String get rateTasteStrong => 'крепко';
+
+  @override
+  String get rateTasteWeak => 'слабо';
+
+  @override
+  String rateMapSemantics(String summary) {
+    return 'Карта вкуса. $summary';
+  }
+
+  @override
+  String get rateOverall => 'Общее';
+
+  @override
+  String rateStarsOf(int stars) {
+    return '$stars из 5';
+  }
+
+  @override
+  String get rateOptional => 'Необязательно';
+
+  @override
+  String get rateAxesTitle => 'Разобрать по осям';
+
+  @override
+  String get rateAxesHint =>
+      'Можно не трогать — уедет только то, что подвинете';
+
+  @override
+  String get rateAxisAroma => 'Аромат';
+
+  @override
+  String get rateAxisFlavor => 'Вкус';
+
+  @override
+  String get rateAxisAftertaste => 'Послевкусие';
+
+  @override
+  String get rateAxisAcidity => 'Кислотность';
+
+  @override
+  String get rateAxisBitterness => 'Горечь';
+
+  @override
+  String get rateAxisSweetness => 'Сладость';
+
+  @override
+  String rateAxesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count оси',
+      many: '$count осей',
+      few: '$count оси',
+      one: '$count ось',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rateSave => 'Сохранить';
+
+  @override
+  String get rateFixRecipe => 'Поправить рецепт';
+
+  @override
+  String get rateJustSave => 'Просто сохранить отзыв';
+
+  @override
+  String get rateSavedOffline =>
+      'Оценка сохранена и уедет, когда появится связь';
+
+  @override
+  String get rateSavedCorrectionLater =>
+      'Оценка сохранена. Поправку посчитает сервер — она будет, когда появится связь';
+
+  @override
+  String get rateNothingToChange =>
+      'Менять нечего: рецепт уже на границе своих значений';
+
+  @override
+  String get rateParamGrind => 'Помол';
+
+  @override
+  String get rateParamTemperature => 'Температура';
+
+  @override
+  String get rateParamRatio => 'Соотношение';
+
+  @override
+  String get rateParamAgitation => 'Размешивание';
+
+  @override
+  String get rateParamContactTime => 'Время контакта';
+
+  @override
+  String get rateParamDose => 'Доза';
 }

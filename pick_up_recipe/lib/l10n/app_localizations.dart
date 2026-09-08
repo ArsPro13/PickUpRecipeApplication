@@ -1435,6 +1435,216 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'{day} {month} {year}'**
   String dateDayMonthYear(String day, String month, String year);
+
+  /// Шапка экрана оценки чашки: спрашивает, что получилось в чашке.
+  ///
+  /// In ru, this message translates to:
+  /// **'Как получилось'**
+  String get rateTitle;
+
+  /// Плашка под картой вкуса, когда точка стоит в центре: жалоб нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Получилось как задумано'**
+  String get rateOnTarget;
+
+  /// Одна половина жалобы на карте вкуса: сила отклонения и его сторона — «чуть кисло». Порядок слов живёт в переводе, а не в коде: у языков он разный.
+  ///
+  /// In ru, this message translates to:
+  /// **'{strength} {taste}'**
+  String rateSaid(String strength, String taste);
+
+  /// Первое кольцо карты вкуса: насколько сильно отклонение. Встаёт перед стороной отклонения — «чуть кисло».
+  ///
+  /// In ru, this message translates to:
+  /// **'чуть'**
+  String get rateDegreeSlight;
+
+  /// Второе кольцо карты вкуса — «заметно горько».
+  ///
+  /// In ru, this message translates to:
+  /// **'заметно'**
+  String get rateDegreeNoticeable;
+
+  /// Край карты вкуса — «сильно слабо».
+  ///
+  /// In ru, this message translates to:
+  /// **'сильно'**
+  String get rateDegreeStrong;
+
+  /// Левый конец горизонтальной оси карты вкуса. Наречие, как и три соседних конца: круг задаёт один вопрос, и части речи на нём не смешиваются.
+  ///
+  /// In ru, this message translates to:
+  /// **'кисло'**
+  String get rateTasteSour;
+
+  /// Правый конец горизонтальной оси карты вкуса — противоположность «кисло».
+  ///
+  /// In ru, this message translates to:
+  /// **'горько'**
+  String get rateTasteBitter;
+
+  /// Верхний конец вертикальной оси карты вкуса: концентрация.
+  ///
+  /// In ru, this message translates to:
+  /// **'крепко'**
+  String get rateTasteStrong;
+
+  /// Нижний конец вертикальной оси карты вкуса — противоположность «крепко».
+  ///
+  /// In ru, this message translates to:
+  /// **'слабо'**
+  String get rateTasteWeak;
+
+  /// Подпись карты вкуса для голосового помощника: точку пальцем он не покажет, поэтому читает её словами.
+  ///
+  /// In ru, this message translates to:
+  /// **'Карта вкуса. {summary}'**
+  String rateMapSemantics(String summary);
+
+  /// Подпись строки со звёздами: общее впечатление от чашки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Общее'**
+  String get rateOverall;
+
+  /// Сколько звёзд поставлено из пяти. Стоит подсказкой на звезде и в подписи недописанного черновика.
+  ///
+  /// In ru, this message translates to:
+  /// **'{stars} из 5'**
+  String rateStarsOf(int stars);
+
+  /// Разделитель на экране оценки: всё, что нужно правилам поправки, осталось выше.
+  ///
+  /// In ru, this message translates to:
+  /// **'Необязательно'**
+  String get rateOptional;
+
+  /// Заголовок необязательной части экрана оценки: шесть ползунков по признакам.
+  ///
+  /// In ru, this message translates to:
+  /// **'Разобрать по осям'**
+  String get rateAxesTitle;
+
+  /// Пояснение под заголовком «Разобрать по осям»: нетронутый ползунок не уезжает вовсе.
+  ///
+  /// In ru, this message translates to:
+  /// **'Можно не трогать — уедет только то, что подвинете'**
+  String get rateAxesHint;
+
+  /// Ползунок развёрнутой оценки: аромат.
+  ///
+  /// In ru, this message translates to:
+  /// **'Аромат'**
+  String get rateAxisAroma;
+
+  /// Ползунок развёрнутой оценки: вкус.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вкус'**
+  String get rateAxisFlavor;
+
+  /// Ползунок развёрнутой оценки: послевкусие.
+  ///
+  /// In ru, this message translates to:
+  /// **'Послевкусие'**
+  String get rateAxisAftertaste;
+
+  /// Ползунок развёрнутой оценки: кислотность.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кислотность'**
+  String get rateAxisAcidity;
+
+  /// Ползунок развёрнутой оценки: горечь.
+  ///
+  /// In ru, this message translates to:
+  /// **'Горечь'**
+  String get rateAxisBitterness;
+
+  /// Ползунок развёрнутой оценки: сладость.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сладость'**
+  String get rateAxisSweetness;
+
+  /// Сколько ползунков тронуто — в подписи недописанного черновика. Склонение делает ICU, а не рука: правило «1 ось / 2 оси / 5 осей» у каждого языка своё.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} ось} few{{count} оси} many{{count} осей} other{{count} оси}}'**
+  String rateAxesCount(int count);
+
+  /// Кнопка экрана оценки, когда жалоб нет: отправить оценку и уйти.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить'**
+  String get rateSave;
+
+  /// Главная кнопка экрана оценки, когда жалоба есть: отправить оценку и открыть рецепт с поправкой.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поправить рецепт'**
+  String get rateFixRecipe;
+
+  /// Вторая кнопка экрана оценки: оценку отправить, а рецепт не трогать.
+  ///
+  /// In ru, this message translates to:
+  /// **'Просто сохранить отзыв'**
+  String get rateJustSave;
+
+  /// Сообщение после отправки оценки без сети: она встала в очередь.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оценка сохранена и уедет, когда появится связь'**
+  String get rateSavedOffline;
+
+  /// Сообщение, когда без сети попросили поправку: оценка в очереди, а поправку считает сервер, и повторять его правила на телефоне нечем.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оценка сохранена. Поправку посчитает сервер — она будет, когда появится связь'**
+  String get rateSavedCorrectionLater;
+
+  /// Сообщение, когда правила не нашли, что подвинуть: параметры рецепта упёрлись в свои пределы.
+  ///
+  /// In ru, this message translates to:
+  /// **'Менять нечего: рецепт уже на границе своих значений'**
+  String get rateNothingToChange;
+
+  /// Название параметра в поправке рецепта: крупность помола.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помол'**
+  String get rateParamGrind;
+
+  /// Название параметра в поправке рецепта: температура воды.
+  ///
+  /// In ru, this message translates to:
+  /// **'Температура'**
+  String get rateParamTemperature;
+
+  /// Название параметра в поправке рецепта: соотношение кофе и воды.
+  ///
+  /// In ru, this message translates to:
+  /// **'Соотношение'**
+  String get rateParamRatio;
+
+  /// Название параметра в поправке рецепта: насколько сильно размешивают.
+  ///
+  /// In ru, this message translates to:
+  /// **'Размешивание'**
+  String get rateParamAgitation;
+
+  /// Название параметра в поправке рецепта: сколько вода стоит на кофе.
+  ///
+  /// In ru, this message translates to:
+  /// **'Время контакта'**
+  String get rateParamContactTime;
+
+  /// Название параметра в поправке рецепта: сколько кофе засыпают.
+  ///
+  /// In ru, this message translates to:
+  /// **'Доза'**
+  String get rateParamDose;
 }
 
 class _AppLocalizationsDelegate

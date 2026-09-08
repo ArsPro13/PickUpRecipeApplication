@@ -32,6 +32,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/offline/network_status.dart';
 import '../../core/offline/offline_exception.dart';
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/rating_draft.dart';
@@ -175,6 +176,8 @@ class _RatingPageState extends ConsumerState<RatingPage> {
   /// «Поправить рецепт» ведёт прямо в конструктор, где поправка уже
   /// применена, изменения помечены точками и её можно отменить целиком.
   Future<void> _submit({required bool wantCorrection}) async {
+    final texts = AppLocalizations.of(context);
+
     setState(() {
       _busy = true;
       _error = null;
@@ -202,7 +205,9 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         bitterness: _touched.contains('bitterness') ? _bitterness : null,
         sweetness: _touched.contains('sweetness') ? _sweetness : null,
         overall: _overall,
-        comment: _point.isCenter ? '' : _point.summary,
+        // По-русски и на английском телефоне: комментарий читают люди в
+        // кабинете обжарщика, и язык этого поля — не язык телефона.
+        comment: _point.isCenter ? '' : _point.summaryRu,
       );
 
       // Оценка уехала (или встала в очередь) — продолжать больше нечего.
@@ -213,7 +218,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
 
       if (!wantCorrection || _point.complaints.isEmpty) {
         if (!NetworkStatus.online.value) {
-          _say('Оценка сохранена и уедет, когда появится связь');
+          _say(texts.rateSavedOffline);
         }
         await context.router.maybePop();
         return;
@@ -232,7 +237,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         // телефоне значит завести вторые правила, которые разойдутся с
         // первыми. Оценка уже в очереди; рецепт можно поправить руками.
         if (!mounted) return;
-        _say('Оценка сохранена. Поправку посчитает сервер — она будет, когда появится связь');
+        _say(texts.rateSavedCorrectionLater);
         await context.router.maybePop();
         return;
       }
@@ -245,7 +250,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
           RatingConflictRoute(
             recipe: widget.recipe,
             pack: widget.pack,
-            summary: _point.summary,
+            summary: _point.summaryFor(texts),
             correction: correction,
           ),
         );
@@ -253,7 +258,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
       }
 
       if (correction.isEmpty || correction.recipe == null) {
-        _say('Менять нечего: рецепт уже на границе своих значений');
+        _say(texts.rateNothingToChange);
         await context.router.maybePop();
         return;
       }
@@ -264,7 +269,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         RecipeBuilderRoute(
           recipe: correction.recipe!,
           original: widget.recipe,
-          correctionLabel: _point.summary,
+          correctionLabel: _point.summaryFor(texts),
           pack: widget.pack,
         ),
       );
@@ -293,13 +298,15 @@ class _RatingPageState extends ConsumerState<RatingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     final subtitle = [
       widget.pack?.packName,
       widget.recipe.title.isNotEmpty ? widget.recipe.title : widget.recipe.device,
     ].whereType<String>().where((it) => it.isNotEmpty).join(' · ');
 
     return AppScreen(
-      title: 'Как получилось',
+      title: texts.rateTitle,
       body: [
         if (subtitle.isNotEmpty) ...[
           Text(subtitle, style: context.texts.bodySmall),
@@ -359,44 +366,41 @@ class _RatingPageState extends ConsumerState<RatingPage> {
 
         const _OptionalDivider(),
 
-        Text('Разобрать по осям', style: context.texts.bodyMedium),
+        Text(texts.rateAxesTitle, style: context.texts.bodyMedium),
         const SizedBox(height: AppSpacing.s1),
-        Text(
-          'Можно не трогать — уедет только то, что подвинете',
-          style: context.texts.labelSmall,
-        ),
+        Text(texts.rateAxesHint, style: context.texts.labelSmall),
         const SizedBox(height: AppSpacing.s3),
 
         QuietSurface(
           child: Column(
             children: [
               _Axis(
-                label: 'Аромат',
+                label: texts.rateAxisAroma,
                 value: _aroma,
                 onChanged: (v) => _axis('aroma', () => _aroma = v),
               ),
               _Axis(
-                label: 'Вкус',
+                label: texts.rateAxisFlavor,
                 value: _flavor,
                 onChanged: (v) => _axis('flavor', () => _flavor = v),
               ),
               _Axis(
-                label: 'Послевкусие',
+                label: texts.rateAxisAftertaste,
                 value: _aftertaste,
                 onChanged: (v) => _axis('aftertaste', () => _aftertaste = v),
               ),
               _Axis(
-                label: 'Кислотность',
+                label: texts.rateAxisAcidity,
                 value: _acidity,
                 onChanged: (v) => _axis('acidity', () => _acidity = v),
               ),
               _Axis(
-                label: 'Горечь',
+                label: texts.rateAxisBitterness,
                 value: _bitterness,
                 onChanged: (v) => _axis('bitterness', () => _bitterness = v),
               ),
               _Axis(
-                label: 'Сладость',
+                label: texts.rateAxisSweetness,
                 value: _sweetness,
                 onChanged: (v) => _axis('sweetness', () => _sweetness = v),
               ),
@@ -407,13 +411,13 @@ class _RatingPageState extends ConsumerState<RatingPage> {
       bottom: [
         if (_point.complaints.isEmpty)
           AppButton(
-            label: 'Сохранить',
+            label: texts.rateSave,
             loading: _busy,
             onPressed: _busy ? null : () => _submit(wantCorrection: false),
           )
         else ...[
           AppButton(
-            label: 'Поправить рецепт',
+            label: texts.rateFixRecipe,
             icon: AppIcons.uiEdit,
             loading: _busy,
             onPressed: _busy ? null : () => _submit(wantCorrection: true),
@@ -423,7 +427,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
           // выходило двадцать восемь точек, из-за которых вторая кнопка
           // прижималась к нижней навигации.
           AppButton(
-            label: 'Просто сохранить отзыв',
+            label: texts.rateJustSave,
             kind: AppButtonKind.secondary,
             onPressed: _busy ? null : () => _submit(wantCorrection: false),
           ),
@@ -442,6 +446,8 @@ class TasteMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.maxWidth;
@@ -462,13 +468,19 @@ class TasteMap extends StatelessWidget {
           onTapDown: (details) => report(details.localPosition),
           onPanUpdate: (details) => report(details.localPosition),
           child: Semantics(
-            label: 'Карта вкуса. ${point.summary}',
+            label: texts.rateMapSemantics(point.summaryFor(texts)),
             child: SizedBox(
               width: size,
               height: size,
               child: CustomPaint(
                 painter: _TasteMapPainter(
                   point: point,
+                  ends: (
+                    sour: texts.rateTasteSour,
+                    bitter: texts.rateTasteBitter,
+                    strong: texts.rateTasteStrong,
+                    weak: texts.rateTasteWeak,
+                  ),
                   frame: context.palette.border,
                   ink: context.colors.secondary,
                   accent: context.colors.primary,
@@ -486,6 +498,7 @@ class TasteMap extends StatelessWidget {
 class _TasteMapPainter extends CustomPainter {
   const _TasteMapPainter({
     required this.point,
+    required this.ends,
     required this.frame,
     required this.ink,
     required this.accent,
@@ -493,6 +506,11 @@ class _TasteMapPainter extends CustomPainter {
   });
 
   final TastePoint point;
+
+  /// Подписи четырёх концов осей — уже на языке интерфейса: холст словаря
+  /// не видит, а по-русски они были прибиты прямо здесь.
+  final ({String sour, String bitter, String strong, String weak}) ends;
+
   final Color frame;
   final Color ink;
   final Color accent;
@@ -545,15 +563,16 @@ class _TasteMapPainter extends CustomPainter {
         ..color = target,
     );
 
-    _label(canvas, 'кисло', Offset(center.dx - field - AppSpacing.s2, center.dy), ink,
+    _label(canvas, ends.sour, Offset(center.dx - field - AppSpacing.s2, center.dy), ink,
         align: TextAlign.right, anchorRight: true);
-    _label(canvas, 'горько', Offset(center.dx + field + AppSpacing.s2, center.dy), ink);
+    _label(canvas, ends.bitter, Offset(center.dx + field + AppSpacing.s2, center.dy), ink);
     // Все четыре подписи — наречия, одной частью речи. «Крепче» и «слабее»
     // рядом с «кисло» и «горько» читались как два разных вопроса на одном
     // круге: одна ось спрашивала «по сравнению с чем», вторая — «какое».
-    _label(canvas, 'крепко', Offset(center.dx, center.dy - field - AppSpacing.s5), ink,
+    // То же правило держит и английский: одна часть речи на все четыре конца.
+    _label(canvas, ends.strong, Offset(center.dx, center.dy - field - AppSpacing.s5), ink,
         centered: true);
-    _label(canvas, 'слабо', Offset(center.dx, center.dy + field + AppSpacing.s3), ink,
+    _label(canvas, ends.weak, Offset(center.dx, center.dy + field + AppSpacing.s3), ink,
         centered: true);
 
     if (point.isCenter) return;
@@ -593,8 +612,11 @@ class _TasteMapPainter extends CustomPainter {
     painter.paint(canvas, Offset(dx, at.dy - painter.height / 2));
   }
 
+  // Не только точка: сменившийся язык оставляет точку на месте, а подписи
+  // осей меняет, и без сравнения они остались бы от прошлого языка.
   @override
-  bool shouldRepaint(_TasteMapPainter oldDelegate) => oldDelegate.point != point;
+  bool shouldRepaint(_TasteMapPainter oldDelegate) =>
+      oldDelegate.point != point || oldDelegate.ends != ends;
 }
 
 /// Что человек сказал картой — словами.
@@ -606,6 +628,8 @@ class _SummaryLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return QuietSurface(
       child: Row(
         children: [
@@ -615,11 +639,11 @@ class _SummaryLine extends StatelessWidget {
             color: point.isCenter ? context.palette.success : context.colors.primary,
           ),
           const SizedBox(width: AppSpacing.s3),
-          Expanded(child: Text(point.summary, style: context.texts.bodyMedium)),
+          Expanded(child: Text(point.summaryFor(texts), style: context.texts.bodyMedium)),
           if (onReset != null)
             IconButton(
               onPressed: onReset,
-              tooltip: 'Убрать',
+              tooltip: texts.remove,
               icon: AppIcon(
                 AppIcons.uiClose,
                 size: AppSizes.icon16,
@@ -641,15 +665,17 @@ class _Stars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return QuietSurface(
       child: Row(
         children: [
-          Text('Общее', style: context.texts.bodyMedium),
+          Text(texts.rateOverall, style: context.texts.bodyMedium),
           const SizedBox(width: AppSpacing.s2),
           for (var star = 1; star <= 5; star++)
             IconButton(
               onPressed: () => onChanged(star),
-              tooltip: '$star из 5',
+              tooltip: texts.rateStarsOf(star),
               constraints: const BoxConstraints(
                 minWidth: AppSizes.tapTarget - AppSpacing.s4,
                 minHeight: AppSizes.tapTarget - AppSpacing.s4,
@@ -679,11 +705,13 @@ class _OptionalDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.s5),
       child: Row(
         children: [
-          Text('Необязательно', style: context.texts.bodySmall),
+          Text(texts.rateOptional, style: context.texts.bodySmall),
           const SizedBox(width: AppSpacing.s3),
           Expanded(child: Divider(color: context.palette.border)),
         ],
