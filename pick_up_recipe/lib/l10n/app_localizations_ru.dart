@@ -1385,4 +1385,157 @@ class AppLocalizationsRu extends AppLocalizations {
   String grinderClicks(String value) {
     return '$value щ.';
   }
+
+  @override
+  String get builderTitle => 'Ваш рецепт';
+
+  @override
+  String get builderParams => 'Параметры';
+
+  @override
+  String get builderDose => 'Доза';
+
+  @override
+  String get builderWater => 'Вода';
+
+  @override
+  String get builderTemperature => 'Температура';
+
+  @override
+  String get builderGrind => 'Помол';
+
+  @override
+  String get builderRatio => 'Соотношение';
+
+  @override
+  String get builderGram => 'г';
+
+  @override
+  String get builderMillilitre => 'мл';
+
+  @override
+  String get builderSteps => 'Шаги';
+
+  @override
+  String get builderDragHint => 'потяните за ручку';
+
+  @override
+  String get builderAddStep => 'Добавить шаг';
+
+  @override
+  String get builderStep => 'Шаг';
+
+  @override
+  String get builderStepName => 'Название';
+
+  @override
+  String get builderStepTip => 'Подсказка';
+
+  @override
+  String get builderChoose => 'выбрать';
+
+  @override
+  String get builderEndsLabel => 'Заканчивается';
+
+  @override
+  String get builderDuration => 'Длительность';
+
+  @override
+  String get builderNoTip => 'Подсказки нет';
+
+  @override
+  String builderTipValue(String tip) {
+    return 'Подсказка · $tip';
+  }
+
+  @override
+  String get builderRemoveStep => 'Убрать шаг';
+
+  @override
+  String get builderStepWater => 'Вода по шагам';
+
+  @override
+  String builderStepWaterValue(int done, int total) {
+    return '$done из $total г';
+  }
+
+  @override
+  String get builderTotalTime => 'Общее время';
+
+  @override
+  String get builderSave => 'Сохранить';
+
+  @override
+  String get builderBrew => 'Заварить';
+
+  @override
+  String get builderToHome => 'На главную';
+
+  @override
+  String get builderCancel => 'Отмена';
+
+  @override
+  String get builderDone => 'Готово';
+
+  @override
+  String get builderMinutesSeconds => 'минуты и секунды';
+
+  @override
+  String get builderDecrease => 'убавить';
+
+  @override
+  String get builderIncrease => 'прибавить';
+
+  @override
+  String builderCorrectedFor(String label) {
+    return 'Поправлено под «$label»';
+  }
+
+  @override
+  String get builderCorrectedNote => 'изменения помечены точкой';
+
+  @override
+  String get builderUndo => 'Отменить';
+
+  @override
+  String get builderLeaveTitle => 'Уйти без сохранения?';
+
+  @override
+  String get builderLeaveNote =>
+      'Правки не сохранены — новая версия не появится.';
+
+  @override
+  String get builderLeave => 'Уйти';
+
+  @override
+  String get builderSavedOffline =>
+      'Сохранено на телефоне — уедет, когда появится связь';
+
+  @override
+  String get builderSavedVersion => 'Сохранено новой версией';
+
+  @override
+  String builderSaveFailed(String error) {
+    return 'Не сохранилось: $error';
+  }
+
+  @override
+  String get builderEndsTimer => 'по времени';
+
+  @override
+  String get builderEndsUser => 'по кнопке';
+
+  @override
+  String get builderEndsSign => 'по признаку';
+
+  @override
+  String get builderEndsTimerHint => 'идёт по таймеру и кончается сам';
+
+  @override
+  String get builderEndsUserHint =>
+      'заваривание ждёт, пока вы нажмёте «дальше»';
+
+  @override
+  String get builderEndsSignHint =>
+      'та же кнопка, но жмёте её по признаку: пена осела, вода стекла';
 }

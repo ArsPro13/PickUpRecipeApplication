@@ -1367,4 +1367,156 @@ class AppLocalizationsEn extends AppLocalizations {
   String grinderClicks(String value) {
     return '$value clicks';
   }
+
+  @override
+  String get builderTitle => 'Your recipe';
+
+  @override
+  String get builderParams => 'Parameters';
+
+  @override
+  String get builderDose => 'Dose';
+
+  @override
+  String get builderWater => 'Water';
+
+  @override
+  String get builderTemperature => 'Temperature';
+
+  @override
+  String get builderGrind => 'Grind';
+
+  @override
+  String get builderRatio => 'Ratio';
+
+  @override
+  String get builderGram => 'g';
+
+  @override
+  String get builderMillilitre => 'ml';
+
+  @override
+  String get builderSteps => 'Steps';
+
+  @override
+  String get builderDragHint => 'drag by the handle';
+
+  @override
+  String get builderAddStep => 'Add a step';
+
+  @override
+  String get builderStep => 'Step';
+
+  @override
+  String get builderStepName => 'Name';
+
+  @override
+  String get builderStepTip => 'Tip';
+
+  @override
+  String get builderChoose => 'choose';
+
+  @override
+  String get builderEndsLabel => 'Ends';
+
+  @override
+  String get builderDuration => 'Duration';
+
+  @override
+  String get builderNoTip => 'No tip';
+
+  @override
+  String builderTipValue(String tip) {
+    return 'Tip · $tip';
+  }
+
+  @override
+  String get builderRemoveStep => 'Remove the step';
+
+  @override
+  String get builderStepWater => 'Water across steps';
+
+  @override
+  String builderStepWaterValue(int done, int total) {
+    return '$done of $total g';
+  }
+
+  @override
+  String get builderTotalTime => 'Total time';
+
+  @override
+  String get builderSave => 'Save';
+
+  @override
+  String get builderBrew => 'Brew';
+
+  @override
+  String get builderToHome => 'Home';
+
+  @override
+  String get builderCancel => 'Cancel';
+
+  @override
+  String get builderDone => 'Done';
+
+  @override
+  String get builderMinutesSeconds => 'minutes and seconds';
+
+  @override
+  String get builderDecrease => 'decrease';
+
+  @override
+  String get builderIncrease => 'increase';
+
+  @override
+  String builderCorrectedFor(String label) {
+    return 'Adjusted for «$label»';
+  }
+
+  @override
+  String get builderCorrectedNote => 'the changes are marked with a dot';
+
+  @override
+  String get builderUndo => 'Undo';
+
+  @override
+  String get builderLeaveTitle => 'Leave without saving?';
+
+  @override
+  String get builderLeaveNote =>
+      'The edits are not saved — no new version will appear.';
+
+  @override
+  String get builderLeave => 'Leave';
+
+  @override
+  String get builderSavedOffline =>
+      'Saved on the phone — it will be sent once the connection is back';
+
+  @override
+  String get builderSavedVersion => 'Saved as a new version';
+
+  @override
+  String builderSaveFailed(String error) {
+    return 'Not saved: $error';
+  }
+
+  @override
+  String get builderEndsTimer => 'by time';
+
+  @override
+  String get builderEndsUser => 'by button';
+
+  @override
+  String get builderEndsSign => 'by a cue';
+
+  @override
+  String get builderEndsTimerHint => 'runs on a timer and ends by itself';
+
+  @override
+  String get builderEndsUserHint => 'the brew waits until you tap «next»';
+
+  @override
+  String get builderEndsSignHint =>
+      'the same button, but you press it on a cue: foam settled, water drained';
 }

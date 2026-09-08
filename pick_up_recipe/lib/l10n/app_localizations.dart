@@ -2317,6 +2317,288 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'{value} щ.'**
   String grinderClicks(String value);
+
+  /// Конструктор рецепта: заголовок экрана.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваш рецепт'**
+  String get builderTitle;
+
+  /// Конструктор: заголовок карточки с дозой, водой, температурой и помолом.
+  ///
+  /// In ru, this message translates to:
+  /// **'Параметры'**
+  String get builderParams;
+
+  /// Конструктор: название параметра «доза кофе» и заголовок его окна правки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Доза'**
+  String get builderDose;
+
+  /// Конструктор: название параметра «вода» — и общей, и той, что льёт шаг.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вода'**
+  String get builderWater;
+
+  /// Конструктор: название параметра «температура воды» и заголовок его окна правки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Температура'**
+  String get builderTemperature;
+
+  /// Конструктор: название параметра «помол» и заголовок его окна правки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помол'**
+  String get builderGrind;
+
+  /// Конструктор: название производного параметра «кофе к воде». Не правится.
+  ///
+  /// In ru, this message translates to:
+  /// **'Соотношение'**
+  String get builderRatio;
+
+  /// Единица массы рядом с полем ввода и в счётчике воды. Только буква, без числа.
+  ///
+  /// In ru, this message translates to:
+  /// **'г'**
+  String get builderGram;
+
+  /// Единица объёма рядом с полем ввода общей воды. Только буква, без числа.
+  ///
+  /// In ru, this message translates to:
+  /// **'мл'**
+  String get builderMillilitre;
+
+  /// Конструктор: заголовок списка шагов.
+  ///
+  /// In ru, this message translates to:
+  /// **'Шаги'**
+  String get builderSteps;
+
+  /// Конструктор: подсказка справа от заголовка «Шаги» — как переставить шаг.
+  ///
+  /// In ru, this message translates to:
+  /// **'потяните за ручку'**
+  String get builderDragHint;
+
+  /// Конструктор: пунктирная кнопка под списком шагов.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить шаг'**
+  String get builderAddStep;
+
+  /// Конструктор: заголовок окна правки названия и подсказки, и подпись шага, у которого названия нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Шаг'**
+  String get builderStep;
+
+  /// Конструктор: поле названия шага в окне правки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get builderStepName;
+
+  /// Конструктор: поле подсказки шага в окне правки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подсказка'**
+  String get builderStepTip;
+
+  /// Конструктор: кнопка справа от «Тип шага» у шага, тип которого справочнику неизвестен.
+  ///
+  /// In ru, this message translates to:
+  /// **'выбрать'**
+  String get builderChoose;
+
+  /// Конструктор: название строки у шага, который ждёт человека, — вместо длительности.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заканчивается'**
+  String get builderEndsLabel;
+
+  /// Длительность шага: название строки в конструкторе и заголовок шторки с барабаном.
+  ///
+  /// In ru, this message translates to:
+  /// **'Длительность'**
+  String get builderDuration;
+
+  /// Конструктор: у шага не заполнена подсказка.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подсказки нет'**
+  String get builderNoTip;
+
+  /// Конструктор: подсказка шага под его величинами.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подсказка · {tip}'**
+  String builderTipValue(String tip);
+
+  /// Конструктор: всплывающая подсказка у корзины в раскрытом шаге. Читается и голосовым помощником.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать шаг'**
+  String get builderRemoveStep;
+
+  /// Конструктор: итог — сколько воды разлито по шагам.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вода по шагам'**
+  String get builderStepWater;
+
+  /// Конструктор: значение итога по воде — сумма по шагам против общей воды рецепта.
+  ///
+  /// In ru, this message translates to:
+  /// **'{done} из {total} г'**
+  String builderStepWaterValue(int done, int total);
+
+  /// Конструктор: итог — сумма длительностей шагов.
+  ///
+  /// In ru, this message translates to:
+  /// **'Общее время'**
+  String get builderTotalTime;
+
+  /// Конструктор: кнопка сохранения рецепта новой версией.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить'**
+  String get builderSave;
+
+  /// Конструктор: кнопка, которая уводит заваривать собранный рецепт.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заварить'**
+  String get builderBrew;
+
+  /// Конструктор: кнопка выхода к пачкам, появляется после сохранения.
+  ///
+  /// In ru, this message translates to:
+  /// **'На главную'**
+  String get builderToHome;
+
+  /// Конструктор: отказ в окне правки значения. Ничего не меняет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отмена'**
+  String get builderCancel;
+
+  /// Готово: подтверждение в окне правки значения и в шторке с барабаном длительности.
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово'**
+  String get builderDone;
+
+  /// Шторка длительности: подпись справа от заголовка — что означают два барабана.
+  ///
+  /// In ru, this message translates to:
+  /// **'минуты и секунды'**
+  String get builderMinutesSeconds;
+
+  /// Счётчик величины: кнопка «минус». Видит только голосовой помощник.
+  ///
+  /// In ru, this message translates to:
+  /// **'убавить'**
+  String get builderDecrease;
+
+  /// Счётчик величины: кнопка «плюс». Видит только голосовой помощник.
+  ///
+  /// In ru, this message translates to:
+  /// **'прибавить'**
+  String get builderIncrease;
+
+  /// Конструктор: строка сверху — под какую жалобу система поправила рецепт.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поправлено под «{label}»'**
+  String builderCorrectedFor(String label);
+
+  /// Конструктор: как найти поправленное — под строкой «Поправлено под …».
+  ///
+  /// In ru, this message translates to:
+  /// **'изменения помечены точкой'**
+  String get builderCorrectedNote;
+
+  /// Конструктор: кнопка, возвращающая рецепт к тому, каким он был до поправки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменить'**
+  String get builderUndo;
+
+  /// Конструктор: заголовок вопроса при выходе с несохранёнными правками.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уйти без сохранения?'**
+  String get builderLeaveTitle;
+
+  /// Конструктор: что человек потеряет, если уйдёт сейчас.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правки не сохранены — новая версия не появится.'**
+  String get builderLeaveNote;
+
+  /// Конструктор: согласие уйти с экрана и потерять правки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уйти'**
+  String get builderLeave;
+
+  /// Конструктор: рецепт сохранён без сети и ждёт отправки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранено на телефоне — уедет, когда появится связь'**
+  String get builderSavedOffline;
+
+  /// Конструктор: рецепт уехал на сервер и стал новой версией.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранено новой версией'**
+  String get builderSavedVersion;
+
+  /// Конструктор: сохранить не удалось; {error} — ответ сервера как есть.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не сохранилось: {error}'**
+  String builderSaveFailed(String error);
+
+  /// Чем заканчивается шаг: сам, по таймеру. Подпись варианта в форме своего типа и в строке шага.
+  ///
+  /// In ru, this message translates to:
+  /// **'по времени'**
+  String get builderEndsTimer;
+
+  /// Чем заканчивается шаг: нажатием человека. Подпись варианта в форме своего типа и в строке шага.
+  ///
+  /// In ru, this message translates to:
+  /// **'по кнопке'**
+  String get builderEndsUser;
+
+  /// Чем заканчивается шаг: человек ждёт увиденного. Подпись варианта в форме своего типа и в строке шага.
+  ///
+  /// In ru, this message translates to:
+  /// **'по признаку'**
+  String get builderEndsSign;
+
+  /// Пояснение к варианту «по времени»: кто кого ждёт.
+  ///
+  /// In ru, this message translates to:
+  /// **'идёт по таймеру и кончается сам'**
+  String get builderEndsTimerHint;
+
+  /// Пояснение к варианту «по кнопке»: кто кого ждёт.
+  ///
+  /// In ru, this message translates to:
+  /// **'заваривание ждёт, пока вы нажмёте «дальше»'**
+  String get builderEndsUserHint;
+
+  /// Пояснение к варианту «по признаку»: кнопка та же, что и в «по кнопке», но момент задаёт увиденное.
+  ///
+  /// In ru, this message translates to:
+  /// **'та же кнопка, но жмёте её по признаку: пена осела, вода стекла'**
+  String get builderEndsSignHint;
 }
 
 class _AppLocalizationsDelegate

@@ -1771,7 +1771,6 @@
   "@grinderSaveOffline": {
     "description": "Всплывающее сообщение: сети нет, а набор кофемолок живёт на сервере и в очередь отправки не встаёт."
   },
-
   "grinderApproximately": "примерно {value}",
   "@grinderApproximately": {
     "description": "Помол, полученный пересчётом из крупности рецепта: шкалы кофемолок сходятся только по средней крупности, и число нельзя выдавать за точное.",
@@ -1781,17 +1780,14 @@
       }
     }
   },
-
   "grinderPickPrompt": "выберите кофемолку",
   "@grinderPickPrompt": {
     "description": "Короткая подпись под помолом в плитке показателей: кофемолка не выбрана, и помол показан словом."
   },
-
   "grinderPickPromptHint": "выберите кофемолку — покажем деление",
   "@grinderPickPromptHint": {
     "description": "То же приглашение строкой на экране заваривания, где места больше."
   },
-
   "grinderScaleOf": "делений {name}",
   "@grinderScaleOf": {
     "description": "Подпись под помолом: чьей кофемолки это деления. Имя кофемолки приходит из справочника и не переводится.",
@@ -1801,7 +1797,6 @@
       }
     }
   },
-
   "grinderClicks": "{value} щ.",
   "@grinderClicks": {
     "description": "Помол числом у старого рецепта, где шкала неизвестна: щелчки без имени кофемолки.",
@@ -1810,5 +1805,216 @@
         "type": "String"
       }
     }
+  },
+  "builderTitle": "Ваш рецепт",
+  "@builderTitle": {
+    "description": "Конструктор рецепта: заголовок экрана."
+  },
+  "builderParams": "Параметры",
+  "@builderParams": {
+    "description": "Конструктор: заголовок карточки с дозой, водой, температурой и помолом."
+  },
+  "builderDose": "Доза",
+  "@builderDose": {
+    "description": "Конструктор: название параметра «доза кофе» и заголовок его окна правки."
+  },
+  "builderWater": "Вода",
+  "@builderWater": {
+    "description": "Конструктор: название параметра «вода» — и общей, и той, что льёт шаг."
+  },
+  "builderTemperature": "Температура",
+  "@builderTemperature": {
+    "description": "Конструктор: название параметра «температура воды» и заголовок его окна правки."
+  },
+  "builderGrind": "Помол",
+  "@builderGrind": {
+    "description": "Конструктор: название параметра «помол» и заголовок его окна правки."
+  },
+  "builderRatio": "Соотношение",
+  "@builderRatio": {
+    "description": "Конструктор: название производного параметра «кофе к воде». Не правится."
+  },
+  "builderGram": "г",
+  "@builderGram": {
+    "description": "Единица массы рядом с полем ввода и в счётчике воды. Только буква, без числа."
+  },
+  "builderMillilitre": "мл",
+  "@builderMillilitre": {
+    "description": "Единица объёма рядом с полем ввода общей воды. Только буква, без числа."
+  },
+  "builderSteps": "Шаги",
+  "@builderSteps": {
+    "description": "Конструктор: заголовок списка шагов."
+  },
+  "builderDragHint": "потяните за ручку",
+  "@builderDragHint": {
+    "description": "Конструктор: подсказка справа от заголовка «Шаги» — как переставить шаг."
+  },
+  "builderAddStep": "Добавить шаг",
+  "@builderAddStep": {
+    "description": "Конструктор: пунктирная кнопка под списком шагов."
+  },
+  "builderStep": "Шаг",
+  "@builderStep": {
+    "description": "Конструктор: заголовок окна правки названия и подсказки, и подпись шага, у которого названия нет."
+  },
+  "builderStepName": "Название",
+  "@builderStepName": {
+    "description": "Конструктор: поле названия шага в окне правки."
+  },
+  "builderStepTip": "Подсказка",
+  "@builderStepTip": {
+    "description": "Конструктор: поле подсказки шага в окне правки."
+  },
+  "builderChoose": "выбрать",
+  "@builderChoose": {
+    "description": "Конструктор: кнопка справа от «Тип шага» у шага, тип которого справочнику неизвестен."
+  },
+  "builderEndsLabel": "Заканчивается",
+  "@builderEndsLabel": {
+    "description": "Конструктор: название строки у шага, который ждёт человека, — вместо длительности."
+  },
+  "builderDuration": "Длительность",
+  "@builderDuration": {
+    "description": "Длительность шага: название строки в конструкторе и заголовок шторки с барабаном."
+  },
+  "builderNoTip": "Подсказки нет",
+  "@builderNoTip": {
+    "description": "Конструктор: у шага не заполнена подсказка."
+  },
+  "builderTipValue": "Подсказка · {tip}",
+  "@builderTipValue": {
+    "description": "Конструктор: подсказка шага под его величинами.",
+    "placeholders": {
+      "tip": {
+        "type": "String"
+      }
+    }
+  },
+  "builderRemoveStep": "Убрать шаг",
+  "@builderRemoveStep": {
+    "description": "Конструктор: всплывающая подсказка у корзины в раскрытом шаге. Читается и голосовым помощником."
+  },
+  "builderStepWater": "Вода по шагам",
+  "@builderStepWater": {
+    "description": "Конструктор: итог — сколько воды разлито по шагам."
+  },
+  "builderStepWaterValue": "{done} из {total} г",
+  "@builderStepWaterValue": {
+    "description": "Конструктор: значение итога по воде — сумма по шагам против общей воды рецепта.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "builderTotalTime": "Общее время",
+  "@builderTotalTime": {
+    "description": "Конструктор: итог — сумма длительностей шагов."
+  },
+  "builderSave": "Сохранить",
+  "@builderSave": {
+    "description": "Конструктор: кнопка сохранения рецепта новой версией."
+  },
+  "builderBrew": "Заварить",
+  "@builderBrew": {
+    "description": "Конструктор: кнопка, которая уводит заваривать собранный рецепт."
+  },
+  "builderToHome": "На главную",
+  "@builderToHome": {
+    "description": "Конструктор: кнопка выхода к пачкам, появляется после сохранения."
+  },
+  "builderCancel": "Отмена",
+  "@builderCancel": {
+    "description": "Конструктор: отказ в окне правки значения. Ничего не меняет."
+  },
+  "builderDone": "Готово",
+  "@builderDone": {
+    "description": "Готово: подтверждение в окне правки значения и в шторке с барабаном длительности."
+  },
+  "builderMinutesSeconds": "минуты и секунды",
+  "@builderMinutesSeconds": {
+    "description": "Шторка длительности: подпись справа от заголовка — что означают два барабана."
+  },
+  "builderDecrease": "убавить",
+  "@builderDecrease": {
+    "description": "Счётчик величины: кнопка «минус». Видит только голосовой помощник."
+  },
+  "builderIncrease": "прибавить",
+  "@builderIncrease": {
+    "description": "Счётчик величины: кнопка «плюс». Видит только голосовой помощник."
+  },
+  "builderCorrectedFor": "Поправлено под «{label}»",
+  "@builderCorrectedFor": {
+    "description": "Конструктор: строка сверху — под какую жалобу система поправила рецепт.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "builderCorrectedNote": "изменения помечены точкой",
+  "@builderCorrectedNote": {
+    "description": "Конструктор: как найти поправленное — под строкой «Поправлено под …»."
+  },
+  "builderUndo": "Отменить",
+  "@builderUndo": {
+    "description": "Конструктор: кнопка, возвращающая рецепт к тому, каким он был до поправки."
+  },
+  "builderLeaveTitle": "Уйти без сохранения?",
+  "@builderLeaveTitle": {
+    "description": "Конструктор: заголовок вопроса при выходе с несохранёнными правками."
+  },
+  "builderLeaveNote": "Правки не сохранены — новая версия не появится.",
+  "@builderLeaveNote": {
+    "description": "Конструктор: что человек потеряет, если уйдёт сейчас."
+  },
+  "builderLeave": "Уйти",
+  "@builderLeave": {
+    "description": "Конструктор: согласие уйти с экрана и потерять правки."
+  },
+  "builderSavedOffline": "Сохранено на телефоне — уедет, когда появится связь",
+  "@builderSavedOffline": {
+    "description": "Конструктор: рецепт сохранён без сети и ждёт отправки."
+  },
+  "builderSavedVersion": "Сохранено новой версией",
+  "@builderSavedVersion": {
+    "description": "Конструктор: рецепт уехал на сервер и стал новой версией."
+  },
+  "builderSaveFailed": "Не сохранилось: {error}",
+  "@builderSaveFailed": {
+    "description": "Конструктор: сохранить не удалось; {error} — ответ сервера как есть.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "builderEndsTimer": "по времени",
+  "@builderEndsTimer": {
+    "description": "Чем заканчивается шаг: сам, по таймеру. Подпись варианта в форме своего типа и в строке шага."
+  },
+  "builderEndsUser": "по кнопке",
+  "@builderEndsUser": {
+    "description": "Чем заканчивается шаг: нажатием человека. Подпись варианта в форме своего типа и в строке шага."
+  },
+  "builderEndsSign": "по признаку",
+  "@builderEndsSign": {
+    "description": "Чем заканчивается шаг: человек ждёт увиденного. Подпись варианта в форме своего типа и в строке шага."
+  },
+  "builderEndsTimerHint": "идёт по таймеру и кончается сам",
+  "@builderEndsTimerHint": {
+    "description": "Пояснение к варианту «по времени»: кто кого ждёт."
+  },
+  "builderEndsUserHint": "заваривание ждёт, пока вы нажмёте «дальше»",
+  "@builderEndsUserHint": {
+    "description": "Пояснение к варианту «по кнопке»: кто кого ждёт."
+  },
+  "builderEndsSignHint": "та же кнопка, но жмёте её по признаку: пена осела, вода стекла",
+  "@builderEndsSignHint": {
+    "description": "Пояснение к варианту «по признаку»: кнопка та же, что и в «по кнопке», но момент задаёт увиденное."
   }
 }
