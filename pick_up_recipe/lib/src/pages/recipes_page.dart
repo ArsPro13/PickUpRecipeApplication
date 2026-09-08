@@ -207,10 +207,12 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
 
   /// Полёт улетающей карточки и её же возврат на место. Один контроллер на
   /// оба движения: одновременно они случиться не могут.
-  late final AnimationController _fly = AnimationController(
-    vsync: this,
-    duration: AppDuration.base,
-  );
+  ///
+  /// Заводится в `initState`, а не лениво при первом обращении: стопку, которую
+  /// не листали и которой не показывали подсказку, ленивый `late final` создавал
+  /// бы прямо в `dispose` — на уже отсоединённом элементе, а тому неоткуда взять
+  /// `TickerMode`. Уход с экрана падал бы в отладке на ровном месте.
+  late final AnimationController _fly;
 
   /// Верхняя карточка барабана. Барабан кольцевой: после последней версии
   /// снова первая — иначе после третьего свайпа человек упирается в пустоту
@@ -226,6 +228,7 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _fly = AnimationController(vsync: this, duration: AppDuration.base);
     WidgetsBinding.instance.addPostFrameCallback((_) => _hint());
   }
 
