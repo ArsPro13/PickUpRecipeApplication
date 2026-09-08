@@ -1538,4 +1538,116 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get builderEndsSignHint =>
       'та же кнопка, но жмёте её по признаку: пена осела, вода стекла';
+
+  @override
+  String get svcAuthBadFields => 'Проверьте почту и пароль';
+
+  @override
+  String get svcAuthWrongCredentials => 'Неверная почта или пароль';
+
+  @override
+  String get svcAuthEmailNotVerified => 'Почта не подтверждена';
+
+  @override
+  String get svcAuthUnknownEmail => 'Такой почты у нас нет';
+
+  @override
+  String get svcAuthEmailTaken => 'Эта почта уже занята';
+
+  @override
+  String get svcAuthTooOften => 'Слишком часто. Подождите минуту';
+
+  @override
+  String get svcAuthServerDown => 'Сервер не отвечает. Попробуйте ещё раз';
+
+  @override
+  String get svcAuthWrongCode => 'Код не подошёл. Проверьте письмо ещё раз';
+
+  @override
+  String get svcAuthNoTokens => 'Сервер ответил без токенов';
+
+  @override
+  String get svcAuthOffline => 'Нет связи. Проверьте интернет';
+
+  @override
+  String get svcAuthFailedLogin => 'Не удалось войти';
+
+  @override
+  String get svcAuthFailedSendLetter => 'Не удалось отправить письмо';
+
+  @override
+  String get svcAuthFailedChangePassword => 'Не удалось сменить пароль';
+
+  @override
+  String get svcAuthFailedRegister => 'Не удалось зарегистрироваться';
+
+  @override
+  String get svcAuthFailedVerifyEmail => 'Не удалось подтвердить почту';
+
+  @override
+  String svcSyncSent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Отправлено, что ждало связи: $count',
+      one: 'Отправлено то, что ждало связи',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String svcSyncDropped(int count) {
+    return 'Сервер не принял отложенное ($count) — оно устарело';
+  }
+
+  @override
+  String svcSyncMixed(int sent, int dropped) {
+    return 'Отправлено: $sent. Не принято сервером: $dropped';
+  }
+
+  @override
+  String get svcLegalClose => 'Закрыть';
+
+  @override
+  String svcLegalUnavailable(String link) {
+    return 'Документ сейчас недоступен. Он опубликован на сайте — откройте его там: $link';
+  }
+
+  @override
+  String svcLegalVersion(String version) {
+    return 'Редакция от $version';
+  }
+
+  @override
+  String get svcLegalUserAgreement => 'Пользовательское соглашение';
+
+  @override
+  String get svcLegalPrivacy => 'Политика обработки данных';
+
+  @override
+  String get svcLegalConsent => 'Согласие на обработку данных';
+
+  @override
+  String get svcCodeEmpty => 'Введите код с упаковки';
+
+  @override
+  String svcCodeLength(int expected, int actual) {
+    String _temp0 = intl.Intl.pluralLogic(
+      expected,
+      locale: localeName,
+      other: 'В коде $expected символов, а введено $actual',
+      many: 'В коде $expected символов, а введено $actual',
+      few: 'В коде $expected символа, а введено $actual',
+      one: 'В коде $expected символ, а введено $actual',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String svcCodeUnknownSymbol(String symbol) {
+    return 'Символа «$symbol» в кодах не бывает — проверьте, не 0 ли это вместо O';
+  }
+
+  @override
+  String get svcCodeChecksum => 'Код набран с ошибкой — проверьте символы';
 }

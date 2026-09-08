@@ -38,3 +38,41 @@ extension CodeProblemText on CodeProblem {
         CodeProblem.notDigits => texts.ruleCodeDigits,
       };
 }
+
+/// Текст ошибки сервера.
+///
+/// Слово сервера, если оно осмысленное, важнее нашего: «отправка писем не
+/// настроена» объясняет человеку больше, чем «сервер не отвечает». Переводить
+/// его нечем — это строка сервера, и она показывается как есть.
+extension AuthFailureText on AuthFailure {
+  String text(AppLocalizations texts) =>
+      detail ??
+      switch (reason) {
+        AuthReason.badFields => texts.svcAuthBadFields,
+        AuthReason.wrongCredentials => texts.svcAuthWrongCredentials,
+        AuthReason.emailNotVerified => texts.svcAuthEmailNotVerified,
+        AuthReason.unknownEmail => texts.svcAuthUnknownEmail,
+        AuthReason.emailTaken => texts.svcAuthEmailTaken,
+        AuthReason.tooOften => texts.svcAuthTooOften,
+        AuthReason.serverDown => texts.svcAuthServerDown,
+        AuthReason.wrongCode => texts.svcAuthWrongCode,
+        AuthReason.noTokens => texts.svcAuthNoTokens,
+        AuthReason.offline => texts.svcAuthOffline,
+        AuthReason.actionFailed => action.failedText(texts),
+      };
+}
+
+/// «Не удалось <действие>» — целой фразой на каждое действие.
+///
+/// Склейка «Не удалось» с глаголом держится только на русской грамматике:
+/// в английском у каждого действия свой глагол со своим дополнением, и
+/// собирать фразу из двух кусков там нечем.
+extension AuthActionText on AuthAction {
+  String failedText(AppLocalizations texts) => switch (this) {
+        AuthAction.login => texts.svcAuthFailedLogin,
+        AuthAction.sendLetter => texts.svcAuthFailedSendLetter,
+        AuthAction.changePassword => texts.svcAuthFailedChangePassword,
+        AuthAction.register => texts.svcAuthFailedRegister,
+        AuthAction.verifyEmail => texts.svcAuthFailedVerifyEmail,
+      };
+}

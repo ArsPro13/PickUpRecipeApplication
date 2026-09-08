@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../features/legal/data_sources/remote/legal_service.dart';
 import '../features/legal/domain/legal_document.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
+
+/// Заголовок листа по виду документа.
+///
+/// Вид документа домен отдаёт кодом, а заголовок подставляет экран: домен
+/// языка экрана не знает, а название документа у каждого языка своё.
+extension LegalKindText on LegalKind {
+  String title(AppLocalizations texts) => switch (this) {
+        LegalKind.userAgreement => texts.svcLegalUserAgreement,
+        LegalKind.privacy => texts.svcLegalPrivacy,
+        LegalKind.consent => texts.svcLegalConsent,
+      };
+}
 
 /// Показывает правовой документ листом снизу.
 ///
@@ -51,6 +64,8 @@ class _LegalSheetState extends State<_LegalSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
       minChildSize: 0.5,
@@ -65,14 +80,14 @@ class _LegalSheetState extends State<_LegalSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      widget.kind.title,
+                      widget.kind.title(texts),
                       style: context.texts.titleMedium,
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
-                    tooltip: 'Закрыть',
+                    tooltip: texts.svcLegalClose,
                   ),
                 ],
               ),
@@ -92,9 +107,7 @@ class _LegalSheetState extends State<_LegalSheet> {
                     return Padding(
                       padding: const EdgeInsets.all(AppSpacing.s6),
                       child: Text(
-                        'Документ сейчас недоступен. Он опубликован на '
-                        'сайте — откройте его там: '
-                        '${Uri.parse(widget.kind.path)}',
+                        texts.svcLegalUnavailable('${Uri.parse(widget.kind.path)}'),
                         style: context.texts.bodyMedium,
                       ),
                     );
@@ -109,7 +122,7 @@ class _LegalSheetState extends State<_LegalSheet> {
                         Padding(
                           padding: const EdgeInsets.only(bottom: AppSpacing.s3),
                           child: Text(
-                            'Редакция от ${document.version}',
+                            texts.svcLegalVersion(document.version),
                             style: context.texts.bodySmall,
                           ),
                         ),

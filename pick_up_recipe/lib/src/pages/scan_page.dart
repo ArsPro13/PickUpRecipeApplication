@@ -30,6 +30,7 @@ import '../general_widgets/app_surface.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
+import 'pack_code_texts.dart';
 
 @RoutePage()
 class ScanPage extends StatefulWidget {
@@ -70,8 +71,9 @@ class _ScanPageState extends State<ScanPage> {
 
   void _submit() {
     final normalized = PackCode.normalize(_code.text);
+    final texts = AppLocalizations.of(context);
 
-    setState(() => _error = PackCode.validationError(normalized));
+    setState(() => _error = PackCode.problem(normalized)?.text(texts));
     if (_error != null) return;
 
     context.router.push(CoffeeRoute(code: normalized));

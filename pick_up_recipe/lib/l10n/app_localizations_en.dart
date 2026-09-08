@@ -1519,4 +1519,115 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get builderEndsSignHint =>
       'the same button, but you press it on a cue: foam settled, water drained';
+
+  @override
+  String get svcAuthBadFields => 'Check the email and the password';
+
+  @override
+  String get svcAuthWrongCredentials => 'Wrong email or password';
+
+  @override
+  String get svcAuthEmailNotVerified => 'The email is not confirmed';
+
+  @override
+  String get svcAuthUnknownEmail => 'We have no such email';
+
+  @override
+  String get svcAuthEmailTaken => 'This email is already taken';
+
+  @override
+  String get svcAuthTooOften => 'Too often. Wait a minute';
+
+  @override
+  String get svcAuthServerDown => 'The server is not responding. Try again';
+
+  @override
+  String get svcAuthWrongCode => 'The code did not fit. Check the letter again';
+
+  @override
+  String get svcAuthNoTokens => 'The server answered without tokens';
+
+  @override
+  String get svcAuthOffline => 'No connection. Check the internet';
+
+  @override
+  String get svcAuthFailedLogin => 'Could not sign in';
+
+  @override
+  String get svcAuthFailedSendLetter => 'Could not send the letter';
+
+  @override
+  String get svcAuthFailedChangePassword => 'Could not change the password';
+
+  @override
+  String get svcAuthFailedRegister => 'Could not sign up';
+
+  @override
+  String get svcAuthFailedVerifyEmail => 'Could not confirm the email';
+
+  @override
+  String svcSyncSent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sent what was waiting for a connection: $count',
+      one: 'Sent what was waiting for a connection',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String svcSyncDropped(int count) {
+    return 'The server rejected what was waiting ($count) — it is out of date';
+  }
+
+  @override
+  String svcSyncMixed(int sent, int dropped) {
+    return 'Sent: $sent. Rejected by the server: $dropped';
+  }
+
+  @override
+  String get svcLegalClose => 'Close';
+
+  @override
+  String svcLegalUnavailable(String link) {
+    return 'The document is not available right now. It is published on the site — open it there: $link';
+  }
+
+  @override
+  String svcLegalVersion(String version) {
+    return 'Revision of $version';
+  }
+
+  @override
+  String get svcLegalUserAgreement => 'User agreement';
+
+  @override
+  String get svcLegalPrivacy => 'Data processing policy';
+
+  @override
+  String get svcLegalConsent => 'Consent to data processing';
+
+  @override
+  String get svcCodeEmpty => 'Enter the code from the pack';
+
+  @override
+  String svcCodeLength(int expected, int actual) {
+    String _temp0 = intl.Intl.pluralLogic(
+      expected,
+      locale: localeName,
+      other: 'The code is $expected characters long, and you entered $actual',
+      one: 'The code is $expected character long, and you entered $actual',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String svcCodeUnknownSymbol(String symbol) {
+    return 'There is no “$symbol” in codes — check whether it is a 0 instead of an O';
+  }
+
+  @override
+  String get svcCodeChecksum =>
+      'The code has a mistake in it — check the characters';
 }

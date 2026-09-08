@@ -2016,5 +2016,158 @@
   "builderEndsSignHint": "та же кнопка, но жмёте её по признаку: пена осела, вода стекла",
   "@builderEndsSignHint": {
     "description": "Пояснение к варианту «по признаку»: кнопка та же, что и в «по кнопке», но момент задаёт увиденное."
+  },
+  "svcAuthBadFields": "Проверьте почту и пароль",
+  "@svcAuthBadFields": {
+    "description": "Сервер ответил 400 и ничего не объяснил: подпись под формой входа, регистрации и смены пароля."
+  },
+  "svcAuthWrongCredentials": "Неверная почта или пароль",
+  "@svcAuthWrongCredentials": {
+    "description": "Сервер ответил 401. Подпись под полем пароля на входе: ошибка про пару целиком, а не про одну почту."
+  },
+  "svcAuthEmailNotVerified": "Почта не подтверждена",
+  "@svcAuthEmailNotVerified": {
+    "description": "Сервер ответил 403. Показывается там, где экран не увёл на ввод кода сам."
+  },
+  "svcAuthUnknownEmail": "Такой почты у нас нет",
+  "@svcAuthUnknownEmail": {
+    "description": "Сервер ответил 404: адрес не зарегистрирован. Подпись под полем почты."
+  },
+  "svcAuthEmailTaken": "Эта почта уже занята",
+  "@svcAuthEmailTaken": {
+    "description": "Сервер ответил 409 на регистрацию: адрес уже занят. Подпись под полем почты."
+  },
+  "svcAuthTooOften": "Слишком часто. Подождите минуту",
+  "@svcAuthTooOften": {
+    "description": "Сервер ответил 429: ограничение частоты на почтовых ручках. Подпись под формой."
+  },
+  "svcAuthServerDown": "Сервер не отвечает. Попробуйте ещё раз",
+  "@svcAuthServerDown": {
+    "description": "Сервер ответил 5xx и ничего не объяснил. Подпись под формой входа и регистрации."
+  },
+  "svcAuthWrongCode": "Код не подошёл. Проверьте письмо ещё раз",
+  "@svcAuthWrongCode": {
+    "description": "Код подтверждения из письма не принят. Подпись под полем кода на экране подтверждения почты."
+  },
+  "svcAuthNoTokens": "Сервер ответил без токенов",
+  "@svcAuthNoTokens": {
+    "description": "Вход прошёл, но токенов в ответе нет — сессии не будет. Подпись под формой входа."
+  },
+  "svcAuthOffline": "Нет связи. Проверьте интернет",
+  "@svcAuthOffline": {
+    "description": "До сервера не дошли. Подпись под формой входа, регистрации, подтверждения почты и смены пароля."
+  },
+  "svcAuthFailedLogin": "Не удалось войти",
+  "@svcAuthFailedLogin": {
+    "description": "Сервер отказал так, что разобрать нечего, а человек входил. Фраза собрана целиком: склейка «Не удалось» с глаголом по-английски не работает."
+  },
+  "svcAuthFailedSendLetter": "Не удалось отправить письмо",
+  "@svcAuthFailedSendLetter": {
+    "description": "То же, когда человек просил письмо для сброса пароля."
+  },
+  "svcAuthFailedChangePassword": "Не удалось сменить пароль",
+  "@svcAuthFailedChangePassword": {
+    "description": "То же, когда человек менял пароль по коду из письма."
+  },
+  "svcAuthFailedRegister": "Не удалось зарегистрироваться",
+  "@svcAuthFailedRegister": {
+    "description": "То же, когда человек заводил аккаунт."
+  },
+  "svcAuthFailedVerifyEmail": "Не удалось подтвердить почту",
+  "@svcAuthFailedVerifyEmail": {
+    "description": "То же, когда человек подтверждал почту кодом из письма."
+  },
+  "svcSyncSent": "{count, plural, =1{Отправлено то, что ждало связи} other{Отправлено, что ждало связи: {count}}}",
+  "@svcSyncSent": {
+    "description": "Всплывающая подсказка после досыла очереди: всё уехало. Одно дело называть числом незачем, поэтому у единицы своя ветка.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "svcSyncDropped": "Сервер не принял отложенное ({count}) — оно устарело",
+  "@svcSyncDropped": {
+    "description": "Всплывающая подсказка после досыла: не уехало ничего, сервер отверг всё насовсем.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "svcSyncMixed": "Отправлено: {sent}. Не принято сервером: {dropped}",
+  "@svcSyncMixed": {
+    "description": "Всплывающая подсказка после досыла: часть уехала, часть сервер отверг.",
+    "placeholders": {
+      "sent": {
+        "type": "int"
+      },
+      "dropped": {
+        "type": "int"
+      }
+    }
+  },
+  "svcLegalClose": "Закрыть",
+  "@svcLegalClose": {
+    "description": "Всплывающая подсказка крестика в шапке листа с правовым документом."
+  },
+  "svcLegalUnavailable": "Документ сейчас недоступен. Он опубликован на сайте — откройте его там: {link}",
+  "@svcLegalUnavailable": {
+    "description": "Лист правового документа: сервер документ не отдал. Прямо говорим об этом, потому что пустой лист читается как «согласия не требуется».",
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "svcLegalVersion": "Редакция от {version}",
+  "@svcLegalVersion": {
+    "description": "Подпись над текстом правового документа: дата редакции, с которой человек соглашается.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "svcLegalUserAgreement": "Пользовательское соглашение",
+  "@svcLegalUserAgreement": {
+    "description": "Заголовок листа с пользовательским соглашением."
+  },
+  "svcLegalPrivacy": "Политика обработки данных",
+  "@svcLegalPrivacy": {
+    "description": "Заголовок листа с политикой обработки данных."
+  },
+  "svcLegalConsent": "Согласие на обработку данных",
+  "@svcLegalConsent": {
+    "description": "Заголовок листа с согласием на обработку данных."
+  },
+  "svcCodeEmpty": "Введите код с упаковки",
+  "@svcCodeEmpty": {
+    "description": "Ошибка под полем ручного ввода кода: поле пустое."
+  },
+  "svcCodeLength": "{expected, plural, one{В коде {expected} символ, а введено {actual}} few{В коде {expected} символа, а введено {actual}} many{В коде {expected} символов, а введено {actual}} other{В коде {expected} символов, а введено {actual}}}",
+  "@svcCodeLength": {
+    "description": "Ошибка под полем ручного ввода кода: набрано не столько символов, сколько нужно. Склонение делает ICU, а не рука.",
+    "placeholders": {
+      "expected": {
+        "type": "int"
+      },
+      "actual": {
+        "type": "int"
+      }
+    }
+  },
+  "svcCodeUnknownSymbol": "Символа «{symbol}» в кодах не бывает — проверьте, не 0 ли это вместо O",
+  "@svcCodeUnknownSymbol": {
+    "description": "Ошибка под полем ручного ввода кода: символа нет в алфавите кодов. Ноль и буква O из алфавита исключены как раз потому, что путаются.",
+    "placeholders": {
+      "symbol": {
+        "type": "String"
+      }
+    }
+  },
+  "svcCodeChecksum": "Код набран с ошибкой — проверьте символы",
+  "@svcCodeChecksum": {
+    "description": "Ошибка под полем ручного ввода кода: контрольный символ не сошёлся, значит где-то опечатка."
   }
 }

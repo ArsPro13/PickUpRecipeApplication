@@ -109,60 +109,139 @@ abstract final class AuthRules {
   }
 }
 
+/// Действие, которое не удалось.
+///
+/// Раньше действие приезжало сюда глаголом («войти», «отправить письмо») и
+/// вставлялось в «Не удалось $action». По-русски склейка работает, по-английски
+/// разваливается: у каждого действия свой предлог и свой порядок слов. Поэтому
+/// сюда приезжает код, а фраза собирается в переводе целиком.
+enum AuthAction {
+  login,
+  sendLetter,
+  changePassword,
+  register,
+  verifyEmail,
+}
+
+/// Почему сервер не пустил.
+///
+/// Код, а не фраза: языка экрана домен не знает. Перевод кода в текст живёт
+/// рядом с экранами — lib/src/pages/auth_rule_texts.dart.
+enum AuthReason {
+  /// 400: сервер не разобрал присланное.
+  badFields,
+
+  /// 401: пара «почта + пароль» не подошла.
+  wrongCredentials,
+
+  /// 403: почта не подтверждена.
+  emailNotVerified,
+
+  /// 404: такого адреса у нас нет.
+  unknownEmail,
+
+  /// 409: адрес уже занят.
+  emailTaken,
+
+  /// 429: ограничение частоты на почтовых ручках.
+  tooOften,
+
+  /// 5xx: сервер не отвечает.
+  serverDown,
+
+  /// Код из письма не подошёл.
+  wrongCode,
+
+  /// Ответ 200, но токенов в нём нет.
+  noTokens,
+
+  /// До сервера не дошли.
+  offline,
+
+  /// Сервер сказал что-то, чего мы не разбираем: «не удалось <действие>».
+  actionFailed,
+}
+
 /// Ошибка запроса к серверу, разобранная по коду ответа.
 ///
 /// До этого в форму падал `e.toString()` — то есть человек видел
 /// `Exception: Failed to login user`. Разбор по коду даёт вместо этого текст,
 /// по которому понятно, что делать дальше.
 class AuthFailure implements Exception {
-  const AuthFailure(this.message, {this.statusCode, this.emailNotVerified = false});
+  const AuthFailure(
+    this.reason, {
+    this.action = AuthAction.login,
+    this.detail,
+    this.statusCode,
+  });
 
-  final String message;
+  /// Что именно случилось. Текст к коду подставляет экран.
+  final AuthReason reason;
+
+  /// Чего человек добивался. Нужно только для [AuthReason.actionFailed].
+  final AuthAction action;
+
+  /// Что сказал сервер своими словами, если сказал осмысленно.
+  ///
+  /// Показывается как есть: это строка сервера, а не наша, и переводить её
+  /// нечем. Осмысленное объяснение сервера важнее общей фразы: 503 «отправка
+  /// писем не настроена» говорит человеку, что дело не в нём, а «сервер не
+  /// отвечает» отправляет его проверять связь.
+  final String? detail;
+
   final int? statusCode;
 
   /// Почта не подтверждена: экран входа должен не ругаться, а увести на код.
-  final bool emailNotVerified;
+  bool get emailNotVerified => reason == AuthReason.emailNotVerified;
 
+  /// Только для журнала: человеку текст собирает экран.
   @override
-  String toString() => message;
+  String toString() => detail ?? 'AuthFailure(${reason.name}, $statusCode)';
 
   /// Разбирает ответ сервера в понятную человеку ошибку.
-  ///
-  /// Действие в родительном падеже — «войти», «зарегистрироваться»: оно
-  /// подставляется в текст ошибки там, где сервер не сказал ничего внятного.
-  static AuthFailure fromResponse(http.Response response, {required String action}) {
+  static AuthFailure fromResponse(
+    http.Response response, {
+    required AuthAction action,
+  }) {
     final detail = _messageOf(response);
 
     return switch (response.statusCode) {
       400 => AuthFailure(
-          detail ?? 'Проверьте почту и пароль',
+          AuthReason.badFields,
+          action: action,
+          detail: detail,
           statusCode: 400,
         ),
-      401 => const AuthFailure('Неверная почта или пароль', statusCode: 401),
+      401 => AuthFailure(AuthReason.wrongCredentials, action: action, statusCode: 401),
       403 => AuthFailure(
-          detail ?? 'Почта не подтверждена',
+          AuthReason.emailNotVerified,
+          action: action,
+          detail: detail,
           statusCode: 403,
-          emailNotVerified: true,
         ),
-      404 => const AuthFailure('Такой почты у нас нет', statusCode: 404),
-      409 => const AuthFailure('Эта почта уже занята', statusCode: 409),
+      404 => AuthFailure(AuthReason.unknownEmail, action: action, statusCode: 404),
+      409 => AuthFailure(AuthReason.emailTaken, action: action, statusCode: 409),
       // Ограничение частоты стоит на всех почтовых ручках: без него отправкой
       // писем можно засыпать чужой ящик.
-      429 => const AuthFailure('Слишком часто. Подождите минуту', statusCode: 429),
-      // Осмысленное объяснение сервера важнее общей фразы: 503 «отправка
-      // писем не настроена» говорит человеку, что дело не в нём, а «сервер не
-      // отвечает» отправляет его проверять связь.
+      429 => AuthFailure(AuthReason.tooOften, action: action, statusCode: 429),
       >= 500 => AuthFailure(
-          detail ?? 'Сервер не отвечает. Попробуйте ещё раз',
+          AuthReason.serverDown,
+          action: action,
+          detail: detail,
           statusCode: response.statusCode,
         ),
-      _ => AuthFailure(detail ?? 'Не удалось $action', statusCode: response.statusCode),
+      _ => AuthFailure(
+          AuthReason.actionFailed,
+          action: action,
+          detail: detail,
+          statusCode: response.statusCode,
+        ),
     };
   }
 
   /// Сеть недоступна. Отдельно от кодов ответа: тут не «сервер сказал», а
   /// «до сервера не дошли», и совет другой.
-  static const AuthFailure offline = AuthFailure('Нет связи. Проверьте интернет');
+  static const AuthFailure offline = AuthFailure(AuthReason.offline);
 
   /// Достаёт текст ошибки из тела ответа, если он там есть и осмысленный.
   static String? _messageOf(http.Response response) {

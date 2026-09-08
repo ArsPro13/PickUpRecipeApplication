@@ -80,10 +80,10 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
       setState(() {
         // 401 — это про пару целиком, и подписывать ею одну только почту
         // значило бы указать не туда.
-        _passwordError = failure.message;
+        _passwordError = failure.text(texts);
       });
     } catch (_) {
-      if (mounted) setState(() => _passwordError = AuthFailure.offline.message);
+      if (mounted) setState(() => _passwordError = AuthFailure.offline.text(texts));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

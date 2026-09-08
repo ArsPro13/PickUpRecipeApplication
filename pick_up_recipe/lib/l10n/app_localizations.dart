@@ -2599,6 +2599,174 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'та же кнопка, но жмёте её по признаку: пена осела, вода стекла'**
   String get builderEndsSignHint;
+
+  /// Сервер ответил 400 и ничего не объяснил: подпись под формой входа, регистрации и смены пароля.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверьте почту и пароль'**
+  String get svcAuthBadFields;
+
+  /// Сервер ответил 401. Подпись под полем пароля на входе: ошибка про пару целиком, а не про одну почту.
+  ///
+  /// In ru, this message translates to:
+  /// **'Неверная почта или пароль'**
+  String get svcAuthWrongCredentials;
+
+  /// Сервер ответил 403. Показывается там, где экран не увёл на ввод кода сам.
+  ///
+  /// In ru, this message translates to:
+  /// **'Почта не подтверждена'**
+  String get svcAuthEmailNotVerified;
+
+  /// Сервер ответил 404: адрес не зарегистрирован. Подпись под полем почты.
+  ///
+  /// In ru, this message translates to:
+  /// **'Такой почты у нас нет'**
+  String get svcAuthUnknownEmail;
+
+  /// Сервер ответил 409 на регистрацию: адрес уже занят. Подпись под полем почты.
+  ///
+  /// In ru, this message translates to:
+  /// **'Эта почта уже занята'**
+  String get svcAuthEmailTaken;
+
+  /// Сервер ответил 429: ограничение частоты на почтовых ручках. Подпись под формой.
+  ///
+  /// In ru, this message translates to:
+  /// **'Слишком часто. Подождите минуту'**
+  String get svcAuthTooOften;
+
+  /// Сервер ответил 5xx и ничего не объяснил. Подпись под формой входа и регистрации.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сервер не отвечает. Попробуйте ещё раз'**
+  String get svcAuthServerDown;
+
+  /// Код подтверждения из письма не принят. Подпись под полем кода на экране подтверждения почты.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код не подошёл. Проверьте письмо ещё раз'**
+  String get svcAuthWrongCode;
+
+  /// Вход прошёл, но токенов в ответе нет — сессии не будет. Подпись под формой входа.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сервер ответил без токенов'**
+  String get svcAuthNoTokens;
+
+  /// До сервера не дошли. Подпись под формой входа, регистрации, подтверждения почты и смены пароля.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет связи. Проверьте интернет'**
+  String get svcAuthOffline;
+
+  /// Сервер отказал так, что разобрать нечего, а человек входил. Фраза собрана целиком: склейка «Не удалось» с глаголом по-английски не работает.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось войти'**
+  String get svcAuthFailedLogin;
+
+  /// То же, когда человек просил письмо для сброса пароля.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось отправить письмо'**
+  String get svcAuthFailedSendLetter;
+
+  /// То же, когда человек менял пароль по коду из письма.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сменить пароль'**
+  String get svcAuthFailedChangePassword;
+
+  /// То же, когда человек заводил аккаунт.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось зарегистрироваться'**
+  String get svcAuthFailedRegister;
+
+  /// То же, когда человек подтверждал почту кодом из письма.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось подтвердить почту'**
+  String get svcAuthFailedVerifyEmail;
+
+  /// Всплывающая подсказка после досыла очереди: всё уехало. Одно дело называть числом незачем, поэтому у единицы своя ветка.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, =1{Отправлено то, что ждало связи} other{Отправлено, что ждало связи: {count}}}'**
+  String svcSyncSent(int count);
+
+  /// Всплывающая подсказка после досыла: не уехало ничего, сервер отверг всё насовсем.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сервер не принял отложенное ({count}) — оно устарело'**
+  String svcSyncDropped(int count);
+
+  /// Всплывающая подсказка после досыла: часть уехала, часть сервер отверг.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправлено: {sent}. Не принято сервером: {dropped}'**
+  String svcSyncMixed(int sent, int dropped);
+
+  /// Всплывающая подсказка крестика в шапке листа с правовым документом.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закрыть'**
+  String get svcLegalClose;
+
+  /// Лист правового документа: сервер документ не отдал. Прямо говорим об этом, потому что пустой лист читается как «согласия не требуется».
+  ///
+  /// In ru, this message translates to:
+  /// **'Документ сейчас недоступен. Он опубликован на сайте — откройте его там: {link}'**
+  String svcLegalUnavailable(String link);
+
+  /// Подпись над текстом правового документа: дата редакции, с которой человек соглашается.
+  ///
+  /// In ru, this message translates to:
+  /// **'Редакция от {version}'**
+  String svcLegalVersion(String version);
+
+  /// Заголовок листа с пользовательским соглашением.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пользовательское соглашение'**
+  String get svcLegalUserAgreement;
+
+  /// Заголовок листа с политикой обработки данных.
+  ///
+  /// In ru, this message translates to:
+  /// **'Политика обработки данных'**
+  String get svcLegalPrivacy;
+
+  /// Заголовок листа с согласием на обработку данных.
+  ///
+  /// In ru, this message translates to:
+  /// **'Согласие на обработку данных'**
+  String get svcLegalConsent;
+
+  /// Ошибка под полем ручного ввода кода: поле пустое.
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите код с упаковки'**
+  String get svcCodeEmpty;
+
+  /// Ошибка под полем ручного ввода кода: набрано не столько символов, сколько нужно. Склонение делает ICU, а не рука.
+  ///
+  /// In ru, this message translates to:
+  /// **'{expected, plural, one{В коде {expected} символ, а введено {actual}} few{В коде {expected} символа, а введено {actual}} many{В коде {expected} символов, а введено {actual}} other{В коде {expected} символов, а введено {actual}}}'**
+  String svcCodeLength(int expected, int actual);
+
+  /// Ошибка под полем ручного ввода кода: символа нет в алфавите кодов. Ноль и буква O из алфавита исключены как раз потому, что путаются.
+  ///
+  /// In ru, this message translates to:
+  /// **'Символа «{symbol}» в кодах не бывает — проверьте, не 0 ли это вместо O'**
+  String svcCodeUnknownSymbol(String symbol);
+
+  /// Ошибка под полем ручного ввода кода: контрольный символ не сошёлся, значит где-то опечатка.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код набран с ошибкой — проверьте символы'**
+  String get svcCodeChecksum;
 }
 
 class _AppLocalizationsDelegate
