@@ -459,7 +459,10 @@ void main() {
 
       final result = ahead.allowedFor(const []);
 
-      expect(result.map((group) => group.name), ['Вода', 'Прочие']);
+      // У собранной на телефоне группы имени с сервера нет: домен отдаёт
+      // метку, а слово для заголовка подставляет лист выбора типа.
+      expect(result.map((group) => group.name), ['Вода', '']);
+      expect(result.last.slug, otherGroupSlug);
       expect(result.last.types.single.slug, 'dilute');
     });
 

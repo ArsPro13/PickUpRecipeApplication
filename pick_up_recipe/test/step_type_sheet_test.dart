@@ -63,15 +63,21 @@ class _Outcome {
 ///
 /// Локаль задана явно: шапка листа подписана строками из словаря, а не
 /// системным языком машины с тестом.
-Future<_Outcome> _openSheet(WidgetTester tester) async {
+Future<_Outcome> _openSheet(
+  WidgetTester tester, {
+  Locale locale = const Locale('ru'),
+  StepTypeReference? reference,
+}) async {
   final outcome = _Outcome();
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [stepTypesProvider.overrideWith((ref) async => _reference())],
+      overrides: [
+        stepTypesProvider.overrideWith((ref) async => reference ?? _reference()),
+      ],
       child: MaterialApp(
         theme: lightTheme,
-        locale: const Locale('ru'),
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -162,6 +168,59 @@ void main() {
       expect(find.byType(BottomSheet), findsNothing);
       expect(outcome.closed, isTrue);
       expect(outcome.pick, isNull);
+    });
+  });
+
+  // Группа «всё остальное» собирается на телефоне: справочник может уехать
+  // вперёд клиента, и тип из незнакомой группы не должен пропасть. Имени с
+  // сервера у такой группы нет, и слово для заголовка ей даёт лист.
+  group('группа, которой нет в справочнике', () {
+    StepTypeReference withOrphan() {
+      return const StepTypeReference(
+        groups: [
+          StepTypeGroup(id: 1, slug: 'water', name: 'Вода', sortOrder: 0),
+        ],
+        types: [
+          StepType(
+            id: 1,
+            slug: 'pour',
+            name: 'Пролив',
+            shortName: 'пролив',
+            iconKey: 'pour',
+            groupId: 1,
+            sortOrder: 0,
+          ),
+          StepType(
+            id: 2,
+            slug: 'dilute',
+            name: 'Разбавить',
+            shortName: 'разбав.',
+            iconKey: 'pour',
+            groupId: 99,
+            sortOrder: 1,
+          ),
+        ],
+      );
+    }
+
+    testWidgets('по-русски заголовок — «Прочие»', (tester) async {
+      await _openSheet(tester, reference: withOrphan());
+
+      expect(find.text('Прочие'), findsOneWidget);
+      expect(find.text('разбав.'), findsOneWidget, reason: 'тип не потерялся');
+    });
+
+    testWidgets('на английском телефоне — «Other», а не пустая строка',
+        (tester) async {
+      await _openSheet(
+        tester,
+        locale: const Locale('en'),
+        reference: withOrphan(),
+      );
+
+      final en = lookupAppLocalizations(const Locale('en'));
+      expect(find.text(en.svcGroupOther), findsOneWidget);
+      expect(find.text('Прочие'), findsNothing);
     });
   });
 }

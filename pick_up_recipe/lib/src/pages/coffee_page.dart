@@ -18,6 +18,7 @@ import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/codes/application/coffee_state.dart';
 import '../features/codes/domain/pack_code.dart';
+import '../features/recipes/domain/models/step_type_model.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/last_brew_cache.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
@@ -512,7 +513,12 @@ class _GroupHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.s4, bottom: AppSpacing.s2),
-      child: Text(group.name, style: context.texts.bodyMedium),
+      child: Text(
+        group.slug == otherGroupSlug
+            ? AppLocalizations.of(context).svcGroupOther
+            : group.name,
+        style: context.texts.bodyMedium,
+      ),
     );
   }
 }

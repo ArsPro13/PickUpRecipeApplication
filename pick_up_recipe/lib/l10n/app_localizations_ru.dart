@@ -1650,4 +1650,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get svcCodeChecksum => 'Код набран с ошибкой — проверьте символы';
+
+  @override
+  String get svcGroupOther => 'Прочие';
 }

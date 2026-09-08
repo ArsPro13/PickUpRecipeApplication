@@ -268,6 +268,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       recipeGrinderId: _recipe.grinderId,
       recipeGrindStep: _recipe.grindStep,
       grinder: grinder,
+      texts: texts,
     );
 
     return HeroSurface(

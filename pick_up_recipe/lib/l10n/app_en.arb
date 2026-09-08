@@ -444,5 +444,6 @@
   "svcCodeEmpty": "Enter the code from the pack",
   "svcCodeLength": "{expected, plural, one{The code is {expected} character long, and you entered {actual}} other{The code is {expected} characters long, and you entered {actual}}}",
   "svcCodeUnknownSymbol": "There is no “{symbol}” in codes — check whether it is a 0 instead of an O",
-  "svcCodeChecksum": "The code has a mistake in it — check the characters"
+  "svcCodeChecksum": "The code has a mistake in it — check the characters",
+  "svcGroupOther": "Other"
 }

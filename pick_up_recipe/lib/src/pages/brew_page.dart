@@ -709,6 +709,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
         recipeGrinderId: widget.recipe.grinderId,
         recipeGrindStep: widget.recipe.grindStep,
         grinder: ref.watch(grinderStateProvider).primary,
+        texts: texts,
       ),
       inCup: _template == BrewTemplate.shot,
     );
@@ -1841,6 +1842,7 @@ class BrewParams {
           descriptorSlug: recipe.grindDescriptor,
           recipeGrinderId: recipe.grinderId,
           recipeGrindStep: recipe.grindStep,
+          texts: texts,
         );
     final grindValue = reading.isEmpty ? null : reading.label;
 

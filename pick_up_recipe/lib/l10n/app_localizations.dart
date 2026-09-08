@@ -2767,6 +2767,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Код набран с ошибкой — проверьте символы'**
   String get svcCodeChecksum;
+
+  /// Заголовок последней группы в справочниках приборов и типов шагов: сюда попадает всё, что справочник не отнёс ни к одной группе. Имени с сервера у неё нет — она собирается на телефоне.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прочие'**
+  String get svcGroupOther;
 }
 
 class _AppLocalizationsDelegate

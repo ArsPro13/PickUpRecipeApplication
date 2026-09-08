@@ -177,6 +177,7 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       recipeGrinderId: recipe.grinderId,
       recipeGrindStep: recipe.grindStep,
       grinder: ref.watch(grinderStateProvider).primary,
+      texts: AppLocalizations.of(context),
     );
   }
 

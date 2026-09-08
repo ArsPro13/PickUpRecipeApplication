@@ -1630,4 +1630,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get svcCodeChecksum =>
       'The code has a mistake in it — check the characters';
+
+  @override
+  String get svcGroupOther => 'Other';
 }

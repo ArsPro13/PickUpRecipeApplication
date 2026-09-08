@@ -8,6 +8,14 @@
 // `allowed_step_types`: справочник один на все двадцать методов, а живых
 // клеток у медианного метода семь из семнадцати.
 
+/// Метка группы «всё остальное».
+///
+/// Такой группы в справочнике нет — она собирается на телефоне из того, что
+/// сервер ни к одной группе не отнёс. Имени с сервера у неё поэтому тоже нет,
+/// и заголовок ей подставляет экран: домен не знает языка, на котором его
+/// прочитают. Метка одна на оба справочника — приборов и типов шагов.
+const String otherGroupSlug = 'other';
+
 /// Группа типов шагов: вода, действие, обслуживание, пауза, текст.
 class StepTypeGroup {
   const StepTypeGroup({
@@ -171,7 +179,9 @@ class StepTypeReference {
     final orphans = byGroup.values.expand((list) => list).toList();
     if (orphans.isNotEmpty) {
       orphans.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-      result.add(GroupedStepTypes(slug: 'other', name: 'Прочие', types: orphans));
+      // Имени с сервера у этой группы нет: она собирается здесь. Слово для
+      // заголовка подставляет экран по метке — домен языка не знает.
+      result.add(GroupedStepTypes(slug: otherGroupSlug, name: '', types: orphans));
     }
 
     return result;
