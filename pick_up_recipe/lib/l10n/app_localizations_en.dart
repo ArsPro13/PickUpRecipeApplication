@@ -1083,4 +1083,214 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get packFormHidePassword => 'Hide the password';
+
+  @override
+  String get brewAbortTitle => 'Stop brewing?';
+
+  @override
+  String get brewAbortNote =>
+      'The timer stops, and you will not be able to pick it up at the same second.';
+
+  @override
+  String get brewAbort => 'Stop';
+
+  @override
+  String get brewStay => 'Stay';
+
+  @override
+  String get brewEditRecipe => 'Edit recipe';
+
+  @override
+  String brewStepOf(int number, int count) {
+    return 'step $number of $count';
+  }
+
+  @override
+  String get brewGrindAndStart => 'Ground it, let\'s go';
+
+  @override
+  String get brewStart => 'Start';
+
+  @override
+  String get brewPause => 'Pause';
+
+  @override
+  String get brewResume => 'Continue';
+
+  @override
+  String get brewDidIt => 'Did it';
+
+  @override
+  String get brewRate => 'Rate it';
+
+  @override
+  String get brewSkip => 'Skip';
+
+  @override
+  String get brewHappened => 'It happened';
+
+  @override
+  String get brewTitle => 'Brewing';
+
+  @override
+  String get brewNoSteps => 'This recipe has no steps';
+
+  @override
+  String get brewNoStepsNote =>
+      'Nothing to play. Build the recipe again or pick another one.';
+
+  @override
+  String get brewSteepingOver =>
+      'The steeping finished while the app was closed. Do the remaining steps — from here the coffee only turns bitter.';
+
+  @override
+  String brewSteepingGoes(String away) {
+    return 'Steeping is under way: $away so far. You can close the screen — the time is counted by the clock, not by the timer on the screen.';
+  }
+
+  @override
+  String get brewToRemainingSteps => 'To the remaining steps';
+
+  @override
+  String get brewCallItFinished => 'Call it finished';
+
+  @override
+  String brewAwayTitle(String away) {
+    return 'It has been $away';
+  }
+
+  @override
+  String brewStoppedAtStep(String step) {
+    return 'You stopped at “$step”. Coffee does not wait that long: the water has cooled and the cone has drained.';
+  }
+
+  @override
+  String get brewStartOver => 'Start over';
+
+  @override
+  String get brewStartOverNote =>
+      'Usually the right call: 15 g of coffee costs less than a ruined cup';
+
+  @override
+  String get brewContinueFromHere => 'Continue from here';
+
+  @override
+  String get brewContinueFromHereNote =>
+      'If you were pouring all this time and just switched the screen off';
+
+  @override
+  String get brewCallItFinishedNote =>
+      'It brewed, you just never got to the rating — let\'s do it now';
+
+  @override
+  String brewAwayHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String brewAwayHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String brewAwayMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '$minutes minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewAwaySeconds(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String get brewGrindCoffee => 'Grind the coffee';
+
+  @override
+  String get brewWaitingForYou => 'waiting for you';
+
+  @override
+  String brewReadyAt(String time) {
+    return 'at $time';
+  }
+
+  @override
+  String brewPouredOf(String poured, String total) {
+    return '$poured of $total g poured';
+  }
+
+  @override
+  String brewTargetInCup(String grams) {
+    return 'target — $grams g in the cup';
+  }
+
+  @override
+  String brewTargetInCupDone(String grams) {
+    return 'done · $grams g in the cup';
+  }
+
+  @override
+  String brewTargetInCupFirstDrops(String grams) {
+    return 'target — $grams g in the cup · first drops at 5–7 s';
+  }
+
+  @override
+  String get brewTimeIsAGuide => 'the time is a guide, watch for the sign';
+
+  @override
+  String brewTimeIsAGuideWithWater(String water) {
+    return 'the time is a guide · $water';
+  }
+
+  @override
+  String brewReadyIn(String time) {
+    return 'ready in $time';
+  }
+
+  @override
+  String get brewStepNotStarted => 'not started yet';
+
+  @override
+  String get brewLeft => 'left';
+
+  @override
+  String get brewOnPause => 'paused';
+
+  @override
+  String get brewTapDidIt => 'tap “Did it” when you finish';
+
+  @override
+  String get brewFinished => 'done';
+
+  @override
+  String get brewOptional => 'optional';
+
+  @override
+  String get brewTipExpand => 'Show the whole tip';
+
+  @override
+  String get brewTipCollapse => 'Collapse the tip';
+
+  @override
+  String get brewPhasePrep => 'preparation';
+
+  @override
+  String get brewPhaseBrewing => 'brewing';
+
+  @override
+  String get brewPhaseFinish => 'finish';
+
+  @override
+  String get brewEndsBySign => 'by the sign';
+
+  @override
+  String get brewEndsByTap => 'by tap';
+
+  @override
+  String get brewUntilYouSayDidIt => 'until you say “did it”';
 }

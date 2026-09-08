@@ -1867,6 +1867,342 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Скрыть пароль'**
   String get packFormHidePassword;
+
+  /// Заваривание: вопрос при уходе с идущего заваривания — кнопкой телефона или стрелкой в шапке.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прервать заваривание?'**
+  String get brewAbortTitle;
+
+  /// Заваривание: чем кончится уход — пояснение под вопросом «Прервать заваривание?».
+  ///
+  /// In ru, this message translates to:
+  /// **'Отсчёт остановится, и вернуться к нему на этой же секунде не выйдет.'**
+  String get brewAbortNote;
+
+  /// Заваривание: согласие уйти в вопросе перед уходом. Останавливает отсчёт.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прервать'**
+  String get brewAbort;
+
+  /// Заваривание: отказ уходить в вопросе перед уходом. Отсчёт остаётся идти.
+  ///
+  /// In ru, this message translates to:
+  /// **'Остаться'**
+  String get brewStay;
+
+  /// Заваривание: подсказка карандаша в шапке. Отдельного экрана рецепта нет, правка живёт здесь.
+  ///
+  /// In ru, this message translates to:
+  /// **'Править рецепт'**
+  String get brewEditRecipe;
+
+  /// Заваривание: какой шаг идёт сейчас, в строке параметров под шапкой.
+  ///
+  /// In ru, this message translates to:
+  /// **'шаг {number} из {count}'**
+  String brewStepOf(int number, int count);
+
+  /// Заваривание: главная кнопка до старта, когда рамка над ней просит смолоть кофе.
+  ///
+  /// In ru, this message translates to:
+  /// **'Смолол, начинаем'**
+  String get brewGrindAndStart;
+
+  /// Заваривание: главная кнопка до старта, когда молоть уже нечего — доза и помол неизвестны.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начать'**
+  String get brewStart;
+
+  /// Заваривание: главная кнопка у идущего отсчёта.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пауза'**
+  String get brewPause;
+
+  /// Заваривание: главная кнопка на паузе, она же возврат к брошенному завариванию.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продолжить'**
+  String get brewResume;
+
+  /// Заваривание: главная кнопка на шаге, который ждёт человека, и вторая кнопка на шаге усилия руки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сделал'**
+  String get brewDidIt;
+
+  /// Заваривание: главная кнопка после финала — уводит на оценку.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оценить'**
+  String get brewRate;
+
+  /// Заваривание: вторая кнопка на обычном шаге. Шаг не сделан, а выброшен.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пропустить'**
+  String get brewSkip;
+
+  /// Заваривание: вторая кнопка на шаге с признаком окончания — признак видно и слышно.
+  ///
+  /// In ru, this message translates to:
+  /// **'Случилось'**
+  String get brewHappened;
+
+  /// Заваривание: шапка экрана у рецепта без шагов, где название показывать не из чего.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заваривание'**
+  String get brewTitle;
+
+  /// Заваривание: рецепт без шагов — проигрывать нечего.
+  ///
+  /// In ru, this message translates to:
+  /// **'В рецепте нет шагов'**
+  String get brewNoSteps;
+
+  /// Заваривание: что делать с рецептом без шагов.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проигрывать нечего. Соберите рецепт заново или выберите другой.'**
+  String get brewNoStepsNote;
+
+  /// Заваривание: вернулись к колд брю, который успел настояться без нас.
+  ///
+  /// In ru, this message translates to:
+  /// **'Настаивание закончилось, пока приложение было закрыто. Доделайте оставшиеся шаги — дальше кофе только горчит.'**
+  String get brewSteepingOver;
+
+  /// Заваривание: вернулись к колд брю, который ещё настаивается.
+  ///
+  /// In ru, this message translates to:
+  /// **'Настаивание идёт: прошло {away}. Экран можно закрывать — время считается по часам, а не по таймеру на экране.'**
+  String brewSteepingGoes(String away);
+
+  /// Заваривание: у настоявшегося колд брю остались шаги после настаивания.
+  ///
+  /// In ru, this message translates to:
+  /// **'К оставшимся шагам'**
+  String get brewToRemainingSteps;
+
+  /// Заваривание: третий исход у брошенного заваривания — заварилось, просто до оценки руки не дошли.
+  ///
+  /// In ru, this message translates to:
+  /// **'Считать законченным'**
+  String get brewCallItFinished;
+
+  /// Заваривание: сколько нас не было, заголовок экрана возврата к брошенному завариванию.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прошло {away}'**
+  String brewAwayTitle(String away);
+
+  /// Заваривание: на чём остановились и почему возвращаться поздно. Название шага приходит с сервера.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы остановились на шаге «{step}». Столько кофе уже не стоит на месте: вода остыла, воронка проливается.'**
+  String brewStoppedAtStep(String step);
+
+  /// Заваривание: первый исход у брошенного заваривания.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начать заново'**
+  String get brewStartOver;
+
+  /// Заваривание: почему начать заново обычно правильно.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обычно правильный выбор: 15 г кофе дешевле испорченной чашки'**
+  String get brewStartOverNote;
+
+  /// Заваривание: второй исход у брошенного заваривания.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продолжить с этого места'**
+  String get brewContinueFromHere;
+
+  /// Заваривание: когда продолжить с этого места всё-таки имеет смысл.
+  ///
+  /// In ru, this message translates to:
+  /// **'Если вы всё это время лили и просто выключили экран'**
+  String get brewContinueFromHereNote;
+
+  /// Заваривание: когда брошенное заваривание считать законченным.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заварилось, но до оценки руки не дошли — оценим сейчас'**
+  String get brewCallItFinishedNote;
+
+  /// Заваривание: длительность в целых часах — сколько нас не было или сколько осталось.
+  ///
+  /// In ru, this message translates to:
+  /// **'{hours} ч'**
+  String brewAwayHours(int hours);
+
+  /// Заваривание: длительность в часах с минутами.
+  ///
+  /// In ru, this message translates to:
+  /// **'{hours} ч {minutes} мин'**
+  String brewAwayHoursMinutes(int hours, int minutes);
+
+  /// Заваривание: длительность в минутах.
+  ///
+  /// In ru, this message translates to:
+  /// **'{minutes, plural, one{{minutes} минута} few{{minutes} минуты} many{{minutes} минут} other{{minutes} минут}}'**
+  String brewAwayMinutes(int minutes);
+
+  /// Заваривание: длительность меньше минуты.
+  ///
+  /// In ru, this message translates to:
+  /// **'{seconds} с'**
+  String brewAwaySeconds(int seconds);
+
+  /// Заваривание: рамка до старта занята подготовкой, и это её заголовок.
+  ///
+  /// In ru, this message translates to:
+  /// **'Смелите кофе'**
+  String get brewGrindCoffee;
+
+  /// Заваривание: центр рамки на шаге, который ждёт человека, а признака окончания у шага нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'ждём вас'**
+  String get brewWaitingForYou;
+
+  /// Заваривание: у шага длиннее получаса в центре рамки не отсчёт, а время готовности — его сверяют с будильником.
+  ///
+  /// In ru, this message translates to:
+  /// **'в {time}'**
+  String brewReadyAt(String time);
+
+  /// Заваривание: сколько воды должно быть налито к этой секунде.
+  ///
+  /// In ru, this message translates to:
+  /// **'налито {poured} из {total} г'**
+  String brewPouredOf(String poured, String total);
+
+  /// Заваривание: у эспрессо цель — вес напитка в чашке, а не налитая вода.
+  ///
+  /// In ru, this message translates to:
+  /// **'цель — {grams} г в чашке'**
+  String brewTargetInCup(String grams);
+
+  /// Заваривание: та же цель эспрессо после финала.
+  ///
+  /// In ru, this message translates to:
+  /// **'готово · {grams} г в чашке'**
+  String brewTargetInCupDone(String grams);
+
+  /// Заваривание: та же цель эспрессо во время пролива, с ориентиром по первым каплям.
+  ///
+  /// In ru, this message translates to:
+  /// **'цель — {grams} г в чашке · первые капли на 5–7 с'**
+  String brewTargetInCupFirstDrops(String grams);
+
+  /// Заваривание: у шага с признаком окончания секундомер ничего не решает.
+  ///
+  /// In ru, this message translates to:
+  /// **'время — ориентир, смотрите на признак'**
+  String get brewTimeIsAGuide;
+
+  /// Заваривание: то же, когда под таймером есть ещё и вода.
+  ///
+  /// In ru, this message translates to:
+  /// **'время — ориентир · {water}'**
+  String brewTimeIsAGuideWithWater(String water);
+
+  /// Заваривание: под временем готовности длинного шага — через сколько это будет.
+  ///
+  /// In ru, this message translates to:
+  /// **'готово через {time}'**
+  String brewReadyIn(String time);
+
+  /// Заваривание: подпись под таймером до старта.
+  ///
+  /// In ru, this message translates to:
+  /// **'шаг ещё не начат'**
+  String get brewStepNotStarted;
+
+  /// Заваривание: подпись под таймером идущего шага.
+  ///
+  /// In ru, this message translates to:
+  /// **'осталось'**
+  String get brewLeft;
+
+  /// Заваривание: подпись под таймером на паузе.
+  ///
+  /// In ru, this message translates to:
+  /// **'на паузе'**
+  String get brewOnPause;
+
+  /// Заваривание: подпись под таймером шага, который ждёт человека. Слово в кавычках — надпись главной кнопки.
+  ///
+  /// In ru, this message translates to:
+  /// **'нажмите «Сделал», когда закончите'**
+  String get brewTapDidIt;
+
+  /// Заваривание: подпись под таймером после финала.
+  ///
+  /// In ru, this message translates to:
+  /// **'готово'**
+  String get brewFinished;
+
+  /// Заваривание: метка необязательного шага в списке шагов.
+  ///
+  /// In ru, this message translates to:
+  /// **'не обязательно'**
+  String get brewOptional;
+
+  /// Заваривание: подсказка шага не влезла в строку — шеврон раскрывает её.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать подсказку целиком'**
+  String get brewTipExpand;
+
+  /// Заваривание: тот же шеврон у раскрытой подсказки шага.
+  ///
+  /// In ru, this message translates to:
+  /// **'Свернуть подсказку'**
+  String get brewTipCollapse;
+
+  /// Заваривание: заголовок первой фазы в списке шагов — смолоть, налить лёд.
+  ///
+  /// In ru, this message translates to:
+  /// **'подготовка'**
+  String get brewPhasePrep;
+
+  /// Заваривание: заголовок средней фазы в списке шагов — проливы, помешивания, ожидание.
+  ///
+  /// In ru, this message translates to:
+  /// **'заваривание'**
+  String get brewPhaseBrewing;
+
+  /// Заваривание: заголовок последней фазы в списке шагов — снять фильтр, разбавить, подать.
+  ///
+  /// In ru, this message translates to:
+  /// **'финал'**
+  String get brewPhaseFinish;
+
+  /// Заваривание: на месте времени у шага, который кончается признаком, а не секундомером.
+  ///
+  /// In ru, this message translates to:
+  /// **'по признаку'**
+  String get brewEndsBySign;
+
+  /// Заваривание: на месте времени у шага, который ждёт слова «сделал».
+  ///
+  /// In ru, this message translates to:
+  /// **'по кнопке'**
+  String get brewEndsByTap;
+
+  /// Заваривание: метка на карточке шага, который ждёт человека. Слово в кавычках — надпись главной кнопки.
+  ///
+  /// In ru, this message translates to:
+  /// **'пока не скажете «сделал»'**
+  String get brewUntilYouSayDidIt;
 }
 
 class _AppLocalizationsDelegate

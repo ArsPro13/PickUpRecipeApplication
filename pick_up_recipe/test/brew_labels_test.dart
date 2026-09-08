@@ -4,7 +4,9 @@
 // вторая кнопка звалась «Пропустить» — то есть обещала выбросить шаг ровно
 // там, где человек собирался его подтвердить.
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/brew_step.dart';
 import 'package:pick_up_recipe/src/pages/brew_page.dart';
 
@@ -25,48 +27,56 @@ BrewStep step({
 }
 
 void main() {
+  // Надписи приходят из словаря: тот же выбор на английском экране даёт
+  // «Skip» и «It happened».
+  late AppLocalizations ru;
+
+  setUpAll(() async {
+    ru = await AppLocalizations.delegate.load(const Locale('ru'));
+  });
+
   group('надпись второй кнопки', () {
     test('на обычном шаге — «Пропустить»', () {
-      expect(brewSkipLabel(step()), 'Пропустить');
+      expect(brewSkipLabel(ru, step()), 'Пропустить');
     });
 
     test('на шаге по кнопке — «Пропустить», а не «Сделал»', () {
       // «Сделал» на этом шаге уже стоит на главной кнопке: две кнопки с
       // одинаковой надписью и разным исходом — худшее из возможного.
       expect(
-        brewSkipLabel(step(untilUser: true, duration: Duration.zero)),
+        brewSkipLabel(ru, step(untilUser: true, duration: Duration.zero)),
         'Пропустить',
       );
     });
 
     test('на шаге с признаком — «Случилось»', () {
-      expect(brewSkipLabel(step(untilSign: 'пена поднялась')), 'Случилось');
+      expect(brewSkipLabel(ru, step(untilSign: 'пена поднялась')), 'Случилось');
     });
 
     test('на усилии руки — «Сделал»', () {
-      expect(brewSkipLabel(step(type: BrewStepType.press)), 'Сделал');
-      expect(brewSkipLabel(step(type: BrewStepType.invert)), 'Сделал');
-      expect(brewSkipLabel(step(type: BrewStepType.flip)), 'Сделал');
+      expect(brewSkipLabel(ru, step(type: BrewStepType.press)), 'Сделал');
+      expect(brewSkipLabel(ru, step(type: BrewStepType.invert)), 'Сделал');
+      expect(brewSkipLabel(ru, step(type: BrewStepType.flip)), 'Сделал');
     });
 
     test('шаг важнее шаблона: пролив в рецепте с отжимом остаётся пропуском', () {
       // Рецепт аэропресса целиком — «усилие», но шаг пролива в нём
       // кончается секундомером, и «Сделал» на нём врало бы.
-      expect(brewSkipLabel(step(type: BrewStepType.pour)), 'Пропустить');
+      expect(brewSkipLabel(ru, step(type: BrewStepType.pour)), 'Пропустить');
     });
   });
 
   group('метка на месте таймера', () {
     test('у шага по кнопке вместо «0:00» видно, чем он кончается', () {
       expect(
-        brewStepEndNote(step(untilUser: true, duration: Duration.zero)),
+        brewStepEndNote(ru, step(untilUser: true, duration: Duration.zero)),
         'по кнопке',
       );
     });
 
     test('признак важнее кнопки: он и есть ответ «когда»', () {
       expect(
-        brewStepEndNote(step(
+        brewStepEndNote(ru, step(
           untilUser: true,
           untilSign: 'воронка опустела',
           duration: Duration.zero,
@@ -76,8 +86,8 @@ void main() {
     });
 
     test('у шага со временем метки нет — там стоит время', () {
-      expect(brewStepEndNote(step()), isEmpty);
-      expect(brewStepEndNote(step(untilSign: 'пена поднялась')), isEmpty,
+      expect(brewStepEndNote(ru, step()), isEmpty);
+      expect(brewStepEndNote(ru, step(untilSign: 'пена поднялась')), isEmpty,
           reason: 'признак — ориентир, но таймер у шага настоящий');
     });
   });

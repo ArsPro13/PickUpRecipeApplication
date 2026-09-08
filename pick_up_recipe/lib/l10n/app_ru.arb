@@ -1401,5 +1401,313 @@
   "packFormHidePassword": "Скрыть пароль",
   "@packFormHidePassword": {
     "description": "Тот же глаз, когда пароль показан."
+  },
+  "brewAbortTitle": "Прервать заваривание?",
+  "@brewAbortTitle": {
+    "description": "Заваривание: вопрос при уходе с идущего заваривания — кнопкой телефона или стрелкой в шапке."
+  },
+  "brewAbortNote": "Отсчёт остановится, и вернуться к нему на этой же секунде не выйдет.",
+  "@brewAbortNote": {
+    "description": "Заваривание: чем кончится уход — пояснение под вопросом «Прервать заваривание?»."
+  },
+  "brewAbort": "Прервать",
+  "@brewAbort": {
+    "description": "Заваривание: согласие уйти в вопросе перед уходом. Останавливает отсчёт."
+  },
+  "brewStay": "Остаться",
+  "@brewStay": {
+    "description": "Заваривание: отказ уходить в вопросе перед уходом. Отсчёт остаётся идти."
+  },
+  "brewEditRecipe": "Править рецепт",
+  "@brewEditRecipe": {
+    "description": "Заваривание: подсказка карандаша в шапке. Отдельного экрана рецепта нет, правка живёт здесь."
+  },
+  "brewStepOf": "шаг {number} из {count}",
+  "@brewStepOf": {
+    "description": "Заваривание: какой шаг идёт сейчас, в строке параметров под шапкой.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "brewGrindAndStart": "Смолол, начинаем",
+  "@brewGrindAndStart": {
+    "description": "Заваривание: главная кнопка до старта, когда рамка над ней просит смолоть кофе."
+  },
+  "brewStart": "Начать",
+  "@brewStart": {
+    "description": "Заваривание: главная кнопка до старта, когда молоть уже нечего — доза и помол неизвестны."
+  },
+  "brewPause": "Пауза",
+  "@brewPause": {
+    "description": "Заваривание: главная кнопка у идущего отсчёта."
+  },
+  "brewResume": "Продолжить",
+  "@brewResume": {
+    "description": "Заваривание: главная кнопка на паузе, она же возврат к брошенному завариванию."
+  },
+  "brewDidIt": "Сделал",
+  "@brewDidIt": {
+    "description": "Заваривание: главная кнопка на шаге, который ждёт человека, и вторая кнопка на шаге усилия руки."
+  },
+  "brewRate": "Оценить",
+  "@brewRate": {
+    "description": "Заваривание: главная кнопка после финала — уводит на оценку."
+  },
+  "brewSkip": "Пропустить",
+  "@brewSkip": {
+    "description": "Заваривание: вторая кнопка на обычном шаге. Шаг не сделан, а выброшен."
+  },
+  "brewHappened": "Случилось",
+  "@brewHappened": {
+    "description": "Заваривание: вторая кнопка на шаге с признаком окончания — признак видно и слышно."
+  },
+  "brewTitle": "Заваривание",
+  "@brewTitle": {
+    "description": "Заваривание: шапка экрана у рецепта без шагов, где название показывать не из чего."
+  },
+  "brewNoSteps": "В рецепте нет шагов",
+  "@brewNoSteps": {
+    "description": "Заваривание: рецепт без шагов — проигрывать нечего."
+  },
+  "brewNoStepsNote": "Проигрывать нечего. Соберите рецепт заново или выберите другой.",
+  "@brewNoStepsNote": {
+    "description": "Заваривание: что делать с рецептом без шагов."
+  },
+  "brewSteepingOver": "Настаивание закончилось, пока приложение было закрыто. Доделайте оставшиеся шаги — дальше кофе только горчит.",
+  "@brewSteepingOver": {
+    "description": "Заваривание: вернулись к колд брю, который успел настояться без нас."
+  },
+  "brewSteepingGoes": "Настаивание идёт: прошло {away}. Экран можно закрывать — время считается по часам, а не по таймеру на экране.",
+  "@brewSteepingGoes": {
+    "description": "Заваривание: вернулись к колд брю, который ещё настаивается.",
+    "placeholders": {
+      "away": {
+        "type": "String"
+      }
+    }
+  },
+  "brewToRemainingSteps": "К оставшимся шагам",
+  "@brewToRemainingSteps": {
+    "description": "Заваривание: у настоявшегося колд брю остались шаги после настаивания."
+  },
+  "brewCallItFinished": "Считать законченным",
+  "@brewCallItFinished": {
+    "description": "Заваривание: третий исход у брошенного заваривания — заварилось, просто до оценки руки не дошли."
+  },
+  "brewAwayTitle": "Прошло {away}",
+  "@brewAwayTitle": {
+    "description": "Заваривание: сколько нас не было, заголовок экрана возврата к брошенному завариванию.",
+    "placeholders": {
+      "away": {
+        "type": "String"
+      }
+    }
+  },
+  "brewStoppedAtStep": "Вы остановились на шаге «{step}». Столько кофе уже не стоит на месте: вода остыла, воронка проливается.",
+  "@brewStoppedAtStep": {
+    "description": "Заваривание: на чём остановились и почему возвращаться поздно. Название шага приходит с сервера.",
+    "placeholders": {
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+  "brewStartOver": "Начать заново",
+  "@brewStartOver": {
+    "description": "Заваривание: первый исход у брошенного заваривания."
+  },
+  "brewStartOverNote": "Обычно правильный выбор: 15 г кофе дешевле испорченной чашки",
+  "@brewStartOverNote": {
+    "description": "Заваривание: почему начать заново обычно правильно."
+  },
+  "brewContinueFromHere": "Продолжить с этого места",
+  "@brewContinueFromHere": {
+    "description": "Заваривание: второй исход у брошенного заваривания."
+  },
+  "brewContinueFromHereNote": "Если вы всё это время лили и просто выключили экран",
+  "@brewContinueFromHereNote": {
+    "description": "Заваривание: когда продолжить с этого места всё-таки имеет смысл."
+  },
+  "brewCallItFinishedNote": "Заварилось, но до оценки руки не дошли — оценим сейчас",
+  "@brewCallItFinishedNote": {
+    "description": "Заваривание: когда брошенное заваривание считать законченным."
+  },
+  "brewAwayHours": "{hours} ч",
+  "@brewAwayHours": {
+    "description": "Заваривание: длительность в целых часах — сколько нас не было или сколько осталось.",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "brewAwayHoursMinutes": "{hours} ч {minutes} мин",
+  "@brewAwayHoursMinutes": {
+    "description": "Заваривание: длительность в часах с минутами.",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "brewAwayMinutes": "{minutes, plural, one{{minutes} минута} few{{minutes} минуты} many{{minutes} минут} other{{minutes} минут}}",
+  "@brewAwayMinutes": {
+    "description": "Заваривание: длительность в минутах.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "brewAwaySeconds": "{seconds} с",
+  "@brewAwaySeconds": {
+    "description": "Заваривание: длительность меньше минуты.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "brewGrindCoffee": "Смелите кофе",
+  "@brewGrindCoffee": {
+    "description": "Заваривание: рамка до старта занята подготовкой, и это её заголовок."
+  },
+  "brewWaitingForYou": "ждём вас",
+  "@brewWaitingForYou": {
+    "description": "Заваривание: центр рамки на шаге, который ждёт человека, а признака окончания у шага нет."
+  },
+  "brewReadyAt": "в {time}",
+  "@brewReadyAt": {
+    "description": "Заваривание: у шага длиннее получаса в центре рамки не отсчёт, а время готовности — его сверяют с будильником.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "brewPouredOf": "налито {poured} из {total} г",
+  "@brewPouredOf": {
+    "description": "Заваривание: сколько воды должно быть налито к этой секунде.",
+    "placeholders": {
+      "poured": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "brewTargetInCup": "цель — {grams} г в чашке",
+  "@brewTargetInCup": {
+    "description": "Заваривание: у эспрессо цель — вес напитка в чашке, а не налитая вода.",
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "brewTargetInCupDone": "готово · {grams} г в чашке",
+  "@brewTargetInCupDone": {
+    "description": "Заваривание: та же цель эспрессо после финала.",
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "brewTargetInCupFirstDrops": "цель — {grams} г в чашке · первые капли на 5–7 с",
+  "@brewTargetInCupFirstDrops": {
+    "description": "Заваривание: та же цель эспрессо во время пролива, с ориентиром по первым каплям.",
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "brewTimeIsAGuide": "время — ориентир, смотрите на признак",
+  "@brewTimeIsAGuide": {
+    "description": "Заваривание: у шага с признаком окончания секундомер ничего не решает."
+  },
+  "brewTimeIsAGuideWithWater": "время — ориентир · {water}",
+  "@brewTimeIsAGuideWithWater": {
+    "description": "Заваривание: то же, когда под таймером есть ещё и вода.",
+    "placeholders": {
+      "water": {
+        "type": "String"
+      }
+    }
+  },
+  "brewReadyIn": "готово через {time}",
+  "@brewReadyIn": {
+    "description": "Заваривание: под временем готовности длинного шага — через сколько это будет.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "brewStepNotStarted": "шаг ещё не начат",
+  "@brewStepNotStarted": {
+    "description": "Заваривание: подпись под таймером до старта."
+  },
+  "brewLeft": "осталось",
+  "@brewLeft": {
+    "description": "Заваривание: подпись под таймером идущего шага."
+  },
+  "brewOnPause": "на паузе",
+  "@brewOnPause": {
+    "description": "Заваривание: подпись под таймером на паузе."
+  },
+  "brewTapDidIt": "нажмите «Сделал», когда закончите",
+  "@brewTapDidIt": {
+    "description": "Заваривание: подпись под таймером шага, который ждёт человека. Слово в кавычках — надпись главной кнопки."
+  },
+  "brewFinished": "готово",
+  "@brewFinished": {
+    "description": "Заваривание: подпись под таймером после финала."
+  },
+  "brewOptional": "не обязательно",
+  "@brewOptional": {
+    "description": "Заваривание: метка необязательного шага в списке шагов."
+  },
+  "brewTipExpand": "Показать подсказку целиком",
+  "@brewTipExpand": {
+    "description": "Заваривание: подсказка шага не влезла в строку — шеврон раскрывает её."
+  },
+  "brewTipCollapse": "Свернуть подсказку",
+  "@brewTipCollapse": {
+    "description": "Заваривание: тот же шеврон у раскрытой подсказки шага."
+  },
+  "brewPhasePrep": "подготовка",
+  "@brewPhasePrep": {
+    "description": "Заваривание: заголовок первой фазы в списке шагов — смолоть, налить лёд."
+  },
+  "brewPhaseBrewing": "заваривание",
+  "@brewPhaseBrewing": {
+    "description": "Заваривание: заголовок средней фазы в списке шагов — проливы, помешивания, ожидание."
+  },
+  "brewPhaseFinish": "финал",
+  "@brewPhaseFinish": {
+    "description": "Заваривание: заголовок последней фазы в списке шагов — снять фильтр, разбавить, подать."
+  },
+  "brewEndsBySign": "по признаку",
+  "@brewEndsBySign": {
+    "description": "Заваривание: на месте времени у шага, который кончается признаком, а не секундомером."
+  },
+  "brewEndsByTap": "по кнопке",
+  "@brewEndsByTap": {
+    "description": "Заваривание: на месте времени у шага, который ждёт слова «сделал»."
+  },
+  "brewUntilYouSayDidIt": "пока не скажете «сделал»",
+  "@brewUntilYouSayDidIt": {
+    "description": "Заваривание: метка на карточке шага, который ждёт человека. Слово в кавычках — надпись главной кнопки."
   }
 }

@@ -1099,4 +1099,216 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get packFormHidePassword => 'Скрыть пароль';
+
+  @override
+  String get brewAbortTitle => 'Прервать заваривание?';
+
+  @override
+  String get brewAbortNote =>
+      'Отсчёт остановится, и вернуться к нему на этой же секунде не выйдет.';
+
+  @override
+  String get brewAbort => 'Прервать';
+
+  @override
+  String get brewStay => 'Остаться';
+
+  @override
+  String get brewEditRecipe => 'Править рецепт';
+
+  @override
+  String brewStepOf(int number, int count) {
+    return 'шаг $number из $count';
+  }
+
+  @override
+  String get brewGrindAndStart => 'Смолол, начинаем';
+
+  @override
+  String get brewStart => 'Начать';
+
+  @override
+  String get brewPause => 'Пауза';
+
+  @override
+  String get brewResume => 'Продолжить';
+
+  @override
+  String get brewDidIt => 'Сделал';
+
+  @override
+  String get brewRate => 'Оценить';
+
+  @override
+  String get brewSkip => 'Пропустить';
+
+  @override
+  String get brewHappened => 'Случилось';
+
+  @override
+  String get brewTitle => 'Заваривание';
+
+  @override
+  String get brewNoSteps => 'В рецепте нет шагов';
+
+  @override
+  String get brewNoStepsNote =>
+      'Проигрывать нечего. Соберите рецепт заново или выберите другой.';
+
+  @override
+  String get brewSteepingOver =>
+      'Настаивание закончилось, пока приложение было закрыто. Доделайте оставшиеся шаги — дальше кофе только горчит.';
+
+  @override
+  String brewSteepingGoes(String away) {
+    return 'Настаивание идёт: прошло $away. Экран можно закрывать — время считается по часам, а не по таймеру на экране.';
+  }
+
+  @override
+  String get brewToRemainingSteps => 'К оставшимся шагам';
+
+  @override
+  String get brewCallItFinished => 'Считать законченным';
+
+  @override
+  String brewAwayTitle(String away) {
+    return 'Прошло $away';
+  }
+
+  @override
+  String brewStoppedAtStep(String step) {
+    return 'Вы остановились на шаге «$step». Столько кофе уже не стоит на месте: вода остыла, воронка проливается.';
+  }
+
+  @override
+  String get brewStartOver => 'Начать заново';
+
+  @override
+  String get brewStartOverNote =>
+      'Обычно правильный выбор: 15 г кофе дешевле испорченной чашки';
+
+  @override
+  String get brewContinueFromHere => 'Продолжить с этого места';
+
+  @override
+  String get brewContinueFromHereNote =>
+      'Если вы всё это время лили и просто выключили экран';
+
+  @override
+  String get brewCallItFinishedNote =>
+      'Заварилось, но до оценки руки не дошли — оценим сейчас';
+
+  @override
+  String brewAwayHours(int hours) {
+    return '$hours ч';
+  }
+
+  @override
+  String brewAwayHoursMinutes(int hours, int minutes) {
+    return '$hours ч $minutes мин';
+  }
+
+  @override
+  String brewAwayMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes минут',
+      many: '$minutes минут',
+      few: '$minutes минуты',
+      one: '$minutes минута',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewAwaySeconds(int seconds) {
+    return '$seconds с';
+  }
+
+  @override
+  String get brewGrindCoffee => 'Смелите кофе';
+
+  @override
+  String get brewWaitingForYou => 'ждём вас';
+
+  @override
+  String brewReadyAt(String time) {
+    return 'в $time';
+  }
+
+  @override
+  String brewPouredOf(String poured, String total) {
+    return 'налито $poured из $total г';
+  }
+
+  @override
+  String brewTargetInCup(String grams) {
+    return 'цель — $grams г в чашке';
+  }
+
+  @override
+  String brewTargetInCupDone(String grams) {
+    return 'готово · $grams г в чашке';
+  }
+
+  @override
+  String brewTargetInCupFirstDrops(String grams) {
+    return 'цель — $grams г в чашке · первые капли на 5–7 с';
+  }
+
+  @override
+  String get brewTimeIsAGuide => 'время — ориентир, смотрите на признак';
+
+  @override
+  String brewTimeIsAGuideWithWater(String water) {
+    return 'время — ориентир · $water';
+  }
+
+  @override
+  String brewReadyIn(String time) {
+    return 'готово через $time';
+  }
+
+  @override
+  String get brewStepNotStarted => 'шаг ещё не начат';
+
+  @override
+  String get brewLeft => 'осталось';
+
+  @override
+  String get brewOnPause => 'на паузе';
+
+  @override
+  String get brewTapDidIt => 'нажмите «Сделал», когда закончите';
+
+  @override
+  String get brewFinished => 'готово';
+
+  @override
+  String get brewOptional => 'не обязательно';
+
+  @override
+  String get brewTipExpand => 'Показать подсказку целиком';
+
+  @override
+  String get brewTipCollapse => 'Свернуть подсказку';
+
+  @override
+  String get brewPhasePrep => 'подготовка';
+
+  @override
+  String get brewPhaseBrewing => 'заваривание';
+
+  @override
+  String get brewPhaseFinish => 'финал';
+
+  @override
+  String get brewEndsBySign => 'по признаку';
+
+  @override
+  String get brewEndsByTap => 'по кнопке';
+
+  @override
+  String get brewUntilYouSayDidIt => 'пока не скажете «сделал»';
 }
