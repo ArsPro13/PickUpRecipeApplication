@@ -189,13 +189,28 @@ void main() {
       expect(selectableGrinders(catalog).any((g) => g.id == baseGrinderId), isFalse);
       expect(names('base'), isEmpty);
     });
+  });
 
-    test('число моделей в подписи склоняется по справочнику', () {
-      expect(grinderCountWord(50), 'моделей');
-      expect(grinderCountWord(51), 'модель');
-      expect(grinderCountWord(2), 'модели');
-      expect(grinderCountWord(11), 'моделей');
-      expect(grinderCountWord(0), 'моделей');
+  group('раскладка', () {
+    // Таблица кириллицы в grinder_search.dart — не текст интерфейса, а буквы
+    // раскладки: она прощает набор латиницей вместо кириллицы и обратно. Если
+    // её однажды примут за строки для перевода и вынесут в словарь, эти три
+    // проверки покраснеют раньше, чем это увидит человек с телефоном.
+    test('кириллическое имя находится набором латиницей', () {
+      expect(
+        names('zhernova'),
+        contains('Eureka Mignon  жернова 50mm Filtro Pro'),
+      );
+    });
+
+    test('латинское имя находится набором кириллицей', () {
+      expect(names('честнат'), contains('Timemore Chestnut C2'));
+      expect(names('вильфа'), contains('Wilfa Svart Nymalt'));
+    });
+
+    test('обе раскладки дают одну и ту же выдачу', () {
+      expect(names('жернова'), names('zhernova'));
+      expect(names('команданте'), names('komandante'));
     });
   });
 

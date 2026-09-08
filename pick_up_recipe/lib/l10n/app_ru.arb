@@ -1709,5 +1709,66 @@
   "brewUntilYouSayDidIt": "пока не скажете «сделал»",
   "@brewUntilYouSayDidIt": {
     "description": "Заваривание: метка на карточке шага, который ждёт человека. Слово в кавычках — надпись главной кнопки."
+  },
+  "grinderTitle": "Кофемолка",
+  "@grinderTitle": {
+    "description": "Заголовок экрана выбора кофемолки в шапке."
+  },
+  "grinderSearchHint": "Найти кофемолку",
+  "@grinderSearchHint": {
+    "description": "Подсказка в поле поиска по справочнику кофемолок."
+  },
+  "grinderKindManual": "Ручные",
+  "@grinderKindManual": {
+    "description": "Заголовок группы списка: кофемолки с ручкой. Вид приходит с сервера кодом manual, а слово для человека стоит здесь."
+  },
+  "grinderKindElectric": "Электрические",
+  "@grinderKindElectric": {
+    "description": "Заголовок группы списка: кофемолки с мотором. Вид приходит с сервера кодом electric."
+  },
+  "grinderKindOther": "Прочие",
+  "@grinderKindOther": {
+    "description": "Заголовок группы списка для записей справочника без вида."
+  },
+  "grinderMakePrimary": "сделать основной",
+  "@grinderMakePrimary": {
+    "description": "Кнопка в строке выбранной кофемолки: отметить её основной. По основной пересчитывается помол в рецептах."
+  },
+  "grinderSave": "Сохранить",
+  "@grinderSave": {
+    "description": "Кнопка внизу экрана кофемолки: применить набор и отметку основной."
+  },
+  "grinderNotFound": "Такой кофемолки нет",
+  "@grinderNotFound": {
+    "description": "Заголовок пустого состояния поиска: по запросу не нашлось ничего."
+  },
+  "grinderCatalogEmpty": "Справочник пуст — проверьте связь",
+  "@grinderCatalogEmpty": {
+    "description": "Пустое состояние, когда справочник кофемолок не приехал с сервера вовсе."
+  },
+  "grinderCatalogSize": "Проверьте написание — в справочнике {count, plural, one{{count} модель} few{{count} модели} many{{count} моделей} other{{count} модели}}",
+  "@grinderCatalogSize": {
+    "description": "Пустое состояние поиска: сколько всего моделей в справочнике. Число берётся из справочника, поэтому форма слова считается ICU, а не рукой.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "grinderShowAll": "Показать все",
+  "@grinderShowAll": {
+    "description": "Кнопка пустого состояния: очистить запрос и показать справочник целиком."
+  },
+  "grinderDidYouMean": "Вы имели в виду",
+  "@grinderDidYouMean": {
+    "description": "Подпись над подсказками с близкими по написанию именами в пустом состоянии поиска."
+  },
+  "grinderSaveFailed": "Не удалось сохранить кофемолки",
+  "@grinderSaveFailed": {
+    "description": "Всплывающее сообщение: сеть есть, но сервер набор кофемолок не принял."
+  },
+  "grinderSaveOffline": "Без сети кофемолку не сохранить — она хранится в аккаунте",
+  "@grinderSaveOffline": {
+    "description": "Всплывающее сообщение: сети нет, а набор кофемолок живёт на сервере и в очередь отправки не встаёт."
   }
 }

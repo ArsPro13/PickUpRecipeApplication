@@ -1293,4 +1293,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brewUntilYouSayDidIt => 'until you say “did it”';
+
+  @override
+  String get grinderTitle => 'Grinder';
+
+  @override
+  String get grinderSearchHint => 'Find a grinder';
+
+  @override
+  String get grinderKindManual => 'Hand grinders';
+
+  @override
+  String get grinderKindElectric => 'Electric grinders';
+
+  @override
+  String get grinderKindOther => 'Other';
+
+  @override
+  String get grinderMakePrimary => 'make primary';
+
+  @override
+  String get grinderSave => 'Save';
+
+  @override
+  String get grinderNotFound => 'No such grinder';
+
+  @override
+  String get grinderCatalogEmpty =>
+      'The catalogue is empty — check the connection';
+
+  @override
+  String grinderCatalogSize(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count models',
+      one: '$count model',
+    );
+    return 'Check the spelling — the catalogue holds $_temp0';
+  }
+
+  @override
+  String get grinderShowAll => 'Show all';
+
+  @override
+  String get grinderDidYouMean => 'Did you mean';
+
+  @override
+  String get grinderSaveFailed => 'Could not save the grinders';
+
+  @override
+  String get grinderSaveOffline =>
+      'A grinder cannot be saved without a connection — it lives in your account';
 }

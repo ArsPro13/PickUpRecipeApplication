@@ -2203,6 +2203,90 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'пока не скажете «сделал»'**
   String get brewUntilYouSayDidIt;
+
+  /// Заголовок экрана выбора кофемолки в шапке.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кофемолка'**
+  String get grinderTitle;
+
+  /// Подсказка в поле поиска по справочнику кофемолок.
+  ///
+  /// In ru, this message translates to:
+  /// **'Найти кофемолку'**
+  String get grinderSearchHint;
+
+  /// Заголовок группы списка: кофемолки с ручкой. Вид приходит с сервера кодом manual, а слово для человека стоит здесь.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ручные'**
+  String get grinderKindManual;
+
+  /// Заголовок группы списка: кофемолки с мотором. Вид приходит с сервера кодом electric.
+  ///
+  /// In ru, this message translates to:
+  /// **'Электрические'**
+  String get grinderKindElectric;
+
+  /// Заголовок группы списка для записей справочника без вида.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прочие'**
+  String get grinderKindOther;
+
+  /// Кнопка в строке выбранной кофемолки: отметить её основной. По основной пересчитывается помол в рецептах.
+  ///
+  /// In ru, this message translates to:
+  /// **'сделать основной'**
+  String get grinderMakePrimary;
+
+  /// Кнопка внизу экрана кофемолки: применить набор и отметку основной.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить'**
+  String get grinderSave;
+
+  /// Заголовок пустого состояния поиска: по запросу не нашлось ничего.
+  ///
+  /// In ru, this message translates to:
+  /// **'Такой кофемолки нет'**
+  String get grinderNotFound;
+
+  /// Пустое состояние, когда справочник кофемолок не приехал с сервера вовсе.
+  ///
+  /// In ru, this message translates to:
+  /// **'Справочник пуст — проверьте связь'**
+  String get grinderCatalogEmpty;
+
+  /// Пустое состояние поиска: сколько всего моделей в справочнике. Число берётся из справочника, поэтому форма слова считается ICU, а не рукой.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверьте написание — в справочнике {count, plural, one{{count} модель} few{{count} модели} many{{count} моделей} other{{count} модели}}'**
+  String grinderCatalogSize(int count);
+
+  /// Кнопка пустого состояния: очистить запрос и показать справочник целиком.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать все'**
+  String get grinderShowAll;
+
+  /// Подпись над подсказками с близкими по написанию именами в пустом состоянии поиска.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы имели в виду'**
+  String get grinderDidYouMean;
+
+  /// Всплывающее сообщение: сеть есть, но сервер набор кофемолок не принял.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить кофемолки'**
+  String get grinderSaveFailed;
+
+  /// Всплывающее сообщение: сети нет, а набор кофемолок живёт на сервере и в очередь отправки не встаёт.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без сети кофемолку не сохранить — она хранится в аккаунте'**
+  String get grinderSaveOffline;
 }
 
 class _AppLocalizationsDelegate

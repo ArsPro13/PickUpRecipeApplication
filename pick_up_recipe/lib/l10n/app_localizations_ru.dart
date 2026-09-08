@@ -1311,4 +1311,57 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get brewUntilYouSayDidIt => 'пока не скажете «сделал»';
+
+  @override
+  String get grinderTitle => 'Кофемолка';
+
+  @override
+  String get grinderSearchHint => 'Найти кофемолку';
+
+  @override
+  String get grinderKindManual => 'Ручные';
+
+  @override
+  String get grinderKindElectric => 'Электрические';
+
+  @override
+  String get grinderKindOther => 'Прочие';
+
+  @override
+  String get grinderMakePrimary => 'сделать основной';
+
+  @override
+  String get grinderSave => 'Сохранить';
+
+  @override
+  String get grinderNotFound => 'Такой кофемолки нет';
+
+  @override
+  String get grinderCatalogEmpty => 'Справочник пуст — проверьте связь';
+
+  @override
+  String grinderCatalogSize(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count модели',
+      many: '$count моделей',
+      few: '$count модели',
+      one: '$count модель',
+    );
+    return 'Проверьте написание — в справочнике $_temp0';
+  }
+
+  @override
+  String get grinderShowAll => 'Показать все';
+
+  @override
+  String get grinderDidYouMean => 'Вы имели в виду';
+
+  @override
+  String get grinderSaveFailed => 'Не удалось сохранить кофемолки';
+
+  @override
+  String get grinderSaveOffline =>
+      'Без сети кофемолку не сохранить — она хранится в аккаунте';
 }

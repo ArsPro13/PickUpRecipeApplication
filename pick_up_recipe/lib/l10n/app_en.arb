@@ -350,5 +350,19 @@
   "brewPhaseFinish": "finish",
   "brewEndsBySign": "by the sign",
   "brewEndsByTap": "by tap",
-  "brewUntilYouSayDidIt": "until you say “did it”"
+  "brewUntilYouSayDidIt": "until you say “did it”",
+  "grinderTitle": "Grinder",
+  "grinderSearchHint": "Find a grinder",
+  "grinderKindManual": "Hand grinders",
+  "grinderKindElectric": "Electric grinders",
+  "grinderKindOther": "Other",
+  "grinderMakePrimary": "make primary",
+  "grinderSave": "Save",
+  "grinderNotFound": "No such grinder",
+  "grinderCatalogEmpty": "The catalogue is empty — check the connection",
+  "grinderCatalogSize": "Check the spelling — the catalogue holds {count, plural, one{{count} model} other{{count} models}}",
+  "grinderShowAll": "Show all",
+  "grinderDidYouMean": "Did you mean",
+  "grinderSaveFailed": "Could not save the grinders",
+  "grinderSaveOffline": "A grinder cannot be saved without a connection — it lives in your account"
 }
