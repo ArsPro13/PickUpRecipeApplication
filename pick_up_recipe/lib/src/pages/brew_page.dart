@@ -337,11 +337,36 @@ class _BrewPageState extends ConsumerState<BrewPage>
     return leave ?? false;
   }
 
+  /// Останавливает заваривание насовсем — это и есть «Прервать».
+  ///
+  /// Одного `reset()` мало. Он обнуляет метки времени в движке, но тикер
+  /// перерисовки после него крутится вхолостую — и `dispose()` уходящего
+  /// экрана падает на живом тикере, — а отложенный переход на оценку
+  /// остаётся заведённым, хотя оценивать уже нечего: заваривание прервали,
+  /// а не доиграли.
+  void _abort() {
+    _toRating?.cancel();
+    _toRating = null;
+    _engine.reset();
+    _stopFrames();
+    setState(() => _live.value = _engine.snapshot());
+  }
+
   /// Уход стрелкой в шапке — через тот же вопрос, что и кнопкой телефона.
+  ///
+  /// Порядок важен: сначала остановить заваривание, потом уйти. Пока оно
+  /// шло, уход держал `PopScope`, и `maybePop` спрашивал его заново — то
+  /// есть открывал этот же диалог по кругу вместо того, чтобы уйти.
+  ///
+  /// `popForced`, а не `maybePop`, по той же причине: спрашивать больше не о
+  /// чем — отсчёта нет, — а `canPop` у построенного `PopScope` обновится
+  /// только со следующим кадром, и вопрос успел бы прозвучать ещё раз.
   Future<void> _leave() async {
-    if (await _confirmLeave() && mounted) {
-      await context.router.maybePop();
-    }
+    if (!await _confirmLeave()) return;
+    if (!mounted) return;
+
+    _abort();
+    context.router.popForced();
   }
 
   void _toggle() {
