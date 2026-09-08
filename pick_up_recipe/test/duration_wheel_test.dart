@@ -3,9 +3,17 @@
 // Проверяется то, ради чего барабан и заводили: поворот на одну позицию
 // меняет значение ровно на единицу своего разряда. Барабан, который отдаёт
 // минуты вместо секунд, портит рецепт молча — на вид он такой же.
+//
+// Отдельная группа — про саму шторку, а не про барабан внутри неё. Барабан
+// был исправен всё это время: жест до него не доходил. Шторка тянулась за
+// пальцем всей площадью и забирала вертикальное перетаскивание себе, поэтому
+// накрученное в шаг не попадало никогда — на видео владельца 59:00 приезжало
+// нулём. Тесты группы держат обе стороны: палец на барабане крутит барабан,
+// а закрыть шторку по-прежнему есть чем.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/general_widgets/duration_wheel_sheet.dart';
 import 'package:pick_up_recipe/src/pages/recipe_builder_page.dart';
@@ -94,4 +102,122 @@ void main() {
       expect(formatDuration(target.time), '1:35');
     });
   });
+
+  group('шторка длительности', () {
+    testWidgets('палец на барабане крутит барабан, а не тащит шторку', (tester) async {
+      final host = await _openSheet(tester);
+
+      await _spin(tester, 0, 4);
+
+      // Сначала — что барабан вообще шевельнулся: пока жест забирала шторка,
+      // четвёрка на экране не появлялась вовсе.
+      expect(find.text('4'), findsOneWidget);
+
+      await tester.tap(find.text('Готово'));
+      await tester.pumpAndSettle();
+
+      expect(host.answer, 240);
+      expect(host.stepTime, 240);
+    });
+
+    testWidgets('нажатие мимо шторки ничего не меняет в шаге', (tester) async {
+      final host = await _openSheet(tester);
+
+      await _spin(tester, 0, 4);
+      // Мимо шторки — это по затемнению сверху, там же, где палец у человека,
+      // передумавшего на полпути.
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Готово'), findsNothing, reason: 'шторка должна закрыться');
+      expect(host.answer, isNull);
+      expect(host.stepTime, 0);
+    });
+
+    testWidgets('системная кнопка «назад» закрывает шторку', (tester) async {
+      final host = await _openSheet(tester);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Готово'), findsNothing);
+      expect(host.answer, isNull);
+      expect(host.stepTime, 0);
+    });
+
+    testWidgets('за ручку-полоску шторку по-прежнему стягивают вниз', (tester) async {
+      final host = await _openSheet(tester);
+
+      // Ручка живёт в верхней полосе шторки высотой в наименьшую цель для
+      // пальца — единственное место, откуда перетаскивание осталось.
+      final sheet = tester.getRect(find.byType(BottomSheet));
+      await tester.dragFrom(
+        Offset(sheet.center.dx, sheet.top + AppSizes.tapTarget / 2),
+        const Offset(0, AppSizes.tapTarget * 8),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Готово'), findsNothing);
+      expect(host.answer, isNull);
+      expect(host.stepTime, 0);
+    });
+  });
+}
+
+
+/// Шторка с барабаном поверх экрана, который запоминает её ответ.
+///
+/// Локаль задана явно: шторка подписана строками из словаря, а не системным
+/// языком машины с тестом.
+class _SheetHost extends StatefulWidget {
+  const _SheetHost();
+
+  @override
+  State<_SheetHost> createState() => _SheetHostState();
+}
+
+class _SheetHostState extends State<_SheetHost> {
+  /// Длительность шага, в который приезжает выбранное. Ноль — как на видео.
+  int stepTime = 0;
+
+  /// Что вернула шторка в последний раз. null — закрыли, ничего не выбрав.
+  int? answer;
+
+  /// Сколько раз шторку открывали: закрытие «мимо» не должно ни менять шаг,
+  /// ни притворяться, что шторки не было.
+  int opened = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: lightTheme,
+      locale: const Locale('ru'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () async {
+              opened++;
+              final picked = await showDurationSheet(context, seconds: stepTime);
+              if (!context.mounted) return;
+              setState(() {
+                answer = picked;
+                if (picked != null) stepTime = picked;
+              });
+            },
+            child: const Text('открыть'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<_SheetHostState> _openSheet(WidgetTester tester) async {
+  await tester.pumpWidget(const _SheetHost());
+  await tester.tap(find.text('открыть'));
+  await tester.pumpAndSettle();
+
+  return tester.state<_SheetHostState>(find.byType(_SheetHost));
 }
