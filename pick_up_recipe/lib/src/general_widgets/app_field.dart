@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -115,6 +116,7 @@ class _AppFieldState extends State<AppField> {
   @override
   Widget build(BuildContext context) {
     final hasError = widget.error != null;
+    final texts = AppLocalizations.of(context);
 
     // В покое — тонкая рамка цветом границы. Раньше её не было вовсе, и
     // пустое поле сливалось с фоном: на экране «Свой тип шага» строку
@@ -195,7 +197,9 @@ class _AppFieldState extends State<AppField> {
               if (widget.obscure)
                 _IconAction(
                   icon: _hidden ? AppIcons.uiEye : AppIcons.uiEyeOff,
-                  label: _hidden ? 'Показать пароль' : 'Скрыть пароль',
+                  label: _hidden
+                      ? texts.packFormShowPassword
+                      : texts.packFormHidePassword,
                   onTap: () => setState(() => _hidden = !_hidden),
                 )
               else if (widget.valid)

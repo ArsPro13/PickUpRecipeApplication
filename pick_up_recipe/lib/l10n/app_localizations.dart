@@ -1645,6 +1645,228 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Доза'**
   String get rateParamDose;
+
+  /// Шапка экрана ручного добавления пачки — того, куда ведёт кнопка «На пачке нет кода».
+  ///
+  /// In ru, this message translates to:
+  /// **'Пачка без кода'**
+  String get packFormTitle;
+
+  /// Пояснение первой строкой формы пачки: что заполнять и почему обязательна одна страна.
+  ///
+  /// In ru, this message translates to:
+  /// **'Впишите, что написано на пачке. Обязательна только страна — из неё и региона соберётся название.'**
+  String get packFormIntro;
+
+  /// Подпись в пунктирной рамке над формой пачки: приглашение снять упаковку.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографируйте пачку'**
+  String get packFormPhotoTitle;
+
+  /// Пояснение под приглашением снять пачку: зачем нужен кадр.
+  ///
+  /// In ru, this message translates to:
+  /// **'Снимок сохранится вместе с пачкой — по нему вы узнаете её в списке'**
+  String get packFormPhotoNote;
+
+  /// Кнопка под рамкой снимка в форме пачки: открыть камеру, когда кадра ещё нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографировать'**
+  String get packFormPhotoTake;
+
+  /// Та же кнопка камеры в форме пачки, когда снимок уже сделан.
+  ///
+  /// In ru, this message translates to:
+  /// **'Переснять'**
+  String get packFormPhotoRetake;
+
+  /// Кнопка рядом с камерой в форме пачки: взять готовый снимок из галереи телефона.
+  ///
+  /// In ru, this message translates to:
+  /// **'Из галереи'**
+  String get packFormPhotoFromGallery;
+
+  /// Ошибка под кнопками камеры в форме пачки: кадр не удалось получить.
+  ///
+  /// In ru, this message translates to:
+  /// **'Снимок не получился — попробуйте ещё раз'**
+  String get packFormPhotoFailed;
+
+  /// Подпись поля страны в форме пачки. Единственное обязательное поле.
+  ///
+  /// In ru, this message translates to:
+  /// **'Страна'**
+  String get packFormCountry;
+
+  /// Пример внутри пустого поля страны в форме пачки. Пример наш, а не значение из справочника.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бразилия'**
+  String get packFormCountryHint;
+
+  /// Ошибка под полем страны в форме пачки: имя пачки собирается из страны, и без неё его нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без страны пачку нечем назвать'**
+  String get packFormCountryRequired;
+
+  /// Подпись необязательного поля региона в форме пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион — если знаете'**
+  String get packFormRegion;
+
+  /// Пример внутри пустого поля региона в форме пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Серрадо'**
+  String get packFormRegionHint;
+
+  /// Подпись поля сорта зерна в форме пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сорт'**
+  String get packFormVariety;
+
+  /// Пример внутри пустого поля сорта в форме пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'бурбон'**
+  String get packFormVarietyHint;
+
+  /// Подпись поля оценки SCA в форме пачки. SCA — имя ассоциации, оно не переводится.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оценка SCA'**
+  String get packFormScaScore;
+
+  /// Подпись поля даты обжарки в форме пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дата обжарки'**
+  String get packFormRoastDate;
+
+  /// Пример внутри пустого поля даты обжарки. Порядок частей и точки повторяют маску ввода дд.ММ.гггг: разбор даты завязан на неё, и другой порядок молча испортил бы дату.
+  ///
+  /// In ru, this message translates to:
+  /// **'дд.мм.гггг'**
+  String get packFormDateHint;
+
+  /// Ошибка под полем даты обжарки: набранное не разбирается в дату или лежит в будущем.
+  ///
+  /// In ru, this message translates to:
+  /// **'Такой даты не бывает'**
+  String get packFormDateInvalid;
+
+  /// Пояснение под полем даты обжарки: пустое поле не ошибка, сервер поставит сегодняшнее число.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не знаете — оставьте пустым, поставим сегодняшнюю'**
+  String get packFormDateEmptyNote;
+
+  /// Метка рядом с полем даты обжарки: поставить в поле сегодняшнее число одним касанием.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сегодня'**
+  String get packFormToday;
+
+  /// Заголовок раздела формы пачки со списком вкусовых слов с упаковки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дескрипторы'**
+  String get packFormDescriptors;
+
+  /// Пояснение под заголовком раздела дескрипторов в форме пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чем пахнет и какой на вкус — по слову в строке'**
+  String get packFormDescriptorsNote;
+
+  /// Подпись строки списка дескрипторов в форме пачки: строки нумеруются с единицы.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дескриптор {number}'**
+  String packFormDescriptorNumbered(int number);
+
+  /// Пример внутри пустого поля дескриптора. Пример наш; сами дескрипторы человек списывает с пачки и мы их не переводим.
+  ///
+  /// In ru, this message translates to:
+  /// **'малина'**
+  String get packFormDescriptorHint;
+
+  /// Кнопка под списком дескрипторов в форме пачки: ещё одна строка.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить дескриптор'**
+  String get packFormAddDescriptor;
+
+  /// Заголовок раздела формы пачки со списком способов обработки зерна.
+  ///
+  /// In ru, this message translates to:
+  /// **'Способ обработки'**
+  String get packFormProcessing;
+
+  /// Пояснение под заголовком раздела обработки в форме пачки: где искать это слово.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обычно написан на пачке рядом с сортом'**
+  String get packFormProcessingNote;
+
+  /// Подпись строки списка способов обработки в форме пачки: строки нумеруются с единицы.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обработка {number}'**
+  String packFormProcessingNumbered(int number);
+
+  /// Пример внутри пустого поля способа обработки в форме пачки.
+  ///
+  /// In ru, this message translates to:
+  /// **'мытая'**
+  String get packFormProcessingHint;
+
+  /// Кнопка под списком способов обработки в форме пачки: ещё одна строка.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить обработку'**
+  String get packFormAddProcessing;
+
+  /// Подсказка у корзины рядом с лишней строкой списка в форме пачки. Читается голосовым помощником и всплывающей подсказкой.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать строку'**
+  String get packFormRemoveLine;
+
+  /// Главная кнопка внизу формы пачки: завести пачку на сервере.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправить'**
+  String get packFormSubmit;
+
+  /// Заголовок плашки внизу формы пачки: сервер или сеть не приняли пачку.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пачка не отправилась'**
+  String get packFormSubmitFailed;
+
+  /// Строка под заголовком той же плашки: причина от сервера и напоминание, что поля не очистились.
+  ///
+  /// In ru, this message translates to:
+  /// **'{reason}. Набранное осталось — попробуйте ещё раз.'**
+  String packFormSubmitFailedNote(String reason);
+
+  /// Глаз справа в поле пароля, когда пароль спрятан. Читается голосовым помощником; поле общее для входа, регистрации и смены пароля.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать пароль'**
+  String get packFormShowPassword;
+
+  /// Тот же глаз, когда пароль показан.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скрыть пароль'**
+  String get packFormHidePassword;
 }
 
 class _AppLocalizationsDelegate

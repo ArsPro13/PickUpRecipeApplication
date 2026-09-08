@@ -9,6 +9,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/inserting_pack_info_widget.dart';
@@ -43,9 +44,9 @@ class _RecognitionCameraPageState extends ConsumerState<RecognitionCameraPage> {
       },
     );
 
-    return const AppScreen(
-      title: 'Пачка без кода',
-      body: [InsertingPackInfoWidget()],
+    return AppScreen(
+      title: AppLocalizations.of(context).packFormTitle,
+      body: const [InsertingPackInfoWidget()],
     );
   }
 }

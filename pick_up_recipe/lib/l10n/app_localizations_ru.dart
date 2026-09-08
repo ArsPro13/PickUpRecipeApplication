@@ -978,4 +978,125 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get rateParamDose => 'Доза';
+
+  @override
+  String get packFormTitle => 'Пачка без кода';
+
+  @override
+  String get packFormIntro =>
+      'Впишите, что написано на пачке. Обязательна только страна — из неё и региона соберётся название.';
+
+  @override
+  String get packFormPhotoTitle => 'Сфотографируйте пачку';
+
+  @override
+  String get packFormPhotoNote =>
+      'Снимок сохранится вместе с пачкой — по нему вы узнаете её в списке';
+
+  @override
+  String get packFormPhotoTake => 'Сфотографировать';
+
+  @override
+  String get packFormPhotoRetake => 'Переснять';
+
+  @override
+  String get packFormPhotoFromGallery => 'Из галереи';
+
+  @override
+  String get packFormPhotoFailed => 'Снимок не получился — попробуйте ещё раз';
+
+  @override
+  String get packFormCountry => 'Страна';
+
+  @override
+  String get packFormCountryHint => 'Бразилия';
+
+  @override
+  String get packFormCountryRequired => 'Без страны пачку нечем назвать';
+
+  @override
+  String get packFormRegion => 'Регион — если знаете';
+
+  @override
+  String get packFormRegionHint => 'Серрадо';
+
+  @override
+  String get packFormVariety => 'Сорт';
+
+  @override
+  String get packFormVarietyHint => 'бурбон';
+
+  @override
+  String get packFormScaScore => 'Оценка SCA';
+
+  @override
+  String get packFormRoastDate => 'Дата обжарки';
+
+  @override
+  String get packFormDateHint => 'дд.мм.гггг';
+
+  @override
+  String get packFormDateInvalid => 'Такой даты не бывает';
+
+  @override
+  String get packFormDateEmptyNote =>
+      'Не знаете — оставьте пустым, поставим сегодняшнюю';
+
+  @override
+  String get packFormToday => 'Сегодня';
+
+  @override
+  String get packFormDescriptors => 'Дескрипторы';
+
+  @override
+  String get packFormDescriptorsNote =>
+      'Чем пахнет и какой на вкус — по слову в строке';
+
+  @override
+  String packFormDescriptorNumbered(int number) {
+    return 'Дескриптор $number';
+  }
+
+  @override
+  String get packFormDescriptorHint => 'малина';
+
+  @override
+  String get packFormAddDescriptor => 'Добавить дескриптор';
+
+  @override
+  String get packFormProcessing => 'Способ обработки';
+
+  @override
+  String get packFormProcessingNote => 'Обычно написан на пачке рядом с сортом';
+
+  @override
+  String packFormProcessingNumbered(int number) {
+    return 'Обработка $number';
+  }
+
+  @override
+  String get packFormProcessingHint => 'мытая';
+
+  @override
+  String get packFormAddProcessing => 'Добавить обработку';
+
+  @override
+  String get packFormRemoveLine => 'Убрать строку';
+
+  @override
+  String get packFormSubmit => 'Отправить';
+
+  @override
+  String get packFormSubmitFailed => 'Пачка не отправилась';
+
+  @override
+  String packFormSubmitFailedNote(String reason) {
+    return '$reason. Набранное осталось — попробуйте ещё раз.';
+  }
+
+  @override
+  String get packFormShowPassword => 'Показать пароль';
+
+  @override
+  String get packFormHidePassword => 'Скрыть пароль';
 }

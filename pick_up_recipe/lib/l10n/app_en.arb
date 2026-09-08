@@ -1,519 +1,298 @@
 {
   "@@locale": "en",
-
   "back": "Back",
-
   "noNetwork": "No connection",
-
   "offlineCached": "No connection. Showing what was saved",
-
   "offlineSyncing": "Back online — sending what was saved",
-
   "offlinePending": "No connection. {count, plural, one{{count} item} other{{count} items}} will be sent once it is back",
-
   "authCreateAccount": "Create account",
-
   "authSignIn": "Sign in",
-
   "fieldEmail": "Email",
-
   "fieldPassword": "Password",
-
   "welcomeTagline": "A recipe from the person who roasted this coffee",
-
   "welcomeKeepsTitle": "An account keeps",
-
   "welcomeKeepsRecipes": "Your recipes",
-
   "welcomeKeepsRecipesNote": "versions survive a change of phone",
-
   "welcomeKeepsGrinder": "Your grinder",
-
   "welcomeKeepsGrinderNote": "grind size is converted into your clicks",
-
   "welcomeKeepsPacks": "Your pack history",
-
   "welcomeKeepsPacksNote": "what you brewed six months ago, and how",
-
   "loginTitle": "Sign in",
-
   "loginForgot": "Forgot your password?",
-
   "loginNoAccount": "No account yet?",
-
   "loginCreate": "Create one",
-
   "registerRepeat": "Again",
-
   "registerPasswordRule": "at least {length} characters",
-
   "registerNextMail": "Next: an email with a code",
-
   "registerNextMailNote": "six characters to confirm the address",
-
   "registerHaveAccount": "Already have an account?",
-
   "registerConsentRequired": "Without your consent we cannot create an account",
-
   "registerTermsUnavailable": "Could not load the terms. Check your connection and try again.",
-
   "consentPrefix": "I agree to the ",
-
   "consentPrivacy": "data processing policy",
-
   "consentAnd": " and the ",
-
   "consentAgreement": "user agreement",
-
   "verifyTitle": "Confirm your email",
-
   "verifySubtitle": "We sent a six-character code",
-
   "verifyChangeEmail": "Change the address",
-
   "verifyConfirm": "Confirm",
-
   "verifyNotArrived": "Did not arrive?",
-
   "verifySending": "Sending…",
-
   "verifyResend": "Send the code again",
-
   "verifyResendIn": "Again in {time}",
-
   "verifySentAgain": "We sent another email",
-
   "verifyTooOften": "An email has already gone out. The next one in {time}",
-
   "verifyAddressRejected": "The server did not accept this address. Check that it is the right one",
-
   "verifyHelpTitle": "If the email did not arrive",
-
   "verifyHelpSpam": "Check the spam folder",
-
   "verifyHelpSpamNote": "the sender is new, and your mail service does not know it yet",
-
   "verifyHelpWait": "Wait a minute",
-
   "verifyHelpWaitNote": "delivery is not instant, usually under a minute",
-
   "verifyHelpAddress": "Check the address",
-
   "verifyHelpAddressNote": "a typo in the address is the most common cause; you can fix it with the pencil above",
-
   "verifyHelpResend": "Send the code again",
-
   "verifyHelpResendNote": "the button above this list; emails go out no more than once a minute",
-
   "verifyMailDownTitle": "Emails are not going out right now",
-
   "verifyMailDownNote": "it is not your address: the server could not send the email",
-
   "verifyMailDownWhatToDo": "Your account is already created — there is no need to register again. Wait a few minutes and send the code again: as soon as mail is working, the email will arrive at the same address.",
-
   "resetTitle": "New password",
-
   "resetDoneTitle": "Done",
-
   "resetSendCode": "Send the code",
-
   "resetChangePassword": "Change password",
-
   "resetToLogin": "To sign-in",
-
   "resetStepWhere": "Where to send the code",
-
   "resetSameAnswer": "The answer will be the same",
-
   "resetSameAnswerNote": "whether or not we know the address — this way the form does not reveal who is registered",
-
   "resetStepSent": "Email sent",
-
   "resetStepNewPassword": "Come up with a new password",
-
   "resetFieldCode": "Code from the email",
-
   "resetNotArrived": "Did not arrive?",
-
   "resetResend": "Send again",
-
   "resetResendIn": "Send again in {time}",
-
   "resetFieldNewPassword": "New password",
-
   "resetPasswordHelper": "At least {length} characters",
-
   "resetDoneHeading": "Password changed",
-
   "resetDoneNote": "Sign in with the new password",
-
   "ruleEmailEmpty": "Enter your email",
-
   "ruleEmailAtSign": "The address must contain exactly one @",
-
   "ruleEmailDomain": "There must be a domain after the @: example.com",
-
   "ruleEmailSpaces": "An address cannot contain spaces",
-
   "rulePasswordEmpty": "Enter a password",
-
   "rulePasswordTooShort": "At least {length} characters",
-
   "ruleRepeatEmpty": "Repeat the password",
-
   "ruleRepeatMismatch": "The passwords do not match",
-
   "ruleCodeEmpty": "Enter the code from the email",
-
   "ruleCodeLength": "The code has six digits",
-
   "ruleCodeDigits": "The code is digits only",
-
   "tabPacks": "Packs",
-
   "tabRecipes": "Recipes",
-
   "tabScan": "Scan",
-
   "tabProfile": "Profile",
-
   "retry": "Try again",
-
   "methodsTitle": "What to brew with",
-
   "methodsFailed": "The list of methods did not open",
-
   "conflictTitle": "What to check",
-
   "conflictBrewAgain": "Brew it the same way again",
-
   "conflictOpenBuilder": "Open the builder anyway",
-
   "unitGrams": "{value} g",
-
   "unitMillilitres": "{value} ml",
-
   "edit": "Edit",
-
   "recipesTitle": "Recipes",
-
   "chooseFailed": "The recipes did not open",
-
   "chooseNoBase": "This method has no reference recipe",
-
   "chooseBaseFailed": "The recipe did not open: {error}",
-
   "chooseRoaster": "From the roaster",
-
   "chooseRoasterNote": "made for this coffee",
-
   "chooseBase": "Basic",
-
   "chooseBaseNote": "from the reference book",
-
   "chooseMethodRecipe": "The method's recipe",
-
   "chooseMethodRecipeNote": "does not account for the coffee",
-
   "chooseMine": "Your recipes",
-
   "chooseMineNote": "past versions",
-
   "chooseBrewWithTime": "Brew · {time}",
-
   "stepTypeLabel": "Step type",
-
   "stepTypesFailed": "The reference book did not arrive",
-
   "stepTypesFailedNote": "Without it there is no telling which steps this device can do.",
-
   "stepTypesCount": "{shown, plural, one{{shown} type} other{{shown} types}} of {total}",
-
   "stepTypesCountWithOwn": "{shown, plural, one{{shown} type} other{{shown} types}} of {total} and {own, plural, one{{own} preset of your own} other{{own} presets of your own}}",
-
   "stepTypesOwnGroup": "Your types",
-
   "stepTypesOwnGroupOnly": "Your types · only for this device",
-
   "stepTypesStateful": "{name} · changes the state of the device",
-
   "stepTypeNew": "new",
-
   "profileTitle": "Profile",
-
   "profileStatsTitle": "What you have gathered",
-
   "profileCounting": "Counting your packs and recipes…",
-
   "profileNothingYet": "Nothing to count yet. Scan a pack and brew a recipe — your numbers will show up here.",
-
   "profileRecipes": "{count, plural, one{recipe} other{recipes}}",
-
   "profileVersions": "{count, plural, one{version} other{versions}}",
-
   "profilePacks": "{count, plural, one{pack} other{packs}}",
-
   "profileCountries": "{count, plural, one{country} other{countries}}",
-
   "profileVarieties": "{count, plural, one{variety} other{varieties}}",
-
   "profileFavourite": "Most often",
-
   "profileFavouriteValue": "{name} · {count, plural, one{{count} recipe} other{{count} recipes}}",
-
   "profileFirstRecipe": "First recipe",
-
   "profileGrindersTitle": "My grinders",
-
   "profileNoGrinder": "No grinder selected. Without one a recipe shows grind size in words instead of the clicks of your grinder.",
-
   "profileGrinderPrimary": "primary",
-
   "profileChooseGrinder": "Choose a grinder",
-
   "profileChangeGrinders": "Change the set",
-
   "profileAccountTitle": "Account",
-
   "profileLogout": "Sign out",
-
   "profileLogoutTitle": "Sign out without sending?",
-
   "profileLogoutPending": "There was no connection, and {count, plural, one{{count} item is} other{{count} items are}} waiting to be sent — ratings and recipe edits. Signing out will erase them along with the account.",
-
   "profileStay": "Stay",
-
   "clear": "Clear",
-
   "scanTitle": "The code from the pack",
-
   "scanOpenCamera": "Open the camera",
-
   "scanTapToAim": "tap to aim",
-
   "scanCodeIsSmall": "The code is small — look for it in the corner of the pack",
-
   "scanManualTitle": "Enter the code by hand",
-
   "scanOpenRecipe": "Open the recipe",
-
   "scanNoCode": "There is no code on the pack",
-
   "saving": "Saving…",
-
   "customStepTitle": "A step type of your own",
-
   "customStepForMethod": "it will stay with you for {method}",
-
   "customStepNoLabel": "Without a name the step will not go into the list",
-
   "customStepLabelField": "Name · the way it will show up in the list",
-
   "customStepLabelHint": "Blow through with the plunger",
-
   "customStepIcon": "Icon · from the set, no pictures of your own",
-
   "stepEndsWith": "How the step ends",
-
   "customStepThisDevice": "this device",
-
   "customStepNote": "The step is tied to {device}: it will not show up in recipes for other devices. A step like this does not count water — water has its own «pour».",
-
   "customStepSave": "Save the type",
-
   "remove": "Remove",
-
   "packsTitle": "My packs",
-
   "packsEmpty": "No packs yet",
-
   "packsEmptyNote": "Scan the code on the packaging — the roaster's recipe will follow on its own",
-
   "packsScanCode": "Scan the code",
-
   "packsAdd": "Add a pack",
-
   "packsChangeGrinder": "Change the grinder",
-
   "packsFinished": "finished",
-
   "roastLight": "light",
-
   "roastMedium": "medium",
-
   "roastDark": "dark",
-
   "ratingDraftTitle": "The rating is unfinished",
-
   "ratingDraftContinue": "continue where you left off",
-
   "ratingDraftContinueWith": "{summary} — continue",
-
   "recipesFailed": "The recipes did not load",
-
   "recipesEmpty": "Not a single brew yet",
-
   "recipesEmptyNote": "Brew a coffee by a recipe — it will show up here along with your rating",
-
   "recipesToPacks": "To the packs",
-
   "recipesVersionsCount": "{count, plural, one{{count} version} other{{count} versions}}",
-
   "recipesNow": "now",
-
   "recipesNowSwipe": "now · swipe sideways",
-
   "recipesVersionOf": "version {number} of {count}",
-
   "recipesDraft": "not saved",
-
   "recipesCurrent": "this is how I brew it",
-
   "recipesPastVersion": "an earlier version",
-
   "recipesBrewAgain": "Brew it again",
-
   "recipesEditRecipe": "Edit the recipe",
-
   "coffeeTitle": "Coffee",
-
   "coffeeNotFound": "There is no such code",
-
   "coffeeNotFoundNoCode": "There is no such coffee in the system.",
-
   "coffeeNotFoundNote": "The code has no typos — the check character matches — but it is not in the system. The roaster may not have published this batch yet.",
-
   "coffeeScanAgain": "Scan again",
-
   "coffeeToPacks": "To my packs",
-
   "coffeeRoasterPromises": "The roaster promises",
-
   "coffeeWithdrawnTitle": "This batch is no longer on sale. ",
-
   "coffeeWithdrawnNote": "The roaster has pulled it{what} — usually that means the beans have run out. The recipes stay: nothing stops you brewing the pack already standing on your shelf.",
-
   "coffeeOfflineNoCache": "There is no connection, and no saved recipe in memory either: there is nothing to brew by yet.",
-
   "coffeeOfflineCached": "There is no connection. Memory holds a recipe saved on {when} — you can brew by it. It will refresh itself once the connection is back.",
-
   "coffeeOfflineCantTitle": "What is not possible right now",
-
   "coffeeOfflineScan": "Scan a new pack",
-
   "coffeeOfflineScanNote": "the code is checked on the server",
-
   "coffeeOfflineRating": "Send a rating",
-
   "coffeeOfflineRatingNote": "you can give one, it will be sent later",
-
   "coffeeOfflineCorrection": "Get a correction",
-
   "coffeeOfflineCorrectionNote": "the server does the maths, not the phone",
-
   "coffeeBrewCached": "Brew by the saved one",
-
   "coffeeLastBrewed": "this is how you brewed it on {date}",
-
   "coffeeBrewOn": "Brew with {method}",
-
   "coffeeMethodsFailed": "The brewing methods did not load",
-
   "dateMonth1": "January",
-
   "dateMonth2": "February",
-
   "dateMonth3": "March",
-
   "dateMonth4": "April",
-
   "dateMonth5": "May",
-
   "dateMonth6": "June",
-
   "dateMonth7": "July",
-
   "dateMonth8": "August",
-
   "dateMonth9": "September",
-
   "dateMonth10": "October",
-
   "dateMonth11": "November",
-
   "dateMonth12": "December",
-
   "dateDayMonth": "{month} {day}",
-
   "dateDayMonthYear": "{month} {day}, {year}",
-
   "rateTitle": "How did it turn out",
-
   "rateOnTarget": "Turned out just as intended",
-
   "rateSaid": "{strength} {taste}",
-
   "rateDegreeSlight": "slightly",
-
   "rateDegreeNoticeable": "noticeably",
-
   "rateDegreeStrong": "very",
-
   "rateTasteSour": "sour",
-
   "rateTasteBitter": "bitter",
-
   "rateTasteStrong": "strong",
-
   "rateTasteWeak": "weak",
-
   "rateMapSemantics": "Taste map. {summary}",
-
   "rateOverall": "Overall",
-
   "rateStarsOf": "{stars} of 5",
-
   "rateOptional": "Optional",
-
   "rateAxesTitle": "Break it down by axis",
-
   "rateAxesHint": "You can leave these alone — only what you move gets sent",
-
   "rateAxisAroma": "Aroma",
-
   "rateAxisFlavor": "Flavor",
-
   "rateAxisAftertaste": "Aftertaste",
-
   "rateAxisAcidity": "Acidity",
-
   "rateAxisBitterness": "Bitterness",
-
   "rateAxisSweetness": "Sweetness",
-
   "rateAxesCount": "{count, plural, one{{count} axis} other{{count} axes}}",
-
   "rateSave": "Save",
-
   "rateFixRecipe": "Adjust the recipe",
-
   "rateJustSave": "Just save the rating",
-
   "rateSavedOffline": "Rating saved — it will be sent once the connection is back",
-
   "rateSavedCorrectionLater": "Rating saved. The fix is worked out on the server — it will be there once the connection is back",
-
   "rateNothingToChange": "Nothing to change: the recipe is already at the edge of its range",
-
   "rateParamGrind": "Grind",
-
   "rateParamTemperature": "Temperature",
-
   "rateParamRatio": "Ratio",
-
   "rateParamAgitation": "Agitation",
-
   "rateParamContactTime": "Contact time",
-
-  "rateParamDose": "Dose"
+  "rateParamDose": "Dose",
+  "packFormTitle": "A pack without a code",
+  "packFormIntro": "Type in what is printed on the pack. Only the country is required — the name is built from it and the region.",
+  "packFormPhotoTitle": "Photograph the pack",
+  "packFormPhotoNote": "The photo is kept with the pack — that is how you will recognise it in the list",
+  "packFormPhotoTake": "Take a photo",
+  "packFormPhotoRetake": "Retake",
+  "packFormPhotoFromGallery": "From the gallery",
+  "packFormPhotoFailed": "The photo did not work out — try again",
+  "packFormCountry": "Country",
+  "packFormCountryHint": "Brazil",
+  "packFormCountryRequired": "Without a country there is nothing to name the pack after",
+  "packFormRegion": "Region — if you know it",
+  "packFormRegionHint": "Cerrado",
+  "packFormVariety": "Variety",
+  "packFormVarietyHint": "bourbon",
+  "packFormScaScore": "SCA score",
+  "packFormRoastDate": "Roast date",
+  "packFormDateHint": "dd.mm.yyyy",
+  "packFormDateInvalid": "There is no such date",
+  "packFormDateEmptyNote": "Do not know it — leave it empty and we will put today's date",
+  "packFormToday": "Today",
+  "packFormDescriptors": "Descriptors",
+  "packFormDescriptorsNote": "How it smells and tastes — one word per line",
+  "packFormDescriptorNumbered": "Descriptor {number}",
+  "packFormDescriptorHint": "raspberry",
+  "packFormAddDescriptor": "Add a descriptor",
+  "packFormProcessing": "Processing method",
+  "packFormProcessingNote": "Usually printed on the pack next to the variety",
+  "packFormProcessingNumbered": "Processing {number}",
+  "packFormProcessingHint": "washed",
+  "packFormAddProcessing": "Add a processing method",
+  "packFormRemoveLine": "Remove the line",
+  "packFormSubmit": "Send",
+  "packFormSubmitFailed": "The pack was not sent",
+  "packFormSubmitFailedNote": "{reason}. What you typed is still here — try again.",
+  "packFormShowPassword": "Show the password",
+  "packFormHidePassword": "Hide the password"
 }

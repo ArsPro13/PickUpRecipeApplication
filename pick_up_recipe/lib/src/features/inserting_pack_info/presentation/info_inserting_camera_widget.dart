@@ -18,6 +18,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:pick_up_recipe/core/converters.dart';
 import 'package:pick_up_recipe/core/logger.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_icon.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_kit.dart';
@@ -44,6 +45,9 @@ class _InsertingPackInfoCameraWidgetState
     if (_busy) return;
     setState(() => _busy = true);
 
+    // Подписи берём до похода в камеру: после await контекст трогать нельзя,
+    // а сообщение об ошибке нужно на том же языке, что и остальной экран.
+    final texts = AppLocalizations.of(context);
     final formNotifier = ref.read(formNotifierProvider.notifier);
     try {
       final image = await _picker.pickImage(
@@ -61,7 +65,7 @@ class _InsertingPackInfoCameraWidgetState
       await formNotifier.finishScanning();
     } catch (error) {
       logger.e('Снимок пачки не получился', error: error);
-      await formNotifier.finishScanning(error: 'Снимок не получился');
+      await formNotifier.finishScanning(error: texts.packFormPhotoFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -71,6 +75,7 @@ class _InsertingPackInfoCameraWidgetState
   Widget build(BuildContext context) {
     final state = ref.watch(formNotifierProvider);
     final image = state.image;
+    final texts = AppLocalizations.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -84,7 +89,9 @@ class _InsertingPackInfoCameraWidgetState
           children: [
             Expanded(
               child: AppButton(
-                label: image == null ? 'Сфотографировать' : 'Переснять',
+                label: image == null
+                    ? texts.packFormPhotoTake
+                    : texts.packFormPhotoRetake,
                 icon: AppIcons.uiCamera,
                 kind: image == null ? AppButtonKind.primary : AppButtonKind.secondary,
                 loading: _busy,
@@ -94,7 +101,7 @@ class _InsertingPackInfoCameraWidgetState
             const SizedBox(width: AppSpacing.s2),
             Expanded(
               child: AppButton(
-                label: 'Из галереи',
+                label: texts.packFormPhotoFromGallery,
                 icon: AppIcons.uiPack,
                 kind: AppButtonKind.secondary,
                 onPressed: () => _pickImage(ImageSource.gallery),
@@ -105,7 +112,7 @@ class _InsertingPackInfoCameraWidgetState
         if (state.imageErrorMessage != null) ...[
           const SizedBox(height: AppSpacing.s2),
           Text(
-            'Снимок не получился — попробуйте ещё раз',
+            texts.packFormPhotoFailed,
             style: context.texts.labelSmall?.copyWith(color: context.colors.error),
           ),
         ],
@@ -166,13 +173,13 @@ class _PhotoHintState extends State<_PhotoHint> with SingleTickerProviderStateMi
           ),
           const SizedBox(height: AppSpacing.s3),
           Text(
-            'Сфотографируйте пачку',
+            AppLocalizations.of(context).packFormPhotoTitle,
             style: context.texts.bodyMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.s1),
           Text(
-            'Снимок сохранится вместе с пачкой — по нему вы узнаете её в списке',
+            AppLocalizations.of(context).packFormPhotoNote,
             style: context.texts.labelSmall,
             textAlign: TextAlign.center,
           ),

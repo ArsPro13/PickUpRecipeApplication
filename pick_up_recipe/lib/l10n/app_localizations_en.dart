@@ -960,4 +960,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rateParamDose => 'Dose';
+
+  @override
+  String get packFormTitle => 'A pack without a code';
+
+  @override
+  String get packFormIntro =>
+      'Type in what is printed on the pack. Only the country is required — the name is built from it and the region.';
+
+  @override
+  String get packFormPhotoTitle => 'Photograph the pack';
+
+  @override
+  String get packFormPhotoNote =>
+      'The photo is kept with the pack — that is how you will recognise it in the list';
+
+  @override
+  String get packFormPhotoTake => 'Take a photo';
+
+  @override
+  String get packFormPhotoRetake => 'Retake';
+
+  @override
+  String get packFormPhotoFromGallery => 'From the gallery';
+
+  @override
+  String get packFormPhotoFailed => 'The photo did not work out — try again';
+
+  @override
+  String get packFormCountry => 'Country';
+
+  @override
+  String get packFormCountryHint => 'Brazil';
+
+  @override
+  String get packFormCountryRequired =>
+      'Without a country there is nothing to name the pack after';
+
+  @override
+  String get packFormRegion => 'Region — if you know it';
+
+  @override
+  String get packFormRegionHint => 'Cerrado';
+
+  @override
+  String get packFormVariety => 'Variety';
+
+  @override
+  String get packFormVarietyHint => 'bourbon';
+
+  @override
+  String get packFormScaScore => 'SCA score';
+
+  @override
+  String get packFormRoastDate => 'Roast date';
+
+  @override
+  String get packFormDateHint => 'dd.mm.yyyy';
+
+  @override
+  String get packFormDateInvalid => 'There is no such date';
+
+  @override
+  String get packFormDateEmptyNote =>
+      'Do not know it — leave it empty and we will put today\'s date';
+
+  @override
+  String get packFormToday => 'Today';
+
+  @override
+  String get packFormDescriptors => 'Descriptors';
+
+  @override
+  String get packFormDescriptorsNote =>
+      'How it smells and tastes — one word per line';
+
+  @override
+  String packFormDescriptorNumbered(int number) {
+    return 'Descriptor $number';
+  }
+
+  @override
+  String get packFormDescriptorHint => 'raspberry';
+
+  @override
+  String get packFormAddDescriptor => 'Add a descriptor';
+
+  @override
+  String get packFormProcessing => 'Processing method';
+
+  @override
+  String get packFormProcessingNote =>
+      'Usually printed on the pack next to the variety';
+
+  @override
+  String packFormProcessingNumbered(int number) {
+    return 'Processing $number';
+  }
+
+  @override
+  String get packFormProcessingHint => 'washed';
+
+  @override
+  String get packFormAddProcessing => 'Add a processing method';
+
+  @override
+  String get packFormRemoveLine => 'Remove the line';
+
+  @override
+  String get packFormSubmit => 'Send';
+
+  @override
+  String get packFormSubmitFailed => 'The pack was not sent';
+
+  @override
+  String packFormSubmitFailedNote(String reason) {
+    return '$reason. What you typed is still here — try again.';
+  }
+
+  @override
+  String get packFormShowPassword => 'Show the password';
+
+  @override
+  String get packFormHidePassword => 'Hide the password';
 }
