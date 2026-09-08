@@ -17,6 +17,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -155,12 +156,14 @@ class _AmountStepperState extends State<AmountStepper> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         _StepperButton(
           icon: AppIcons.uiMinus,
-          hint: 'убавить',
+          hint: texts.builderDecrease,
           enabled: _value > widget.min,
           onPress: () => _press(-1),
           onRelease: _release,
@@ -173,7 +176,7 @@ class _AmountStepperState extends State<AmountStepper> {
         const SizedBox(width: AppSpacing.s1),
         _StepperButton(
           icon: AppIcons.uiPlus,
-          hint: 'прибавить',
+          hint: texts.builderIncrease,
           enabled: _value < widget.max,
           onPress: () => _press(1),
           onRelease: _release,

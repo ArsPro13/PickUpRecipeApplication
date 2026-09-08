@@ -11,6 +11,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
 import 'app_kit.dart';
@@ -27,10 +28,14 @@ const int _secondsCount = 60;
 
 /// Открывает шторку с барабаном и возвращает выбранные секунды.
 /// null — закрыли, ничего не выбрав.
+///
+/// [title] пуст по умолчанию: заголовок берётся из словаря уже внутри шторки —
+/// значение по умолчанию у параметра обязано быть константой, а строка из
+/// словаря ею быть не может.
 Future<int?> showDurationSheet(
   BuildContext context, {
   required int seconds,
-  String title = 'Длительность',
+  String? title,
 }) {
   return showModalBottomSheet<int>(
     context: context,
@@ -59,7 +64,9 @@ class _DurationSheet extends StatefulWidget {
   const _DurationSheet({required this.seconds, required this.title});
 
   final int seconds;
-  final String title;
+
+  /// Заголовок шторки. null — «Длительность» из словаря.
+  final String? title;
 
   @override
   State<_DurationSheet> createState() => _DurationSheetState();
@@ -70,6 +77,8 @@ class _DurationSheetState extends State<_DurationSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return SafeArea(
       top: false,
       child: Padding(
@@ -84,8 +93,13 @@ class _DurationSheetState extends State<_DurationSheet> {
           children: [
             Row(
               children: [
-                Expanded(child: Text(widget.title, style: context.texts.bodyMedium)),
-                Text('минуты и секунды', style: context.texts.labelSmall),
+                Expanded(
+                  child: Text(
+                    widget.title ?? texts.builderDuration,
+                    style: context.texts.bodyMedium,
+                  ),
+                ),
+                Text(texts.builderMinutesSeconds, style: context.texts.labelSmall),
               ],
             ),
             const SizedBox(height: AppSpacing.s4),
@@ -95,7 +109,7 @@ class _DurationSheetState extends State<_DurationSheet> {
             ),
             const SizedBox(height: AppSpacing.s5),
             AppButton(
-              label: 'Готово',
+              label: texts.builderDone,
               onPressed: () => Navigator.of(context).pop(_picked),
             ),
           ],

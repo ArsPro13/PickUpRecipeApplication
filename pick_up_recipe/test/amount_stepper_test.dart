@@ -6,6 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/general_widgets/amount_stepper.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_icon.dart';
@@ -16,11 +17,19 @@ import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 /// Счётчик вместе с тем, кто хранит значение: без родителя, который принимает
 /// изменение и возвращает его обратно, проверялась бы половина связки.
 class _Host extends StatefulWidget {
-  const _Host({required this.initial, this.min = 0, this.max = 9999});
+  const _Host({
+    required this.initial,
+    this.min = 0,
+    this.max = 9999,
+    this.locale = const Locale('ru'),
+  });
 
   final int initial;
   final int min;
   final int max;
+
+  /// Язык телефона. Русский по умолчанию: счёт граммов от него не зависит.
+  final Locale locale;
 
   @override
   State<_Host> createState() => _HostState();
@@ -33,6 +42,11 @@ class _HostState extends State<_Host> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: lightTheme,
+      // Подписи кнопок счётчика читает голосовой помощник, и берутся они из
+      // словаря: без делегатов счётчик не соберётся вовсе.
+      locale: widget.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Center(
           child: AmountStepper(
@@ -180,6 +194,9 @@ void main() {
 
       await tester.pumpWidget(MaterialApp(
         theme: lightTheme,
+        locale: const Locale('ru'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: StatefulBuilder(
             builder: (context, setState) => AmountStepper(
@@ -207,6 +224,23 @@ void main() {
       // нужна примерно сотня — значит счётчику остаётся меньше двухсот,
       // иначе подпись переедет на вторую строку.
       expect(tester.getSize(find.byType(AmountStepper)).width, lessThan(200));
+    });
+
+    testWidgets('кнопки подписаны для голосового помощника', (tester) async {
+      // Единственные подписи счётчика: глазами их не видно, и русскую пару
+      // на английском телефоне не заметил бы никто, кроме того, кто слушает.
+      for (final locale in [const Locale('ru'), const Locale('en')]) {
+        await tester.pumpWidget(_Host(initial: 100, locale: locale));
+        final texts = lookupAppLocalizations(locale);
+
+        for (final hint in [texts.builderDecrease, texts.builderIncrease]) {
+          expect(
+            find.bySemanticsLabel(hint),
+            findsOneWidget,
+            reason: '$hint на ${locale.languageCode}',
+          );
+        }
+      }
     });
 
     testWidgets('пустое поле не превращается в ноль граммов', (tester) async {

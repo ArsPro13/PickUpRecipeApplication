@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/brew_methods/domain/brew_method.dart';
@@ -41,6 +42,7 @@ import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
 import '../general_widgets/duration_wheel_sheet.dart';
+import '../general_widgets/step_ending_choice.dart';
 import '../general_widgets/step_type_sheet.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
@@ -154,11 +156,12 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     // Справочник методов приезжает асинхронно: смотрим за ним, чтобы список
     // разрешённых типов шагов появился, как только он загрузится.
     ref.watch(brewMethodsProvider);
+    final texts = AppLocalizations.of(context);
     final method = _method;
     final grinder = ref.watch(grinderStateProvider).primary;
 
     final screen = AppScreen(
-      title: 'Ваш рецепт',
+      title: texts.builderTitle,
       onBack: _leave,
       body: [
         Text(_subtitle(), style: context.texts.labelSmall),
@@ -170,12 +173,12 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           ),
           const SizedBox(height: AppSpacing.s4),
         ],
-        _params(grinder),
+        _params(texts, grinder),
         const SizedBox(height: AppSpacing.s4),
         Row(
           children: [
-            Expanded(child: Text('Шаги', style: context.texts.bodyMedium)),
-            Text('потяните за ручку', style: context.texts.labelSmall),
+            Expanded(child: Text(texts.builderSteps, style: context.texts.bodyMedium)),
+            Text(texts.builderDragHint, style: context.texts.labelSmall),
           ],
         ),
         const SizedBox(height: AppSpacing.s2),
@@ -188,14 +191,14 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             children: [
               AppIcon(AppIcons.uiPlus, size: AppSizes.icon20, color: context.colors.secondary),
               const SizedBox(width: AppSpacing.s2),
-              Text('Добавить шаг', style: context.texts.bodyMedium?.copyWith(
+              Text(texts.builderAddStep, style: context.texts.bodyMedium?.copyWith(
                 color: context.colors.secondary,
               )),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.s4),
-        _totals(),
+        _totals(texts),
       ],
       bottom: [
         Row(
@@ -204,7 +207,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
               // Кнопка не гаснет после сохранения: правку можно продолжить
               // и сохранить ещё раз — цепочка версий это и есть.
               child: AppButton(
-                label: 'Сохранить',
+                label: texts.builderSave,
                 kind: AppButtonKind.secondary,
                 loading: _saving,
                 onPressed: _save,
@@ -213,7 +216,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             const SizedBox(width: AppSpacing.s3),
             Expanded(
               child: AppButton(
-                label: 'Заварить',
+                label: texts.builderBrew,
                 icon: AppIcons.uiPlay,
                 onPressed: _saving ? null : _brew,
               ),
@@ -225,7 +228,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         // не понимая, закончил он или нет.
         if (_savedId != null)
           AppButton(
-            label: 'На главную',
+            label: texts.builderToHome,
             icon: AppIcons.uiPack,
             onPressed: () => context.router.navigate(const PacksRoute()),
           ),
@@ -255,7 +258,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
 
   // ── Параметры ────────────────────────────────────────────────────────────
 
-  Widget _params(Grinder? grinder) {
+  Widget _params(AppLocalizations texts, Grinder? grinder) {
     // Помол показывается делением кофемолки человека (пункт 8): раньше на
     // этой строке стояло значение grind_step, а у справочного рецепта оно
     // пусто — оставался прочерк с подписью «средне-тонкий».
@@ -271,41 +274,41 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Параметры', style: context.texts.bodyMedium),
+          Text(texts.builderParams, style: context.texts.bodyMedium),
           const SizedBox(height: AppSpacing.s2),
           _ParamRow(
             kind: MetricKind.dose,
-            name: 'Доза',
-            value: '${formatDecimal(_recipe.load)} г',
+            name: texts.builderDose,
+            value: texts.unitGrams(formatDecimal(_recipe.load)),
             changed: _changed('load'),
             onTap: () => _editDecimal(
-              title: 'Доза',
-              suffix: 'г',
+              title: texts.builderDose,
+              suffix: texts.builderGram,
               value: _recipe.load,
               apply: (value) => _recipe.load = value,
             ),
           ),
           _ParamRow(
             kind: MetricKind.water,
-            name: 'Вода',
-            value: '${_recipe.water} мл',
+            name: texts.builderWater,
+            value: texts.unitMillilitres('${_recipe.water}'),
             changed: _changed('water'),
             onTap: () => _editInt(
-              title: 'Вода',
-              suffix: 'мл',
+              title: texts.builderWater,
+              suffix: texts.builderMillilitre,
               value: _recipe.water,
               apply: (value) => _recipe.water = value,
             ),
           ),
           _ParamRow(
             kind: MetricKind.temperature,
-            name: 'Температура',
+            name: texts.builderTemperature,
             value: _recipe.temperature == null
                 ? '—'
                 : '${formatDecimal(_recipe.temperature!)} °C',
             changed: _changed('temperature'),
             onTap: () => _editDecimal(
-              title: 'Температура',
+              title: texts.builderTemperature,
               suffix: '°C',
               value: _recipe.temperature ?? 93,
               apply: (value) => _recipe.temperature = value,
@@ -313,12 +316,12 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           ),
           _ParamRow(
             kind: MetricKind.grind,
-            name: 'Помол',
+            name: texts.builderGrind,
             caption: grind.caption,
             value: grind.isEmpty ? '—' : grind.label,
             changed: _changed('grind_step'),
             onTap: () => _editText(
-              title: 'Помол',
+              title: texts.builderGrind,
               value: _recipe.grindStep,
               // Человек правит помол в делениях своей кофемолки, поэтому
               // вместе со значением запоминается и она: иначе следующая
@@ -334,7 +337,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           _ParamRow(
             kind: MetricKind.time,
             icon: AppIcons.metricRatio,
-            name: 'Соотношение',
+            name: texts.builderRatio,
             value: _ratio(),
             readOnly: true,
           ),
@@ -533,7 +536,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
 
   // ── Итоги ────────────────────────────────────────────────────────────────
 
-  Widget _totals() {
+  Widget _totals(AppLocalizations texts) {
     return QuietSurface(
       child: Column(
         children: [
@@ -545,9 +548,9 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
                 color: _waterMismatch ? context.colors.error : context.palette.success,
               ),
               const SizedBox(width: AppSpacing.s3),
-              Expanded(child: Text('Вода по шагам', style: context.texts.bodySmall)),
+              Expanded(child: Text(texts.builderStepWater, style: context.texts.bodySmall)),
               Text(
-                '$_stepWater из ${_recipe.water} г',
+                texts.builderStepWaterValue(_stepWater, _recipe.water),
                 style: context.texts.bodySmall?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
@@ -557,7 +560,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             children: [
               AppIcon(AppIcons.metricTime, size: AppSizes.icon20, color: context.colors.secondary),
               const SizedBox(width: AppSpacing.s3),
-              Expanded(child: Text('Общее время', style: context.texts.bodySmall)),
+              Expanded(child: Text(texts.builderTotalTime, style: context.texts.bodySmall)),
               Text(
                 formatDuration(_totalTime),
                 style: context.texts.bodySmall?.copyWith(fontWeight: FontWeight.w600),
@@ -643,6 +646,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     bool decimal = false,
   }) {
     final controller = TextEditingController(text: initial);
+    final texts = AppLocalizations.of(context);
 
     return showDialog<double>(
       context: context,
@@ -661,11 +665,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Отмена'),
+            child: Text(texts.builderCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(parseNumber(controller.text)),
-            child: const Text('Готово'),
+            child: Text(texts.builderDone),
           ),
         ],
       ),
@@ -684,6 +688,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     required void Function(String) apply,
   }) async {
     final controller = TextEditingController(text: value);
+    final texts = AppLocalizations.of(context);
 
     final result = await showDialog<String>(
       context: context,
@@ -697,11 +702,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Отмена'),
+            child: Text(texts.builderCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('Готово'),
+            child: Text(texts.builderDone),
           ),
         ],
       ),
@@ -714,35 +719,36 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   Future<void> _editStepText(RecipeStep step) async {
     final name = TextEditingController(text: step.instruction);
     final tip = TextEditingController(text: step.tip);
+    final texts = AppLocalizations.of(context);
 
     final saved = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Шаг'),
+        title: Text(texts.builderStep),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: name,
               autofocus: true,
-              decoration: const InputDecoration(labelText: 'Название'),
+              decoration: InputDecoration(labelText: texts.builderStepName),
             ),
             const SizedBox(height: AppSpacing.s3),
             TextField(
               controller: tip,
               maxLines: 2,
-              decoration: const InputDecoration(labelText: 'Подсказка'),
+              decoration: InputDecoration(labelText: texts.builderStepTip),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Отмена'),
+            child: Text(texts.builderCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Готово'),
+            child: Text(texts.builderDone),
           ),
         ],
       ),
@@ -764,19 +770,21 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   Future<bool> _confirmLeave() async {
     if (!_dirty) return true;
 
+    final texts = AppLocalizations.of(context);
+
     final leave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Уйти без сохранения?'),
-        content: const Text('Правки не сохранены — новая версия не появится.'),
+        title: Text(texts.builderLeaveTitle),
+        content: Text(texts.builderLeaveNote),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Остаться'),
+            child: Text(texts.profileStay),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Уйти'),
+            child: Text(texts.builderLeave),
           ),
         ],
       ),
@@ -793,6 +801,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
 
   Future<void> _save() async {
     if (_saving) return;
+    final texts = AppLocalizations.of(context);
     setState(() => _saving = true);
 
     try {
@@ -808,13 +817,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         _corrected = false;
         _saved = jsonEncode(_recipe.toJson());
       });
-      _say(savedId < 0
-          ? 'Сохранено на телефоне — уедет, когда появится связь'
-          : 'Сохранено новой версией');
+      _say(savedId < 0 ? texts.builderSavedOffline : texts.builderSavedVersion);
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      _say('Не сохранилось: $error');
+      _say(texts.builderSaveFailed('$error'));
     }
   }
 
@@ -839,6 +846,8 @@ class _CorrectionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return QuietSurface(
       child: Row(
         children: [
@@ -848,12 +857,12 @@ class _CorrectionRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Поправлено под «$label»', style: context.texts.bodySmall),
-                Text('изменения помечены точкой', style: context.texts.labelSmall),
+                Text(texts.builderCorrectedFor(label), style: context.texts.bodySmall),
+                Text(texts.builderCorrectedNote, style: context.texts.labelSmall),
               ],
             ),
           ),
-          TextButton(onPressed: onUndo, child: const Text('Отменить')),
+          TextButton(onPressed: onUndo, child: Text(texts.builderUndo)),
         ],
       ),
     );
@@ -1003,6 +1012,7 @@ class _StepRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
     final icon = AppIcons.step(type?.iconKey ?? step.stepType);
     final accent = context.colors.primary;
 
@@ -1035,14 +1045,16 @@ class _StepRow extends StatelessWidget {
                 const SizedBox(width: AppSpacing.s2),
                 Expanded(
                   child: Text(
-                    step.instruction.isEmpty ? (type?.name ?? 'Шаг') : step.instruction,
+                    step.instruction.isEmpty
+                        ? (type?.name ?? texts.builderStep)
+                        : step.instruction,
                     style: context.texts.bodyMedium?.copyWith(
                       fontWeight: open ? FontWeight.w600 : FontWeight.w400,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Text(stepSummary(step), style: context.texts.labelSmall),
+                Text(stepSummary(step, texts), style: context.texts.labelSmall),
                 if (changed) ...[
                   const SizedBox(width: AppSpacing.s2),
                   Container(
@@ -1064,8 +1076,11 @@ class _StepRow extends StatelessWidget {
             Divider(height: AppSpacing.s6, color: context.palette.border),
             Row(
               children: [
-                Expanded(child: Text('Тип шага', style: context.texts.labelSmall)),
-                TextButton(onPressed: onPickType, child: Text(type?.name ?? 'выбрать')),
+                Expanded(child: Text(texts.stepTypeLabel, style: context.texts.labelSmall)),
+                TextButton(
+                  onPressed: onPickType,
+                  child: Text(type?.name ?? texts.builderChoose),
+                ),
               ],
             ),
             // Вода — только у тех типов, что её льют. У остальных поле
@@ -1076,11 +1091,11 @@ class _StepRow extends StatelessWidget {
                 // Не «Вода на шаге»: со счётчиком строка занимает 176 точек
                 // справа, и на 360 подпись переехала бы на вторую строку.
                 // Внутри карточки шага другой воды всё равно нет.
-                name: 'Вода',
-                value: '${step.water} г',
+                name: texts.builderWater,
+                value: texts.unitGrams('${step.water}'),
                 control: AmountStepper(
                   value: step.water,
-                  suffix: 'г',
+                  suffix: texts.builderGram,
                   onChanged: onWaterChanged,
                 ),
               ),
@@ -1090,14 +1105,14 @@ class _StepRow extends StatelessWidget {
               _ParamRow(
                 kind: MetricKind.time,
                 icon: AppIcons.uiForward,
-                name: 'Заканчивается',
-                value: stepEnding(step).label,
+                name: texts.builderEndsLabel,
+                value: stepEnding(step).label(texts),
                 readOnly: true,
               )
             else
               _ParamRow(
                 kind: MetricKind.time,
-                name: 'Длительность',
+                name: texts.builderDuration,
                 value: formatDuration(step.time),
                 onTap: onEditTime,
               ),
@@ -1106,7 +1121,7 @@ class _StepRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    step.tip.isEmpty ? 'Подсказки нет' : 'Подсказка · ${step.tip}',
+                    step.tip.isEmpty ? texts.builderNoTip : texts.builderTipValue(step.tip),
                     style: context.texts.labelSmall,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1115,7 +1130,7 @@ class _StepRow extends StatelessWidget {
                 IconButton(
                   onPressed: onEditText,
                   icon: const AppIcon(AppIcons.uiEdit, size: AppSizes.icon20),
-                  tooltip: 'Править',
+                  tooltip: texts.edit,
                 ),
                 IconButton(
                   onPressed: onRemove,
@@ -1124,7 +1139,7 @@ class _StepRow extends StatelessWidget {
                     size: AppSizes.icon20,
                     color: context.colors.error,
                   ),
-                  tooltip: 'Убрать шаг',
+                  tooltip: texts.builderRemoveStep,
                 ),
               ],
             ),
@@ -1183,11 +1198,11 @@ void dropStrayWater(RecipeData recipe) {
 ///
 /// У шага, который ждёт человека, вместо времени стоит то, чем он кончается:
 /// «0:09» там ничего не отсчитывало и читалось как обещание таймера.
-String stepSummary(RecipeStep step) {
+String stepSummary(RecipeStep step, AppLocalizations texts) {
   final parts = [
-    if (step.showsWater && step.water > 0) '${step.water} г',
+    if (step.showsWater && step.water > 0) texts.unitGrams('${step.water}'),
     if (stepEndsByUser(step))
-      stepEnding(step).label
+      stepEnding(step).label(texts)
     else if (step.time > 0)
       formatDuration(step.time),
   ];

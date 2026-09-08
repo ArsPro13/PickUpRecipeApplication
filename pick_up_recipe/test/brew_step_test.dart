@@ -58,7 +58,9 @@ void main() {
         expect(
           ending.endsByHuman,
           ending != StepEndsWith.timer,
-          reason: 'вариант «${ending.label}» ответил не то',
+          // По значению на проводе, а не по подписи: подпись у варианта
+          // теперь своя в каждом языке, а спрашивают здесь про домен.
+          reason: 'вариант «${ending.wire}» ответил не то',
         );
         expect(ending.showsDuration, !ending.endsByHuman);
       }

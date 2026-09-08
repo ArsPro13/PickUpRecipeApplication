@@ -4,13 +4,26 @@
 // Всё, что здесь проверяется, стоит рецепта, если ошибётся: «0:35» разобранное
 // как 35 минут, потерянное при отправке поле или лист, показывающий отжим у
 // V60. Виджеты вокруг этого проверяются глазами, а это — тестом.
+//
+// Последняя группа — про язык, и она читает исходники, а не запускает виджеты.
+// Экран целиком в тесте не поднять: его шапка спрашивает у маршрутизатора, есть
+// ли куда возвращаться, а сервис рецептов — у GetIt клиента к серверу. Но беда,
+// ради которой группа заведена, видна и без запуска: строка, вшитая в код
+// по-русски, на английском телефоне останется русской. Ровно так же устроен и
+// страж локалей — глазами этого не увидеть, английский экран открывают раз в
+// месяц.
+
+import 'dart:io';
+import 'dart:ui' show Locale;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/step_type_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/user_step_type_model.dart';
+import 'package:pick_up_recipe/src/general_widgets/step_ending_choice.dart';
 import 'package:pick_up_recipe/src/pages/recipe_builder_page.dart';
 import 'package:pick_up_recipe/src/themes/app_icons.dart';
 
@@ -74,6 +87,11 @@ RecipeData recipeWith(List<RecipeStep> steps, {int water = 250}) => RecipeData(
     );
 
 void main() {
+  // Подписи уехали в словарь: берём их через ту же локаль, что увидит
+  // человек с русским телефоном, — сверять текст с самим собой бессмысленно,
+  // а вот с русской строкой словаря есть смысл.
+  final ru = lookupAppLocalizations(const Locale('ru'));
+
   group('чем шаг заканчивается', () {
     test('шаг с таймером не ждёт человека, шаг с признаком — ждёт', () {
       expect(stepEndsByUser(step()), isFalse);
@@ -88,9 +106,13 @@ void main() {
         StepEndsWith.none,
       );
 
-      // Дословно те же слова, что в сегментах формы: разъехавшись, они
-      // рассказали бы про один и тот же шаг две разные истории.
-      expect(stepEnding(step(stepType: 'custom', untilUser: true)).label, 'по кнопке');
+      // Дословно те же слова, что в карточках формы: разъехавшись, они
+      // рассказали бы про один и тот же шаг две разные истории. Слова берутся
+      // из словаря — там они и лежат с тех пор, как экран стал двуязычным.
+      expect(
+        stepEnding(step(stepType: 'custom', untilUser: true)).label(ru),
+        ru.builderEndsUser,
+      );
     });
 
     test('признак — тоже ожидание человека, даже без флага', () {
@@ -159,31 +181,46 @@ void main() {
 
   group('подпись свёрнутой строки шага', () {
     test('у пролива — вода и время', () {
-      expect(stepSummary(step(water: 100, time: 30)), '100 г · 0:30');
+      expect(stepSummary(step(water: 100, time: 30), ru), '100 г · 0:30');
     });
 
     test('у паузы — только время', () {
-      expect(stepSummary(step(stepType: 'wait', water: 0, time: 65)), '1:05');
+      expect(stepSummary(step(stepType: 'wait', water: 0, time: 65), ru), '1:05');
     });
 
     test('у шага по кнопке вместо времени — чем он кончается', () {
       // Было «0:09»: девять секунд, которые никто не отсчитывал.
       expect(
-        stepSummary(step(stepType: 'custom', water: 2, time: 9, untilUser: true)),
-        'по кнопке',
+        stepSummary(step(stepType: 'custom', water: 2, time: 9, untilUser: true), ru),
+        ru.builderEndsUser,
       );
+    });
+
+    test('на английском телефоне подпись английская', () {
+      // Ровно то, что было видно на видео владельца: английская шапка и
+      // русские слова под ней.
+      final en = lookupAppLocalizations(const Locale('en'));
+
+      expect(
+        stepSummary(step(stepType: 'custom', water: 2, time: 9, untilUser: true), en),
+        en.builderEndsUser,
+      );
+      expect(stepSummary(step(water: 100, time: 30), en), '100 g · 0:30');
     });
 
     test('у шага по признаку — то же, но своими словами', () {
       expect(
-        stepSummary(step(
-          stepType: 'custom',
-          water: 0,
-          time: 9,
-          untilUser: true,
-          untilSign: 'воронка пуста',
-        )),
-        'по признаку',
+        stepSummary(
+          step(
+            stepType: 'custom',
+            water: 0,
+            time: 9,
+            untilUser: true,
+            untilSign: 'воронка пуста',
+          ),
+          ru,
+        ),
+        ru.builderEndsSign,
       );
     });
   });
@@ -445,4 +482,43 @@ void main() {
       expect(reference.bySlug('custom'), isNull);
     });
   });
+  group('экраны конструктора не говорят по-русски из кода', () {
+    // Файлы конструктора: сам экран, форма своего типа шага и всё, что они
+    // показывают. Список руками, а не обходом lib/: соседние экраны переводят
+    // другие руки, и чужая недоделка не должна валить этот тест.
+    const screens = [
+      'lib/src/pages/recipe_builder_page.dart',
+      'lib/src/pages/custom_step_page.dart',
+      'lib/src/general_widgets/duration_wheel_sheet.dart',
+      'lib/src/general_widgets/amount_stepper.dart',
+      'lib/src/general_widgets/step_ending_choice.dart',
+      'lib/src/general_widgets/step_type_sheet.dart',
+      'lib/src/features/recipes/domain/models/user_step_type_model.dart',
+    ];
+
+    for (final path in screens) {
+      test(path.split('/').last, () {
+        expect(hardcodedRussian(path), isEmpty, reason: 'строку забыли в коде');
+      });
+    }
+  });
+
+}
+
+/// Строки в кавычках, в которых осталась кириллица.
+///
+/// Разбор нарочно грубый: строчные комментарии пропускаются целиком, остальное
+/// разбирается кавычками. В коде этих файлов кириллице больше взяться неоткуда
+/// — она бывает только в тексте, который увидит человек, а весь такой текст
+/// живёт в словаре.
+List<String> hardcodedRussian(String path) {
+  final literal = RegExp("'[^'\n]*'" r'|"[^"\n]*"');
+  final cyrillic = RegExp('[а-яёА-ЯЁ]');
+
+  return [
+    for (final line in File(path).readAsLinesSync())
+      if (!line.trimLeft().startsWith('//'))
+        for (final match in literal.allMatches(line))
+          if (cyrillic.hasMatch(match.group(0)!)) match.group(0)!,
+  ];
 }

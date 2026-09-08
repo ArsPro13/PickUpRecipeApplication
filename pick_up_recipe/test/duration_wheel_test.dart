@@ -161,6 +161,32 @@ void main() {
       expect(host.answer, isNull);
       expect(host.stepTime, 0);
     });
+
+    testWidgets('на английском телефоне шторка английская', (tester) async {
+      // На видео владельца английская шапка «A step type of your own» соседила
+      // с русскими «Длительность», «минуты и секунды» и «Готово».
+      await _openSheet(tester, locale: const Locale('en'));
+
+      final en = lookupAppLocalizations(const Locale('en'));
+      expect(find.text(en.builderDuration), findsOneWidget);
+      expect(find.text(en.builderMinutesSeconds), findsOneWidget);
+      expect(find.text(en.builderDone), findsOneWidget);
+
+      // Смотрим внутрь шторки: кнопка, которая её открыла, принадлежит
+      // тесту, а не шторке, и по-русски подписана намеренно.
+      final cyrillic = RegExp('[а-яёА-ЯЁ]');
+      final inside = find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byType(Text),
+      );
+      for (final text in tester.widgetList<Text>(inside)) {
+        expect(
+          cyrillic.hasMatch(text.data ?? ''),
+          isFalse,
+          reason: 'по-русски осталось: «${text.data}»',
+        );
+      }
+    });
   });
 }
 
@@ -170,7 +196,11 @@ void main() {
 /// Локаль задана явно: шторка подписана строками из словаря, а не системным
 /// языком машины с тестом.
 class _SheetHost extends StatefulWidget {
-  const _SheetHost();
+  const _SheetHost({this.locale = const Locale('ru')});
+
+  /// Язык телефона. Русский по умолчанию: остальным проверкам этой группы
+  /// нужен предсказуемый язык, а не какой именно.
+  final Locale locale;
 
   @override
   State<_SheetHost> createState() => _SheetHostState();
@@ -191,7 +221,7 @@ class _SheetHostState extends State<_SheetHost> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: lightTheme,
-      locale: const Locale('ru'),
+      locale: widget.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
@@ -214,8 +244,11 @@ class _SheetHostState extends State<_SheetHost> {
   }
 }
 
-Future<_SheetHostState> _openSheet(WidgetTester tester) async {
-  await tester.pumpWidget(const _SheetHost());
+Future<_SheetHostState> _openSheet(
+  WidgetTester tester, {
+  Locale locale = const Locale('ru'),
+}) async {
+  await tester.pumpWidget(_SheetHost(locale: locale));
   await tester.tap(find.text('открыть'));
   await tester.pumpAndSettle();
 
