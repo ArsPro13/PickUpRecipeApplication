@@ -12,11 +12,24 @@
 // grind_descriptors, шкалу — grinder_translator; она приезжает вместе с
 // кофемолками пользователя в профиле.
 //
-// Файл без импортов Flutter: это преобразование показывают четыре экрана, и
-// расходиться им нельзя.
+// Пересчёт лежит здесь, а не в экранах: его показывают четыре экрана, и
+// расходиться им нельзя. Из Flutter файлу нужен один словарь — подписи вокруг
+// числа («примерно», «делений …», «щ.») это текст интерфейса, и в коде им не
+// место. Ни имя кофемолки, ни слово справочника крупности, ни подпись деления
+// через словарь не проходят: это данные сервера.
 
+import 'package:flutter/widgets.dart' show Locale;
+
+import '../../../../l10n/app_localizations.dart';
 import '../../recipes/domain/models/grind_descriptor_model.dart';
 import 'models/grinder_model.dart';
+
+/// Словарь на языке шаблона.
+///
+/// Стоит, пока экран не передал свой: помол показывают четыре экрана из разных
+/// веток, и перевести их одной правкой этого файла нельзя. Русского текста в
+/// коде при этом не остаётся — строка всё равно приходит из `app_ru.arb`.
+final AppLocalizations _templateTexts = lookupAppLocalizations(const Locale('ru'));
 
 /// Помол так, как его показывают человеку.
 class GrindReading {
@@ -27,6 +40,7 @@ class GrindReading {
     this.isApproximate = false,
     this.isDivision = false,
     this.needsGrinder = false,
+    this.texts,
   });
 
   /// Что стоит на месте помола: «14», «2 круг + 3», «Средне-тонкий», «26 щ.».
@@ -50,15 +64,20 @@ class GrindReading {
   /// «покажем больше, если выберете» — приглашение, а не ошибка.
   final bool needsGrinder;
 
+  /// Словарь, которым подписано число. Пусто — язык шаблона.
+  final AppLocalizations? texts;
+
+  AppLocalizations get _words => texts ?? _templateTexts;
+
   bool get isEmpty => value.isEmpty;
 
   /// Готовая строка на месте помола.
-  String get label => isApproximate ? 'примерно $value' : value;
+  String get label => isApproximate ? _words.grinderApproximately(value) : value;
 
   /// Короткая подпись — для плиток показателей, где места на одно слово.
   String? get caption {
     if (isDivision && grinderName != null) return grinderName;
-    if (needsGrinder) return 'выберите кофемолку';
+    if (needsGrinder) return _words.grinderPickPrompt;
     return null;
   }
 
@@ -66,11 +85,11 @@ class GrindReading {
   String? get hint {
     if (isDivision && grinderName != null) {
       return [
-        'делений $grinderName',
+        _words.grinderScaleOf(grinderName!),
         if (word.isNotEmpty) word,
       ].join(' · ');
     }
-    if (needsGrinder) return 'выберите кофемолку — покажем деление';
+    if (needsGrinder) return _words.grinderPickPromptHint;
     return null;
   }
 }
@@ -86,6 +105,9 @@ class GrindReading {
 /// [recipeGrinderId] и [recipeGrindStep] — помол, записанный в самом рецепте.
 /// Если он записан в делениях той же кофемолки, пересчитывать нечего: своё
 /// число точнее любого перевода.
+///
+/// [texts] — словарь экрана: им подписывают число слова «примерно», «делений»
+/// и «щ.». Без него подписи встают на языке шаблона.
 GrindReading grindReading({
   required String descriptorSlug,
   List<GrindDescriptor> reference = const [],
@@ -93,6 +115,7 @@ GrindReading grindReading({
   int recipeGrinderId = 0,
   String recipeGrindStep = '',
   Grinder? grinder,
+  AppLocalizations? texts,
 }) {
   final step = recipeGrindStep.trim();
   final word = grindDescriptorName(reference, descriptorSlug).trim();
@@ -104,6 +127,7 @@ GrindReading grindReading({
       grinderName: grinder.name,
       word: word,
       isDivision: true,
+      texts: texts,
     );
   }
 
@@ -118,6 +142,7 @@ GrindReading grindReading({
         word: word,
         isApproximate: true,
         isDivision: true,
+        texts: texts,
       );
     }
   }
@@ -126,7 +151,7 @@ GrindReading grindReading({
   // неизвестна. Остаётся слово — пустое место на месте помола читалось бы как
   // «помол неизвестен», а это неправда.
   if (word.isNotEmpty) {
-    return GrindReading(value: word, needsGrinder: grinder == null);
+    return GrindReading(value: word, needsGrinder: grinder == null, texts: texts);
   }
 
   // Слова нет — у исторических рецептов его и не было. Тогда показывается
@@ -134,8 +159,9 @@ GrindReading grindReading({
   // сказать нечего.
   if (step.isNotEmpty) {
     return GrindReading(
-      value: '${grinderDivisionLabel(step)} щ.',
+      value: (texts ?? _templateTexts).grinderClicks(grinderDivisionLabel(step)),
       needsGrinder: grinder == null,
+      texts: texts,
     );
   }
 

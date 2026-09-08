@@ -1770,5 +1770,45 @@
   "grinderSaveOffline": "Без сети кофемолку не сохранить — она хранится в аккаунте",
   "@grinderSaveOffline": {
     "description": "Всплывающее сообщение: сети нет, а набор кофемолок живёт на сервере и в очередь отправки не встаёт."
+  },
+
+  "grinderApproximately": "примерно {value}",
+  "@grinderApproximately": {
+    "description": "Помол, полученный пересчётом из крупности рецепта: шкалы кофемолок сходятся только по средней крупности, и число нельзя выдавать за точное.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+
+  "grinderPickPrompt": "выберите кофемолку",
+  "@grinderPickPrompt": {
+    "description": "Короткая подпись под помолом в плитке показателей: кофемолка не выбрана, и помол показан словом."
+  },
+
+  "grinderPickPromptHint": "выберите кофемолку — покажем деление",
+  "@grinderPickPromptHint": {
+    "description": "То же приглашение строкой на экране заваривания, где места больше."
+  },
+
+  "grinderScaleOf": "делений {name}",
+  "@grinderScaleOf": {
+    "description": "Подпись под помолом: чьей кофемолки это деления. Имя кофемолки приходит из справочника и не переводится.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "grinderClicks": "{value} щ.",
+  "@grinderClicks": {
+    "description": "Помол числом у старого рецепта, где шкала неизвестна: щелчки без имени кофемолки.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   }
 }

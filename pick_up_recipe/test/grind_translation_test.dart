@@ -5,7 +5,9 @@
 // кофемолкам приходят из grinder_translator вместе с профилем, перевод идёт
 // в два шага: дескриптор → микроны → ближайшее деление шкалы.
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/grinders/domain/grind_translation.dart';
 import 'package:pick_up_recipe/src/features/grinders/domain/models/grinder_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/grind_descriptor_model.dart';
@@ -186,6 +188,86 @@ void main() {
 
       expect(grind.value, '2 круг + 1');
       expect(grind.isApproximate, isFalse);
+    });
+  });
+
+  group('подписи вокруг числа', () {
+    // Число — данные, а слова рядом с ним — интерфейс: «примерно», «делений»
+    // и «щ.» обязаны говорить на языке экрана. Имя кофемолки и слово
+    // справочника крупности при этом не переводятся ни на каком языке.
+    late AppLocalizations ru;
+    late AppLocalizations en;
+
+    setUpAll(() async {
+      ru = await AppLocalizations.delegate.load(const Locale('ru'));
+      en = await AppLocalizations.delegate.load(const Locale('en'));
+    });
+
+    test('пересчитанное число подписано на языке экрана', () {
+      final russian = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        grinder: comandante,
+        texts: ru,
+      );
+      final english = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        grinder: comandante,
+        texts: en,
+      );
+
+      expect(russian.label, 'примерно 14');
+      expect(english.label, 'about 14');
+    });
+
+    test('приглашение выбрать кофемолку переведено', () {
+      final english = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        texts: en,
+      );
+
+      expect(english.caption, 'pick a grinder');
+      expect(english.hint, isNot(matches(RegExp('[а-яёА-ЯЁ]'))));
+    });
+
+    test('щелчки старого рецепта переведены', () {
+      final english = grindReading(
+        descriptorSlug: '',
+        recipeGrindStep: '26',
+        texts: en,
+      );
+
+      expect(english.value, '26 clicks');
+    });
+
+    test('имя кофемолки и слово справочника остаются как пришли', () {
+      // Имя сходится с grinder_translator строгим равенством, слово крупности
+      // приходит из справочника обжарщика: и то и другое — данные сервера.
+      final english = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        recipeGrinderId: comandante.id,
+        recipeGrindStep: '17',
+        grinder: comandante,
+        texts: en,
+      );
+
+      expect(english.grinderName, 'Comandante C40');
+      expect(english.hint, 'Comandante C40 scale · Средне-тонкий');
+    });
+
+    test('без словаря экрана подписи берутся с языка шаблона', () {
+      // Пересчёт зовут четыре экрана; пока экран не передал свой словарь,
+      // строка всё равно приходит из app_ru.arb, а не из кода.
+      final plain = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        grinder: comandante,
+      );
+
+      expect(plain.label, ru.grinderApproximately('14'));
     });
   });
 

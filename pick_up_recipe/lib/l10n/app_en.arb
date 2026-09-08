@@ -364,5 +364,10 @@
   "grinderShowAll": "Show all",
   "grinderDidYouMean": "Did you mean",
   "grinderSaveFailed": "Could not save the grinders",
-  "grinderSaveOffline": "A grinder cannot be saved without a connection — it lives in your account"
+  "grinderSaveOffline": "A grinder cannot be saved without a connection — it lives in your account",
+  "grinderApproximately": "about {value}",
+  "grinderPickPrompt": "pick a grinder",
+  "grinderPickPromptHint": "pick a grinder and we will show the setting",
+  "grinderScaleOf": "{name} scale",
+  "grinderClicks": "{value} clicks"
 }

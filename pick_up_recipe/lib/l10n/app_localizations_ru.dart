@@ -1364,4 +1364,25 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get grinderSaveOffline =>
       'Без сети кофемолку не сохранить — она хранится в аккаунте';
+
+  @override
+  String grinderApproximately(String value) {
+    return 'примерно $value';
+  }
+
+  @override
+  String get grinderPickPrompt => 'выберите кофемолку';
+
+  @override
+  String get grinderPickPromptHint => 'выберите кофемолку — покажем деление';
+
+  @override
+  String grinderScaleOf(String name) {
+    return 'делений $name';
+  }
+
+  @override
+  String grinderClicks(String value) {
+    return '$value щ.';
+  }
 }

@@ -1345,4 +1345,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get grinderSaveOffline =>
       'A grinder cannot be saved without a connection — it lives in your account';
+
+  @override
+  String grinderApproximately(String value) {
+    return 'about $value';
+  }
+
+  @override
+  String get grinderPickPrompt => 'pick a grinder';
+
+  @override
+  String get grinderPickPromptHint =>
+      'pick a grinder and we will show the setting';
+
+  @override
+  String grinderScaleOf(String name) {
+    return '$name scale';
+  }
+
+  @override
+  String grinderClicks(String value) {
+    return '$value clicks';
+  }
 }

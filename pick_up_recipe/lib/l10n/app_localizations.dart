@@ -2287,6 +2287,36 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Без сети кофемолку не сохранить — она хранится в аккаунте'**
   String get grinderSaveOffline;
+
+  /// Помол, полученный пересчётом из крупности рецепта: шкалы кофемолок сходятся только по средней крупности, и число нельзя выдавать за точное.
+  ///
+  /// In ru, this message translates to:
+  /// **'примерно {value}'**
+  String grinderApproximately(String value);
+
+  /// Короткая подпись под помолом в плитке показателей: кофемолка не выбрана, и помол показан словом.
+  ///
+  /// In ru, this message translates to:
+  /// **'выберите кофемолку'**
+  String get grinderPickPrompt;
+
+  /// То же приглашение строкой на экране заваривания, где места больше.
+  ///
+  /// In ru, this message translates to:
+  /// **'выберите кофемолку — покажем деление'**
+  String get grinderPickPromptHint;
+
+  /// Подпись под помолом: чьей кофемолки это деления. Имя кофемолки приходит из справочника и не переводится.
+  ///
+  /// In ru, this message translates to:
+  /// **'делений {name}'**
+  String grinderScaleOf(String name);
+
+  /// Помол числом у старого рецепта, где шкала неизвестна: щелчки без имени кофемолки.
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} щ.'**
+  String grinderClicks(String value);
 }
 
 class _AppLocalizationsDelegate
