@@ -712,6 +712,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipesBrewAgain => 'Brew it again';
 
   @override
+  String get recipesEditRecipe => 'Edit the recipe';
+
+  @override
   String get coffeeTitle => 'Coffee';
 
   @override

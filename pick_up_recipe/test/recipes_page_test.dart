@@ -1,7 +1,11 @@
-// Стопка версий на вкладке «Рецепты».
+// Правка рецепта прямо со вкладки «Рецепты».
 //
-// Барабан живёт на контроллере анимации, и весь экран держится на том, что
-// контроллер переживает стопку, которую никто не листал.
+// До этой кнопки конструктор открывался только с экрана заваривания: чтобы
+// подвинуть помол, надо было сделать вид, что собираешься варить. Кнопка на
+// карточке ломается тихо тремя способами, и каждый закрыт тестом ниже:
+// её ставят только верхней карточке стопки; она уводит в конструктор с чужим
+// рецептом (стопка листается, а виджет держит первую версию); нажатие на неё
+// заодно пускает таймер, потому что тап проваливается в карточку под кнопкой.
 
 import 'package:auto_route/auto_route.dart';
 import 'package:encrypt_shared_preferences/provider.dart';
@@ -13,13 +17,16 @@ import 'package:http/http.dart' as http;
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/prefs_key.dart';
+import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/application/brew_methods_state.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/data_sources/remote/brew_method_service.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/domain/brew_method.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_list_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
+import 'package:pick_up_recipe/src/general_widgets/app_icon.dart';
 import 'package:pick_up_recipe/src/pages/recipes_page.dart';
+import 'package:pick_up_recipe/src/themes/app_icons.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -121,6 +128,15 @@ final _versions = [
   _recipe(id: 303, date: '2026-09-07T10:00:00Z', load: 17),
 ];
 
+/// Кружки правки в порядке дерева: верхняя карточка стопки — последняя.
+final _editButtons = find.byWidgetPredicate(
+  (widget) => widget is AppIcon && widget.asset == AppIcons.uiEdit,
+);
+
+final _playButtons = find.byWidgetPredicate(
+  (widget) => widget is AppIcon && widget.asset == AppIcons.uiPlay,
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -167,6 +183,14 @@ void main() {
     return router;
   }
 
+  /// Аргументы последнего перехода в конструктор.
+  RecipeBuilderRouteArgs builderArgs(_RecordingRouter router) {
+    final route = router.pushed.last;
+    expect(route.routeName, RecipeBuilderRoute.name);
+
+    return route.args as RecipeBuilderRouteArgs;
+  }
+
   group('стопка версий', () {
     testWidgets('уход с экрана без свайпа не роняет стопку', (tester) async {
       await pumpRecipes(tester);
@@ -179,6 +203,94 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('правка рецепта с экрана «Рецепты»', () {
+    testWidgets('кружок правки есть у каждой карточки стопки, а не только у верхней',
+        (tester) async {
+      await pumpRecipes(tester);
+
+      // Три версии — три карточки на экране: верхняя и два края под ней.
+      expect(_playButtons, findsNWidgets(3));
+      expect(
+        _editButtons,
+        findsNWidgets(3),
+        reason: 'правка появилась не на всех карточках, которые видно',
+      );
+    });
+
+    testWidgets('у кружка есть подпись для голосового помощника', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpRecipes(tester);
+
+      expect(find.bySemanticsLabel('Править рецепт'), findsWidgets);
+
+      handle.dispose();
+    });
+
+    testWidgets('нажатие уводит в конструктор с рецептом своей карточки',
+        (tester) async {
+      final router = await pumpRecipes(tester);
+
+      await tester.tap(_editButtons.last);
+      await tester.pumpAndSettle();
+
+      expect(router.pushed, hasLength(1));
+      expect(builderArgs(router).recipe.id, 301, reason: 'сверху лежит свежая версия');
+    });
+
+    testWidgets('пролистанная стопка отдаёт в конструктор новую верхнюю версию',
+        (tester) async {
+      final router = await pumpRecipes(tester);
+
+      // Смахиваем верхнюю карточку: наверх поднимается вторая версия.
+      await tester.drag(_editButtons.last, const Offset(-150, 0));
+      await tester.pumpAndSettle();
+
+      expect(
+        router.pushed,
+        isEmpty,
+        reason: 'кружок перехватил жест, которым листается стопка',
+      );
+      expect(find.text('версия 2 из 3'), findsOneWidget);
+
+      await tester.tap(_editButtons.last);
+      await tester.pumpAndSettle();
+
+      expect(builderArgs(router).recipe.id, 302,
+          reason: 'кнопка уводит с рецептом той карточки, на которой стоит');
+    });
+
+    testWidgets('кружок правки не мельче соседнего повтора', (tester) async {
+      await pumpRecipes(tester);
+
+      // Правка тише повтора по весу, но не по размеру: цель меньше соседней
+      // палец находит хуже, чем её сосед, и промах уводит заваривать.
+      Size circle(Finder icon) => tester.getSize(
+            find.ancestor(of: icon, matching: find.byType(Container)).first,
+          );
+
+      final edit = circle(_editButtons.last);
+      final play = circle(_playButtons.last);
+
+      expect(edit.width, greaterThanOrEqualTo(play.width));
+      expect(edit.height, greaterThanOrEqualTo(play.height));
+    });
+
+    testWidgets('нажатие на кружок не запускает заваривание', (tester) async {
+      final router = await pumpRecipes(tester);
+
+      await tester.tap(_editButtons.last);
+      await tester.pumpAndSettle();
+
+      // Ни таймера, ни экрана заваривания: тап не провалился ни в карточку
+      // под кнопкой, ни в соседний кружок повтора.
+      expect(
+        router.pushed.where((route) => route.routeName == BrewRoute.name),
+        isEmpty,
+      );
+      expect(router.pushed.single.routeName, RecipeBuilderRoute.name);
     });
   });
 }

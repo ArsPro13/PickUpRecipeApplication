@@ -730,6 +730,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get recipesBrewAgain => 'Заварить снова';
 
   @override
+  String get recipesEditRecipe => 'Править рецепт';
+
+  @override
   String get coffeeTitle => 'Кофе';
 
   @override

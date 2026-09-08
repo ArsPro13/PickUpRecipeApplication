@@ -1214,6 +1214,12 @@ abstract class AppLocalizations {
   /// **'Заварить снова'**
   String get recipesBrewAgain;
 
+  /// Вкладка «Рецепты»: кружок на карточке версии, открывающий конструктор. Подпись для голосового помощника.
+  ///
+  /// In ru, this message translates to:
+  /// **'Править рецепт'**
+  String get recipesEditRecipe;
+
   /// Заголовок экрана кофе, когда название пачки ещё не приехало.
   ///
   /// In ru, this message translates to:

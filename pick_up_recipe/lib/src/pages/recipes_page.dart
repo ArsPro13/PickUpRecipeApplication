@@ -537,6 +537,10 @@ class _Pager extends StatelessWidget {
 /// Тап в любом месте открывает рецепт — на экране заваривания он и живёт,
 /// вместе с шагами и числами. Кружок «заварить» на карточке сразу пускает
 /// таймер: рецепт человек уже видел, если жмёт именно сюда.
+///
+/// Рядом с ним кружок правки: до него конструктор открывался только через
+/// экран заваривания, то есть чтобы поправить помол, надо было сделать вид,
+/// что собираешься варить.
 class _VersionCard extends StatelessWidget {
   const _VersionCard({
     required this.version,
@@ -621,6 +625,8 @@ class _VersionCard extends StatelessWidget {
                       Row(
                         children: [
                           const Spacer(),
+                          _EditButton(version: version, pack: pack),
+                          const SizedBox(width: AppSpacing.s2),
                           _PlayButton(version: version, pack: pack, filled: hero),
                         ],
                       ),
@@ -722,6 +728,51 @@ class _PlayButton extends StatelessWidget {
               AppIcons.uiPlay,
               size: AppSizes.icon16,
               color: filled ? context.colors.secondaryContainer : context.colors.secondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Круглая кнопка «править рецепт».
+///
+/// Слева от повтора и всегда контуром, даже на главной карточке: два залитых
+/// кружка рядом читались бы как два равных действия, а главное на этом экране
+/// одно — заварить снова. Правка тише по весу, но не по размеру: цель того же
+/// диаметра, что и у соседа, иначе палец мазал бы по ней и попадал в повтор.
+///
+/// Тап отсюда ведёт в конструктор, а не на экран заваривания: до этой кнопки
+/// в конструктор с экрана рецептов было не попасть вовсе.
+class _EditButton extends StatelessWidget {
+  const _EditButton({required this.version, required this.pack});
+
+  final RecipeVersion version;
+  final PackData? pack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: AppLocalizations.of(context).recipesEditRecipe,
+      child: InkWell(
+        onTap: () => context.router.push(
+          RecipeBuilderRoute(recipe: version.recipe, pack: pack),
+        ),
+        customBorder: const CircleBorder(),
+        child: Container(
+          height: AppSpacing.s8,
+          width: AppSpacing.s8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: context.palette.border),
+          ),
+          child: Center(
+            child: AppIcon(
+              AppIcons.uiEdit,
+              size: AppSizes.icon16,
+              color: context.colors.secondary,
             ),
           ),
         ),
