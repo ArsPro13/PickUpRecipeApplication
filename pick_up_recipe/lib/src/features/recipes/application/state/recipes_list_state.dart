@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/dates.dart';
 import '../../../../../core/library_revision.dart';
 import '../../../../../core/offline/recipe_drafts.dart';
+import '../../../../../l10n/app_localizations.dart';
 import '../../../brew_methods/application/brew_methods_state.dart';
 import '../../../brew_methods/data_sources/remote/brew_method_service.dart';
 import '../../data_sources/remote/recipe_service.dart';
@@ -13,7 +15,6 @@ class RecipeVersion {
     required this.packId,
     required this.method,
     required this.title,
-    required this.subtitle,
     required this.doseG,
     required this.waterG,
     required this.timeSec,
@@ -32,7 +33,6 @@ class RecipeVersion {
   final String method;
 
   final String title;
-  final String subtitle;
   final double doseG;
   final int waterG;
 
@@ -202,7 +202,6 @@ List<RecipeGroup> groupRecipes(
                 packId: recipe.packId,
                 method: recipe.device,
                 title: recipe.title.isNotEmpty ? recipe.title : methodName,
-                subtitle: formatRecipeDate(recipe.date),
                 doseG: recipe.load,
                 waterG: recipe.water,
                 timeSec: recipe.time,
@@ -246,18 +245,14 @@ List<({String name, String slug})> methodsOfPack(List<RecipeGroup> groups, int p
 ///
 /// Год добавляется, только когда он не нынешний: «28 июля 2025» в списке за
 /// эту неделю — лишний шум, а без года запись двухлетней давности врёт.
-String formatRecipeDate(String raw) {
+String formatRecipeDate(AppLocalizations texts, String raw) {
   final parsed = DateTime.tryParse(raw);
   if (parsed == null) return raw;
 
-  const months = [
-    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
-  ];
-
   final local = parsed.toLocal();
-  final day = '${local.day} ${months[local.month - 1]}';
-  return local.year == DateTime.now().year ? day : '$day ${local.year}';
+  return local.year == DateTime.now().year
+      ? formatDayMonth(texts, local)
+      : formatDayMonthYear(texts, local);
 }
 
 final recipeServiceProvider = Provider<RecipeService>((ref) => RecipeService());

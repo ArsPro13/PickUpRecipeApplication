@@ -470,7 +470,7 @@ class _Header extends ConsumerWidget {
   String _subtitle(AppLocalizations texts) {
     final parts = [
       if (pack != null && pack!.roasterName.isNotEmpty) pack!.roasterName,
-      formatRecipeDate(group.latest.date),
+      formatRecipeDate(texts, group.latest.date),
       // Склонение «1 версия / 2 версии / 5 версий» считает ICU: таблица форм
       // у каждого языка своя, и написанная руками была верной для одного.
       if (group.versions.length > 1) texts.recipesVersionsCount(group.versions.length),
@@ -567,7 +567,7 @@ class _VersionCard extends StatelessWidget {
             children: [
               Expanded(
                 flex: 4,
-                child: _Photo(pack: pack, caption: formatRecipeDate(version.date)),
+                child: _Photo(pack: pack, caption: formatRecipeDate(AppLocalizations.of(context), version.date)),
               ),
               Expanded(
                 flex: 6,

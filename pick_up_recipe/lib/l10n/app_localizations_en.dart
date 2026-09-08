@@ -788,4 +788,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coffeeMethodsFailed => 'The brewing methods did not load';
+
+  @override
+  String get dateMonth1 => 'January';
+
+  @override
+  String get dateMonth2 => 'February';
+
+  @override
+  String get dateMonth3 => 'March';
+
+  @override
+  String get dateMonth4 => 'April';
+
+  @override
+  String get dateMonth5 => 'May';
+
+  @override
+  String get dateMonth6 => 'June';
+
+  @override
+  String get dateMonth7 => 'July';
+
+  @override
+  String get dateMonth8 => 'August';
+
+  @override
+  String get dateMonth9 => 'September';
+
+  @override
+  String get dateMonth10 => 'October';
+
+  @override
+  String get dateMonth11 => 'November';
+
+  @override
+  String get dateMonth12 => 'December';
+
+  @override
+  String dateDayMonth(String day, String month) {
+    return '$month $day';
+  }
+
+  @override
+  String dateDayMonthYear(String day, String month, String year) {
+    return '$month $day, $year';
+  }
 }

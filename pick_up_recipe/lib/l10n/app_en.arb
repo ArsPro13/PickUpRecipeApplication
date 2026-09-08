@@ -415,5 +415,33 @@
 
   "coffeeBrewOn": "Brew with {method}",
 
-  "coffeeMethodsFailed": "The brewing methods did not load"
+  "coffeeMethodsFailed": "The brewing methods did not load",
+
+  "dateMonth1": "January",
+
+  "dateMonth2": "February",
+
+  "dateMonth3": "March",
+
+  "dateMonth4": "April",
+
+  "dateMonth5": "May",
+
+  "dateMonth6": "June",
+
+  "dateMonth7": "July",
+
+  "dateMonth8": "August",
+
+  "dateMonth9": "September",
+
+  "dateMonth10": "October",
+
+  "dateMonth11": "November",
+
+  "dateMonth12": "December",
+
+  "dateDayMonth": "{month} {day}",
+
+  "dateDayMonthYear": "{month} {day}, {year}"
 }

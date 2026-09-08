@@ -222,7 +222,7 @@ class _Stats extends StatelessWidget {
             AppRow(
               label: texts.profileFirstRecipe,
               icon: AppIcons.uiPack,
-              value: formatRecipeDate(date),
+              value: formatRecipeDate(AppLocalizations.of(context), date),
               divider: false,
             ),
         ],

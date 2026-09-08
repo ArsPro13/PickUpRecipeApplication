@@ -804,4 +804,50 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get coffeeMethodsFailed => 'Способы заваривания не загрузились';
+
+  @override
+  String get dateMonth1 => 'января';
+
+  @override
+  String get dateMonth2 => 'февраля';
+
+  @override
+  String get dateMonth3 => 'марта';
+
+  @override
+  String get dateMonth4 => 'апреля';
+
+  @override
+  String get dateMonth5 => 'мая';
+
+  @override
+  String get dateMonth6 => 'июня';
+
+  @override
+  String get dateMonth7 => 'июля';
+
+  @override
+  String get dateMonth8 => 'августа';
+
+  @override
+  String get dateMonth9 => 'сентября';
+
+  @override
+  String get dateMonth10 => 'октября';
+
+  @override
+  String get dateMonth11 => 'ноября';
+
+  @override
+  String get dateMonth12 => 'декабря';
+
+  @override
+  String dateDayMonth(String day, String month) {
+    return '$day $month';
+  }
+
+  @override
+  String dateDayMonthYear(String day, String month, String year) {
+    return '$day $month $year';
+  }
 }

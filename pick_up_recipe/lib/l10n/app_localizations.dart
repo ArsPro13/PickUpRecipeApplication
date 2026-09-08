@@ -1345,6 +1345,90 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Способы заваривания не загрузились'**
   String get coffeeMethodsFailed;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'января'**
+  String get dateMonth1;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'февраля'**
+  String get dateMonth2;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'марта'**
+  String get dateMonth3;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'апреля'**
+  String get dateMonth4;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'мая'**
+  String get dateMonth5;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'июня'**
+  String get dateMonth6;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'июля'**
+  String get dateMonth7;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'августа'**
+  String get dateMonth8;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'сентября'**
+  String get dateMonth9;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'октября'**
+  String get dateMonth10;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'ноября'**
+  String get dateMonth11;
+
+  /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
+  ///
+  /// In ru, this message translates to:
+  /// **'декабря'**
+  String get dateMonth12;
+
+  /// День и месяц без года. Порядок слов у языков разный, поэтому он живёт в переводе, а не в коде.
+  ///
+  /// In ru, this message translates to:
+  /// **'{day} {month}'**
+  String dateDayMonth(String day, String month);
+
+  /// То же с годом: год добавляется, только когда он не нынешний.
+  ///
+  /// In ru, this message translates to:
+  /// **'{day} {month} {year}'**
+  String dateDayMonthYear(String day, String month, String year);
 }
 
 class _AppLocalizationsDelegate
