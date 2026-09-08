@@ -195,9 +195,9 @@ class UnfinishedRatingPlate extends StatelessWidget {
                     children: [
                       Text(texts.ratingDraftTitle, style: context.texts.bodyMedium),
                       Text(
-                        draft.summary.isEmpty
+                        draft.summaryFor(texts).isEmpty
                             ? texts.ratingDraftContinue
-                            : texts.ratingDraftContinueWith(draft.summary),
+                            : texts.ratingDraftContinueWith(draft.summaryFor(texts)),
                         style: context.texts.labelSmall,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

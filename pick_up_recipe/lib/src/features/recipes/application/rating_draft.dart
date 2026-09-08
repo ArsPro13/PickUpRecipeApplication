@@ -67,8 +67,6 @@ class RatingDraft {
     return parts.join(' · ');
   }
 
-  /// Та же подпись по-русски — для вызова, у которого словаря под рукой нет.
-  String get summary => summaryFor(lookupAppLocalizations(const Locale('ru')));
 
   Map<String, dynamic> toJson() => {
         'saved_at': savedAt.toIso8601String(),
