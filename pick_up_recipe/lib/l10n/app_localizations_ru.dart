@@ -1653,4 +1653,8 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get svcGroupOther => 'Прочие';
+
+  @override
+  String get svcLoadFailedNote =>
+      'Обычно это связь. Проверьте интернет и попробуйте ещё раз.';
 }

@@ -2773,6 +2773,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Прочие'**
   String get svcGroupOther;
+
+  /// Пояснение под заголовком отказа на экранах, куда не доехал список с сервера: справочник приборов и вкладка рецептов. Раньше на этом месте стоял текст исключения — он всегда по-русски и человеку ничего не говорит.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обычно это связь. Проверьте интернет и попробуйте ещё раз.'**
+  String get svcLoadFailedNote;
 }
 
 class _AppLocalizationsDelegate

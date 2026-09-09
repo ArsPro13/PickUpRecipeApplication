@@ -47,7 +47,9 @@ class _RecipesForCoffeePageState extends ConsumerState<RecipesForCoffeePage> {
         BrewMethodsStatus.failed => AppState(
             icon: AppIcons.stateError,
             title: texts.methodsFailed,
-            description: state.error,
+            // Не текст исключения: он всегда по-русски и человеку
+            // говорит только код ответа. Причина уходит в журнал.
+            description: texts.svcLoadFailedNote,
             isError: true,
             primaryAction: AppButton(
               label: texts.retry,

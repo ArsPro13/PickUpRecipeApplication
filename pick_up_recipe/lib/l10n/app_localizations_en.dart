@@ -613,7 +613,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String customStepNote(String device) {
-    return 'The step is tied to $device: it will not show up in recipes for other devices. A step like this does not count water — water has its own «pour».';
+    return 'The step is tied to $device: it will not show up in recipes for other devices. A step like this does not count water — water has its own “pour”.';
   }
 
   @override
@@ -712,7 +712,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipesBrewAgain => 'Brew it again';
 
   @override
-  String get recipesEditRecipe => 'Edit the recipe';
+  String get recipesEditRecipe => 'Edit recipe';
 
   @override
   String get coffeeTitle => 'Coffee';
@@ -973,7 +973,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get packFormPhotoNote =>
-      'The photo is kept with the pack — that is how you will recognise it in the list';
+      'The photo is kept with the pack — that is how you will recognize it in the list';
 
   @override
   String get packFormPhotoTake => 'Take a photo';
@@ -1286,10 +1286,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brewPhaseFinish => 'finish';
 
   @override
-  String get brewEndsBySign => 'by the sign';
+  String get brewEndsBySign => 'by a cue';
 
   @override
-  String get brewEndsByTap => 'by tap';
+  String get brewEndsByTap => 'by button';
 
   @override
   String get brewUntilYouSayDidIt => 'until you say “did it”';
@@ -1320,7 +1320,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get grinderCatalogEmpty =>
-      'The catalogue is empty — check the connection';
+      'The catalog is empty — check the connection';
 
   @override
   String grinderCatalogSize(int count) {
@@ -1330,7 +1330,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$count models',
       one: '$count model',
     );
-    return 'Check the spelling — the catalogue holds $_temp0';
+    return 'Check the spelling — the catalog holds $_temp0';
   }
 
   @override
@@ -1470,7 +1470,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String builderCorrectedFor(String label) {
-    return 'Adjusted for «$label»';
+    return 'Adjusted for “$label”';
   }
 
   @override
@@ -1514,7 +1514,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get builderEndsTimerHint => 'runs on a timer and ends by itself';
 
   @override
-  String get builderEndsUserHint => 'the brew waits until you tap «next»';
+  String get builderEndsUserHint => 'the brew waits until you tap “next”';
 
   @override
   String get builderEndsSignHint =>
@@ -1542,7 +1542,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get svcAuthServerDown => 'The server is not responding. Try again';
 
   @override
-  String get svcAuthWrongCode => 'The code did not fit. Check the letter again';
+  String get svcAuthWrongCode =>
+      'That code did not work. Check the email again';
 
   @override
   String get svcAuthNoTokens => 'The server answered without tokens';
@@ -1554,7 +1555,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get svcAuthFailedLogin => 'Could not sign in';
 
   @override
-  String get svcAuthFailedSendLetter => 'Could not send the letter';
+  String get svcAuthFailedSendLetter => 'Could not send the email';
 
   @override
   String get svcAuthFailedChangePassword => 'Could not change the password';
@@ -1633,4 +1634,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get svcGroupOther => 'Other';
+
+  @override
+  String get svcLoadFailedNote =>
+      'Usually it is the connection. Check the internet and try again.';
 }

@@ -103,6 +103,38 @@ void main() {
       );
     });
 
+
+    // Одно русское слово — один английский перевод.
+    //
+    // Ночью экраны переводили семь потоков сразу, и одно и то же «по кнопке»
+    // стало «by button» в конструкторе и «by tap» на заваривании: один и тот
+    // же шаг рецепта назывался по-разному на соседних экранах. Глазами это
+    // не ловится — строки лежат в разных концах словаря.
+    //
+    // Если английский и правда должен различаться по месту, значит русский
+    // тоже говорит о двух разных вещах — и русских строк тоже должно быть
+    // две, разных. Исключений у правила нет намеренно.
+    test('одинаковые русские строки переведены одинаково', () {
+      final byRussian = <String, List<String>>{};
+      for (final entry in ru.entries) {
+        byRussian.putIfAbsent(entry.value, () => []).add(entry.key);
+      }
+
+      final drifted = <String>[];
+      for (final entry in byRussian.entries) {
+        if (entry.value.length < 2) continue;
+
+        final englishes = {for (final key in entry.value) en[key]};
+        if (englishes.length > 1) {
+          drifted.add(
+            '«${entry.key}» → ${entry.value.join(', ')} → ${englishes.join(' / ')}',
+          );
+        }
+      }
+
+      expect(drifted, isEmpty, reason: drifted.join('\n'));
+    });
+
     test('у каждой подстановки описан тип', () {
       for (final entry in ru.entries) {
         final names = _placeholders(entry.value);

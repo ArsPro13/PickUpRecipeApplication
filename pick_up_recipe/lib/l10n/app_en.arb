@@ -317,7 +317,7 @@
 
   "customStepThisDevice": "this device",
 
-  "customStepNote": "The step is tied to {device}: it will not show up in recipes for other devices. A step like this does not count water — water has its own «pour».",
+  "customStepNote": "The step is tied to {device}: it will not show up in recipes for other devices. A step like this does not count water — water has its own “pour”.",
 
   "customStepSave": "Save the type",
 
@@ -373,7 +373,7 @@
 
   "recipesBrewAgain": "Brew it again",
 
-  "recipesEditRecipe": "Edit the recipe",
+  "recipesEditRecipe": "Edit recipe",
 
   "coffeeTitle": "Coffee",
 
@@ -523,7 +523,7 @@
 
   "packFormPhotoTitle": "Photograph the pack",
 
-  "packFormPhotoNote": "The photo is kept with the pack — that is how you will recognise it in the list",
+  "packFormPhotoNote": "The photo is kept with the pack — that is how you will recognize it in the list",
 
   "packFormPhotoTake": "Take a photo",
 
@@ -697,9 +697,9 @@
 
   "brewPhaseFinish": "finish",
 
-  "brewEndsBySign": "by the sign",
+  "brewEndsBySign": "by a cue",
 
-  "brewEndsByTap": "by tap",
+  "brewEndsByTap": "by button",
 
   "brewUntilYouSayDidIt": "until you say “did it”",
 
@@ -719,9 +719,9 @@
 
   "grinderNotFound": "No such grinder",
 
-  "grinderCatalogEmpty": "The catalogue is empty — check the connection",
+  "grinderCatalogEmpty": "The catalog is empty — check the connection",
 
-  "grinderCatalogSize": "Check the spelling — the catalogue holds {count, plural, one{{count} model} other{{count} models}}",
+  "grinderCatalogSize": "Check the spelling — the catalog holds {count, plural, one{{count} model} other{{count} models}}",
 
   "grinderShowAll": "Show all",
 
@@ -805,7 +805,7 @@
 
   "builderIncrease": "increase",
 
-  "builderCorrectedFor": "Adjusted for «{label}»",
+  "builderCorrectedFor": "Adjusted for “{label}”",
 
   "builderCorrectedNote": "the changes are marked with a dot",
 
@@ -831,7 +831,7 @@
 
   "builderEndsTimerHint": "runs on a timer and ends by itself",
 
-  "builderEndsUserHint": "the brew waits until you tap «next»",
+  "builderEndsUserHint": "the brew waits until you tap “next”",
 
   "builderEndsSignHint": "the same button, but you press it on a cue: foam settled, water drained",
 
@@ -849,7 +849,7 @@
 
   "svcAuthServerDown": "The server is not responding. Try again",
 
-  "svcAuthWrongCode": "The code did not fit. Check the letter again",
+  "svcAuthWrongCode": "That code did not work. Check the email again",
 
   "svcAuthNoTokens": "The server answered without tokens",
 
@@ -857,7 +857,7 @@
 
   "svcAuthFailedLogin": "Could not sign in",
 
-  "svcAuthFailedSendLetter": "Could not send the letter",
+  "svcAuthFailedSendLetter": "Could not send the email",
 
   "svcAuthFailedChangePassword": "Could not change the password",
 
@@ -891,5 +891,7 @@
 
   "svcCodeChecksum": "The code has a mistake in it — check the characters",
 
-  "svcGroupOther": "Other"
+  "svcGroupOther": "Other",
+
+  "svcLoadFailedNote": "Usually it is the connection. Check the internet and try again."
 }

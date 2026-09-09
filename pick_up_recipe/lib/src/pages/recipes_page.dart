@@ -110,7 +110,9 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
           AppState(
             icon: AppIcons.stateError,
             title: AppLocalizations.of(context).recipesFailed,
-            description: state.error,
+            // Не текст исключения: он всегда по-русски и человеку
+            // говорит только код ответа. Причина уходит в журнал.
+            description: AppLocalizations.of(context).svcLoadFailedNote,
             isError: true,
             primaryAction: AppButton(
               label: AppLocalizations.of(context).retry,
