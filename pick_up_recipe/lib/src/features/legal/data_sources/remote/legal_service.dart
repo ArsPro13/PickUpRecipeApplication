@@ -49,14 +49,14 @@ class LegalService {
     final decoded = jsonDecode(utf8.decode(response.bodyBytes));
     if (decoded is Map<String, dynamic>) {
       return LegalDocument(
-        title: decoded['title'] as String? ?? kind.title,
+        title: decoded['title'] as String? ?? '',
         version: decoded['version'] as String? ?? '',
         body: decoded['body'] as String? ?? '',
       );
     }
 
     return LegalDocument(
-      title: kind.title,
+      title: '',
       version: response.headers['x-legal-version'] ?? '',
       body: utf8.decode(response.bodyBytes),
     );
@@ -64,11 +64,15 @@ class LegalService {
 }
 
 /// Документа нет на сервере.
+///
+/// Текста для человека здесь нет и быть не может: слой данных языка экрана не
+/// знает. Что показать вместо документа, решает лист — legal_sheet.dart.
 class LegalUnavailable implements Exception {
   const LegalUnavailable(this.kind);
 
   final LegalKind kind;
 
+  /// Только для журнала.
   @override
-  String toString() => 'Документ «${kind.title}» сейчас недоступен';
+  String toString() => 'LegalUnavailable(${kind.name})';
 }

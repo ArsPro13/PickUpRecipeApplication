@@ -730,6 +730,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get recipesBrewAgain => 'Заварить снова';
 
   @override
+  String get recipesEditRecipe => 'Править рецепт';
+
+  @override
   String get coffeeTitle => 'Кофе';
 
   @override
@@ -804,4 +807,854 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get coffeeMethodsFailed => 'Способы заваривания не загрузились';
+
+  @override
+  String get dateMonth1 => 'января';
+
+  @override
+  String get dateMonth2 => 'февраля';
+
+  @override
+  String get dateMonth3 => 'марта';
+
+  @override
+  String get dateMonth4 => 'апреля';
+
+  @override
+  String get dateMonth5 => 'мая';
+
+  @override
+  String get dateMonth6 => 'июня';
+
+  @override
+  String get dateMonth7 => 'июля';
+
+  @override
+  String get dateMonth8 => 'августа';
+
+  @override
+  String get dateMonth9 => 'сентября';
+
+  @override
+  String get dateMonth10 => 'октября';
+
+  @override
+  String get dateMonth11 => 'ноября';
+
+  @override
+  String get dateMonth12 => 'декабря';
+
+  @override
+  String dateDayMonth(String day, String month) {
+    return '$day $month';
+  }
+
+  @override
+  String dateDayMonthYear(String day, String month, String year) {
+    return '$day $month $year';
+  }
+
+  @override
+  String get rateTitle => 'Как получилось';
+
+  @override
+  String get rateOnTarget => 'Получилось как задумано';
+
+  @override
+  String rateSaid(String strength, String taste) {
+    return '$strength $taste';
+  }
+
+  @override
+  String get rateDegreeSlight => 'чуть';
+
+  @override
+  String get rateDegreeNoticeable => 'заметно';
+
+  @override
+  String get rateDegreeStrong => 'сильно';
+
+  @override
+  String get rateTasteSour => 'кисло';
+
+  @override
+  String get rateTasteBitter => 'горько';
+
+  @override
+  String get rateTasteStrong => 'крепко';
+
+  @override
+  String get rateTasteWeak => 'слабо';
+
+  @override
+  String rateMapSemantics(String summary) {
+    return 'Карта вкуса. $summary';
+  }
+
+  @override
+  String get rateOverall => 'Общее';
+
+  @override
+  String rateStarsOf(int stars) {
+    return '$stars из 5';
+  }
+
+  @override
+  String get rateOptional => 'Необязательно';
+
+  @override
+  String get rateAxesTitle => 'Разобрать по осям';
+
+  @override
+  String get rateAxesHint =>
+      'Можно не трогать — уедет только то, что подвинете';
+
+  @override
+  String get rateAxisAroma => 'Аромат';
+
+  @override
+  String get rateAxisFlavor => 'Вкус';
+
+  @override
+  String get rateAxisAftertaste => 'Послевкусие';
+
+  @override
+  String get rateAxisAcidity => 'Кислотность';
+
+  @override
+  String get rateAxisBitterness => 'Горечь';
+
+  @override
+  String get rateAxisSweetness => 'Сладость';
+
+  @override
+  String rateAxesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count оси',
+      many: '$count осей',
+      few: '$count оси',
+      one: '$count ось',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rateSave => 'Сохранить';
+
+  @override
+  String get rateFixRecipe => 'Поправить рецепт';
+
+  @override
+  String get rateJustSave => 'Просто сохранить отзыв';
+
+  @override
+  String get rateSavedOffline =>
+      'Оценка сохранена и уедет, когда появится связь';
+
+  @override
+  String get rateSavedCorrectionLater =>
+      'Оценка сохранена. Поправку посчитает сервер — она будет, когда появится связь';
+
+  @override
+  String get rateNothingToChange =>
+      'Менять нечего: рецепт уже на границе своих значений';
+
+  @override
+  String get rateParamGrind => 'Помол';
+
+  @override
+  String get rateParamTemperature => 'Температура';
+
+  @override
+  String get rateParamRatio => 'Соотношение';
+
+  @override
+  String get rateParamAgitation => 'Размешивание';
+
+  @override
+  String get rateParamContactTime => 'Время контакта';
+
+  @override
+  String get rateParamDose => 'Доза';
+
+  @override
+  String get packFormTitle => 'Пачка без кода';
+
+  @override
+  String get packFormIntro =>
+      'Впишите, что написано на пачке. Обязательна только страна — из неё и региона соберётся название.';
+
+  @override
+  String get packFormPhotoTitle => 'Сфотографируйте пачку';
+
+  @override
+  String get packFormPhotoNote =>
+      'Снимок сохранится вместе с пачкой — по нему вы узнаете её в списке';
+
+  @override
+  String get packFormPhotoTake => 'Сфотографировать';
+
+  @override
+  String get packFormPhotoRetake => 'Переснять';
+
+  @override
+  String get packFormPhotoFromGallery => 'Из галереи';
+
+  @override
+  String get packFormPhotoFailed => 'Снимок не получился — попробуйте ещё раз';
+
+  @override
+  String get packFormCountry => 'Страна';
+
+  @override
+  String get packFormCountryHint => 'Бразилия';
+
+  @override
+  String get packFormCountryRequired => 'Без страны пачку нечем назвать';
+
+  @override
+  String get packFormRegion => 'Регион — если знаете';
+
+  @override
+  String get packFormRegionHint => 'Серрадо';
+
+  @override
+  String get packFormVariety => 'Сорт';
+
+  @override
+  String get packFormVarietyHint => 'бурбон';
+
+  @override
+  String get packFormScaScore => 'Оценка SCA';
+
+  @override
+  String get packFormRoastDate => 'Дата обжарки';
+
+  @override
+  String get packFormDateHint => 'дд.мм.гггг';
+
+  @override
+  String get packFormDateInvalid => 'Такой даты не бывает';
+
+  @override
+  String get packFormDateEmptyNote =>
+      'Не знаете — оставьте пустым, поставим сегодняшнюю';
+
+  @override
+  String get packFormToday => 'Сегодня';
+
+  @override
+  String get packFormDescriptors => 'Дескрипторы';
+
+  @override
+  String get packFormDescriptorsNote =>
+      'Чем пахнет и какой на вкус — по слову в строке';
+
+  @override
+  String packFormDescriptorNumbered(int number) {
+    return 'Дескриптор $number';
+  }
+
+  @override
+  String get packFormDescriptorHint => 'малина';
+
+  @override
+  String get packFormAddDescriptor => 'Добавить дескриптор';
+
+  @override
+  String get packFormProcessing => 'Способ обработки';
+
+  @override
+  String get packFormProcessingNote => 'Обычно написан на пачке рядом с сортом';
+
+  @override
+  String packFormProcessingNumbered(int number) {
+    return 'Обработка $number';
+  }
+
+  @override
+  String get packFormProcessingHint => 'мытая';
+
+  @override
+  String get packFormAddProcessing => 'Добавить обработку';
+
+  @override
+  String get packFormRemoveLine => 'Убрать строку';
+
+  @override
+  String get packFormSubmit => 'Отправить';
+
+  @override
+  String get packFormSubmitFailed => 'Пачка не отправилась';
+
+  @override
+  String packFormSubmitFailedNote(String reason) {
+    return '$reason. Набранное осталось — попробуйте ещё раз.';
+  }
+
+  @override
+  String get packFormShowPassword => 'Показать пароль';
+
+  @override
+  String get packFormHidePassword => 'Скрыть пароль';
+
+  @override
+  String get brewAbortTitle => 'Прервать заваривание?';
+
+  @override
+  String get brewAbortNote =>
+      'Отсчёт остановится, и вернуться к нему на этой же секунде не выйдет.';
+
+  @override
+  String get brewAbort => 'Прервать';
+
+  @override
+  String get brewStay => 'Остаться';
+
+  @override
+  String get brewEditRecipe => 'Править рецепт';
+
+  @override
+  String brewStepOf(int number, int count) {
+    return 'шаг $number из $count';
+  }
+
+  @override
+  String get brewGrindAndStart => 'Смолол, начинаем';
+
+  @override
+  String get brewStart => 'Начать';
+
+  @override
+  String get brewPause => 'Пауза';
+
+  @override
+  String get brewResume => 'Продолжить';
+
+  @override
+  String get brewDidIt => 'Сделал';
+
+  @override
+  String get brewRate => 'Оценить';
+
+  @override
+  String get brewSkip => 'Пропустить';
+
+  @override
+  String get brewHappened => 'Случилось';
+
+  @override
+  String get brewTitle => 'Заваривание';
+
+  @override
+  String get brewNoSteps => 'В рецепте нет шагов';
+
+  @override
+  String get brewNoStepsNote =>
+      'Проигрывать нечего. Соберите рецепт заново или выберите другой.';
+
+  @override
+  String get brewSteepingOver =>
+      'Настаивание закончилось, пока приложение было закрыто. Доделайте оставшиеся шаги — дальше кофе только горчит.';
+
+  @override
+  String brewSteepingGoes(String away) {
+    return 'Настаивание идёт: прошло $away. Экран можно закрывать — время считается по часам, а не по таймеру на экране.';
+  }
+
+  @override
+  String get brewToRemainingSteps => 'К оставшимся шагам';
+
+  @override
+  String get brewCallItFinished => 'Считать законченным';
+
+  @override
+  String brewAwayTitle(String away) {
+    return 'Прошло $away';
+  }
+
+  @override
+  String brewStoppedAtStep(String step) {
+    return 'Вы остановились на шаге «$step». Столько кофе уже не стоит на месте: вода остыла, воронка проливается.';
+  }
+
+  @override
+  String get brewStartOver => 'Начать заново';
+
+  @override
+  String get brewStartOverNote =>
+      'Обычно правильный выбор: 15 г кофе дешевле испорченной чашки';
+
+  @override
+  String get brewContinueFromHere => 'Продолжить с этого места';
+
+  @override
+  String get brewContinueFromHereNote =>
+      'Если вы всё это время лили и просто выключили экран';
+
+  @override
+  String get brewCallItFinishedNote =>
+      'Заварилось, но до оценки руки не дошли — оценим сейчас';
+
+  @override
+  String brewAwayHours(int hours) {
+    return '$hours ч';
+  }
+
+  @override
+  String brewAwayHoursMinutes(int hours, int minutes) {
+    return '$hours ч $minutes мин';
+  }
+
+  @override
+  String brewAwayMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes минут',
+      many: '$minutes минут',
+      few: '$minutes минуты',
+      one: '$minutes минута',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewAwaySeconds(int seconds) {
+    return '$seconds с';
+  }
+
+  @override
+  String get brewGrindCoffee => 'Смелите кофе';
+
+  @override
+  String get brewWaitingForYou => 'ждём вас';
+
+  @override
+  String brewReadyAt(String time) {
+    return 'в $time';
+  }
+
+  @override
+  String brewPouredOf(String poured, String total) {
+    return 'налито $poured из $total г';
+  }
+
+  @override
+  String brewTargetInCup(String grams) {
+    return 'цель — $grams г в чашке';
+  }
+
+  @override
+  String brewTargetInCupDone(String grams) {
+    return 'готово · $grams г в чашке';
+  }
+
+  @override
+  String brewTargetInCupFirstDrops(String grams) {
+    return 'цель — $grams г в чашке · первые капли на 5–7 с';
+  }
+
+  @override
+  String get brewTimeIsAGuide => 'время — ориентир, смотрите на признак';
+
+  @override
+  String brewTimeIsAGuideWithWater(String water) {
+    return 'время — ориентир · $water';
+  }
+
+  @override
+  String brewReadyIn(String time) {
+    return 'готово через $time';
+  }
+
+  @override
+  String get brewStepNotStarted => 'шаг ещё не начат';
+
+  @override
+  String get brewLeft => 'осталось';
+
+  @override
+  String get brewOnPause => 'на паузе';
+
+  @override
+  String get brewTapDidIt => 'нажмите «Сделал», когда закончите';
+
+  @override
+  String get brewFinished => 'готово';
+
+  @override
+  String get brewOptional => 'не обязательно';
+
+  @override
+  String get brewTipExpand => 'Показать подсказку целиком';
+
+  @override
+  String get brewTipCollapse => 'Свернуть подсказку';
+
+  @override
+  String get brewPhasePrep => 'подготовка';
+
+  @override
+  String get brewPhaseBrewing => 'заваривание';
+
+  @override
+  String get brewPhaseFinish => 'финал';
+
+  @override
+  String get brewEndsBySign => 'по признаку';
+
+  @override
+  String get brewEndsByTap => 'по кнопке';
+
+  @override
+  String get brewUntilYouSayDidIt => 'пока не скажете «сделал»';
+
+  @override
+  String get grinderTitle => 'Кофемолка';
+
+  @override
+  String get grinderSearchHint => 'Найти кофемолку';
+
+  @override
+  String get grinderKindManual => 'Ручные';
+
+  @override
+  String get grinderKindElectric => 'Электрические';
+
+  @override
+  String get grinderKindOther => 'Прочие';
+
+  @override
+  String get grinderMakePrimary => 'сделать основной';
+
+  @override
+  String get grinderSave => 'Сохранить';
+
+  @override
+  String get grinderNotFound => 'Такой кофемолки нет';
+
+  @override
+  String get grinderCatalogEmpty => 'Справочник пуст — проверьте связь';
+
+  @override
+  String grinderCatalogSize(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count модели',
+      many: '$count моделей',
+      few: '$count модели',
+      one: '$count модель',
+    );
+    return 'Проверьте написание — в справочнике $_temp0';
+  }
+
+  @override
+  String get grinderShowAll => 'Показать все';
+
+  @override
+  String get grinderDidYouMean => 'Вы имели в виду';
+
+  @override
+  String get grinderSaveFailed => 'Не удалось сохранить кофемолки';
+
+  @override
+  String get grinderSaveOffline =>
+      'Без сети кофемолку не сохранить — она хранится в аккаунте';
+
+  @override
+  String grinderApproximately(String value) {
+    return 'примерно $value';
+  }
+
+  @override
+  String get grinderPickPrompt => 'выберите кофемолку';
+
+  @override
+  String get grinderPickPromptHint => 'выберите кофемолку — покажем деление';
+
+  @override
+  String grinderScaleOf(String name) {
+    return 'делений $name';
+  }
+
+  @override
+  String grinderClicks(String value) {
+    return '$value щ.';
+  }
+
+  @override
+  String get builderTitle => 'Ваш рецепт';
+
+  @override
+  String get builderParams => 'Параметры';
+
+  @override
+  String get builderDose => 'Доза';
+
+  @override
+  String get builderWater => 'Вода';
+
+  @override
+  String get builderTemperature => 'Температура';
+
+  @override
+  String get builderGrind => 'Помол';
+
+  @override
+  String get builderRatio => 'Соотношение';
+
+  @override
+  String get builderGram => 'г';
+
+  @override
+  String get builderMillilitre => 'мл';
+
+  @override
+  String get builderSteps => 'Шаги';
+
+  @override
+  String get builderDragHint => 'потяните за ручку';
+
+  @override
+  String get builderAddStep => 'Добавить шаг';
+
+  @override
+  String get builderStep => 'Шаг';
+
+  @override
+  String get builderStepName => 'Название';
+
+  @override
+  String get builderStepTip => 'Подсказка';
+
+  @override
+  String get builderChoose => 'выбрать';
+
+  @override
+  String get builderEndsLabel => 'Заканчивается';
+
+  @override
+  String get builderDuration => 'Длительность';
+
+  @override
+  String get builderNoTip => 'Подсказки нет';
+
+  @override
+  String builderTipValue(String tip) {
+    return 'Подсказка · $tip';
+  }
+
+  @override
+  String get builderRemoveStep => 'Убрать шаг';
+
+  @override
+  String get builderStepWater => 'Вода по шагам';
+
+  @override
+  String builderStepWaterValue(int done, int total) {
+    return '$done из $total г';
+  }
+
+  @override
+  String get builderTotalTime => 'Общее время';
+
+  @override
+  String get builderSave => 'Сохранить';
+
+  @override
+  String get builderBrew => 'Заварить';
+
+  @override
+  String get builderToHome => 'На главную';
+
+  @override
+  String get builderCancel => 'Отмена';
+
+  @override
+  String get builderDone => 'Готово';
+
+  @override
+  String get builderMinutesSeconds => 'минуты и секунды';
+
+  @override
+  String get builderDecrease => 'убавить';
+
+  @override
+  String get builderIncrease => 'прибавить';
+
+  @override
+  String builderCorrectedFor(String label) {
+    return 'Поправлено под «$label»';
+  }
+
+  @override
+  String get builderCorrectedNote => 'изменения помечены точкой';
+
+  @override
+  String get builderUndo => 'Отменить';
+
+  @override
+  String get builderLeaveTitle => 'Уйти без сохранения?';
+
+  @override
+  String get builderLeaveNote =>
+      'Правки не сохранены — новая версия не появится.';
+
+  @override
+  String get builderLeave => 'Уйти';
+
+  @override
+  String get builderSavedOffline =>
+      'Сохранено на телефоне — уедет, когда появится связь';
+
+  @override
+  String get builderSavedVersion => 'Сохранено новой версией';
+
+  @override
+  String builderSaveFailed(String error) {
+    return 'Не сохранилось: $error';
+  }
+
+  @override
+  String get builderEndsTimer => 'по времени';
+
+  @override
+  String get builderEndsUser => 'по кнопке';
+
+  @override
+  String get builderEndsSign => 'по признаку';
+
+  @override
+  String get builderEndsTimerHint => 'идёт по таймеру и кончается сам';
+
+  @override
+  String get builderEndsUserHint =>
+      'заваривание ждёт, пока вы нажмёте «дальше»';
+
+  @override
+  String get builderEndsSignHint =>
+      'та же кнопка, но жмёте её по признаку: пена осела, вода стекла';
+
+  @override
+  String get svcAuthBadFields => 'Проверьте почту и пароль';
+
+  @override
+  String get svcAuthWrongCredentials => 'Неверная почта или пароль';
+
+  @override
+  String get svcAuthEmailNotVerified => 'Почта не подтверждена';
+
+  @override
+  String get svcAuthUnknownEmail => 'Такой почты у нас нет';
+
+  @override
+  String get svcAuthEmailTaken => 'Эта почта уже занята';
+
+  @override
+  String get svcAuthTooOften => 'Слишком часто. Подождите минуту';
+
+  @override
+  String get svcAuthServerDown => 'Сервер не отвечает. Попробуйте ещё раз';
+
+  @override
+  String get svcAuthWrongCode => 'Код не подошёл. Проверьте письмо ещё раз';
+
+  @override
+  String get svcAuthNoTokens => 'Сервер ответил без токенов';
+
+  @override
+  String get svcAuthOffline => 'Нет связи. Проверьте интернет';
+
+  @override
+  String get svcAuthFailedLogin => 'Не удалось войти';
+
+  @override
+  String get svcAuthFailedSendLetter => 'Не удалось отправить письмо';
+
+  @override
+  String get svcAuthFailedChangePassword => 'Не удалось сменить пароль';
+
+  @override
+  String get svcAuthFailedRegister => 'Не удалось зарегистрироваться';
+
+  @override
+  String get svcAuthFailedVerifyEmail => 'Не удалось подтвердить почту';
+
+  @override
+  String svcSyncSent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Отправлено, что ждало связи: $count',
+      one: 'Отправлено то, что ждало связи',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String svcSyncDropped(int count) {
+    return 'Сервер не принял отложенное ($count) — оно устарело';
+  }
+
+  @override
+  String svcSyncMixed(int sent, int dropped) {
+    return 'Отправлено: $sent. Не принято сервером: $dropped';
+  }
+
+  @override
+  String get svcLegalClose => 'Закрыть';
+
+  @override
+  String svcLegalUnavailable(String link) {
+    return 'Документ сейчас недоступен. Он опубликован на сайте — откройте его там: $link';
+  }
+
+  @override
+  String svcLegalVersion(String version) {
+    return 'Редакция от $version';
+  }
+
+  @override
+  String get svcLegalUserAgreement => 'Пользовательское соглашение';
+
+  @override
+  String get svcLegalPrivacy => 'Политика обработки данных';
+
+  @override
+  String get svcLegalConsent => 'Согласие на обработку данных';
+
+  @override
+  String get svcCodeEmpty => 'Введите код с упаковки';
+
+  @override
+  String svcCodeLength(int expected, int actual) {
+    String _temp0 = intl.Intl.pluralLogic(
+      expected,
+      locale: localeName,
+      other: 'В коде $expected символов, а введено $actual',
+      many: 'В коде $expected символов, а введено $actual',
+      few: 'В коде $expected символа, а введено $actual',
+      one: 'В коде $expected символ, а введено $actual',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String svcCodeUnknownSymbol(String symbol) {
+    return 'Символа «$symbol» в кодах не бывает — проверьте, не 0 ли это вместо O';
+  }
+
+  @override
+  String get svcCodeChecksum => 'Код набран с ошибкой — проверьте символы';
+
+  @override
+  String get svcGroupOther => 'Прочие';
+
+  @override
+  String get svcLoadFailedNote =>
+      'Обычно это связь. Проверьте интернет и попробуйте ещё раз.';
 }

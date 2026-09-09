@@ -29,9 +29,18 @@ class CoffeeMethod {
 }
 
 class CoffeeMethodGroup {
-  const CoffeeMethodGroup({required this.name, required this.methods});
+  const CoffeeMethodGroup({
+    required this.name,
+    required this.methods,
+    this.slug = '',
+  });
 
   final String name;
+
+  /// Метка группы из справочника. Нужна ровно затем, чтобы экран узнал
+  /// собранную на телефоне группу «Прочие»: имени с сервера у неё нет.
+  final String slug;
+
   final List<CoffeeMethod> methods;
 }
 
@@ -198,6 +207,7 @@ List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods) => [
     for (final group in grouped)
       CoffeeMethodGroup(
         name: group.name,
+        slug: group.slug,
         methods: _withRecipesFirst([
           for (final method in group.methods)
             CoffeeMethod(

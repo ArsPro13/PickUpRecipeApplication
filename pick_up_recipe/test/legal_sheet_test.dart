@@ -12,6 +12,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/legal/domain/legal_document.dart';
 import 'package:pick_up_recipe/src/general_widgets/legal_sheet.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
@@ -20,9 +21,18 @@ import 'package:pick_up_recipe/src/themes/app_theme.dart';
 ///
 /// Ссылку открывает распознаватель нажатия, а не кнопка: на экране это часть
 /// строки согласия, и фокус сам по себе с поля не уходит.
-Widget _formWithLegalLink(TextEditingController controller, FocusNode focus) {
+Widget _formWithLegalLink(
+  TextEditingController controller,
+  FocusNode focus, {
+  Locale locale = const Locale('ru'),
+}) {
   return MaterialApp(
     theme: lightTheme,
+    locale: locale,
+    // Делегаты нужны: шапка листа, крестик и текст «документа нет» берутся
+    // из словаря, а не из кода.
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: Builder(
         builder: (context) => Column(
@@ -123,6 +133,32 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.testTextInput.isVisible, isFalse);
       expect(controller.text, 'me@example.com');
+    });
+  });
+
+  // Документ правовой, а телефон английский: шапка листа приезжает не из
+  // домена, а из словаря, иначе человек читает «Политика обработки данных»
+  // посреди английского экрана.
+  group('заголовок листа', () {
+    testWidgets('на русском телефоне', (tester) async {
+      await tester.pumpWidget(_formWithLegalLink(controller, focus));
+
+      await tester.tap(find.text('политика обработки данных'));
+      await tester.pump();
+
+      expect(find.text('Политика обработки данных'), findsOneWidget);
+    });
+
+    testWidgets('на английском телефоне', (tester) async {
+      await tester.pumpWidget(
+        _formWithLegalLink(controller, focus, locale: const Locale('en')),
+      );
+
+      await tester.tap(find.text('политика обработки данных'));
+      await tester.pump();
+
+      expect(find.text('Data processing policy'), findsOneWidget);
+      expect(find.text('Политика обработки данных'), findsNothing);
     });
   });
 }

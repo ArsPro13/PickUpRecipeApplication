@@ -133,7 +133,7 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
         case ResendStatus.rejected:
           _notice = _Notice(texts.verifyAddressRejected);
         case ResendStatus.offline:
-          _notice = _Notice(AuthFailure.offline.message);
+          _notice = _Notice(AuthFailure.offline.text(texts));
       }
     });
 
@@ -158,9 +158,9 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
           .verifyMail(widget.email ?? '', _code.text.trim());
       if (mounted) await context.router.replace(AuthLoginRoute(email: widget.email));
     } on AuthFailure catch (failure) {
-      if (mounted) setState(() => _error = failure.message);
+      if (mounted) setState(() => _error = failure.text(texts));
     } catch (_) {
-      if (mounted) setState(() => _error = AuthFailure.offline.message);
+      if (mounted) setState(() => _error = AuthFailure.offline.text(texts));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

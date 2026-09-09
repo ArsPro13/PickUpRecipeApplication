@@ -9,8 +9,14 @@
 // `pkg/correction`, и человеку не приходится заполнять шесть ползунков ради
 // того, чтобы сказать «кисловато и жидко».
 //
-// Флаттера здесь нет намеренно: перевод точки в жалобы — единственная
+// Экрана здесь нет намеренно: перевод точки в жалобы — единственная
 // нетривиальная логика экрана, и её надо проверять тестом, а не глазами.
+// Словарь приходит сюда параметром, `BuildContext` — никогда: тот же приём,
+// что у текстов правил формы в `pages/auth_rule_texts.dart`.
+
+import 'package:flutter/widgets.dart';
+
+import '../../../../l10n/app_localizations.dart';
 
 /// Насколько сильно отклонение по оси.
 ///
@@ -29,11 +35,13 @@ enum TasteStrength {
   /// Край карты.
   strong;
 
-  String get word => switch (this) {
+  /// Слово силы на языке интерфейса: «чуть», «заметно», «сильно».
+  /// У попадания слова нет — про него говорят целой фразой.
+  String word(AppLocalizations texts) => switch (this) {
         TasteStrength.none => '',
-        TasteStrength.slight => 'чуть',
-        TasteStrength.noticeable => 'заметно',
-        TasteStrength.strong => 'сильно',
+        TasteStrength.slight => texts.rateDegreeSlight,
+        TasteStrength.noticeable => texts.rateDegreeNoticeable,
+        TasteStrength.strong => texts.rateDegreeStrong,
       };
 }
 
@@ -91,7 +99,7 @@ class TastePoint {
     return result;
   }
 
-  /// Что именно сказал человек — словами.
+  /// Что именно сказал человек — словами языка интерфейса.
   ///
   /// Ровно та строка, что стоит под картой в макете: «Заметно кисло, чуть
   /// слабо». Без неё точка на карте остаётся догадкой — особенно после того,
@@ -100,21 +108,35 @@ class TastePoint {
   /// Наречия, а не сравнительная степень. «Слабее» и «крепче» спрашивают
   /// «слабее чего?» — и на одном круге с «кисло» и «горько» читались как
   /// разные вопросы. Одна часть речи на обе оси: круг отвечает на один.
-  String get summary {
-    if (isCenter) return 'Получилось как задумано';
+  String summaryFor(AppLocalizations texts) {
+    if (isCenter) return texts.rateOnTarget;
 
     final parts = <String>[];
 
     if (extractionStrength != TasteStrength.none) {
-      parts.add('${extractionStrength.word} ${x < 0 ? 'кисло' : 'горько'}');
+      parts.add(texts.rateSaid(
+        extractionStrength.word(texts),
+        x < 0 ? texts.rateTasteSour : texts.rateTasteBitter,
+      ));
     }
     if (concentrationStrength != TasteStrength.none) {
-      parts.add('${concentrationStrength.word} ${y < 0 ? 'слабо' : 'крепко'}');
+      parts.add(texts.rateSaid(
+        concentrationStrength.word(texts),
+        y < 0 ? texts.rateTasteWeak : texts.rateTasteStrong,
+      ));
     }
 
     final joined = parts.join(', ');
     return joined[0].toUpperCase() + joined.substring(1);
   }
+
+  /// Та же фраза по-русски — она уезжает на сервер полем комментария к оценке.
+  ///
+  /// Язык телефона на это поле не влияет и влиять не должен: комментарий
+  /// читают люди в кабинете обжарщика, и одна и та же жалоба обязана
+  /// приходить к ним одними и теми же словами. Основа у обеих фраз общая —
+  /// [summaryFor]; разный у них только словарь.
+  String get summaryRu => summaryFor(lookupAppLocalizations(const Locale('ru')));
 
   TastePoint clamped() {
     return TastePoint(x.clamp(-1.0, 1.0).toDouble(), y.clamp(-1.0, 1.0).toDouble());

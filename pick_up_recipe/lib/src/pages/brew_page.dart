@@ -29,6 +29,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/grinders/application/grinder_state.dart';
@@ -314,21 +315,21 @@ class _BrewPageState extends ConsumerState<BrewPage>
   Future<bool> _confirmLeave() async {
     if (!_brewing) return true;
 
+    final texts = AppLocalizations.of(context);
+
     final leave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Прервать заваривание?'),
-        content: const Text(
-          'Отсчёт остановится, и вернуться к нему на этой же секунде не выйдет.',
-        ),
+        title: Text(texts.brewAbortTitle),
+        content: Text(texts.brewAbortNote),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Остаться'),
+            child: Text(texts.brewStay),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Прервать'),
+            child: Text(texts.brewAbort),
           ),
         ],
       ),
@@ -337,11 +338,36 @@ class _BrewPageState extends ConsumerState<BrewPage>
     return leave ?? false;
   }
 
+  /// Останавливает заваривание насовсем — это и есть «Прервать».
+  ///
+  /// Одного `reset()` мало. Он обнуляет метки времени в движке, но тикер
+  /// перерисовки после него крутится вхолостую — и `dispose()` уходящего
+  /// экрана падает на живом тикере, — а отложенный переход на оценку
+  /// остаётся заведённым, хотя оценивать уже нечего: заваривание прервали,
+  /// а не доиграли.
+  void _abort() {
+    _toRating?.cancel();
+    _toRating = null;
+    _engine.reset();
+    _stopFrames();
+    setState(() => _live.value = _engine.snapshot());
+  }
+
   /// Уход стрелкой в шапке — через тот же вопрос, что и кнопкой телефона.
+  ///
+  /// Порядок важен: сначала остановить заваривание, потом уйти. Пока оно
+  /// шло, уход держал `PopScope`, и `maybePop` спрашивал его заново — то
+  /// есть открывал этот же диалог по кругу вместо того, чтобы уйти.
+  ///
+  /// `popForced`, а не `maybePop`, по той же причине: спрашивать больше не о
+  /// чем — отсчёта нет, — а `canPop` у построенного `PopScope` обновится
+  /// только со следующим кадром, и вопрос успел бы прозвучать ещё раз.
   Future<void> _leave() async {
-    if (await _confirmLeave() && mounted) {
-      await context.router.maybePop();
-    }
+    if (!await _confirmLeave()) return;
+    if (!mounted) return;
+
+    _abort();
+    context.router.popForced();
   }
 
   void _toggle() {
@@ -495,8 +521,9 @@ class _BrewPageState extends ConsumerState<BrewPage>
     // Следим за справочником: шаблон и состояние прибора приезжают с ним.
     ref.watch(brewMethodsProvider);
 
+    final texts = AppLocalizations.of(context);
     final current = steps[_snapshot.stepIndex.clamp(0, steps.length - 1)];
-    final params = _params();
+    final params = _params(texts);
     final template = _template;
     final deviceState = template == BrewTemplate.valve ? _deviceState() : '';
 
@@ -507,7 +534,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
         leading: IconButton(
           onPressed: _leave,
           icon: const AppIcon(AppIcons.uiBack, size: AppSizes.icon24),
-          tooltip: 'Назад',
+          tooltip: texts.back,
         ),
         // Название прибора крупно: его читают от кофемолки, боком, и
         // мелкая подпись для этого не годится. Номер шага уехал в строку
@@ -522,7 +549,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
           IconButton(
             onPressed: _edit,
             icon: const AppIcon(AppIcons.uiEdit, size: AppSizes.icon24),
-            tooltip: 'Править рецепт',
+            tooltip: texts.brewEditRecipe,
           ),
         ],
         // Строка не меняется вместе с состоянием: она отвечает на вопрос
@@ -532,7 +559,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
             ? null
             : _ParamsStrip(
                 params: params,
-                step: 'шаг ${_snapshot.stepIndex + 1} из ${steps.length}',
+                step: texts.brewStepOf(_snapshot.stepIndex + 1, steps.length),
               ),
       ),
       bottomNavigationBar: const AppBottomNav(),
@@ -602,17 +629,18 @@ class _BrewPageState extends ConsumerState<BrewPage>
                         // До старта кнопка подтверждает подготовку, а не
                         // запускает таймер: рамка над ней просит смолоть,
                         // и «Начать» отвечало бы не на тот вопрос.
-                        BrewStatus.idle => params.hasPrep ? 'Смолол, начинаем' : 'Начать',
-                        BrewStatus.running => 'Пауза',
-                        BrewStatus.paused => 'Продолжить',
+                        BrewStatus.idle =>
+                          params.hasPrep ? texts.brewGrindAndStart : texts.brewStart,
+                        BrewStatus.running => texts.brewPause,
+                        BrewStatus.paused => texts.brewResume,
                         // Шаг ждёт человека — и главная кнопка отвечает на
                         // вопрос «куда нажимать, когда сделал». Раньше на
                         // этом месте стояла «Пауза» при стоящем таймере.
-                        BrewStatus.awaitingUser => 'Сделал',
+                        BrewStatus.awaitingUser => texts.brewDidIt,
                         // Заваривание кончилось — дальше оценка, а не тупик.
                         // Кнопка «Готово», которая ничего не делает, была
                         // концом пути: рецепт заварен и забыт.
-                        BrewStatus.finished => 'Оценить',
+                        BrewStatus.finished => texts.brewRate,
                       },
                       icon: switch (_snapshot.status) {
                         BrewStatus.finished => AppIcons.uiStar,
@@ -633,7 +661,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
                       // У усилия и признака конец шага определяет человек,
                       // а не секундомер, — и кнопка называет это действие,
                       // а не извиняется словом «пропустить».
-                      label: brewSkipLabel(current),
+                      label: brewSkipLabel(texts, current),
                       icon: AppIcons.uiForward,
                       kind: AppButtonKind.secondary,
                       block: false,
@@ -666,13 +694,14 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// мельниц может быть две, и показать он хочет свою шкалу, а не слово из
   /// справочника. Без выбранной кофемолки остаётся слово и приглашение её
   /// выбрать — прятать помол нельзя, до пункта 8 он только словом и был.
-  BrewParams _params() {
+  BrewParams _params(AppLocalizations texts) {
     // Справочник крупности может не успеть приехать — тогда на месте помола
     // останется slug из рецепта. Некрасиво, но честно; пустое место
     // читалось бы как «помол неизвестен».
     final reference = ref.watch(grindDescriptorsProvider).valueOrNull;
 
     return BrewParams.of(
+      texts,
       widget.recipe,
       grind: grindReading(
         descriptorSlug: widget.recipe.grindDescriptor,
@@ -680,6 +709,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
         recipeGrinderId: widget.recipe.grinderId,
         recipeGrindStep: widget.recipe.grindStep,
         grinder: ref.watch(grinderStateProvider).primary,
+        texts: texts,
       ),
       inCup: _template == BrewTemplate.shot,
     );
@@ -697,23 +727,25 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// с ошибкой. Раньше экран в этом случае показывал пустую полосу прогресса
   /// и кнопку «Начать», которая ничего не начинала.
   Widget _empty() {
+    final texts = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => context.router.maybePop(),
           icon: const AppIcon(AppIcons.uiBack, size: AppSizes.icon24),
-          tooltip: 'Назад',
+          tooltip: texts.back,
         ),
-        title: const Text('Заваривание'),
+        title: Text(texts.brewTitle),
       ),
       bottomNavigationBar: const AppBottomNav(),
       body: AppState(
         icon: AppIcons.stateError,
-        title: 'В рецепте нет шагов',
-        description: 'Проигрывать нечего. Соберите рецепт заново или выберите другой.',
+        title: texts.brewNoSteps,
+        description: texts.brewNoStepsNote,
         isError: true,
         primaryAction: AppButton(
-          label: 'Назад',
+          label: texts.back,
           kind: AppButtonKind.secondary,
           onPressed: () => context.router.maybePop(),
         ),
@@ -825,7 +857,8 @@ class _ResumeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final away = _awayLabel(awayFor);
+    final texts = AppLocalizations.of(context);
+    final away = brewAwayLabel(texts, awayFor);
 
     if (long) {
       // Колд брю: «прошло 13 часов» — норма. Не «вы бросили», а «уже готово».
@@ -846,10 +879,8 @@ class _ResumeScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     finished
-                        ? 'Настаивание закончилось, пока приложение было закрыто. '
-                            'Доделайте оставшиеся шаги — дальше кофе только горчит.'
-                        : 'Настаивание идёт: прошло $away. Экран можно закрывать — '
-                            'время считается по часам, а не по таймеру на экране.',
+                        ? texts.brewSteepingOver
+                        : texts.brewSteepingGoes(away),
                     style: context.texts.bodySmall,
                   ),
                 ),
@@ -858,13 +889,13 @@ class _ResumeScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s6),
           AppButton(
-            label: finished ? 'К оставшимся шагам' : 'Продолжить',
+            label: finished ? texts.brewToRemainingSteps : texts.brewResume,
             icon: AppIcons.uiPlay,
             onPressed: onContinue,
           ),
           const SizedBox(height: AppSpacing.s3),
           AppButton(
-            label: 'Считать законченным',
+            label: texts.brewCallItFinished,
             kind: AppButtonKind.secondary,
             onPressed: onFinish,
           ),
@@ -882,50 +913,52 @@ class _ResumeScreen extends StatelessWidget {
       children: [
         AppState(
           icon: AppIcons.stepWait,
-          title: 'Прошло $away',
-          description: 'Вы остановились на шаге «$stepLabel». Столько кофе уже '
-              'не стоит на месте: вода остыла, воронка проливается.',
+          title: texts.brewAwayTitle(away),
+          description: texts.brewStoppedAtStep(stepLabel),
         ),
         const SizedBox(height: AppSpacing.s5),
         _ResumeOption(
           icon: AppIcons.uiRefresh,
-          title: 'Начать заново',
-          note: 'Обычно правильный выбор: 15 г кофе дешевле испорченной чашки',
+          title: texts.brewStartOver,
+          note: texts.brewStartOverNote,
           onTap: onRestart,
         ),
         _ResumeOption(
           icon: AppIcons.uiPlay,
-          title: 'Продолжить с этого места',
-          note: 'Если вы всё это время лили и просто выключили экран',
+          title: texts.brewContinueFromHere,
+          note: texts.brewContinueFromHereNote,
           onTap: onContinue,
         ),
         _ResumeOption(
           icon: AppIcons.uiCheck,
-          title: 'Считать законченным',
-          note: 'Заварилось, но до оценки руки не дошли — оценим сейчас',
+          title: texts.brewCallItFinished,
+          note: texts.brewCallItFinishedNote,
           onTap: onFinish,
         ),
       ],
     );
   }
 
-  static String _awayLabel(Duration away) {
-    if (away.inHours > 0) {
-      final hours = away.inHours;
-      final minutes = away.inMinutes.remainder(60);
-      return minutes == 0 ? '$hours ч' : '$hours ч $minutes мин';
-    }
-    if (away.inMinutes > 0) {
-      final minutes = away.inMinutes;
-      final word = switch (minutes % 10) {
-        1 when minutes % 100 != 11 => 'минута',
-        2 || 3 || 4 when minutes % 100 < 12 || minutes % 100 > 14 => 'минуты',
-        _ => 'минут',
-      };
-      return '$minutes $word';
-    }
-    return '${away.inSeconds} с';
+}
+
+/// Длительность словами: «13 ч», «4 минуты», «40 с».
+///
+/// Не метод экрана возврата: то же самое стоит под таймером длинного шага
+/// («готово через 3 ч 20 мин»), и две записи одного и того же разошлись бы.
+/// Склонение — на стороне словаря: у английского формы другие, и собирать их
+/// в коде значит собирать их только для русского.
+String brewAwayLabel(AppLocalizations texts, Duration away) {
+  if (away.inHours > 0) {
+    final hours = away.inHours;
+    final minutes = away.inMinutes.remainder(60);
+
+    return minutes == 0
+        ? texts.brewAwayHours(hours)
+        : texts.brewAwayHoursMinutes(hours, minutes);
   }
+  if (away.inMinutes > 0) return texts.brewAwayMinutes(away.inMinutes);
+
+  return texts.brewAwaySeconds(away.inSeconds);
 }
 
 class _ResumeOption extends StatelessWidget {
@@ -1011,12 +1044,13 @@ class _BrewFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
     final icon = _isPrep
         ? AppIcons.stepGrind
         : AppIcons.byKey('step-${step.type.wireName.replaceAll('_', '-')}') ??
             AppIcons.stepCustom;
 
-    final hint = _isPrep ? params.prepHint : _subtitle();
+    final hint = _isPrep ? params.prepHint : _subtitle(texts);
 
     return AspectRatio(
       aspectRatio: 350 / 200,
@@ -1045,7 +1079,7 @@ class _BrewFrame extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.s2),
                 Text(
-                  _isPrep ? 'Смелите кофе' : step.label,
+                  _isPrep ? texts.brewGrindCoffee : step.label,
                   style: context.texts.titleLarge,
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -1054,7 +1088,7 @@ class _BrewFrame extends StatelessWidget {
                 const SizedBox(height: AppSpacing.s1),
                 // Доза и помол крупным кеглем таймера: до старта именно они
                 // и есть то, что читают с расстояния вытянутой руки.
-                if (_waitingLabel() case final waiting?)
+                if (_waitingLabel(texts) case final waiting?)
                   Text(
                     waiting,
                     style: context.texts.headlineSmall,
@@ -1066,7 +1100,7 @@ class _BrewFrame extends StatelessWidget {
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      _centralValue(),
+                      _centralValue(texts),
                       style: context.texts.displayLarge?.copyWith(
                         height: 1,
                         fontFeatures: const [FontFeature.tabularFigures()],
@@ -1098,7 +1132,7 @@ class _BrewFrame extends StatelessWidget {
   /// «когда это кончится».
   ///
   /// null — ждать нечего, в центре будет число.
-  String? _waitingLabel() {
+  String? _waitingLabel(AppLocalizations texts) {
     if (_isPrep || !step.waitsForTap) return null;
     if (snapshot.status == BrewStatus.finished) return null;
 
@@ -1106,11 +1140,11 @@ class _BrewFrame extends StatelessWidget {
     // время человеку тоже нужно.
     if (!snapshot.isAwaitingUser && step.duration > Duration.zero) return null;
 
-    return step.untilSign.isNotEmpty ? step.untilSign : 'ждём вас';
+    return step.untilSign.isNotEmpty ? step.untilSign : texts.brewWaitingForYou;
   }
 
   /// Крупное число в центре рамки. Что это за число — решает шаблон.
-  String _centralValue() {
+  String _centralValue(AppLocalizations texts) {
     if (_isPrep) return params.prepValue!;
 
     final idle = snapshot.status == BrewStatus.idle;
@@ -1127,42 +1161,49 @@ class _BrewFrame extends StatelessWidget {
       final readyAt = DateTime.now().add(snapshot.remainingInStep);
       final hh = readyAt.hour.toString().padLeft(2, '0');
       final mm = readyAt.minute.toString().padLeft(2, '0');
-      return 'в $hh:$mm';
+      return texts.brewReadyAt('$hh:$mm');
     }
 
     return formatDuration(idle ? step.duration : snapshot.remainingInStep);
   }
 
-  String _subtitle() {
+  String _subtitle(AppLocalizations texts) {
     final water = snapshot.waterTotalG <= 0
         ? null
-        : 'налито ${snapshot.waterPouredG.round()} из ${snapshot.waterTotalG.round()} г';
+        : texts.brewPouredOf(
+            '${snapshot.waterPouredG.round()}',
+            '${snapshot.waterTotalG.round()}',
+          );
 
     // «Выстрел»: цель — вес напитка, вода тут не «наливается».
     if (template == BrewTemplate.shot && snapshot.waterTotalG > 0) {
+      final grams = '${snapshot.waterTotalG.round()}';
+
       return switch (snapshot.status) {
-        BrewStatus.idle => 'цель — ${snapshot.waterTotalG.round()} г в чашке',
-        BrewStatus.finished => 'готово · ${snapshot.waterTotalG.round()} г в чашке',
-        _ => 'цель — ${snapshot.waterTotalG.round()} г в чашке · первые капли на 5–7 с',
+        BrewStatus.idle => texts.brewTargetInCup(grams),
+        BrewStatus.finished => texts.brewTargetInCupDone(grams),
+        _ => texts.brewTargetInCupFirstDrops(grams),
       };
     }
 
     // «По признаку»: секундомер — ориентир, конец шага слышно и видно.
     if (template == BrewTemplate.cue && snapshot.status == BrewStatus.running) {
-      return water == null ? 'время — ориентир, смотрите на признак' : 'время — ориентир · $water';
+      return water == null
+          ? texts.brewTimeIsAGuide
+          : texts.brewTimeIsAGuideWithWater(water);
     }
 
     // «Часы»: под «готово в 08:40» — когда это будет по-человечески.
     if (_clockStep && snapshot.status == BrewStatus.running) {
-      return 'готово через ${_ResumeScreen._awayLabel(snapshot.remainingInStep)}';
+      return texts.brewReadyIn(brewAwayLabel(texts, snapshot.remainingInStep));
     }
 
     final head = switch (snapshot.status) {
-      BrewStatus.idle => 'шаг ещё не начат',
-      BrewStatus.running => 'осталось',
-      BrewStatus.paused => 'на паузе',
-      BrewStatus.awaitingUser => 'нажмите «Сделал», когда закончите',
-      BrewStatus.finished => 'готово',
+      BrewStatus.idle => texts.brewStepNotStarted,
+      BrewStatus.running => texts.brewLeft,
+      BrewStatus.paused => texts.brewOnPause,
+      BrewStatus.awaitingUser => texts.brewTapDidIt,
+      BrewStatus.finished => texts.brewFinished,
     };
 
     // У ждущего шага подпись — указание, куда нажимать; дописывать к нему
@@ -1289,6 +1330,8 @@ class _StepList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     // Растушёвка сверху говорит, что там что-то есть: без неё список выглядит
     // начинающимся с текущего шага, и назад никто не прокручивает.
     return ShaderMask(
@@ -1309,8 +1352,9 @@ class _StepList extends StatelessWidget {
         ),
         itemCount: steps.length,
         itemBuilder: (context, index) {
-          final phase = brewPhaseOf(steps[index]);
-          final newPhase = index == 0 || brewPhaseOf(steps[index - 1]) != phase;
+          final phase = brewPhaseOf(texts, steps[index]);
+          final newPhase =
+              index == 0 || brewPhaseOf(texts, steps[index - 1]) != phase;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1318,7 +1362,7 @@ class _StepList extends StatelessWidget {
               // Заголовок фазы ставится только на её первом шаге, и только
               // если фаз в рецепте больше одной: у трёхшагового дрип-пакета
               // разделители были бы длиннее самих шагов.
-              if (newPhase && _hasPhases(steps)) _PhaseLabel(phase),
+              if (newPhase && _hasPhases(texts, steps)) _PhaseLabel(phase),
               _StepCard(
                 key: index == snapshot.stepIndex ? activeCard : null,
                 step: steps[index],
@@ -1334,8 +1378,8 @@ class _StepList extends StatelessWidget {
 }
 
 /// Есть ли в рецепте больше одной фазы.
-bool _hasPhases(List<BrewStep> steps) {
-  final phases = <String>{for (final step in steps) brewPhaseOf(step)};
+bool _hasPhases(AppLocalizations texts, List<BrewStep> steps) {
+  final phases = <String>{for (final step in steps) brewPhaseOf(texts, step)};
   return phases.length > 1;
 }
 
@@ -1390,6 +1434,7 @@ class _StepCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
     final icon = AppIcons.byKey('step-${step.type.wireName.replaceAll('_', '-')}') ??
         AppIcons.stepCustom;
 
@@ -1445,7 +1490,7 @@ class _StepCard extends StatelessWidget {
                   // У шага, который ждёт человека, длительности нет, и «0:00»
                   // отвечало на этот вопрос неправдой — поэтому там стоит то,
                   // чем шаг кончится.
-                  if (brewStepEndNote(step) case final note when note.isNotEmpty)
+                  if (brewStepEndNote(texts, step) case final note when note.isNotEmpty)
                     Text(
                       note,
                       style: context.texts.labelSmall?.copyWith(
@@ -1467,11 +1512,14 @@ class _StepCard extends StatelessWidget {
                 child: Row(
                   children: [
                     if (step.showsWater) ...[
-                      MetricTag(kind: MetricKind.water, label: '${step.waterG.round()} г'),
+                      MetricTag(
+                        kind: MetricKind.water,
+                        label: texts.unitGrams('${step.waterG.round()}'),
+                      ),
                       const SizedBox(width: AppSpacing.s2),
                     ],
                     if (step.isOptional) ...[
-                      const AppChip(label: 'не обязательно'),
+                      AppChip(label: texts.brewOptional),
                       const SizedBox(width: AppSpacing.s2),
                     ],
                     // Три механики конца шага — таймер, действие человека и
@@ -1528,6 +1576,7 @@ class _BrewStepTipState extends State<BrewStepTip> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
     final style = context.texts.labelSmall;
     final open = widget.alwaysOpen || _open;
 
@@ -1574,7 +1623,7 @@ class _BrewStepTipState extends State<BrewStepTip> {
             ),
             if (clipped && !widget.alwaysOpen)
               Tooltip(
-                message: _open ? 'Свернуть подсказку' : 'Показать подсказку целиком',
+                message: _open ? texts.brewTipCollapse : texts.brewTipExpand,
                 child: InkWell(
                   borderRadius: AppRadius.rounded,
                   onTap: () => setState(() => _open = !_open),
@@ -1600,11 +1649,14 @@ class _BrewStepTipState extends State<BrewStepTip> {
 /// Семь шагов Origami читаются как семь дел; те же семь, разбитые на три
 /// фазы, — как три. Фаза выводится из типа шага: справочник её не хранит,
 /// а порядок в рецепте всегда один и тот же — подготовка, заваривание, финал.
-String brewPhaseOf(BrewStep step) {
+String brewPhaseOf(AppLocalizations texts, BrewStep step) {
   return switch (step.type) {
-    BrewStepType.grind || BrewStepType.addIce => 'подготовка',
-    BrewStepType.serve || BrewStepType.dilute || BrewStepType.removeFilter => 'финал',
-    _ => 'заваривание',
+    BrewStepType.grind || BrewStepType.addIce => texts.brewPhasePrep,
+    BrewStepType.serve ||
+    BrewStepType.dilute ||
+    BrewStepType.removeFilter =>
+      texts.brewPhaseFinish,
+    _ => texts.brewPhaseBrewing,
   };
 }
 
@@ -1614,31 +1666,31 @@ String brewPhaseOf(BrewStep step) {
 /// сделал» получалось «Пропустить», то есть слово, обещающее выбросить шаг,
 /// а не подтвердить его. Шаблон отвечает за рецепт целиком, а на вопрос
 /// «что я делаю прямо сейчас» отвечает шаг.
-String brewSkipLabel(BrewStep step) {
+String brewSkipLabel(AppLocalizations texts, BrewStep step) {
   // На ждущем шаге «Сделал» уже стоит на главной кнопке, и второй остаётся
   // честный пропуск: шаг не сделан, а выброшен.
-  if (step.waitsForTap) return 'Пропустить';
+  if (step.waitsForTap) return texts.brewSkip;
 
   // Признак видно и слышно — «случилось» это про него.
-  if (step.untilSign.isNotEmpty) return 'Случилось';
+  if (step.untilSign.isNotEmpty) return texts.brewHappened;
 
   return switch (step.type) {
     // Усилие руки: конец шага определяет рука, а не секундомер.
     BrewStepType.press ||
     BrewStepType.invert ||
     BrewStepType.flip =>
-      'Сделал',
-    _ => 'Пропустить',
+      texts.brewDidIt,
+    _ => texts.brewSkip,
   };
 }
 
 /// Коротко, на место таймера: чем кончается шаг, у которого нет длительности.
 ///
 /// Пусто — показывать нечего: у шага есть время, и оно там и стоит.
-String brewStepEndNote(BrewStep step) {
+String brewStepEndNote(AppLocalizations texts, BrewStep step) {
   if (step.showsDuration) return '';
-  if (step.untilSign.isNotEmpty) return 'по признаку';
-  if (step.waitsForTap) return 'по кнопке';
+  if (step.untilSign.isNotEmpty) return texts.brewEndsBySign;
+  if (step.waitsForTap) return texts.brewEndsByTap;
   return '';
 }
 
@@ -1653,9 +1705,11 @@ class _EndMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     final (icon, label) = switch (step) {
       _ when step.untilSign.isNotEmpty => (AppIcons.uiEye, step.untilSign),
-      _ when step.untilUser => (AppIcons.uiCheck, 'пока не скажете «сделал»'),
+      _ when step.untilUser => (AppIcons.uiCheck, texts.brewUntilYouSayDidIt),
       _ => (null, ''),
     };
 
@@ -1775,23 +1829,30 @@ class BrewParams {
   /// три экрана, и расходиться им нельзя. Без него берётся то, что записано
   /// в самом рецепте, — так разбор остаётся проверяемым без кофемолки.
   static BrewParams of(
+    AppLocalizations texts,
     RecipeData recipe, {
     GrindReading? grind,
     bool inCup = false,
   }) {
-    final dose = recipe.load > 0 ? '${formatAmount(recipe.load)} г' : null;
+    final dose =
+        recipe.load > 0 ? texts.unitGrams(formatAmount(recipe.load)) : null;
 
     final reading = grind ??
         grindReading(
           descriptorSlug: recipe.grindDescriptor,
           recipeGrinderId: recipe.grinderId,
           recipeGrindStep: recipe.grindStep,
+          texts: texts,
         );
     final grindValue = reading.isEmpty ? null : reading.label;
 
     // У эспрессо-семейства вода — вес напитка в чашке, и «мл» тут врали бы
     // дважды: и единицей, и смыслом (water_meaning = in_cup).
-    final water = recipe.water > 0 ? '${recipe.water} ${inCup ? 'г' : 'мл'}' : null;
+    final water = recipe.water <= 0
+        ? null
+        : (inCup
+            ? texts.unitGrams('${recipe.water}')
+            : texts.unitMillilitres('${recipe.water}'));
     final temperature = recipe.temperature == null
         ? null
         : '${formatAmount(recipe.temperature!)} °C';

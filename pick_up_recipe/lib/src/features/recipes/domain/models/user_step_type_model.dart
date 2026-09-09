@@ -5,18 +5,21 @@
 // набирать одно и то же в каждом рецепте на этом приборе.
 
 /// Чем заканчивается шаг. Значения — как в CHECK таблицы user_step_types.
+///
+/// Подписи вариантов здесь нет намеренно. Домен отвечает кодом, а не фразой:
+/// языка экрана он не знает, а фраза у каждого языка своя — ровно так же
+/// устроены правила формы (`domain/auth_rules.dart`). Перевод кода в текст
+/// живёт рядом с экраном, расширением `StepEndsWithText` в
+/// `general_widgets/step_ending_choice.dart`.
 enum StepEndsWith {
-  timer('timer', 'по времени'),
-  user('user', 'по кнопке'),
-  none('none', 'по признаку');
+  timer('timer'),
+  user('user'),
+  none('none');
 
-  const StepEndsWith(this.wire, this.label);
+  const StepEndsWith(this.wire);
 
   /// Значение на проводе и в базе.
   final String wire;
-
-  /// Подпись сегмента в форме.
-  final String label;
 
   static StepEndsWith fromWire(String? value) => switch (value) {
         'user' => StepEndsWith.user,

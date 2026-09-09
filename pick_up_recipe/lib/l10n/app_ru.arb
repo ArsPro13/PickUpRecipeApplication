@@ -1076,6 +1076,11 @@
     "description": "Вкладка «Рецепты»: кружок на карточке версии, пускающий таймер сразу. Подпись для голосового помощника."
   },
 
+  "recipesEditRecipe": "Править рецепт",
+  "@recipesEditRecipe": {
+    "description": "Вкладка «Рецепты»: кружок на карточке версии, открывающий конструктор. Подпись для голосового помощника."
+  },
+
   "coffeeTitle": "Кофе",
   "@coffeeTitle": {
     "description": "Заголовок экрана кофе, когда название пачки ещё не приехало."
@@ -1204,5 +1209,1420 @@
   "coffeeMethodsFailed": "Способы заваривания не загрузились",
   "@coffeeMethodsFailed": {
     "description": "Экран кофе: справочник методов не пришёл, выбирать не из чего."
+  },
+
+  "dateMonth1": "января",
+  "@dateMonth1": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth2": "февраля",
+  "@dateMonth2": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth3": "марта",
+  "@dateMonth3": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth4": "апреля",
+  "@dateMonth4": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth5": "мая",
+  "@dateMonth5": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth6": "июня",
+  "@dateMonth6": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth7": "июля",
+  "@dateMonth7": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth8": "августа",
+  "@dateMonth8": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth9": "сентября",
+  "@dateMonth9": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth10": "октября",
+  "@dateMonth10": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth11": "ноября",
+  "@dateMonth11": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateMonth12": "декабря",
+  "@dateMonth12": {
+    "description": "Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»)."
+  },
+
+  "dateDayMonth": "{day} {month}",
+  "@dateDayMonth": {
+    "description": "День и месяц без года. Порядок слов у языков разный, поэтому он живёт в переводе, а не в коде.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+
+  "dateDayMonthYear": "{day} {month} {year}",
+  "@dateDayMonthYear": {
+    "description": "То же с годом: год добавляется, только когда он не нынешний.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      },
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+
+  "rateTitle": "Как получилось",
+  "@rateTitle": {
+    "description": "Шапка экрана оценки чашки: спрашивает, что получилось в чашке."
+  },
+
+  "rateOnTarget": "Получилось как задумано",
+  "@rateOnTarget": {
+    "description": "Плашка под картой вкуса, когда точка стоит в центре: жалоб нет."
+  },
+
+  "rateSaid": "{strength} {taste}",
+  "@rateSaid": {
+    "description": "Одна половина жалобы на карте вкуса: сила отклонения и его сторона — «чуть кисло». Порядок слов живёт в переводе, а не в коде: у языков он разный.",
+    "placeholders": {
+      "strength": {
+        "type": "String"
+      },
+      "taste": {
+        "type": "String"
+      }
+    }
+  },
+
+  "rateDegreeSlight": "чуть",
+  "@rateDegreeSlight": {
+    "description": "Первое кольцо карты вкуса: насколько сильно отклонение. Встаёт перед стороной отклонения — «чуть кисло»."
+  },
+
+  "rateDegreeNoticeable": "заметно",
+  "@rateDegreeNoticeable": {
+    "description": "Второе кольцо карты вкуса — «заметно горько»."
+  },
+
+  "rateDegreeStrong": "сильно",
+  "@rateDegreeStrong": {
+    "description": "Край карты вкуса — «сильно слабо»."
+  },
+
+  "rateTasteSour": "кисло",
+  "@rateTasteSour": {
+    "description": "Левый конец горизонтальной оси карты вкуса. Наречие, как и три соседних конца: круг задаёт один вопрос, и части речи на нём не смешиваются."
+  },
+
+  "rateTasteBitter": "горько",
+  "@rateTasteBitter": {
+    "description": "Правый конец горизонтальной оси карты вкуса — противоположность «кисло»."
+  },
+
+  "rateTasteStrong": "крепко",
+  "@rateTasteStrong": {
+    "description": "Верхний конец вертикальной оси карты вкуса: концентрация."
+  },
+
+  "rateTasteWeak": "слабо",
+  "@rateTasteWeak": {
+    "description": "Нижний конец вертикальной оси карты вкуса — противоположность «крепко»."
+  },
+
+  "rateMapSemantics": "Карта вкуса. {summary}",
+  "@rateMapSemantics": {
+    "description": "Подпись карты вкуса для голосового помощника: точку пальцем он не покажет, поэтому читает её словами.",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+
+  "rateOverall": "Общее",
+  "@rateOverall": {
+    "description": "Подпись строки со звёздами: общее впечатление от чашки."
+  },
+
+  "rateStarsOf": "{stars} из 5",
+  "@rateStarsOf": {
+    "description": "Сколько звёзд поставлено из пяти. Стоит подсказкой на звезде и в подписи недописанного черновика.",
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+
+  "rateOptional": "Необязательно",
+  "@rateOptional": {
+    "description": "Разделитель на экране оценки: всё, что нужно правилам поправки, осталось выше."
+  },
+
+  "rateAxesTitle": "Разобрать по осям",
+  "@rateAxesTitle": {
+    "description": "Заголовок необязательной части экрана оценки: шесть ползунков по признакам."
+  },
+
+  "rateAxesHint": "Можно не трогать — уедет только то, что подвинете",
+  "@rateAxesHint": {
+    "description": "Пояснение под заголовком «Разобрать по осям»: нетронутый ползунок не уезжает вовсе."
+  },
+
+  "rateAxisAroma": "Аромат",
+  "@rateAxisAroma": {
+    "description": "Ползунок развёрнутой оценки: аромат."
+  },
+
+  "rateAxisFlavor": "Вкус",
+  "@rateAxisFlavor": {
+    "description": "Ползунок развёрнутой оценки: вкус."
+  },
+
+  "rateAxisAftertaste": "Послевкусие",
+  "@rateAxisAftertaste": {
+    "description": "Ползунок развёрнутой оценки: послевкусие."
+  },
+
+  "rateAxisAcidity": "Кислотность",
+  "@rateAxisAcidity": {
+    "description": "Ползунок развёрнутой оценки: кислотность."
+  },
+
+  "rateAxisBitterness": "Горечь",
+  "@rateAxisBitterness": {
+    "description": "Ползунок развёрнутой оценки: горечь."
+  },
+
+  "rateAxisSweetness": "Сладость",
+  "@rateAxisSweetness": {
+    "description": "Ползунок развёрнутой оценки: сладость."
+  },
+
+  "rateAxesCount": "{count, plural, one{{count} ось} few{{count} оси} many{{count} осей} other{{count} оси}}",
+  "@rateAxesCount": {
+    "description": "Сколько ползунков тронуто — в подписи недописанного черновика. Склонение делает ICU, а не рука: правило «1 ось / 2 оси / 5 осей» у каждого языка своё.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "rateSave": "Сохранить",
+  "@rateSave": {
+    "description": "Кнопка экрана оценки, когда жалоб нет: отправить оценку и уйти."
+  },
+
+  "rateFixRecipe": "Поправить рецепт",
+  "@rateFixRecipe": {
+    "description": "Главная кнопка экрана оценки, когда жалоба есть: отправить оценку и открыть рецепт с поправкой."
+  },
+
+  "rateJustSave": "Просто сохранить отзыв",
+  "@rateJustSave": {
+    "description": "Вторая кнопка экрана оценки: оценку отправить, а рецепт не трогать."
+  },
+
+  "rateSavedOffline": "Оценка сохранена и уедет, когда появится связь",
+  "@rateSavedOffline": {
+    "description": "Сообщение после отправки оценки без сети: она встала в очередь."
+  },
+
+  "rateSavedCorrectionLater": "Оценка сохранена. Поправку посчитает сервер — она будет, когда появится связь",
+  "@rateSavedCorrectionLater": {
+    "description": "Сообщение, когда без сети попросили поправку: оценка в очереди, а поправку считает сервер, и повторять его правила на телефоне нечем."
+  },
+
+  "rateNothingToChange": "Менять нечего: рецепт уже на границе своих значений",
+  "@rateNothingToChange": {
+    "description": "Сообщение, когда правила не нашли, что подвинуть: параметры рецепта упёрлись в свои пределы."
+  },
+
+  "rateParamGrind": "Помол",
+  "@rateParamGrind": {
+    "description": "Название параметра в поправке рецепта: крупность помола."
+  },
+
+  "rateParamTemperature": "Температура",
+  "@rateParamTemperature": {
+    "description": "Название параметра в поправке рецепта: температура воды."
+  },
+
+  "rateParamRatio": "Соотношение",
+  "@rateParamRatio": {
+    "description": "Название параметра в поправке рецепта: соотношение кофе и воды."
+  },
+
+  "rateParamAgitation": "Размешивание",
+  "@rateParamAgitation": {
+    "description": "Название параметра в поправке рецепта: насколько сильно размешивают."
+  },
+
+  "rateParamContactTime": "Время контакта",
+  "@rateParamContactTime": {
+    "description": "Название параметра в поправке рецепта: сколько вода стоит на кофе."
+  },
+
+  "rateParamDose": "Доза",
+  "@rateParamDose": {
+    "description": "Название параметра в поправке рецепта: сколько кофе засыпают."
+  },
+
+  "packFormTitle": "Пачка без кода",
+  "@packFormTitle": {
+    "description": "Шапка экрана ручного добавления пачки — того, куда ведёт кнопка «На пачке нет кода»."
+  },
+
+  "packFormIntro": "Впишите, что написано на пачке. Обязательна только страна — из неё и региона соберётся название.",
+  "@packFormIntro": {
+    "description": "Пояснение первой строкой формы пачки: что заполнять и почему обязательна одна страна."
+  },
+
+  "packFormPhotoTitle": "Сфотографируйте пачку",
+  "@packFormPhotoTitle": {
+    "description": "Подпись в пунктирной рамке над формой пачки: приглашение снять упаковку."
+  },
+
+  "packFormPhotoNote": "Снимок сохранится вместе с пачкой — по нему вы узнаете её в списке",
+  "@packFormPhotoNote": {
+    "description": "Пояснение под приглашением снять пачку: зачем нужен кадр."
+  },
+
+  "packFormPhotoTake": "Сфотографировать",
+  "@packFormPhotoTake": {
+    "description": "Кнопка под рамкой снимка в форме пачки: открыть камеру, когда кадра ещё нет."
+  },
+
+  "packFormPhotoRetake": "Переснять",
+  "@packFormPhotoRetake": {
+    "description": "Та же кнопка камеры в форме пачки, когда снимок уже сделан."
+  },
+
+  "packFormPhotoFromGallery": "Из галереи",
+  "@packFormPhotoFromGallery": {
+    "description": "Кнопка рядом с камерой в форме пачки: взять готовый снимок из галереи телефона."
+  },
+
+  "packFormPhotoFailed": "Снимок не получился — попробуйте ещё раз",
+  "@packFormPhotoFailed": {
+    "description": "Ошибка под кнопками камеры в форме пачки: кадр не удалось получить."
+  },
+
+  "packFormCountry": "Страна",
+  "@packFormCountry": {
+    "description": "Подпись поля страны в форме пачки. Единственное обязательное поле."
+  },
+
+  "packFormCountryHint": "Бразилия",
+  "@packFormCountryHint": {
+    "description": "Пример внутри пустого поля страны в форме пачки. Пример наш, а не значение из справочника."
+  },
+
+  "packFormCountryRequired": "Без страны пачку нечем назвать",
+  "@packFormCountryRequired": {
+    "description": "Ошибка под полем страны в форме пачки: имя пачки собирается из страны, и без неё его нет."
+  },
+
+  "packFormRegion": "Регион — если знаете",
+  "@packFormRegion": {
+    "description": "Подпись необязательного поля региона в форме пачки."
+  },
+
+  "packFormRegionHint": "Серрадо",
+  "@packFormRegionHint": {
+    "description": "Пример внутри пустого поля региона в форме пачки."
+  },
+
+  "packFormVariety": "Сорт",
+  "@packFormVariety": {
+    "description": "Подпись поля сорта зерна в форме пачки."
+  },
+
+  "packFormVarietyHint": "бурбон",
+  "@packFormVarietyHint": {
+    "description": "Пример внутри пустого поля сорта в форме пачки."
+  },
+
+  "packFormScaScore": "Оценка SCA",
+  "@packFormScaScore": {
+    "description": "Подпись поля оценки SCA в форме пачки. SCA — имя ассоциации, оно не переводится."
+  },
+
+  "packFormRoastDate": "Дата обжарки",
+  "@packFormRoastDate": {
+    "description": "Подпись поля даты обжарки в форме пачки."
+  },
+
+  "packFormDateHint": "дд.мм.гггг",
+  "@packFormDateHint": {
+    "description": "Пример внутри пустого поля даты обжарки. Порядок частей и точки повторяют маску ввода дд.ММ.гггг: разбор даты завязан на неё, и другой порядок молча испортил бы дату."
+  },
+
+  "packFormDateInvalid": "Такой даты не бывает",
+  "@packFormDateInvalid": {
+    "description": "Ошибка под полем даты обжарки: набранное не разбирается в дату или лежит в будущем."
+  },
+
+  "packFormDateEmptyNote": "Не знаете — оставьте пустым, поставим сегодняшнюю",
+  "@packFormDateEmptyNote": {
+    "description": "Пояснение под полем даты обжарки: пустое поле не ошибка, сервер поставит сегодняшнее число."
+  },
+
+  "packFormToday": "Сегодня",
+  "@packFormToday": {
+    "description": "Метка рядом с полем даты обжарки: поставить в поле сегодняшнее число одним касанием."
+  },
+
+  "packFormDescriptors": "Дескрипторы",
+  "@packFormDescriptors": {
+    "description": "Заголовок раздела формы пачки со списком вкусовых слов с упаковки."
+  },
+
+  "packFormDescriptorsNote": "Чем пахнет и какой на вкус — по слову в строке",
+  "@packFormDescriptorsNote": {
+    "description": "Пояснение под заголовком раздела дескрипторов в форме пачки."
+  },
+
+  "packFormDescriptorNumbered": "Дескриптор {number}",
+  "@packFormDescriptorNumbered": {
+    "description": "Подпись строки списка дескрипторов в форме пачки: строки нумеруются с единицы.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+
+  "packFormDescriptorHint": "малина",
+  "@packFormDescriptorHint": {
+    "description": "Пример внутри пустого поля дескриптора. Пример наш; сами дескрипторы человек списывает с пачки и мы их не переводим."
+  },
+
+  "packFormAddDescriptor": "Добавить дескриптор",
+  "@packFormAddDescriptor": {
+    "description": "Кнопка под списком дескрипторов в форме пачки: ещё одна строка."
+  },
+
+  "packFormProcessing": "Способ обработки",
+  "@packFormProcessing": {
+    "description": "Заголовок раздела формы пачки со списком способов обработки зерна."
+  },
+
+  "packFormProcessingNote": "Обычно написан на пачке рядом с сортом",
+  "@packFormProcessingNote": {
+    "description": "Пояснение под заголовком раздела обработки в форме пачки: где искать это слово."
+  },
+
+  "packFormProcessingNumbered": "Обработка {number}",
+  "@packFormProcessingNumbered": {
+    "description": "Подпись строки списка способов обработки в форме пачки: строки нумеруются с единицы.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+
+  "packFormProcessingHint": "мытая",
+  "@packFormProcessingHint": {
+    "description": "Пример внутри пустого поля способа обработки в форме пачки."
+  },
+
+  "packFormAddProcessing": "Добавить обработку",
+  "@packFormAddProcessing": {
+    "description": "Кнопка под списком способов обработки в форме пачки: ещё одна строка."
+  },
+
+  "packFormRemoveLine": "Убрать строку",
+  "@packFormRemoveLine": {
+    "description": "Подсказка у корзины рядом с лишней строкой списка в форме пачки. Читается голосовым помощником и всплывающей подсказкой."
+  },
+
+  "packFormSubmit": "Отправить",
+  "@packFormSubmit": {
+    "description": "Главная кнопка внизу формы пачки: завести пачку на сервере."
+  },
+
+  "packFormSubmitFailed": "Пачка не отправилась",
+  "@packFormSubmitFailed": {
+    "description": "Заголовок плашки внизу формы пачки: сервер или сеть не приняли пачку."
+  },
+
+  "packFormSubmitFailedNote": "{reason}. Набранное осталось — попробуйте ещё раз.",
+  "@packFormSubmitFailedNote": {
+    "description": "Строка под заголовком той же плашки: причина от сервера и напоминание, что поля не очистились.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+
+  "packFormShowPassword": "Показать пароль",
+  "@packFormShowPassword": {
+    "description": "Глаз справа в поле пароля, когда пароль спрятан. Читается голосовым помощником; поле общее для входа, регистрации и смены пароля."
+  },
+
+  "packFormHidePassword": "Скрыть пароль",
+  "@packFormHidePassword": {
+    "description": "Тот же глаз, когда пароль показан."
+  },
+
+  "brewAbortTitle": "Прервать заваривание?",
+  "@brewAbortTitle": {
+    "description": "Заваривание: вопрос при уходе с идущего заваривания — кнопкой телефона или стрелкой в шапке."
+  },
+
+  "brewAbortNote": "Отсчёт остановится, и вернуться к нему на этой же секунде не выйдет.",
+  "@brewAbortNote": {
+    "description": "Заваривание: чем кончится уход — пояснение под вопросом «Прервать заваривание?»."
+  },
+
+  "brewAbort": "Прервать",
+  "@brewAbort": {
+    "description": "Заваривание: согласие уйти в вопросе перед уходом. Останавливает отсчёт."
+  },
+
+  "brewStay": "Остаться",
+  "@brewStay": {
+    "description": "Заваривание: отказ уходить в вопросе перед уходом. Отсчёт остаётся идти."
+  },
+
+  "brewEditRecipe": "Править рецепт",
+  "@brewEditRecipe": {
+    "description": "Заваривание: подсказка карандаша в шапке. Отдельного экрана рецепта нет, правка живёт здесь."
+  },
+
+  "brewStepOf": "шаг {number} из {count}",
+  "@brewStepOf": {
+    "description": "Заваривание: какой шаг идёт сейчас, в строке параметров под шапкой.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "brewGrindAndStart": "Смолол, начинаем",
+  "@brewGrindAndStart": {
+    "description": "Заваривание: главная кнопка до старта, когда рамка над ней просит смолоть кофе."
+  },
+
+  "brewStart": "Начать",
+  "@brewStart": {
+    "description": "Заваривание: главная кнопка до старта, когда молоть уже нечего — доза и помол неизвестны."
+  },
+
+  "brewPause": "Пауза",
+  "@brewPause": {
+    "description": "Заваривание: главная кнопка у идущего отсчёта."
+  },
+
+  "brewResume": "Продолжить",
+  "@brewResume": {
+    "description": "Заваривание: главная кнопка на паузе, она же возврат к брошенному завариванию."
+  },
+
+  "brewDidIt": "Сделал",
+  "@brewDidIt": {
+    "description": "Заваривание: главная кнопка на шаге, который ждёт человека, и вторая кнопка на шаге усилия руки."
+  },
+
+  "brewRate": "Оценить",
+  "@brewRate": {
+    "description": "Заваривание: главная кнопка после финала — уводит на оценку."
+  },
+
+  "brewSkip": "Пропустить",
+  "@brewSkip": {
+    "description": "Заваривание: вторая кнопка на обычном шаге. Шаг не сделан, а выброшен."
+  },
+
+  "brewHappened": "Случилось",
+  "@brewHappened": {
+    "description": "Заваривание: вторая кнопка на шаге с признаком окончания — признак видно и слышно."
+  },
+
+  "brewTitle": "Заваривание",
+  "@brewTitle": {
+    "description": "Заваривание: шапка экрана у рецепта без шагов, где название показывать не из чего."
+  },
+
+  "brewNoSteps": "В рецепте нет шагов",
+  "@brewNoSteps": {
+    "description": "Заваривание: рецепт без шагов — проигрывать нечего."
+  },
+
+  "brewNoStepsNote": "Проигрывать нечего. Соберите рецепт заново или выберите другой.",
+  "@brewNoStepsNote": {
+    "description": "Заваривание: что делать с рецептом без шагов."
+  },
+
+  "brewSteepingOver": "Настаивание закончилось, пока приложение было закрыто. Доделайте оставшиеся шаги — дальше кофе только горчит.",
+  "@brewSteepingOver": {
+    "description": "Заваривание: вернулись к колд брю, который успел настояться без нас."
+  },
+
+  "brewSteepingGoes": "Настаивание идёт: прошло {away}. Экран можно закрывать — время считается по часам, а не по таймеру на экране.",
+  "@brewSteepingGoes": {
+    "description": "Заваривание: вернулись к колд брю, который ещё настаивается.",
+    "placeholders": {
+      "away": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewToRemainingSteps": "К оставшимся шагам",
+  "@brewToRemainingSteps": {
+    "description": "Заваривание: у настоявшегося колд брю остались шаги после настаивания."
+  },
+
+  "brewCallItFinished": "Считать законченным",
+  "@brewCallItFinished": {
+    "description": "Заваривание: третий исход у брошенного заваривания — заварилось, просто до оценки руки не дошли."
+  },
+
+  "brewAwayTitle": "Прошло {away}",
+  "@brewAwayTitle": {
+    "description": "Заваривание: сколько нас не было, заголовок экрана возврата к брошенному завариванию.",
+    "placeholders": {
+      "away": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewStoppedAtStep": "Вы остановились на шаге «{step}». Столько кофе уже не стоит на месте: вода остыла, воронка проливается.",
+  "@brewStoppedAtStep": {
+    "description": "Заваривание: на чём остановились и почему возвращаться поздно. Название шага приходит с сервера.",
+    "placeholders": {
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewStartOver": "Начать заново",
+  "@brewStartOver": {
+    "description": "Заваривание: первый исход у брошенного заваривания."
+  },
+
+  "brewStartOverNote": "Обычно правильный выбор: 15 г кофе дешевле испорченной чашки",
+  "@brewStartOverNote": {
+    "description": "Заваривание: почему начать заново обычно правильно."
+  },
+
+  "brewContinueFromHere": "Продолжить с этого места",
+  "@brewContinueFromHere": {
+    "description": "Заваривание: второй исход у брошенного заваривания."
+  },
+
+  "brewContinueFromHereNote": "Если вы всё это время лили и просто выключили экран",
+  "@brewContinueFromHereNote": {
+    "description": "Заваривание: когда продолжить с этого места всё-таки имеет смысл."
+  },
+
+  "brewCallItFinishedNote": "Заварилось, но до оценки руки не дошли — оценим сейчас",
+  "@brewCallItFinishedNote": {
+    "description": "Заваривание: когда брошенное заваривание считать законченным."
+  },
+
+  "brewAwayHours": "{hours} ч",
+  "@brewAwayHours": {
+    "description": "Заваривание: длительность в целых часах — сколько нас не было или сколько осталось.",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+
+  "brewAwayHoursMinutes": "{hours} ч {minutes} мин",
+  "@brewAwayHoursMinutes": {
+    "description": "Заваривание: длительность в часах с минутами.",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+
+  "brewAwayMinutes": "{minutes, plural, one{{minutes} минута} few{{minutes} минуты} many{{minutes} минут} other{{minutes} минут}}",
+  "@brewAwayMinutes": {
+    "description": "Заваривание: длительность в минутах.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+
+  "brewAwaySeconds": "{seconds} с",
+  "@brewAwaySeconds": {
+    "description": "Заваривание: длительность меньше минуты.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+
+  "brewGrindCoffee": "Смелите кофе",
+  "@brewGrindCoffee": {
+    "description": "Заваривание: рамка до старта занята подготовкой, и это её заголовок."
+  },
+
+  "brewWaitingForYou": "ждём вас",
+  "@brewWaitingForYou": {
+    "description": "Заваривание: центр рамки на шаге, который ждёт человека, а признака окончания у шага нет."
+  },
+
+  "brewReadyAt": "в {time}",
+  "@brewReadyAt": {
+    "description": "Заваривание: у шага длиннее получаса в центре рамки не отсчёт, а время готовности — его сверяют с будильником.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewPouredOf": "налито {poured} из {total} г",
+  "@brewPouredOf": {
+    "description": "Заваривание: сколько воды должно быть налито к этой секунде.",
+    "placeholders": {
+      "poured": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewTargetInCup": "цель — {grams} г в чашке",
+  "@brewTargetInCup": {
+    "description": "Заваривание: у эспрессо цель — вес напитка в чашке, а не налитая вода.",
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewTargetInCupDone": "готово · {grams} г в чашке",
+  "@brewTargetInCupDone": {
+    "description": "Заваривание: та же цель эспрессо после финала.",
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewTargetInCupFirstDrops": "цель — {grams} г в чашке · первые капли на 5–7 с",
+  "@brewTargetInCupFirstDrops": {
+    "description": "Заваривание: та же цель эспрессо во время пролива, с ориентиром по первым каплям.",
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewTimeIsAGuide": "время — ориентир, смотрите на признак",
+  "@brewTimeIsAGuide": {
+    "description": "Заваривание: у шага с признаком окончания секундомер ничего не решает."
+  },
+
+  "brewTimeIsAGuideWithWater": "время — ориентир · {water}",
+  "@brewTimeIsAGuideWithWater": {
+    "description": "Заваривание: то же, когда под таймером есть ещё и вода.",
+    "placeholders": {
+      "water": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewReadyIn": "готово через {time}",
+  "@brewReadyIn": {
+    "description": "Заваривание: под временем готовности длинного шага — через сколько это будет.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewStepNotStarted": "шаг ещё не начат",
+  "@brewStepNotStarted": {
+    "description": "Заваривание: подпись под таймером до старта."
+  },
+
+  "brewLeft": "осталось",
+  "@brewLeft": {
+    "description": "Заваривание: подпись под таймером идущего шага."
+  },
+
+  "brewOnPause": "на паузе",
+  "@brewOnPause": {
+    "description": "Заваривание: подпись под таймером на паузе."
+  },
+
+  "brewTapDidIt": "нажмите «Сделал», когда закончите",
+  "@brewTapDidIt": {
+    "description": "Заваривание: подпись под таймером шага, который ждёт человека. Слово в кавычках — надпись главной кнопки."
+  },
+
+  "brewFinished": "готово",
+  "@brewFinished": {
+    "description": "Заваривание: подпись под таймером после финала."
+  },
+
+  "brewOptional": "не обязательно",
+  "@brewOptional": {
+    "description": "Заваривание: метка необязательного шага в списке шагов."
+  },
+
+  "brewTipExpand": "Показать подсказку целиком",
+  "@brewTipExpand": {
+    "description": "Заваривание: подсказка шага не влезла в строку — шеврон раскрывает её."
+  },
+
+  "brewTipCollapse": "Свернуть подсказку",
+  "@brewTipCollapse": {
+    "description": "Заваривание: тот же шеврон у раскрытой подсказки шага."
+  },
+
+  "brewPhasePrep": "подготовка",
+  "@brewPhasePrep": {
+    "description": "Заваривание: заголовок первой фазы в списке шагов — смолоть, налить лёд."
+  },
+
+  "brewPhaseBrewing": "заваривание",
+  "@brewPhaseBrewing": {
+    "description": "Заваривание: заголовок средней фазы в списке шагов — проливы, помешивания, ожидание."
+  },
+
+  "brewPhaseFinish": "финал",
+  "@brewPhaseFinish": {
+    "description": "Заваривание: заголовок последней фазы в списке шагов — снять фильтр, разбавить, подать."
+  },
+
+  "brewEndsBySign": "по признаку",
+  "@brewEndsBySign": {
+    "description": "Заваривание: на месте времени у шага, который кончается признаком, а не секундомером."
+  },
+
+  "brewEndsByTap": "по кнопке",
+  "@brewEndsByTap": {
+    "description": "Заваривание: на месте времени у шага, который ждёт слова «сделал»."
+  },
+
+  "brewUntilYouSayDidIt": "пока не скажете «сделал»",
+  "@brewUntilYouSayDidIt": {
+    "description": "Заваривание: метка на карточке шага, который ждёт человека. Слово в кавычках — надпись главной кнопки."
+  },
+
+  "grinderTitle": "Кофемолка",
+  "@grinderTitle": {
+    "description": "Заголовок экрана выбора кофемолки в шапке."
+  },
+
+  "grinderSearchHint": "Найти кофемолку",
+  "@grinderSearchHint": {
+    "description": "Подсказка в поле поиска по справочнику кофемолок."
+  },
+
+  "grinderKindManual": "Ручные",
+  "@grinderKindManual": {
+    "description": "Заголовок группы списка: кофемолки с ручкой. Вид приходит с сервера кодом manual, а слово для человека стоит здесь."
+  },
+
+  "grinderKindElectric": "Электрические",
+  "@grinderKindElectric": {
+    "description": "Заголовок группы списка: кофемолки с мотором. Вид приходит с сервера кодом electric."
+  },
+
+  "grinderKindOther": "Прочие",
+  "@grinderKindOther": {
+    "description": "Заголовок группы списка для записей справочника без вида."
+  },
+
+  "grinderMakePrimary": "сделать основной",
+  "@grinderMakePrimary": {
+    "description": "Кнопка в строке выбранной кофемолки: отметить её основной. По основной пересчитывается помол в рецептах."
+  },
+
+  "grinderSave": "Сохранить",
+  "@grinderSave": {
+    "description": "Кнопка внизу экрана кофемолки: применить набор и отметку основной."
+  },
+
+  "grinderNotFound": "Такой кофемолки нет",
+  "@grinderNotFound": {
+    "description": "Заголовок пустого состояния поиска: по запросу не нашлось ничего."
+  },
+
+  "grinderCatalogEmpty": "Справочник пуст — проверьте связь",
+  "@grinderCatalogEmpty": {
+    "description": "Пустое состояние, когда справочник кофемолок не приехал с сервера вовсе."
+  },
+
+  "grinderCatalogSize": "Проверьте написание — в справочнике {count, plural, one{{count} модель} few{{count} модели} many{{count} моделей} other{{count} модели}}",
+  "@grinderCatalogSize": {
+    "description": "Пустое состояние поиска: сколько всего моделей в справочнике. Число берётся из справочника, поэтому форма слова считается ICU, а не рукой.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "grinderShowAll": "Показать все",
+  "@grinderShowAll": {
+    "description": "Кнопка пустого состояния: очистить запрос и показать справочник целиком."
+  },
+
+  "grinderDidYouMean": "Вы имели в виду",
+  "@grinderDidYouMean": {
+    "description": "Подпись над подсказками с близкими по написанию именами в пустом состоянии поиска."
+  },
+
+  "grinderSaveFailed": "Не удалось сохранить кофемолки",
+  "@grinderSaveFailed": {
+    "description": "Всплывающее сообщение: сеть есть, но сервер набор кофемолок не принял."
+  },
+
+  "grinderSaveOffline": "Без сети кофемолку не сохранить — она хранится в аккаунте",
+  "@grinderSaveOffline": {
+    "description": "Всплывающее сообщение: сети нет, а набор кофемолок живёт на сервере и в очередь отправки не встаёт."
+  },
+
+  "grinderApproximately": "примерно {value}",
+  "@grinderApproximately": {
+    "description": "Помол, полученный пересчётом из крупности рецепта: шкалы кофемолок сходятся только по средней крупности, и число нельзя выдавать за точное.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+
+  "grinderPickPrompt": "выберите кофемолку",
+  "@grinderPickPrompt": {
+    "description": "Короткая подпись под помолом в плитке показателей: кофемолка не выбрана, и помол показан словом."
+  },
+
+  "grinderPickPromptHint": "выберите кофемолку — покажем деление",
+  "@grinderPickPromptHint": {
+    "description": "То же приглашение строкой на экране заваривания, где места больше."
+  },
+
+  "grinderScaleOf": "делений {name}",
+  "@grinderScaleOf": {
+    "description": "Подпись под помолом: чьей кофемолки это деления. Имя кофемолки приходит из справочника и не переводится.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "grinderClicks": "{value} щ.",
+  "@grinderClicks": {
+    "description": "Помол числом у старого рецепта, где шкала неизвестна: щелчки без имени кофемолки.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+
+  "builderTitle": "Ваш рецепт",
+  "@builderTitle": {
+    "description": "Конструктор рецепта: заголовок экрана."
+  },
+
+  "builderParams": "Параметры",
+  "@builderParams": {
+    "description": "Конструктор: заголовок карточки с дозой, водой, температурой и помолом."
+  },
+
+  "builderDose": "Доза",
+  "@builderDose": {
+    "description": "Конструктор: название параметра «доза кофе» и заголовок его окна правки."
+  },
+
+  "builderWater": "Вода",
+  "@builderWater": {
+    "description": "Конструктор: название параметра «вода» — и общей, и той, что льёт шаг."
+  },
+
+  "builderTemperature": "Температура",
+  "@builderTemperature": {
+    "description": "Конструктор: название параметра «температура воды» и заголовок его окна правки."
+  },
+
+  "builderGrind": "Помол",
+  "@builderGrind": {
+    "description": "Конструктор: название параметра «помол» и заголовок его окна правки."
+  },
+
+  "builderRatio": "Соотношение",
+  "@builderRatio": {
+    "description": "Конструктор: название производного параметра «кофе к воде». Не правится."
+  },
+
+  "builderGram": "г",
+  "@builderGram": {
+    "description": "Единица массы рядом с полем ввода и в счётчике воды. Только буква, без числа."
+  },
+
+  "builderMillilitre": "мл",
+  "@builderMillilitre": {
+    "description": "Единица объёма рядом с полем ввода общей воды. Только буква, без числа."
+  },
+
+  "builderSteps": "Шаги",
+  "@builderSteps": {
+    "description": "Конструктор: заголовок списка шагов."
+  },
+
+  "builderDragHint": "потяните за ручку",
+  "@builderDragHint": {
+    "description": "Конструктор: подсказка справа от заголовка «Шаги» — как переставить шаг."
+  },
+
+  "builderAddStep": "Добавить шаг",
+  "@builderAddStep": {
+    "description": "Конструктор: пунктирная кнопка под списком шагов."
+  },
+
+  "builderStep": "Шаг",
+  "@builderStep": {
+    "description": "Конструктор: заголовок окна правки названия и подсказки, и подпись шага, у которого названия нет."
+  },
+
+  "builderStepName": "Название",
+  "@builderStepName": {
+    "description": "Конструктор: поле названия шага в окне правки."
+  },
+
+  "builderStepTip": "Подсказка",
+  "@builderStepTip": {
+    "description": "Конструктор: поле подсказки шага в окне правки."
+  },
+
+  "builderChoose": "выбрать",
+  "@builderChoose": {
+    "description": "Конструктор: кнопка справа от «Тип шага» у шага, тип которого справочнику неизвестен."
+  },
+
+  "builderEndsLabel": "Заканчивается",
+  "@builderEndsLabel": {
+    "description": "Конструктор: название строки у шага, который ждёт человека, — вместо длительности."
+  },
+
+  "builderDuration": "Длительность",
+  "@builderDuration": {
+    "description": "Длительность шага: название строки в конструкторе и заголовок шторки с барабаном."
+  },
+
+  "builderNoTip": "Подсказки нет",
+  "@builderNoTip": {
+    "description": "Конструктор: у шага не заполнена подсказка."
+  },
+
+  "builderTipValue": "Подсказка · {tip}",
+  "@builderTipValue": {
+    "description": "Конструктор: подсказка шага под его величинами.",
+    "placeholders": {
+      "tip": {
+        "type": "String"
+      }
+    }
+  },
+
+  "builderRemoveStep": "Убрать шаг",
+  "@builderRemoveStep": {
+    "description": "Конструктор: всплывающая подсказка у корзины в раскрытом шаге. Читается и голосовым помощником."
+  },
+
+  "builderStepWater": "Вода по шагам",
+  "@builderStepWater": {
+    "description": "Конструктор: итог — сколько воды разлито по шагам."
+  },
+
+  "builderStepWaterValue": "{done} из {total} г",
+  "@builderStepWaterValue": {
+    "description": "Конструктор: значение итога по воде — сумма по шагам против общей воды рецепта.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+
+  "builderTotalTime": "Общее время",
+  "@builderTotalTime": {
+    "description": "Конструктор: итог — сумма длительностей шагов."
+  },
+
+  "builderSave": "Сохранить",
+  "@builderSave": {
+    "description": "Конструктор: кнопка сохранения рецепта новой версией."
+  },
+
+  "builderBrew": "Заварить",
+  "@builderBrew": {
+    "description": "Конструктор: кнопка, которая уводит заваривать собранный рецепт."
+  },
+
+  "builderToHome": "На главную",
+  "@builderToHome": {
+    "description": "Конструктор: кнопка выхода к пачкам, появляется после сохранения."
+  },
+
+  "builderCancel": "Отмена",
+  "@builderCancel": {
+    "description": "Конструктор: отказ в окне правки значения. Ничего не меняет."
+  },
+
+  "builderDone": "Готово",
+  "@builderDone": {
+    "description": "Готово: подтверждение в окне правки значения и в шторке с барабаном длительности."
+  },
+
+  "builderMinutesSeconds": "минуты и секунды",
+  "@builderMinutesSeconds": {
+    "description": "Шторка длительности: подпись справа от заголовка — что означают два барабана."
+  },
+
+  "builderDecrease": "убавить",
+  "@builderDecrease": {
+    "description": "Счётчик величины: кнопка «минус». Видит только голосовой помощник."
+  },
+
+  "builderIncrease": "прибавить",
+  "@builderIncrease": {
+    "description": "Счётчик величины: кнопка «плюс». Видит только голосовой помощник."
+  },
+
+  "builderCorrectedFor": "Поправлено под «{label}»",
+  "@builderCorrectedFor": {
+    "description": "Конструктор: строка сверху — под какую жалобу система поправила рецепт.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+
+  "builderCorrectedNote": "изменения помечены точкой",
+  "@builderCorrectedNote": {
+    "description": "Конструктор: как найти поправленное — под строкой «Поправлено под …»."
+  },
+
+  "builderUndo": "Отменить",
+  "@builderUndo": {
+    "description": "Конструктор: кнопка, возвращающая рецепт к тому, каким он был до поправки."
+  },
+
+  "builderLeaveTitle": "Уйти без сохранения?",
+  "@builderLeaveTitle": {
+    "description": "Конструктор: заголовок вопроса при выходе с несохранёнными правками."
+  },
+
+  "builderLeaveNote": "Правки не сохранены — новая версия не появится.",
+  "@builderLeaveNote": {
+    "description": "Конструктор: что человек потеряет, если уйдёт сейчас."
+  },
+
+  "builderLeave": "Уйти",
+  "@builderLeave": {
+    "description": "Конструктор: согласие уйти с экрана и потерять правки."
+  },
+
+  "builderSavedOffline": "Сохранено на телефоне — уедет, когда появится связь",
+  "@builderSavedOffline": {
+    "description": "Конструктор: рецепт сохранён без сети и ждёт отправки."
+  },
+
+  "builderSavedVersion": "Сохранено новой версией",
+  "@builderSavedVersion": {
+    "description": "Конструктор: рецепт уехал на сервер и стал новой версией."
+  },
+
+  "builderSaveFailed": "Не сохранилось: {error}",
+  "@builderSaveFailed": {
+    "description": "Конструктор: сохранить не удалось; {error} — ответ сервера как есть.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "builderEndsTimer": "по времени",
+  "@builderEndsTimer": {
+    "description": "Чем заканчивается шаг: сам, по таймеру. Подпись варианта в форме своего типа и в строке шага."
+  },
+
+  "builderEndsUser": "по кнопке",
+  "@builderEndsUser": {
+    "description": "Чем заканчивается шаг: нажатием человека. Подпись варианта в форме своего типа и в строке шага."
+  },
+
+  "builderEndsSign": "по признаку",
+  "@builderEndsSign": {
+    "description": "Чем заканчивается шаг: человек ждёт увиденного. Подпись варианта в форме своего типа и в строке шага."
+  },
+
+  "builderEndsTimerHint": "идёт по таймеру и кончается сам",
+  "@builderEndsTimerHint": {
+    "description": "Пояснение к варианту «по времени»: кто кого ждёт."
+  },
+
+  "builderEndsUserHint": "заваривание ждёт, пока вы нажмёте «дальше»",
+  "@builderEndsUserHint": {
+    "description": "Пояснение к варианту «по кнопке»: кто кого ждёт."
+  },
+
+  "builderEndsSignHint": "та же кнопка, но жмёте её по признаку: пена осела, вода стекла",
+  "@builderEndsSignHint": {
+    "description": "Пояснение к варианту «по признаку»: кнопка та же, что и в «по кнопке», но момент задаёт увиденное."
+  },
+
+  "svcAuthBadFields": "Проверьте почту и пароль",
+  "@svcAuthBadFields": {
+    "description": "Сервер ответил 400 и ничего не объяснил: подпись под формой входа, регистрации и смены пароля."
+  },
+
+  "svcAuthWrongCredentials": "Неверная почта или пароль",
+  "@svcAuthWrongCredentials": {
+    "description": "Сервер ответил 401. Подпись под полем пароля на входе: ошибка про пару целиком, а не про одну почту."
+  },
+
+  "svcAuthEmailNotVerified": "Почта не подтверждена",
+  "@svcAuthEmailNotVerified": {
+    "description": "Сервер ответил 403. Показывается там, где экран не увёл на ввод кода сам."
+  },
+
+  "svcAuthUnknownEmail": "Такой почты у нас нет",
+  "@svcAuthUnknownEmail": {
+    "description": "Сервер ответил 404: адрес не зарегистрирован. Подпись под полем почты."
+  },
+
+  "svcAuthEmailTaken": "Эта почта уже занята",
+  "@svcAuthEmailTaken": {
+    "description": "Сервер ответил 409 на регистрацию: адрес уже занят. Подпись под полем почты."
+  },
+
+  "svcAuthTooOften": "Слишком часто. Подождите минуту",
+  "@svcAuthTooOften": {
+    "description": "Сервер ответил 429: ограничение частоты на почтовых ручках. Подпись под формой."
+  },
+
+  "svcAuthServerDown": "Сервер не отвечает. Попробуйте ещё раз",
+  "@svcAuthServerDown": {
+    "description": "Сервер ответил 5xx и ничего не объяснил. Подпись под формой входа и регистрации."
+  },
+
+  "svcAuthWrongCode": "Код не подошёл. Проверьте письмо ещё раз",
+  "@svcAuthWrongCode": {
+    "description": "Код подтверждения из письма не принят. Подпись под полем кода на экране подтверждения почты."
+  },
+
+  "svcAuthNoTokens": "Сервер ответил без токенов",
+  "@svcAuthNoTokens": {
+    "description": "Вход прошёл, но токенов в ответе нет — сессии не будет. Подпись под формой входа."
+  },
+
+  "svcAuthOffline": "Нет связи. Проверьте интернет",
+  "@svcAuthOffline": {
+    "description": "До сервера не дошли. Подпись под формой входа, регистрации, подтверждения почты и смены пароля."
+  },
+
+  "svcAuthFailedLogin": "Не удалось войти",
+  "@svcAuthFailedLogin": {
+    "description": "Сервер отказал так, что разобрать нечего, а человек входил. Фраза собрана целиком: склейка «Не удалось» с глаголом по-английски не работает."
+  },
+
+  "svcAuthFailedSendLetter": "Не удалось отправить письмо",
+  "@svcAuthFailedSendLetter": {
+    "description": "То же, когда человек просил письмо для сброса пароля."
+  },
+
+  "svcAuthFailedChangePassword": "Не удалось сменить пароль",
+  "@svcAuthFailedChangePassword": {
+    "description": "То же, когда человек менял пароль по коду из письма."
+  },
+
+  "svcAuthFailedRegister": "Не удалось зарегистрироваться",
+  "@svcAuthFailedRegister": {
+    "description": "То же, когда человек заводил аккаунт."
+  },
+
+  "svcAuthFailedVerifyEmail": "Не удалось подтвердить почту",
+  "@svcAuthFailedVerifyEmail": {
+    "description": "То же, когда человек подтверждал почту кодом из письма."
+  },
+
+  "svcSyncSent": "{count, plural, =1{Отправлено то, что ждало связи} other{Отправлено, что ждало связи: {count}}}",
+  "@svcSyncSent": {
+    "description": "Всплывающая подсказка после досыла очереди: всё уехало. Одно дело называть числом незачем, поэтому у единицы своя ветка.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "svcSyncDropped": "Сервер не принял отложенное ({count}) — оно устарело",
+  "@svcSyncDropped": {
+    "description": "Всплывающая подсказка после досыла: не уехало ничего, сервер отверг всё насовсем.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "svcSyncMixed": "Отправлено: {sent}. Не принято сервером: {dropped}",
+  "@svcSyncMixed": {
+    "description": "Всплывающая подсказка после досыла: часть уехала, часть сервер отверг.",
+    "placeholders": {
+      "sent": {
+        "type": "int"
+      },
+      "dropped": {
+        "type": "int"
+      }
+    }
+  },
+
+  "svcLegalClose": "Закрыть",
+  "@svcLegalClose": {
+    "description": "Всплывающая подсказка крестика в шапке листа с правовым документом."
+  },
+
+  "svcLegalUnavailable": "Документ сейчас недоступен. Он опубликован на сайте — откройте его там: {link}",
+  "@svcLegalUnavailable": {
+    "description": "Лист правового документа: сервер документ не отдал. Прямо говорим об этом, потому что пустой лист читается как «согласия не требуется».",
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+
+  "svcLegalVersion": "Редакция от {version}",
+  "@svcLegalVersion": {
+    "description": "Подпись над текстом правового документа: дата редакции, с которой человек соглашается.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+
+  "svcLegalUserAgreement": "Пользовательское соглашение",
+  "@svcLegalUserAgreement": {
+    "description": "Заголовок листа с пользовательским соглашением."
+  },
+
+  "svcLegalPrivacy": "Политика обработки данных",
+  "@svcLegalPrivacy": {
+    "description": "Заголовок листа с политикой обработки данных."
+  },
+
+  "svcLegalConsent": "Согласие на обработку данных",
+  "@svcLegalConsent": {
+    "description": "Заголовок листа с согласием на обработку данных."
+  },
+
+  "svcCodeEmpty": "Введите код с упаковки",
+  "@svcCodeEmpty": {
+    "description": "Ошибка под полем ручного ввода кода: поле пустое."
+  },
+
+  "svcCodeLength": "{expected, plural, one{В коде {expected} символ, а введено {actual}} few{В коде {expected} символа, а введено {actual}} many{В коде {expected} символов, а введено {actual}} other{В коде {expected} символов, а введено {actual}}}",
+  "@svcCodeLength": {
+    "description": "Ошибка под полем ручного ввода кода: набрано не столько символов, сколько нужно. Склонение делает ICU, а не рука.",
+    "placeholders": {
+      "expected": {
+        "type": "int"
+      },
+      "actual": {
+        "type": "int"
+      }
+    }
+  },
+
+  "svcCodeUnknownSymbol": "Символа «{symbol}» в кодах не бывает — проверьте, не 0 ли это вместо O",
+  "@svcCodeUnknownSymbol": {
+    "description": "Ошибка под полем ручного ввода кода: символа нет в алфавите кодов. Ноль и буква O из алфавита исключены как раз потому, что путаются.",
+    "placeholders": {
+      "symbol": {
+        "type": "String"
+      }
+    }
+  },
+
+  "svcCodeChecksum": "Код набран с ошибкой — проверьте символы",
+  "@svcCodeChecksum": {
+    "description": "Ошибка под полем ручного ввода кода: контрольный символ не сошёлся, значит где-то опечатка."
+  },
+
+  "svcGroupOther": "Прочие",
+  "@svcGroupOther": {
+    "description": "Заголовок последней группы в справочниках приборов и типов шагов: сюда попадает всё, что справочник не отнёс ни к одной группе. Имени с сервера у неё нет — она собирается на телефоне."
+  },
+
+  "svcLoadFailedNote": "Обычно это связь. Проверьте интернет и попробуйте ещё раз.",
+  "@svcLoadFailedNote": {
+    "description": "Пояснение под заголовком отказа на экранах, куда не доехал список с сервера: справочник приборов и вкладка рецептов. Раньше на этом месте стоял текст исключения — он всегда по-русски и человеку ничего не говорит."
   }
 }

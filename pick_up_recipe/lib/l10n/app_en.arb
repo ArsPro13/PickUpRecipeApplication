@@ -317,7 +317,7 @@
 
   "customStepThisDevice": "this device",
 
-  "customStepNote": "The step is tied to {device}: it will not show up in recipes for other devices. A step like this does not count water — water has its own «pour».",
+  "customStepNote": "The step is tied to {device}: it will not show up in recipes for other devices. A step like this does not count water — water has its own “pour”.",
 
   "customStepSave": "Save the type",
 
@@ -373,6 +373,8 @@
 
   "recipesBrewAgain": "Brew it again",
 
+  "recipesEditRecipe": "Edit recipe",
+
   "coffeeTitle": "Coffee",
 
   "coffeeNotFound": "There is no such code",
@@ -415,5 +417,481 @@
 
   "coffeeBrewOn": "Brew with {method}",
 
-  "coffeeMethodsFailed": "The brewing methods did not load"
+  "coffeeMethodsFailed": "The brewing methods did not load",
+
+  "dateMonth1": "January",
+
+  "dateMonth2": "February",
+
+  "dateMonth3": "March",
+
+  "dateMonth4": "April",
+
+  "dateMonth5": "May",
+
+  "dateMonth6": "June",
+
+  "dateMonth7": "July",
+
+  "dateMonth8": "August",
+
+  "dateMonth9": "September",
+
+  "dateMonth10": "October",
+
+  "dateMonth11": "November",
+
+  "dateMonth12": "December",
+
+  "dateDayMonth": "{month} {day}",
+
+  "dateDayMonthYear": "{month} {day}, {year}",
+
+  "rateTitle": "How did it turn out",
+
+  "rateOnTarget": "Turned out just as intended",
+
+  "rateSaid": "{strength} {taste}",
+
+  "rateDegreeSlight": "slightly",
+
+  "rateDegreeNoticeable": "noticeably",
+
+  "rateDegreeStrong": "very",
+
+  "rateTasteSour": "sour",
+
+  "rateTasteBitter": "bitter",
+
+  "rateTasteStrong": "strong",
+
+  "rateTasteWeak": "weak",
+
+  "rateMapSemantics": "Taste map. {summary}",
+
+  "rateOverall": "Overall",
+
+  "rateStarsOf": "{stars} of 5",
+
+  "rateOptional": "Optional",
+
+  "rateAxesTitle": "Break it down by axis",
+
+  "rateAxesHint": "You can leave these alone — only what you move gets sent",
+
+  "rateAxisAroma": "Aroma",
+
+  "rateAxisFlavor": "Flavor",
+
+  "rateAxisAftertaste": "Aftertaste",
+
+  "rateAxisAcidity": "Acidity",
+
+  "rateAxisBitterness": "Bitterness",
+
+  "rateAxisSweetness": "Sweetness",
+
+  "rateAxesCount": "{count, plural, one{{count} axis} other{{count} axes}}",
+
+  "rateSave": "Save",
+
+  "rateFixRecipe": "Adjust the recipe",
+
+  "rateJustSave": "Just save the rating",
+
+  "rateSavedOffline": "Rating saved — it will be sent once the connection is back",
+
+  "rateSavedCorrectionLater": "Rating saved. The fix is worked out on the server — it will be there once the connection is back",
+
+  "rateNothingToChange": "Nothing to change: the recipe is already at the edge of its range",
+
+  "rateParamGrind": "Grind",
+
+  "rateParamTemperature": "Temperature",
+
+  "rateParamRatio": "Ratio",
+
+  "rateParamAgitation": "Agitation",
+
+  "rateParamContactTime": "Contact time",
+
+  "rateParamDose": "Dose",
+
+  "packFormTitle": "A pack without a code",
+
+  "packFormIntro": "Type in what is printed on the pack. Only the country is required — the name is built from it and the region.",
+
+  "packFormPhotoTitle": "Photograph the pack",
+
+  "packFormPhotoNote": "The photo is kept with the pack — that is how you will recognize it in the list",
+
+  "packFormPhotoTake": "Take a photo",
+
+  "packFormPhotoRetake": "Retake",
+
+  "packFormPhotoFromGallery": "From the gallery",
+
+  "packFormPhotoFailed": "The photo did not work out — try again",
+
+  "packFormCountry": "Country",
+
+  "packFormCountryHint": "Brazil",
+
+  "packFormCountryRequired": "Without a country there is nothing to name the pack after",
+
+  "packFormRegion": "Region — if you know it",
+
+  "packFormRegionHint": "Cerrado",
+
+  "packFormVariety": "Variety",
+
+  "packFormVarietyHint": "bourbon",
+
+  "packFormScaScore": "SCA score",
+
+  "packFormRoastDate": "Roast date",
+
+  "packFormDateHint": "dd.mm.yyyy",
+
+  "packFormDateInvalid": "There is no such date",
+
+  "packFormDateEmptyNote": "Do not know it — leave it empty and we will put today's date",
+
+  "packFormToday": "Today",
+
+  "packFormDescriptors": "Descriptors",
+
+  "packFormDescriptorsNote": "How it smells and tastes — one word per line",
+
+  "packFormDescriptorNumbered": "Descriptor {number}",
+
+  "packFormDescriptorHint": "raspberry",
+
+  "packFormAddDescriptor": "Add a descriptor",
+
+  "packFormProcessing": "Processing method",
+
+  "packFormProcessingNote": "Usually printed on the pack next to the variety",
+
+  "packFormProcessingNumbered": "Processing {number}",
+
+  "packFormProcessingHint": "washed",
+
+  "packFormAddProcessing": "Add a processing method",
+
+  "packFormRemoveLine": "Remove the line",
+
+  "packFormSubmit": "Send",
+
+  "packFormSubmitFailed": "The pack was not sent",
+
+  "packFormSubmitFailedNote": "{reason}. What you typed is still here — try again.",
+
+  "packFormShowPassword": "Show the password",
+
+  "packFormHidePassword": "Hide the password",
+
+  "brewAbortTitle": "Stop brewing?",
+
+  "brewAbortNote": "The timer stops, and you will not be able to pick it up at the same second.",
+
+  "brewAbort": "Stop",
+
+  "brewStay": "Stay",
+
+  "brewEditRecipe": "Edit recipe",
+
+  "brewStepOf": "step {number} of {count}",
+
+  "brewGrindAndStart": "Ground it, let's go",
+
+  "brewStart": "Start",
+
+  "brewPause": "Pause",
+
+  "brewResume": "Continue",
+
+  "brewDidIt": "Did it",
+
+  "brewRate": "Rate it",
+
+  "brewSkip": "Skip",
+
+  "brewHappened": "It happened",
+
+  "brewTitle": "Brewing",
+
+  "brewNoSteps": "This recipe has no steps",
+
+  "brewNoStepsNote": "Nothing to play. Build the recipe again or pick another one.",
+
+  "brewSteepingOver": "The steeping finished while the app was closed. Do the remaining steps — from here the coffee only turns bitter.",
+
+  "brewSteepingGoes": "Steeping is under way: {away} so far. You can close the screen — the time is counted by the clock, not by the timer on the screen.",
+
+  "brewToRemainingSteps": "To the remaining steps",
+
+  "brewCallItFinished": "Call it finished",
+
+  "brewAwayTitle": "It has been {away}",
+
+  "brewStoppedAtStep": "You stopped at “{step}”. Coffee does not wait that long: the water has cooled and the cone has drained.",
+
+  "brewStartOver": "Start over",
+
+  "brewStartOverNote": "Usually the right call: 15 g of coffee costs less than a ruined cup",
+
+  "brewContinueFromHere": "Continue from here",
+
+  "brewContinueFromHereNote": "If you were pouring all this time and just switched the screen off",
+
+  "brewCallItFinishedNote": "It brewed, you just never got to the rating — let's do it now",
+
+  "brewAwayHours": "{hours} h",
+
+  "brewAwayHoursMinutes": "{hours} h {minutes} min",
+
+  "brewAwayMinutes": "{minutes, plural, one{{minutes} minute} other{{minutes} minutes}}",
+
+  "brewAwaySeconds": "{seconds} s",
+
+  "brewGrindCoffee": "Grind the coffee",
+
+  "brewWaitingForYou": "waiting for you",
+
+  "brewReadyAt": "at {time}",
+
+  "brewPouredOf": "{poured} of {total} g poured",
+
+  "brewTargetInCup": "target — {grams} g in the cup",
+
+  "brewTargetInCupDone": "done · {grams} g in the cup",
+
+  "brewTargetInCupFirstDrops": "target — {grams} g in the cup · first drops at 5–7 s",
+
+  "brewTimeIsAGuide": "the time is a guide, watch for the sign",
+
+  "brewTimeIsAGuideWithWater": "the time is a guide · {water}",
+
+  "brewReadyIn": "ready in {time}",
+
+  "brewStepNotStarted": "not started yet",
+
+  "brewLeft": "left",
+
+  "brewOnPause": "paused",
+
+  "brewTapDidIt": "tap “Did it” when you finish",
+
+  "brewFinished": "done",
+
+  "brewOptional": "optional",
+
+  "brewTipExpand": "Show the whole tip",
+
+  "brewTipCollapse": "Collapse the tip",
+
+  "brewPhasePrep": "preparation",
+
+  "brewPhaseBrewing": "brewing",
+
+  "brewPhaseFinish": "finish",
+
+  "brewEndsBySign": "by a cue",
+
+  "brewEndsByTap": "by button",
+
+  "brewUntilYouSayDidIt": "until you say “did it”",
+
+  "grinderTitle": "Grinder",
+
+  "grinderSearchHint": "Find a grinder",
+
+  "grinderKindManual": "Hand grinders",
+
+  "grinderKindElectric": "Electric grinders",
+
+  "grinderKindOther": "Other",
+
+  "grinderMakePrimary": "make primary",
+
+  "grinderSave": "Save",
+
+  "grinderNotFound": "No such grinder",
+
+  "grinderCatalogEmpty": "The catalog is empty — check the connection",
+
+  "grinderCatalogSize": "Check the spelling — the catalog holds {count, plural, one{{count} model} other{{count} models}}",
+
+  "grinderShowAll": "Show all",
+
+  "grinderDidYouMean": "Did you mean",
+
+  "grinderSaveFailed": "Could not save the grinders",
+
+  "grinderSaveOffline": "A grinder cannot be saved without a connection — it lives in your account",
+
+  "grinderApproximately": "about {value}",
+
+  "grinderPickPrompt": "pick a grinder",
+
+  "grinderPickPromptHint": "pick a grinder and we will show the setting",
+
+  "grinderScaleOf": "{name} scale",
+
+  "grinderClicks": "{value} clicks",
+
+  "builderTitle": "Your recipe",
+
+  "builderParams": "Parameters",
+
+  "builderDose": "Dose",
+
+  "builderWater": "Water",
+
+  "builderTemperature": "Temperature",
+
+  "builderGrind": "Grind",
+
+  "builderRatio": "Ratio",
+
+  "builderGram": "g",
+
+  "builderMillilitre": "ml",
+
+  "builderSteps": "Steps",
+
+  "builderDragHint": "drag by the handle",
+
+  "builderAddStep": "Add a step",
+
+  "builderStep": "Step",
+
+  "builderStepName": "Name",
+
+  "builderStepTip": "Tip",
+
+  "builderChoose": "choose",
+
+  "builderEndsLabel": "Ends",
+
+  "builderDuration": "Duration",
+
+  "builderNoTip": "No tip",
+
+  "builderTipValue": "Tip · {tip}",
+
+  "builderRemoveStep": "Remove the step",
+
+  "builderStepWater": "Water across steps",
+
+  "builderStepWaterValue": "{done} of {total} g",
+
+  "builderTotalTime": "Total time",
+
+  "builderSave": "Save",
+
+  "builderBrew": "Brew",
+
+  "builderToHome": "Home",
+
+  "builderCancel": "Cancel",
+
+  "builderDone": "Done",
+
+  "builderMinutesSeconds": "minutes and seconds",
+
+  "builderDecrease": "decrease",
+
+  "builderIncrease": "increase",
+
+  "builderCorrectedFor": "Adjusted for “{label}”",
+
+  "builderCorrectedNote": "the changes are marked with a dot",
+
+  "builderUndo": "Undo",
+
+  "builderLeaveTitle": "Leave without saving?",
+
+  "builderLeaveNote": "The edits are not saved — no new version will appear.",
+
+  "builderLeave": "Leave",
+
+  "builderSavedOffline": "Saved on the phone — it will be sent once the connection is back",
+
+  "builderSavedVersion": "Saved as a new version",
+
+  "builderSaveFailed": "Not saved: {error}",
+
+  "builderEndsTimer": "by time",
+
+  "builderEndsUser": "by button",
+
+  "builderEndsSign": "by a cue",
+
+  "builderEndsTimerHint": "runs on a timer and ends by itself",
+
+  "builderEndsUserHint": "the brew waits until you tap “next”",
+
+  "builderEndsSignHint": "the same button, but you press it on a cue: foam settled, water drained",
+
+  "svcAuthBadFields": "Check the email and the password",
+
+  "svcAuthWrongCredentials": "Wrong email or password",
+
+  "svcAuthEmailNotVerified": "The email is not confirmed",
+
+  "svcAuthUnknownEmail": "We have no such email",
+
+  "svcAuthEmailTaken": "This email is already taken",
+
+  "svcAuthTooOften": "Too often. Wait a minute",
+
+  "svcAuthServerDown": "The server is not responding. Try again",
+
+  "svcAuthWrongCode": "That code did not work. Check the email again",
+
+  "svcAuthNoTokens": "The server answered without tokens",
+
+  "svcAuthOffline": "No connection. Check the internet",
+
+  "svcAuthFailedLogin": "Could not sign in",
+
+  "svcAuthFailedSendLetter": "Could not send the email",
+
+  "svcAuthFailedChangePassword": "Could not change the password",
+
+  "svcAuthFailedRegister": "Could not sign up",
+
+  "svcAuthFailedVerifyEmail": "Could not confirm the email",
+
+  "svcSyncSent": "{count, plural, =1{Sent what was waiting for a connection} other{Sent what was waiting for a connection: {count}}}",
+
+  "svcSyncDropped": "The server rejected what was waiting ({count}) — it is out of date",
+
+  "svcSyncMixed": "Sent: {sent}. Rejected by the server: {dropped}",
+
+  "svcLegalClose": "Close",
+
+  "svcLegalUnavailable": "The document is not available right now. It is published on the site — open it there: {link}",
+
+  "svcLegalVersion": "Revision of {version}",
+
+  "svcLegalUserAgreement": "User agreement",
+
+  "svcLegalPrivacy": "Data processing policy",
+
+  "svcLegalConsent": "Consent to data processing",
+
+  "svcCodeEmpty": "Enter the code from the pack",
+
+  "svcCodeLength": "{expected, plural, one{The code is {expected} character long, and you entered {actual}} other{The code is {expected} characters long, and you entered {actual}}}",
+
+  "svcCodeUnknownSymbol": "There is no “{symbol}” in codes — check whether it is a 0 instead of an O",
+
+  "svcCodeChecksum": "The code has a mistake in it — check the characters",
+
+  "svcGroupOther": "Other",
+
+  "svcLoadFailedNote": "Usually it is the connection. Check the internet and try again."
 }

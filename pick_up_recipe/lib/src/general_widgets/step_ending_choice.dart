@@ -19,6 +19,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../features/recipes/domain/models/user_step_type_model.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -27,15 +28,26 @@ import '../themes/app_tokens.dart';
 /// выбора: галочка сбоку читается хуже и на светлой теме теряется вовсе.
 const double _selectedTint = 0.16;
 
-/// Чем варианты отличаются друг от друга.
+/// Подписи вариантов — на границе с экраном, а не в перечислении.
 ///
-/// `label` перечисления говорит, ЧТО выбрано, но не говорит, что из этого
-/// следует. Пояснение отвечает на один вопрос: кто кого ждёт.
-extension StepEndsWithHint on StepEndsWith {
-  String get hint => switch (this) {
-        StepEndsWith.timer => 'идёт по таймеру и кончается сам',
-        StepEndsWith.user => 'заваривание ждёт, пока вы нажмёте «дальше»',
-        StepEndsWith.none => 'тоже ждёт вас, но вы ждёте признака: стекло, осело',
+/// Перечисление живёт в домене и языка экрана не знает; словарь просят здесь,
+/// тем же приёмом, что и правила формы (`pages/auth_rule_texts.dart`).
+/// Строк две, а не одна: название говорит, ЧТО выбрано, но не говорит, что из
+/// этого следует. Пояснение отвечает на один вопрос — кто кого ждёт, — и без
+/// него три коротких подписи читаются как синонимы.
+extension StepEndsWithText on StepEndsWith {
+  /// Что выбрано: «по времени», «по кнопке», «по признаку».
+  String label(AppLocalizations texts) => switch (this) {
+        StepEndsWith.timer => texts.builderEndsTimer,
+        StepEndsWith.user => texts.builderEndsUser,
+        StepEndsWith.none => texts.builderEndsSign,
+      };
+
+  /// Что из этого следует.
+  String hint(AppLocalizations texts) => switch (this) {
+        StepEndsWith.timer => texts.builderEndsTimerHint,
+        StepEndsWith.user => texts.builderEndsUserHint,
+        StepEndsWith.none => texts.builderEndsSignHint,
       };
 }
 
@@ -82,6 +94,7 @@ class _EndingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
     final accent = context.colors.primary;
     final fill = selected
         ? Color.alphaBlend(
@@ -126,13 +139,13 @@ class _EndingCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        option.label,
+                        option.label(texts),
                         style: context.texts.bodyMedium?.copyWith(
                           color: context.colors.onSurface,
                           fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                         ),
                       ),
-                      Text(option.hint, style: context.texts.labelSmall),
+                      Text(option.hint(texts), style: context.texts.labelSmall),
                     ],
                   ),
                 ),

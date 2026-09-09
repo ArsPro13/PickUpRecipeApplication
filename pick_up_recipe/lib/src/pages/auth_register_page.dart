@@ -127,13 +127,13 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       setState(() {
         // Занятая почта — про поле почты, всё остальное — про форму целиком.
         if (failure.statusCode == 409) {
-          _emailError = failure.message;
+          _emailError = failure.text(texts);
         } else {
-          _formError = failure.message;
+          _formError = failure.text(texts);
         }
       });
     } catch (_) {
-      if (mounted) setState(() => _formError = AuthFailure.offline.message);
+      if (mounted) setState(() => _formError = AuthFailure.offline.text(texts));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/offline/network_status.dart';
+import '../../l10n/app_localizations.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/grinders/domain/grinder_search.dart';
 import '../features/grinders/domain/models/grinder_model.dart';
@@ -96,6 +97,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
     final state = ref.watch(grinderStateProvider);
     _seedFrom(state);
 
@@ -105,7 +107,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     final hits = searchGrinders(catalog, _query);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Кофемолка')),
+      appBar: AppBar(title: Text(texts.grinderTitle)),
       body: Column(
         children: [
           Padding(
@@ -120,7 +122,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
               onChanged: _onQueryChanged,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                hintText: 'Найти кофемолку',
+                hintText: texts.grinderSearchHint,
                 prefixIcon: Padding(
                   padding: const EdgeInsets.all(AppSpacing.s3),
                   child: AppIcon(
@@ -137,7 +139,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
                       ? const SizedBox.shrink()
                       : IconButton(
                           onPressed: () => _setQuery(''),
-                          tooltip: 'Очистить',
+                          tooltip: texts.clear,
                           icon: AppIcon(
                             AppIcons.uiClose,
                             size: AppSizes.icon20,
@@ -157,7 +159,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.s4),
               child: AppButton(
-                label: 'Сохранить',
+                label: texts.grinderSave,
                 loading: state.isLoading && state.catalog.isNotEmpty,
                 onPressed: _selected.isEmpty ? null : () => _save(state),
               ),
@@ -185,7 +187,21 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     );
   }
 
+  /// Заголовок группы списка.
+  ///
+  /// Вид кофемолки приходит с сервера кодом (`manual`, `electric`), а слово
+  /// для человека стоит в словаре: перечислением его не записать, иначе на
+  /// английском экране встанет русский заголовок.
+  String _kindTitle(AppLocalizations texts, GrinderKind kind) {
+    return switch (kind) {
+      GrinderKind.manual => texts.grinderKindManual,
+      GrinderKind.electric => texts.grinderKindElectric,
+      GrinderKind.unknown => texts.grinderKindOther,
+    };
+  }
+
   Widget _byKind(List<Grinder> catalog) {
+    final texts = AppLocalizations.of(context);
     final byKind = <GrinderKind, List<Grinder>>{};
     for (final grinder in catalog) {
       byKind.putIfAbsent(grinder.kind, () => []).add(grinder);
@@ -196,7 +212,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
       children: [
         for (final kind in GrinderKind.values)
           if (byKind[kind] != null) ...[
-            SectionTitle(kind.title),
+            SectionTitle(_kindTitle(texts, kind)),
             for (final grinder in byKind[kind]!) _tile(grinder, null),
           ],
         const SizedBox(height: AppSpacing.s4),
@@ -210,17 +226,17 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
   /// ошибся в двух буквах. Число моделей берётся из справочника — написать
   /// «полсотни» значило бы соврать при первой же правке базы.
   Widget _nothingFound(List<Grinder> catalog) {
+    final texts = AppLocalizations.of(context);
     final near = grinderDidYouMean(catalog, _query);
 
     return AppState(
       icon: AppIcons.stateEmpty,
-      title: 'Такой кофемолки нет',
+      title: texts.grinderNotFound,
       description: catalog.isEmpty
-          ? 'Справочник пуст — проверьте связь'
-          : 'Проверьте написание — в справочнике '
-              '${catalog.length} ${grinderCountWord(catalog.length)}',
+          ? texts.grinderCatalogEmpty
+          : texts.grinderCatalogSize(catalog.length),
       primaryAction: AppButton(
-        label: 'Показать все',
+        label: texts.grinderShowAll,
         kind: AppButtonKind.secondary,
         onPressed: () => _setQuery(''),
       ),
@@ -230,7 +246,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Вы имели в виду',
+                  texts.grinderDidYouMean,
                   style: context.texts.bodySmall,
                   textAlign: TextAlign.center,
                 ),
@@ -253,6 +269,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
   }
 
   Widget _tile(Grinder grinder, GrinderHit? hit) {
+    final texts = AppLocalizations.of(context);
     final selected = _selected.contains(grinder.id);
 
     return AppRow(
@@ -274,7 +291,11 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
           if (selected)
             TextButton(
               onPressed: () => setState(() => _primary = grinder.id),
-              child: Text(_primary == grinder.id ? 'основная' : 'сделать основной'),
+              child: Text(
+                _primary == grinder.id
+                    ? texts.profileGrinderPrimary
+                    : texts.grinderMakePrimary,
+              ),
             ),
           AppIcon(
             selected ? AppIcons.uiCheck : AppIcons.uiPlus,
@@ -307,6 +328,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
   }
 
   Future<void> _save(GrinderState state) async {
+    final texts = AppLocalizations.of(context);
     final chosen = state.catalog.where((g) => _selected.contains(g.id)).toList();
 
     await ref.read(grinderStateProvider.notifier).save(chosen, primaryGrinderId: _primary);
@@ -322,8 +344,8 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
         SnackBar(
           content: Text(
             NetworkStatus.online.value
-                ? 'Не удалось сохранить кофемолки'
-                : 'Без сети кофемолку не сохранить — она хранится в аккаунте',
+                ? texts.grinderSaveFailed
+                : texts.grinderSaveOffline,
           ),
         ),
       );

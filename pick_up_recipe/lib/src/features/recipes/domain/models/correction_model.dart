@@ -5,6 +5,7 @@
 // Экран без причин превращается в «сервер сказал мели мельче», и доверия
 // такому экрану нет.
 
+import '../../../../../l10n/app_localizations.dart';
 import 'recipe_data_model.dart';
 import 'recipe_response_model.dart';
 
@@ -63,28 +64,33 @@ class CorrectionChange {
       );
 
   /// Название параметра для человека.
-  String get title => switch (param) {
-        'grind_steps' => 'Помол',
-        'temperature_c' => 'Температура',
-        'ratio' => 'Соотношение',
-        'agitation' => 'Размешивание',
-        'contact_time_sec' => 'Время контакта',
-        'dose_g' => 'Доза',
+  ///
+  /// Словарь приходит параметром: имена параметров — наши подписи, а не
+  /// слова сервера (`param` — код вроде `grind_steps`), и на английском
+  /// телефоне они обязаны быть английскими. Незнакомый код показываем как
+  /// есть: выдумывать ему перевод не из чего.
+  String title(AppLocalizations texts) => switch (param) {
+        'grind_steps' => texts.rateParamGrind,
+        'temperature_c' => texts.rateParamTemperature,
+        'ratio' => texts.rateParamRatio,
+        'agitation' => texts.rateParamAgitation,
+        'contact_time_sec' => texts.rateParamContactTime,
+        'dose_g' => texts.rateParamDose,
         _ => param,
       };
 
-  String _format(num value) => switch (param) {
+  String _format(AppLocalizations texts, num value) => switch (param) {
         'grind_steps' => value > 0 ? '+$value' : '$value',
         'temperature_c' => '$value °C',
         'ratio' => '1:${value.toStringAsFixed(1)}',
         'contact_time_sec' => '${(value / 60).floor()}:'
             '${(value % 60).toInt().toString().padLeft(2, '0')}',
-        'dose_g' => '$value г',
+        'dose_g' => texts.unitGrams(value.toString()),
         _ => '$value',
       };
 
-  String get fromLabel => _format(from);
-  String get toLabel => _format(to);
+  String fromLabel(AppLocalizations texts) => _format(texts, from);
+  String toLabel(AppLocalizations texts) => _format(texts, to);
 }
 
 /// Одна проверка техники — пункт списка «Что проверить».

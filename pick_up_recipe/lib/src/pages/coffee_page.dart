@@ -13,10 +13,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/dates.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/codes/application/coffee_state.dart';
 import '../features/codes/domain/pack_code.dart';
+import '../features/recipes/domain/models/step_type_model.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/last_brew_cache.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
@@ -316,7 +318,7 @@ class _OfflineFallbackState extends State<_OfflineFallback> {
                 child: Text(
                   cached == null
                       ? texts.coffeeOfflineNoCache
-                      : texts.coffeeOfflineCached(_when(cached.savedAt)),
+                      : texts.coffeeOfflineCached(_when(texts, cached.savedAt)),
                   style: context.texts.bodySmall,
                 ),
               ),
@@ -361,13 +363,8 @@ class _OfflineFallbackState extends State<_OfflineFallback> {
     );
   }
 
-  static String _when(DateTime savedAt) {
-    const months = [
-      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
-    ];
-    return '${savedAt.day} ${months[savedAt.month - 1]}';
-  }
+  static String _when(AppLocalizations texts, DateTime savedAt) =>
+      formatDayMonth(texts, savedAt);
 }
 
 class _OfflineRow extends StatelessWidget {
@@ -458,7 +455,7 @@ class _QuickStart extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  texts.coffeeLastBrewed(formatRecipeDate(date)),
+                  texts.coffeeLastBrewed(formatRecipeDate(texts, date)),
                   style: context.texts.bodySmall,
                 ),
               ],
@@ -516,7 +513,12 @@ class _GroupHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.s4, bottom: AppSpacing.s2),
-      child: Text(group.name, style: context.texts.bodyMedium),
+      child: Text(
+        group.slug == otherGroupSlug
+            ? AppLocalizations.of(context).svcGroupOther
+            : group.name,
+        style: context.texts.bodyMedium,
+      ),
     );
   }
 }

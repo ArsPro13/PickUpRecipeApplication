@@ -99,9 +99,9 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
       setState(() => _step = ResetStep.enterNewPassword);
       _startCooldown();
     } on AuthFailure catch (failure) {
-      if (mounted) setState(() => _error = failure.message);
+      if (mounted) setState(() => _error = failure.text(texts));
     } catch (_) {
-      if (mounted) setState(() => _error = AuthFailure.offline.message);
+      if (mounted) setState(() => _error = AuthFailure.offline.text(texts));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -129,9 +129,9 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
           );
       if (mounted) setState(() => _step = ResetStep.done);
     } on AuthFailure catch (failure) {
-      if (mounted) setState(() => _error = failure.message);
+      if (mounted) setState(() => _error = failure.text(texts));
     } catch (_) {
-      if (mounted) setState(() => _error = AuthFailure.offline.message);
+      if (mounted) setState(() => _error = AuthFailure.offline.text(texts));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -70,6 +70,18 @@ Future<StepTypePick?> showStepTypeSheet(
     // издевательством — пустота внизу читается как «тут ещё что-то есть».
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    // Палец на списке крутит список, а не тащит шторку вниз.
+    //
+    // Та же беда, что у барабана длительности: шторка тянется за пальцем всей
+    // площадью, и её распознаватель вертикального перетаскивания забирал жест
+    // у списка — у прибора с полной таблицей типов до нижних групп было не
+    // добраться вовсе. Закрывают лист выбором клетки, нажатием мимо и
+    // системной кнопкой «назад».
+    //
+    // Ручку-полоску лист рисует сам, внутри своей карточки (`_GrabHandle`):
+    // системную просить незачем, тем более что при прозрачном фоне она
+    // оказывалась не на карточке, а над ней — белой чертой поверх рецепта.
+    enableDrag: false,
     builder: (context) => _StepTypeSheet(
       allowedStepTypes: allowedStepTypes,
       currentSlug: currentSlug,
@@ -281,11 +293,14 @@ class _Types extends StatelessWidget {
     // строку состояния в шапку заваривания: «Клапан закрыт», «Перевёрнут».
     final statefulGroup = group.types.any((type) => type.deviceState.isNotEmpty);
 
+    final texts = AppLocalizations.of(context);
+    // Группа «Прочие» собирается на телефоне, и имени с сервера у неё нет.
+    final name =
+        group.slug == otherGroupSlug ? texts.svcGroupOther : group.name;
+
     return [
       _GroupHeader(
-        statefulGroup
-            ? AppLocalizations.of(context).stepTypesStateful(group.name)
-            : group.name,
+        statefulGroup ? texts.stepTypesStateful(name) : name,
       ),
       _Grid(
         children: [

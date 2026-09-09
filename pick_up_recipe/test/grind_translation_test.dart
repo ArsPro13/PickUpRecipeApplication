@@ -5,7 +5,11 @@
 // кофемолкам приходят из grinder_translator вместе с профилем, перевод идёт
 // в два шага: дескриптор → микроны → ближайшее деление шкалы.
 
+import 'package:flutter/widgets.dart';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/grinders/domain/grind_translation.dart';
 import 'package:pick_up_recipe/src/features/grinders/domain/models/grinder_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/grind_descriptor_model.dart';
@@ -189,6 +193,86 @@ void main() {
     });
   });
 
+  group('подписи вокруг числа', () {
+    // Число — данные, а слова рядом с ним — интерфейс: «примерно», «делений»
+    // и «щ.» обязаны говорить на языке экрана. Имя кофемолки и слово
+    // справочника крупности при этом не переводятся ни на каком языке.
+    late AppLocalizations ru;
+    late AppLocalizations en;
+
+    setUpAll(() async {
+      ru = await AppLocalizations.delegate.load(const Locale('ru'));
+      en = await AppLocalizations.delegate.load(const Locale('en'));
+    });
+
+    test('пересчитанное число подписано на языке экрана', () {
+      final russian = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        grinder: comandante,
+        texts: ru,
+      );
+      final english = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        grinder: comandante,
+        texts: en,
+      );
+
+      expect(russian.label, 'примерно 14');
+      expect(english.label, 'about 14');
+    });
+
+    test('приглашение выбрать кофемолку переведено', () {
+      final english = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        texts: en,
+      );
+
+      expect(english.caption, 'pick a grinder');
+      expect(english.hint, isNot(matches(RegExp('[а-яёА-ЯЁ]'))));
+    });
+
+    test('щелчки старого рецепта переведены', () {
+      final english = grindReading(
+        descriptorSlug: '',
+        recipeGrindStep: '26',
+        texts: en,
+      );
+
+      expect(english.value, '26 clicks');
+    });
+
+    test('имя кофемолки и слово справочника остаются как пришли', () {
+      // Имя сходится с grinder_translator строгим равенством, слово крупности
+      // приходит из справочника обжарщика: и то и другое — данные сервера.
+      final english = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        recipeGrinderId: comandante.id,
+        recipeGrindStep: '17',
+        grinder: comandante,
+        texts: en,
+      );
+
+      expect(english.grinderName, 'Comandante C40');
+      expect(english.hint, 'Comandante C40 scale · Средне-тонкий');
+    });
+
+    test('без словаря экрана подписи берутся с языка шаблона', () {
+      // Пересчёт зовут четыре экрана; пока экран не передал свой словарь,
+      // строка всё равно приходит из app_ru.arb, а не из кода.
+      final plain = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        grinder: comandante,
+      );
+
+      expect(plain.label, ru.grinderApproximately('14'));
+    });
+  });
+
   group('значения нет в справочнике', () {
     test('незнакомая ступень оставляет slug и не пересчитывается', () {
       final grind = grindReading(
@@ -237,6 +321,58 @@ void main() {
       expect(grindDescriptorMicrons(reference, 'medium'), 800);
       expect(grindDescriptorMicrons(reference, 'ultra_fine'), isNull);
       expect(grindDescriptorMicrons(reference, ''), isNull);
+    });
+  });
+
+  // Подписи вокруг числа берёт словарь, но только если экран его передал.
+  // Параметр необязательный — иначе перевод пришлось бы вносить во все
+  // экраны одним коммитом, — и забытый вызов молча возвращает язык шаблона:
+  // «примерно 14» посреди английского экрана, как на видео владельца.
+  // Проверяется исходник, потому что три из четырёх экранов в виджет-тесте
+  // не поднимаются: они спрашивают роутер и сеть ещё в шапке.
+  //
+  // Сам файл перевода из проверки исключён: в нём вызов и объявлен.
+  group('экраны передают словарь в grindReading', () {
+    test('ни один вызов в lib/src не забыл texts', () {
+      final calls = <String>[];
+
+      // Не только `pages`: подписи помола зовут и виджеты, и состояния,
+      // а забытый `texts:` нигде не падает — он молча берёт язык шаблона.
+      for (final entity in Directory('lib/src').listSync(recursive: true)) {
+        if (entity is! File || !entity.path.endsWith('.dart')) continue;
+
+        if (entity.path.endsWith('grind_translation.dart')) continue;
+
+        final source = entity.readAsStringSync();
+        var at = source.indexOf('grindReading(');
+        while (at != -1) {
+          // Вызов кончается на скобке, закрывающей его список аргументов.
+          var depth = 0;
+          var end = source.indexOf('(', at);
+          for (var i = end; i < source.length; i++) {
+            if (source[i] == '(') depth++;
+            if (source[i] == ')') {
+              depth--;
+              if (depth == 0) {
+                end = i;
+                break;
+              }
+            }
+          }
+
+          if (!source.substring(at, end).contains('texts:')) {
+            calls.add('${entity.path}: ${source.substring(at, end).split('\n').first}');
+          }
+          at = source.indexOf('grindReading(', end);
+        }
+      }
+
+      expect(
+        calls,
+        isEmpty,
+        reason: 'помол на этих экранах останется на языке шаблона:\n'
+            '${calls.join('\n')}',
+      );
     });
   });
 }

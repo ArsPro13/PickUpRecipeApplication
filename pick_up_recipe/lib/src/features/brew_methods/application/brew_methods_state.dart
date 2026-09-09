@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data_sources/remote/brew_method_service.dart';
+import '../../recipes/domain/models/step_type_model.dart';
 import '../domain/brew_method.dart';
 
 enum BrewMethodsStatus { loading, ready, failed }
@@ -98,7 +99,9 @@ List<GroupedMethods> groupMethods(List<BrewMethod> methods, List<BrewMethodGroup
   final orphans = byGroup.values.expand((list) => list).toList();
   if (orphans.isNotEmpty) {
     orphans.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-    result.add(GroupedMethods(name: 'Прочие', methods: orphans));
+    // Имени с сервера у этой группы нет: она собирается здесь. Слово для
+    // заголовка подставляет экран по метке — домен языка не знает.
+    result.add(GroupedMethods(name: '', slug: otherGroupSlug, methods: orphans));
   }
 
   return result;

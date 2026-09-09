@@ -19,6 +19,7 @@ import 'package:pick_up_recipe/core/offline/local_recipes.dart';
 import 'package:pick_up_recipe/core/offline/network_status.dart';
 import 'package:pick_up_recipe/core/offline/offline_cache.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
+import 'package:pick_up_recipe/core/offline/offline_sync.dart';
 import 'package:pick_up_recipe/core/offline/outbox.dart';
 import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
@@ -434,6 +435,55 @@ void main() {
 
       expect(offlineBarText(en, online: false, waiting: 1), contains('1 item'));
       expect(offlineBarText(en, online: false, waiting: 5), contains('5 items'));
+    });
+  });
+
+  group('что сказано после досыла', () {
+    // Всплывающая подсказка — единственное, чем досыл отчитывается человеку:
+    // он идёт в фоне, и другого места сказать «уехало» у него нет.
+    final ru = lookupAppLocalizations(const Locale('ru'));
+    final en = lookupAppLocalizations(const Locale('en'));
+
+    test('всё уехало — по-русски слово в слово как было', () {
+      expect(
+        outboxReportText(ru, const OutboxReport(sent: 1)),
+        'Отправлено то, что ждало связи',
+      );
+      expect(
+        outboxReportText(ru, const OutboxReport(sent: 3)),
+        'Отправлено, что ждало связи: 3',
+      );
+    });
+
+    test('сервер всё отверг и часть отверг — тоже как было', () {
+      expect(
+        outboxReportText(ru, const OutboxReport(dropped: 2)),
+        'Сервер не принял отложенное (2) — оно устарело',
+      );
+      expect(
+        outboxReportText(ru, const OutboxReport(sent: 1, dropped: 2)),
+        'Отправлено: 1. Не принято сервером: 2',
+      );
+    });
+
+    test('на английском телефоне кириллицы нет ни в одном исходе', () {
+      final cyrillic = RegExp('[а-яёА-ЯЁ]');
+      const reports = [
+        OutboxReport(sent: 1),
+        OutboxReport(sent: 3),
+        OutboxReport(dropped: 2),
+        OutboxReport(sent: 1, dropped: 2),
+      ];
+
+      for (final report in reports) {
+        final line = outboxReportText(en, report);
+        expect(cyrillic.hasMatch(line), isFalse, reason: line);
+      }
+    });
+
+    test('одно дело числом не называется — у единицы своя ветка', () {
+      expect(outboxReportText(en, const OutboxReport(sent: 1)), isNot(contains('1')));
+      expect(outboxReportText(en, const OutboxReport(sent: 2)), contains('2'));
     });
   });
 

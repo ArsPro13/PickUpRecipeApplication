@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/pages/brew_page.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 
@@ -25,6 +26,11 @@ Future<void> pumpTip(
   return tester.pumpWidget(
     MaterialApp(
       theme: lightTheme,
+      // Подсказки шеврона приходят из словаря. Язык задан прямо: проверяются
+      // русские подписи, а не системный язык машины, на которой запустили тест.
+      locale: const Locale('ru'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Align(
           alignment: Alignment.topLeft,

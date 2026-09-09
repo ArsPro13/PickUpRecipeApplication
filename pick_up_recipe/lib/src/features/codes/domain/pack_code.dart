@@ -7,6 +7,39 @@
 // Расхождение с бэкендом ломает ручной ввод, поэтому алфавит и контрольная
 // сумма проверяются тестом на тех же значениях, что и в Go.
 
+/// Что именно не так с набранным кодом.
+enum PackCodeProblemKind {
+  /// Поле пустое.
+  empty,
+
+  /// Символов не столько, сколько в коде.
+  length,
+
+  /// Есть символ, которого в алфавите кодов нет.
+  unknownSymbol,
+
+  /// Контрольный символ не сошёлся — где-то опечатка.
+  checksum,
+}
+
+/// Разбор ошибки ввода: код причины и то, без чего её не объяснить.
+///
+/// Код, а не фраза: язык экрана домену неизвестен, а объяснение у каждого
+/// языка своё. Перевод кода в текст живёт рядом с экраном —
+/// lib/src/pages/pack_code_texts.dart.
+class PackCodeProblem {
+  const PackCodeProblem(this.kind, {this.entered = 0, this.symbol = ''});
+
+  final PackCodeProblemKind kind;
+
+  /// Сколько символов набрано. Только для [PackCodeProblemKind.length].
+  final int entered;
+
+  /// Символ, которого нет в алфавите. Только для
+  /// [PackCodeProblemKind.unknownSymbol].
+  final String symbol;
+}
+
 abstract final class PackCode {
   /// Символы, из которых состоит код.
   ///
@@ -41,24 +74,28 @@ abstract final class PackCode {
   }
 
   /// Сходится ли контрольный символ.
-  static bool isValid(String code) => validationError(normalize(code)) == null;
+  static bool isValid(String code) => problem(normalize(code)) == null;
 
   /// Что именно не так с кодом. null — код в порядке.
   ///
-  /// Текст для человека, а не код ошибки: он показывается прямо под полем.
-  static String? validationError(String code) {
-    if (code.isEmpty) return 'Введите код с упаковки';
-    if (code.length != length) return 'В коде $length символов, а введено ${code.length}';
+  /// Причина разбирается до знака, а не сводится к «код неверный»: человеку
+  /// важно знать, дописывать ли символы, искать ли опечатку или он спутал
+  /// ноль с буквой.
+  static PackCodeProblem? problem(String code) {
+    if (code.isEmpty) return const PackCodeProblem(PackCodeProblemKind.empty);
+    if (code.length != length) {
+      return PackCodeProblem(PackCodeProblemKind.length, entered: code.length);
+    }
 
     for (final rune in code.runes) {
       final symbol = String.fromCharCode(rune);
       if (!alphabet.contains(symbol)) {
-        return 'Символа «$symbol» в кодах не бывает — проверьте, не 0 ли это вместо O';
+        return PackCodeProblem(PackCodeProblemKind.unknownSymbol, symbol: symbol);
       }
     }
 
     if (code[code.length - 1] != _checksum(code.substring(0, code.length - 1))) {
-      return 'Код набран с ошибкой — проверьте символы';
+      return const PackCodeProblem(PackCodeProblemKind.checksum);
     }
 
     return null;

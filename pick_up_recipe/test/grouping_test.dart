@@ -3,6 +3,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/application/brew_methods_state.dart';
+import 'package:pick_up_recipe/src/features/recipes/domain/models/step_type_model.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/domain/brew_method.dart';
 import 'package:pick_up_recipe/src/features/codes/application/coffee_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_list_state.dart';
@@ -67,14 +68,17 @@ void main() {
         groups,
       );
 
-      expect(result.last.name, 'Прочие');
+      // Имени с сервера у этой группы нет — она собирается здесь, и слово
+      // для заголовка подставляет экран. Домену остаётся метка.
+      expect(result.last.slug, otherGroupSlug);
+      expect(result.last.name, isEmpty);
       expect(result.last.methods.single.slug, 'самовар');
     });
 
     test('метод, ссылающийся на несуществующую группу, тоже не теряется', () {
       final result = groupMethods([method('phin', groupId: 99)], groups);
 
-      expect(result.single.name, 'Прочие');
+      expect(result.single.slug, otherGroupSlug);
     });
 
     test('пустой справочник даёт пустой список, а не падение', () {

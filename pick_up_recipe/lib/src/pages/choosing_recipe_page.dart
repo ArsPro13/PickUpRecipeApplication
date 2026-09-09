@@ -12,6 +12,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/dates.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
@@ -176,6 +177,7 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       recipeGrinderId: recipe.grinderId,
       recipeGrindStep: recipe.grindStep,
       grinder: ref.watch(grinderStateProvider).primary,
+      texts: AppLocalizations.of(context),
     );
   }
 
@@ -370,7 +372,7 @@ class _VersionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppRow(
-      label: _formatDate(recipe.date),
+      label: _formatDate(AppLocalizations.of(context), recipe.date),
       value: '${recipe.temperature} °C · ${_formatTime(recipe.time)}',
       icon: AppIcons.uiHistory,
       onTap: () => context.router.push(BrewRoute(recipe: recipe, pack: pack)),
@@ -386,13 +388,9 @@ String _formatTime(int seconds) {
 
 /// Дата рецепта. Сервер отдаёт ISO-строку; неразобранную показываем как есть,
 /// а не прячем — пустая строка на месте даты выглядит поломкой.
-String _formatDate(String raw) {
+String _formatDate(AppLocalizations texts, String raw) {
   final parsed = DateTime.tryParse(raw);
   if (parsed == null) return raw;
 
-  const months = [
-    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
-  ];
-  return '${parsed.day} ${months[parsed.month - 1]}';
+  return formatDayMonth(texts, parsed);
 }

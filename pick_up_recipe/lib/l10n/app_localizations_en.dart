@@ -613,7 +613,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String customStepNote(String device) {
-    return 'The step is tied to $device: it will not show up in recipes for other devices. A step like this does not count water — water has its own «pour».';
+    return 'The step is tied to $device: it will not show up in recipes for other devices. A step like this does not count water — water has its own “pour”.';
   }
 
   @override
@@ -712,6 +712,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipesBrewAgain => 'Brew it again';
 
   @override
+  String get recipesEditRecipe => 'Edit recipe';
+
+  @override
   String get coffeeTitle => 'Coffee';
 
   @override
@@ -788,4 +791,851 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coffeeMethodsFailed => 'The brewing methods did not load';
+
+  @override
+  String get dateMonth1 => 'January';
+
+  @override
+  String get dateMonth2 => 'February';
+
+  @override
+  String get dateMonth3 => 'March';
+
+  @override
+  String get dateMonth4 => 'April';
+
+  @override
+  String get dateMonth5 => 'May';
+
+  @override
+  String get dateMonth6 => 'June';
+
+  @override
+  String get dateMonth7 => 'July';
+
+  @override
+  String get dateMonth8 => 'August';
+
+  @override
+  String get dateMonth9 => 'September';
+
+  @override
+  String get dateMonth10 => 'October';
+
+  @override
+  String get dateMonth11 => 'November';
+
+  @override
+  String get dateMonth12 => 'December';
+
+  @override
+  String dateDayMonth(String day, String month) {
+    return '$month $day';
+  }
+
+  @override
+  String dateDayMonthYear(String day, String month, String year) {
+    return '$month $day, $year';
+  }
+
+  @override
+  String get rateTitle => 'How did it turn out';
+
+  @override
+  String get rateOnTarget => 'Turned out just as intended';
+
+  @override
+  String rateSaid(String strength, String taste) {
+    return '$strength $taste';
+  }
+
+  @override
+  String get rateDegreeSlight => 'slightly';
+
+  @override
+  String get rateDegreeNoticeable => 'noticeably';
+
+  @override
+  String get rateDegreeStrong => 'very';
+
+  @override
+  String get rateTasteSour => 'sour';
+
+  @override
+  String get rateTasteBitter => 'bitter';
+
+  @override
+  String get rateTasteStrong => 'strong';
+
+  @override
+  String get rateTasteWeak => 'weak';
+
+  @override
+  String rateMapSemantics(String summary) {
+    return 'Taste map. $summary';
+  }
+
+  @override
+  String get rateOverall => 'Overall';
+
+  @override
+  String rateStarsOf(int stars) {
+    return '$stars of 5';
+  }
+
+  @override
+  String get rateOptional => 'Optional';
+
+  @override
+  String get rateAxesTitle => 'Break it down by axis';
+
+  @override
+  String get rateAxesHint =>
+      'You can leave these alone — only what you move gets sent';
+
+  @override
+  String get rateAxisAroma => 'Aroma';
+
+  @override
+  String get rateAxisFlavor => 'Flavor';
+
+  @override
+  String get rateAxisAftertaste => 'Aftertaste';
+
+  @override
+  String get rateAxisAcidity => 'Acidity';
+
+  @override
+  String get rateAxisBitterness => 'Bitterness';
+
+  @override
+  String get rateAxisSweetness => 'Sweetness';
+
+  @override
+  String rateAxesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count axes',
+      one: '$count axis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rateSave => 'Save';
+
+  @override
+  String get rateFixRecipe => 'Adjust the recipe';
+
+  @override
+  String get rateJustSave => 'Just save the rating';
+
+  @override
+  String get rateSavedOffline =>
+      'Rating saved — it will be sent once the connection is back';
+
+  @override
+  String get rateSavedCorrectionLater =>
+      'Rating saved. The fix is worked out on the server — it will be there once the connection is back';
+
+  @override
+  String get rateNothingToChange =>
+      'Nothing to change: the recipe is already at the edge of its range';
+
+  @override
+  String get rateParamGrind => 'Grind';
+
+  @override
+  String get rateParamTemperature => 'Temperature';
+
+  @override
+  String get rateParamRatio => 'Ratio';
+
+  @override
+  String get rateParamAgitation => 'Agitation';
+
+  @override
+  String get rateParamContactTime => 'Contact time';
+
+  @override
+  String get rateParamDose => 'Dose';
+
+  @override
+  String get packFormTitle => 'A pack without a code';
+
+  @override
+  String get packFormIntro =>
+      'Type in what is printed on the pack. Only the country is required — the name is built from it and the region.';
+
+  @override
+  String get packFormPhotoTitle => 'Photograph the pack';
+
+  @override
+  String get packFormPhotoNote =>
+      'The photo is kept with the pack — that is how you will recognize it in the list';
+
+  @override
+  String get packFormPhotoTake => 'Take a photo';
+
+  @override
+  String get packFormPhotoRetake => 'Retake';
+
+  @override
+  String get packFormPhotoFromGallery => 'From the gallery';
+
+  @override
+  String get packFormPhotoFailed => 'The photo did not work out — try again';
+
+  @override
+  String get packFormCountry => 'Country';
+
+  @override
+  String get packFormCountryHint => 'Brazil';
+
+  @override
+  String get packFormCountryRequired =>
+      'Without a country there is nothing to name the pack after';
+
+  @override
+  String get packFormRegion => 'Region — if you know it';
+
+  @override
+  String get packFormRegionHint => 'Cerrado';
+
+  @override
+  String get packFormVariety => 'Variety';
+
+  @override
+  String get packFormVarietyHint => 'bourbon';
+
+  @override
+  String get packFormScaScore => 'SCA score';
+
+  @override
+  String get packFormRoastDate => 'Roast date';
+
+  @override
+  String get packFormDateHint => 'dd.mm.yyyy';
+
+  @override
+  String get packFormDateInvalid => 'There is no such date';
+
+  @override
+  String get packFormDateEmptyNote =>
+      'Do not know it — leave it empty and we will put today\'s date';
+
+  @override
+  String get packFormToday => 'Today';
+
+  @override
+  String get packFormDescriptors => 'Descriptors';
+
+  @override
+  String get packFormDescriptorsNote =>
+      'How it smells and tastes — one word per line';
+
+  @override
+  String packFormDescriptorNumbered(int number) {
+    return 'Descriptor $number';
+  }
+
+  @override
+  String get packFormDescriptorHint => 'raspberry';
+
+  @override
+  String get packFormAddDescriptor => 'Add a descriptor';
+
+  @override
+  String get packFormProcessing => 'Processing method';
+
+  @override
+  String get packFormProcessingNote =>
+      'Usually printed on the pack next to the variety';
+
+  @override
+  String packFormProcessingNumbered(int number) {
+    return 'Processing $number';
+  }
+
+  @override
+  String get packFormProcessingHint => 'washed';
+
+  @override
+  String get packFormAddProcessing => 'Add a processing method';
+
+  @override
+  String get packFormRemoveLine => 'Remove the line';
+
+  @override
+  String get packFormSubmit => 'Send';
+
+  @override
+  String get packFormSubmitFailed => 'The pack was not sent';
+
+  @override
+  String packFormSubmitFailedNote(String reason) {
+    return '$reason. What you typed is still here — try again.';
+  }
+
+  @override
+  String get packFormShowPassword => 'Show the password';
+
+  @override
+  String get packFormHidePassword => 'Hide the password';
+
+  @override
+  String get brewAbortTitle => 'Stop brewing?';
+
+  @override
+  String get brewAbortNote =>
+      'The timer stops, and you will not be able to pick it up at the same second.';
+
+  @override
+  String get brewAbort => 'Stop';
+
+  @override
+  String get brewStay => 'Stay';
+
+  @override
+  String get brewEditRecipe => 'Edit recipe';
+
+  @override
+  String brewStepOf(int number, int count) {
+    return 'step $number of $count';
+  }
+
+  @override
+  String get brewGrindAndStart => 'Ground it, let\'s go';
+
+  @override
+  String get brewStart => 'Start';
+
+  @override
+  String get brewPause => 'Pause';
+
+  @override
+  String get brewResume => 'Continue';
+
+  @override
+  String get brewDidIt => 'Did it';
+
+  @override
+  String get brewRate => 'Rate it';
+
+  @override
+  String get brewSkip => 'Skip';
+
+  @override
+  String get brewHappened => 'It happened';
+
+  @override
+  String get brewTitle => 'Brewing';
+
+  @override
+  String get brewNoSteps => 'This recipe has no steps';
+
+  @override
+  String get brewNoStepsNote =>
+      'Nothing to play. Build the recipe again or pick another one.';
+
+  @override
+  String get brewSteepingOver =>
+      'The steeping finished while the app was closed. Do the remaining steps — from here the coffee only turns bitter.';
+
+  @override
+  String brewSteepingGoes(String away) {
+    return 'Steeping is under way: $away so far. You can close the screen — the time is counted by the clock, not by the timer on the screen.';
+  }
+
+  @override
+  String get brewToRemainingSteps => 'To the remaining steps';
+
+  @override
+  String get brewCallItFinished => 'Call it finished';
+
+  @override
+  String brewAwayTitle(String away) {
+    return 'It has been $away';
+  }
+
+  @override
+  String brewStoppedAtStep(String step) {
+    return 'You stopped at “$step”. Coffee does not wait that long: the water has cooled and the cone has drained.';
+  }
+
+  @override
+  String get brewStartOver => 'Start over';
+
+  @override
+  String get brewStartOverNote =>
+      'Usually the right call: 15 g of coffee costs less than a ruined cup';
+
+  @override
+  String get brewContinueFromHere => 'Continue from here';
+
+  @override
+  String get brewContinueFromHereNote =>
+      'If you were pouring all this time and just switched the screen off';
+
+  @override
+  String get brewCallItFinishedNote =>
+      'It brewed, you just never got to the rating — let\'s do it now';
+
+  @override
+  String brewAwayHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String brewAwayHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String brewAwayMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '$minutes minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewAwaySeconds(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String get brewGrindCoffee => 'Grind the coffee';
+
+  @override
+  String get brewWaitingForYou => 'waiting for you';
+
+  @override
+  String brewReadyAt(String time) {
+    return 'at $time';
+  }
+
+  @override
+  String brewPouredOf(String poured, String total) {
+    return '$poured of $total g poured';
+  }
+
+  @override
+  String brewTargetInCup(String grams) {
+    return 'target — $grams g in the cup';
+  }
+
+  @override
+  String brewTargetInCupDone(String grams) {
+    return 'done · $grams g in the cup';
+  }
+
+  @override
+  String brewTargetInCupFirstDrops(String grams) {
+    return 'target — $grams g in the cup · first drops at 5–7 s';
+  }
+
+  @override
+  String get brewTimeIsAGuide => 'the time is a guide, watch for the sign';
+
+  @override
+  String brewTimeIsAGuideWithWater(String water) {
+    return 'the time is a guide · $water';
+  }
+
+  @override
+  String brewReadyIn(String time) {
+    return 'ready in $time';
+  }
+
+  @override
+  String get brewStepNotStarted => 'not started yet';
+
+  @override
+  String get brewLeft => 'left';
+
+  @override
+  String get brewOnPause => 'paused';
+
+  @override
+  String get brewTapDidIt => 'tap “Did it” when you finish';
+
+  @override
+  String get brewFinished => 'done';
+
+  @override
+  String get brewOptional => 'optional';
+
+  @override
+  String get brewTipExpand => 'Show the whole tip';
+
+  @override
+  String get brewTipCollapse => 'Collapse the tip';
+
+  @override
+  String get brewPhasePrep => 'preparation';
+
+  @override
+  String get brewPhaseBrewing => 'brewing';
+
+  @override
+  String get brewPhaseFinish => 'finish';
+
+  @override
+  String get brewEndsBySign => 'by a cue';
+
+  @override
+  String get brewEndsByTap => 'by button';
+
+  @override
+  String get brewUntilYouSayDidIt => 'until you say “did it”';
+
+  @override
+  String get grinderTitle => 'Grinder';
+
+  @override
+  String get grinderSearchHint => 'Find a grinder';
+
+  @override
+  String get grinderKindManual => 'Hand grinders';
+
+  @override
+  String get grinderKindElectric => 'Electric grinders';
+
+  @override
+  String get grinderKindOther => 'Other';
+
+  @override
+  String get grinderMakePrimary => 'make primary';
+
+  @override
+  String get grinderSave => 'Save';
+
+  @override
+  String get grinderNotFound => 'No such grinder';
+
+  @override
+  String get grinderCatalogEmpty =>
+      'The catalog is empty — check the connection';
+
+  @override
+  String grinderCatalogSize(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count models',
+      one: '$count model',
+    );
+    return 'Check the spelling — the catalog holds $_temp0';
+  }
+
+  @override
+  String get grinderShowAll => 'Show all';
+
+  @override
+  String get grinderDidYouMean => 'Did you mean';
+
+  @override
+  String get grinderSaveFailed => 'Could not save the grinders';
+
+  @override
+  String get grinderSaveOffline =>
+      'A grinder cannot be saved without a connection — it lives in your account';
+
+  @override
+  String grinderApproximately(String value) {
+    return 'about $value';
+  }
+
+  @override
+  String get grinderPickPrompt => 'pick a grinder';
+
+  @override
+  String get grinderPickPromptHint =>
+      'pick a grinder and we will show the setting';
+
+  @override
+  String grinderScaleOf(String name) {
+    return '$name scale';
+  }
+
+  @override
+  String grinderClicks(String value) {
+    return '$value clicks';
+  }
+
+  @override
+  String get builderTitle => 'Your recipe';
+
+  @override
+  String get builderParams => 'Parameters';
+
+  @override
+  String get builderDose => 'Dose';
+
+  @override
+  String get builderWater => 'Water';
+
+  @override
+  String get builderTemperature => 'Temperature';
+
+  @override
+  String get builderGrind => 'Grind';
+
+  @override
+  String get builderRatio => 'Ratio';
+
+  @override
+  String get builderGram => 'g';
+
+  @override
+  String get builderMillilitre => 'ml';
+
+  @override
+  String get builderSteps => 'Steps';
+
+  @override
+  String get builderDragHint => 'drag by the handle';
+
+  @override
+  String get builderAddStep => 'Add a step';
+
+  @override
+  String get builderStep => 'Step';
+
+  @override
+  String get builderStepName => 'Name';
+
+  @override
+  String get builderStepTip => 'Tip';
+
+  @override
+  String get builderChoose => 'choose';
+
+  @override
+  String get builderEndsLabel => 'Ends';
+
+  @override
+  String get builderDuration => 'Duration';
+
+  @override
+  String get builderNoTip => 'No tip';
+
+  @override
+  String builderTipValue(String tip) {
+    return 'Tip · $tip';
+  }
+
+  @override
+  String get builderRemoveStep => 'Remove the step';
+
+  @override
+  String get builderStepWater => 'Water across steps';
+
+  @override
+  String builderStepWaterValue(int done, int total) {
+    return '$done of $total g';
+  }
+
+  @override
+  String get builderTotalTime => 'Total time';
+
+  @override
+  String get builderSave => 'Save';
+
+  @override
+  String get builderBrew => 'Brew';
+
+  @override
+  String get builderToHome => 'Home';
+
+  @override
+  String get builderCancel => 'Cancel';
+
+  @override
+  String get builderDone => 'Done';
+
+  @override
+  String get builderMinutesSeconds => 'minutes and seconds';
+
+  @override
+  String get builderDecrease => 'decrease';
+
+  @override
+  String get builderIncrease => 'increase';
+
+  @override
+  String builderCorrectedFor(String label) {
+    return 'Adjusted for “$label”';
+  }
+
+  @override
+  String get builderCorrectedNote => 'the changes are marked with a dot';
+
+  @override
+  String get builderUndo => 'Undo';
+
+  @override
+  String get builderLeaveTitle => 'Leave without saving?';
+
+  @override
+  String get builderLeaveNote =>
+      'The edits are not saved — no new version will appear.';
+
+  @override
+  String get builderLeave => 'Leave';
+
+  @override
+  String get builderSavedOffline =>
+      'Saved on the phone — it will be sent once the connection is back';
+
+  @override
+  String get builderSavedVersion => 'Saved as a new version';
+
+  @override
+  String builderSaveFailed(String error) {
+    return 'Not saved: $error';
+  }
+
+  @override
+  String get builderEndsTimer => 'by time';
+
+  @override
+  String get builderEndsUser => 'by button';
+
+  @override
+  String get builderEndsSign => 'by a cue';
+
+  @override
+  String get builderEndsTimerHint => 'runs on a timer and ends by itself';
+
+  @override
+  String get builderEndsUserHint => 'the brew waits until you tap “next”';
+
+  @override
+  String get builderEndsSignHint =>
+      'the same button, but you press it on a cue: foam settled, water drained';
+
+  @override
+  String get svcAuthBadFields => 'Check the email and the password';
+
+  @override
+  String get svcAuthWrongCredentials => 'Wrong email or password';
+
+  @override
+  String get svcAuthEmailNotVerified => 'The email is not confirmed';
+
+  @override
+  String get svcAuthUnknownEmail => 'We have no such email';
+
+  @override
+  String get svcAuthEmailTaken => 'This email is already taken';
+
+  @override
+  String get svcAuthTooOften => 'Too often. Wait a minute';
+
+  @override
+  String get svcAuthServerDown => 'The server is not responding. Try again';
+
+  @override
+  String get svcAuthWrongCode =>
+      'That code did not work. Check the email again';
+
+  @override
+  String get svcAuthNoTokens => 'The server answered without tokens';
+
+  @override
+  String get svcAuthOffline => 'No connection. Check the internet';
+
+  @override
+  String get svcAuthFailedLogin => 'Could not sign in';
+
+  @override
+  String get svcAuthFailedSendLetter => 'Could not send the email';
+
+  @override
+  String get svcAuthFailedChangePassword => 'Could not change the password';
+
+  @override
+  String get svcAuthFailedRegister => 'Could not sign up';
+
+  @override
+  String get svcAuthFailedVerifyEmail => 'Could not confirm the email';
+
+  @override
+  String svcSyncSent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sent what was waiting for a connection: $count',
+      one: 'Sent what was waiting for a connection',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String svcSyncDropped(int count) {
+    return 'The server rejected what was waiting ($count) — it is out of date';
+  }
+
+  @override
+  String svcSyncMixed(int sent, int dropped) {
+    return 'Sent: $sent. Rejected by the server: $dropped';
+  }
+
+  @override
+  String get svcLegalClose => 'Close';
+
+  @override
+  String svcLegalUnavailable(String link) {
+    return 'The document is not available right now. It is published on the site — open it there: $link';
+  }
+
+  @override
+  String svcLegalVersion(String version) {
+    return 'Revision of $version';
+  }
+
+  @override
+  String get svcLegalUserAgreement => 'User agreement';
+
+  @override
+  String get svcLegalPrivacy => 'Data processing policy';
+
+  @override
+  String get svcLegalConsent => 'Consent to data processing';
+
+  @override
+  String get svcCodeEmpty => 'Enter the code from the pack';
+
+  @override
+  String svcCodeLength(int expected, int actual) {
+    String _temp0 = intl.Intl.pluralLogic(
+      expected,
+      locale: localeName,
+      other: 'The code is $expected characters long, and you entered $actual',
+      one: 'The code is $expected character long, and you entered $actual',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String svcCodeUnknownSymbol(String symbol) {
+    return 'There is no “$symbol” in codes — check whether it is a 0 instead of an O';
+  }
+
+  @override
+  String get svcCodeChecksum =>
+      'The code has a mistake in it — check the characters';
+
+  @override
+  String get svcGroupOther => 'Other';
+
+  @override
+  String get svcLoadFailedNote =>
+      'Usually it is the connection. Check the internet and try again.';
 }

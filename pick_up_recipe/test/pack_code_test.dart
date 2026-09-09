@@ -5,10 +5,21 @@
 // двумя реализациями ломает ручной ввод молча, поэтому здесь проверяются те же
 // инварианты, что и в Go-тестах.
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/codes/domain/pack_code.dart';
+import 'package:pick_up_recipe/src/pages/pack_code_texts.dart';
 
 void main() {
+  late AppLocalizations ru;
+  late AppLocalizations en;
+
+  setUpAll(() async {
+    ru = await AppLocalizations.delegate.load(const Locale('ru'));
+    en = await AppLocalizations.delegate.load(const Locale('en'));
+  });
+
   group('алфавит', () {
     test('29 символов, длина простая', () {
       expect(PackCode.alphabet.length, 29);
@@ -59,7 +70,7 @@ void main() {
     const demo = 'ABCD234568';
 
     test('демо-код из ADR проходит', () {
-      expect(PackCode.validationError(demo), isNull);
+      expect(PackCode.problem(demo), isNull);
       expect(PackCode.isValid('abcd-2345-68'), isTrue);
     });
 
@@ -95,10 +106,41 @@ void main() {
       }
     });
 
-    test('объяснения для человека, а не коды ошибок', () {
-      expect(PackCode.validationError(''), contains('Введите код'));
-      expect(PackCode.validationError('ABCD'), contains('символ'));
-      expect(PackCode.validationError('ABCD23456O'), contains('O'));
+    // Разбор причины — часть поведения, а не украшение: человеку важно знать,
+    // дописывать ли символы, искать ли опечатку или он спутал ноль с буквой.
+    test('причина разбирается, а не сводится к «код неверный»', () {
+      expect(PackCode.problem('')?.kind, PackCodeProblemKind.empty);
+      expect(PackCode.problem('ABCD')?.kind, PackCodeProblemKind.length);
+      expect(PackCode.problem('ABCD')?.entered, 4);
+      expect(PackCode.problem('ABCD23456O')?.kind, PackCodeProblemKind.unknownSymbol);
+      expect(PackCode.problem('ABCD23456O')?.symbol, 'O');
+      expect(PackCode.problem('ABCD234567')?.kind, PackCodeProblemKind.checksum);
+    });
+  });
+
+  // Вынос строк в словарь не должен переписать объяснения: по-русски человек
+  // обязан прочитать ровно то же, что читал до правки.
+  group('объяснения для человека', () {
+    test('по-русски слово в слово как было', () {
+      expect(PackCode.problem('')?.text(ru), 'Введите код с упаковки');
+      expect(PackCode.problem('ABCD')?.text(ru), 'В коде 10 символов, а введено 4');
+      expect(
+        PackCode.problem('ABCD23456O')?.text(ru),
+        'Символа «O» в кодах не бывает — проверьте, не 0 ли это вместо O',
+      );
+      expect(
+        PackCode.problem('ABCD234567')?.text(ru),
+        'Код набран с ошибкой — проверьте символы',
+      );
+    });
+
+    test('на английском телефоне кириллицы нет', () {
+      final cyrillic = RegExp('[а-яёА-ЯЁ]');
+
+      for (final code in ['', 'ABCD', 'ABCD23456O', 'ABCD234567']) {
+        final line = PackCode.problem(code)!.text(en);
+        expect(cyrillic.hasMatch(line), isFalse, reason: '«$code» → $line');
+      }
     });
   });
 }

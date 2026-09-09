@@ -110,7 +110,9 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
           AppState(
             icon: AppIcons.stateError,
             title: AppLocalizations.of(context).recipesFailed,
-            description: state.error,
+            // Не текст исключения: он всегда по-русски и человеку
+            // говорит только код ответа. Причина уходит в журнал.
+            description: AppLocalizations.of(context).svcLoadFailedNote,
             isError: true,
             primaryAction: AppButton(
               label: AppLocalizations.of(context).retry,
@@ -207,10 +209,12 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
 
   /// Полёт улетающей карточки и её же возврат на место. Один контроллер на
   /// оба движения: одновременно они случиться не могут.
-  late final AnimationController _fly = AnimationController(
-    vsync: this,
-    duration: AppDuration.base,
-  );
+  ///
+  /// Заводится в `initState`, а не лениво при первом обращении: стопку, которую
+  /// не листали и которой не показывали подсказку, ленивый `late final` создавал
+  /// бы прямо в `dispose` — на уже отсоединённом элементе, а тому неоткуда взять
+  /// `TickerMode`. Уход с экрана падал бы в отладке на ровном месте.
+  late final AnimationController _fly;
 
   /// Верхняя карточка барабана. Барабан кольцевой: после последней версии
   /// снова первая — иначе после третьего свайпа человек упирается в пустоту
@@ -226,6 +230,7 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _fly = AnimationController(vsync: this, duration: AppDuration.base);
     WidgetsBinding.instance.addPostFrameCallback((_) => _hint());
   }
 
@@ -470,7 +475,7 @@ class _Header extends ConsumerWidget {
   String _subtitle(AppLocalizations texts) {
     final parts = [
       if (pack != null && pack!.roasterName.isNotEmpty) pack!.roasterName,
-      formatRecipeDate(group.latest.date),
+      formatRecipeDate(texts, group.latest.date),
       // Склонение «1 версия / 2 версии / 5 версий» считает ICU: таблица форм
       // у каждого языка своя, и написанная руками была верной для одного.
       if (group.versions.length > 1) texts.recipesVersionsCount(group.versions.length),
@@ -534,6 +539,10 @@ class _Pager extends StatelessWidget {
 /// Тап в любом месте открывает рецепт — на экране заваривания он и живёт,
 /// вместе с шагами и числами. Кружок «заварить» на карточке сразу пускает
 /// таймер: рецепт человек уже видел, если жмёт именно сюда.
+///
+/// Рядом с ним кружок правки: до него конструктор открывался только через
+/// экран заваривания, то есть чтобы поправить помол, надо было сделать вид,
+/// что собираешься варить.
 class _VersionCard extends StatelessWidget {
   const _VersionCard({
     required this.version,
@@ -567,7 +576,7 @@ class _VersionCard extends StatelessWidget {
             children: [
               Expanded(
                 flex: 4,
-                child: _Photo(pack: pack, caption: formatRecipeDate(version.date)),
+                child: _Photo(pack: pack, caption: formatRecipeDate(AppLocalizations.of(context), version.date)),
               ),
               Expanded(
                 flex: 6,
@@ -618,6 +627,8 @@ class _VersionCard extends StatelessWidget {
                       Row(
                         children: [
                           const Spacer(),
+                          _EditButton(version: version, pack: pack),
+                          const SizedBox(width: AppSpacing.s2),
                           _PlayButton(version: version, pack: pack, filled: hero),
                         ],
                       ),
@@ -719,6 +730,51 @@ class _PlayButton extends StatelessWidget {
               AppIcons.uiPlay,
               size: AppSizes.icon16,
               color: filled ? context.colors.secondaryContainer : context.colors.secondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Круглая кнопка «править рецепт».
+///
+/// Слева от повтора и всегда контуром, даже на главной карточке: два залитых
+/// кружка рядом читались бы как два равных действия, а главное на этом экране
+/// одно — заварить снова. Правка тише по весу, но не по размеру: цель того же
+/// диаметра, что и у соседа, иначе палец мазал бы по ней и попадал в повтор.
+///
+/// Тап отсюда ведёт в конструктор, а не на экран заваривания: до этой кнопки
+/// в конструктор с экрана рецептов было не попасть вовсе.
+class _EditButton extends StatelessWidget {
+  const _EditButton({required this.version, required this.pack});
+
+  final RecipeVersion version;
+  final PackData? pack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: AppLocalizations.of(context).recipesEditRecipe,
+      child: InkWell(
+        onTap: () => context.router.push(
+          RecipeBuilderRoute(recipe: version.recipe, pack: pack),
+        ),
+        customBorder: const CircleBorder(),
+        child: Container(
+          height: AppSpacing.s8,
+          width: AppSpacing.s8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: context.palette.border),
+          ),
+          child: Center(
+            child: AppIcon(
+              AppIcons.uiEdit,
+              size: AppSizes.icon16,
+              color: context.colors.secondary,
             ),
           ),
         ),

@@ -6,15 +6,20 @@
 // сегодняшним числом. Вдобавок нажатие ловили сразу два обработчика — свой у
 // поля и свой у обёртки, — и календарь открывался и тут же закрывался.
 //
-// Календаря здесь больше нет намеренно: Material берёт названия месяцев из
-// локали приложения, а русской локали в приложение ещё не завезли — календарь
-// остался бы единственным английским пятном на экране. Цифры с маской короче
-// и на телефоне набираются быстрее календаря на три года назад.
+// Календаря здесь больше нет намеренно: цифры с маской короче и на телефоне
+// набираются быстрее, чем календарь листается на три года назад.
+//
+// Маска — единственное на этом экране, что не переводится. Подпись поля,
+// пример внутри него и пояснение снизу берутся из словаря, а порядок частей
+// и точки остаются те же на любом языке: ровно их читают parsePackDate и
+// pack_request_model, и «переведённый» формат молча подменил бы дату обжарки
+// сегодняшней. Другой порядок для английского — решение владельца, не наше.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_kit.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:pick_up_recipe/src/themes/app_tokens.dart';
@@ -80,6 +85,8 @@ class _DateInputFieldState extends State<DateInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -93,13 +100,16 @@ class _DateInputFieldState extends State<DateInputField> {
           inputFormatters: [_DateMaskFormatter()],
           onFieldSubmitted: (_) => widget.onEditingFinished?.call(),
           style: context.texts.bodyMedium,
-          decoration: const InputDecoration(hintText: 'дд.мм.гггг'),
+          // Пример внутри поля переводится, а маска — нет: разбор даты и
+          // запрос к серверу читают ровно дд.ММ.гггг, и другой порядок частей
+          // молча превратил бы дату обжарки в сегодняшнюю.
+          decoration: InputDecoration(hintText: texts.packFormDateHint),
           validator: (value) {
             final text = value?.trim() ?? '';
             // Пустое поле — не ошибка: дату обжарки печатают не на всякой
             // пачке. Тогда сервер поставит сегодняшнее число.
             if (text.isEmpty) return null;
-            return parsePackDate(text) == null ? 'Такой даты не бывает' : null;
+            return parsePackDate(text) == null ? texts.packFormDateInvalid : null;
           },
         ),
         const SizedBox(height: AppSpacing.s2),
@@ -107,12 +117,12 @@ class _DateInputFieldState extends State<DateInputField> {
           children: [
             Expanded(
               child: Text(
-                'Не знаете — оставьте пустым, поставим сегодняшнюю',
+                texts.packFormDateEmptyNote,
                 style: context.texts.labelSmall,
               ),
             ),
             const SizedBox(width: AppSpacing.s2),
-            AppChip(label: 'Сегодня', onTap: _setToday),
+            AppChip(label: texts.packFormToday, onTap: _setToday),
           ],
         ),
       ],

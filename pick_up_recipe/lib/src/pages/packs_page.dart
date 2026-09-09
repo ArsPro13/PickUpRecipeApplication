@@ -195,9 +195,9 @@ class UnfinishedRatingPlate extends StatelessWidget {
                     children: [
                       Text(texts.ratingDraftTitle, style: context.texts.bodyMedium),
                       Text(
-                        draft.summary.isEmpty
+                        draft.summaryFor(texts).isEmpty
                             ? texts.ratingDraftContinue
-                            : texts.ratingDraftContinueWith(draft.summary),
+                            : texts.ratingDraftContinueWith(draft.summaryFor(texts)),
                         style: context.texts.labelSmall,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -338,7 +338,7 @@ class PackCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.s1),
                   Text(
-                    _subtitle(),
+                    _subtitle(AppLocalizations.of(context)),
                     style: context.texts.labelSmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -365,8 +365,8 @@ class PackCard extends StatelessWidget {
 
   /// «Tasty Coffee · 28 июля». Без обжарщика остаётся страна и сорт: пустая
   /// строка на его месте читалась бы как потерянные данные.
-  String _subtitle() {
-    final date = formatRecipeDate(pack.packDate);
+  String _subtitle(AppLocalizations texts) {
+    final date = formatRecipeDate(texts, pack.packDate);
     if (pack.roasterName.isNotEmpty) return '${pack.roasterName} · $date';
 
     final origin = [pack.packCountry, pack.packVariety].where((it) => it.isNotEmpty).join(' · ');

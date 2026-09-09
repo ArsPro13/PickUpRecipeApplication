@@ -6,6 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_field.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:pick_up_recipe/src/themes/app_tokens.dart';
@@ -14,6 +15,12 @@ import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 Widget _twoFields(TextEditingController first, TextEditingController second) {
   return MaterialApp(
     theme: lightTheme,
+    // Глаз у поля пароля подписан из словаря, поэтому делегаты нужны и здесь.
+    // Язык задан прямо: проверяются русские подписи, а не системный язык
+    // машины, на которой запустили тест.
+    locale: const Locale('ru'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: SizedBox(
         width: 200,
@@ -32,6 +39,9 @@ Widget _twoFields(TextEditingController first, TextEditingController second) {
 Widget _oneField(TextEditingController controller, {String? error}) {
   return MaterialApp(
     theme: lightTheme,
+    locale: const Locale('ru'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: SizedBox(
         width: 200,

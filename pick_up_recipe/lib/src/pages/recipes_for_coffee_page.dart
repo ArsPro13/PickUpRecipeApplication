@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
+import '../features/recipes/domain/models/step_type_model.dart';
 import '../general_widgets/app_kit.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_tokens.dart';
@@ -46,7 +47,9 @@ class _RecipesForCoffeePageState extends ConsumerState<RecipesForCoffeePage> {
         BrewMethodsStatus.failed => AppState(
             icon: AppIcons.stateError,
             title: texts.methodsFailed,
-            description: state.error,
+            // Не текст исключения: он всегда по-русски и человеку
+            // говорит только код ответа. Причина уходит в журнал.
+            description: texts.svcLoadFailedNote,
             isError: true,
             primaryAction: AppButton(
               label: texts.retry,
@@ -59,11 +62,15 @@ class _RecipesForCoffeePageState extends ConsumerState<RecipesForCoffeePage> {
   }
 
   Widget _list(BrewMethodsState state) {
+    final texts = AppLocalizations.of(context);
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
       children: [
         for (final group in state.grouped) ...[
-          SectionTitle(group.name),
+          SectionTitle(
+            group.slug == otherGroupSlug ? texts.svcGroupOther : group.name,
+          ),
           for (final method in group.methods)
             AppRow(
               label: method.name,

@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:pick_up_recipe/core/logger.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/data_sources/remote/possible_values_service.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/info_inserting_camera_widget.dart';
@@ -232,6 +233,7 @@ class _InsertingPackInfoWidgetState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(formNotifierProvider);
+    final texts = AppLocalizations.of(context);
 
     // Поля заполняются, только когда значения пришли извне. Прежний код звал
     // это из каждой перерисовки и затирал то, что человек набирает.
@@ -245,11 +247,7 @@ class _InsertingPackInfoWidgetState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Впишите, что написано на пачке. Обязательна только страна — '
-            'из неё и региона соберётся название.',
-            style: context.texts.bodySmall,
-          ),
+          Text(texts.packFormIntro, style: context.texts.bodySmall),
           const SizedBox(height: AppSpacing.s4),
           const InsertingPackInfoCameraWidget(),
           const SizedBox(height: AppSpacing.s5),
@@ -260,20 +258,20 @@ class _InsertingPackInfoWidgetState
                 TextInputWithHints(
                   key: const ValueKey('country'),
                   hintsArray: possibleCountries,
-                  labelText: 'Страна',
-                  hintText: 'Бразилия',
+                  labelText: texts.packFormCountry,
+                  hintText: texts.packFormCountryHint,
                   controller: _countryInputController,
                   onEditingFinished: _commitFields,
                   validator: (value) => (value ?? '').trim().isEmpty
-                      ? 'Без страны пачку нечем назвать'
+                      ? texts.packFormCountryRequired
                       : null,
                 ),
                 const SizedBox(height: AppSpacing.s4),
                 TextInputWithHints(
                   key: const ValueKey('region'),
                   hintsArray: possibleRegions,
-                  labelText: 'Регион — если знаете',
-                  hintText: 'Серрадо',
+                  labelText: texts.packFormRegion,
+                  hintText: texts.packFormRegionHint,
                   controller: _regionInputController,
                   onEditingFinished: _commitFields,
                 ),
@@ -281,8 +279,8 @@ class _InsertingPackInfoWidgetState
                 TextInputWithHints(
                   key: const ValueKey('variety'),
                   hintsArray: possibleVariety,
-                  labelText: 'Сорт',
-                  hintText: 'бурбон',
+                  labelText: texts.packFormVariety,
+                  hintText: texts.packFormVarietyHint,
                   controller: _varietyController,
                   onEditingFinished: _commitFields,
                 ),
@@ -290,7 +288,7 @@ class _InsertingPackInfoWidgetState
                 NumberInput(
                   key: const ValueKey('sca'),
                   controller: _scaScoreController,
-                  labelText: 'Оценка SCA',
+                  labelText: texts.packFormScaScore,
                   hintText: '86',
                   minimalPercentageNumber: 70,
                   onEditingFinished: _commitFields,
@@ -298,7 +296,7 @@ class _InsertingPackInfoWidgetState
                 const SizedBox(height: AppSpacing.s4),
                 DateInputField(
                   key: const ValueKey('roast-date'),
-                  labelText: 'Дата обжарки',
+                  labelText: texts.packFormRoastDate,
                   controller: _dateInputController,
                   onEditingFinished: _commitFields,
                 ),
@@ -306,24 +304,24 @@ class _InsertingPackInfoWidgetState
             ),
           ),
           _listSection(
-            title: 'Дескрипторы',
-            note: 'Чем пахнет и какой на вкус — по слову в строке',
+            title: texts.packFormDescriptors,
+            note: texts.packFormDescriptorsNote,
             keyPrefix: 'descriptor',
             controllers: _descriptorControllers,
             hints: possibleDescriptors,
-            fieldLabel: 'Дескриптор',
-            hintText: 'малина',
-            addLabel: 'Добавить дескриптор',
+            fieldLabel: texts.packFormDescriptorNumbered,
+            hintText: texts.packFormDescriptorHint,
+            addLabel: texts.packFormAddDescriptor,
           ),
           _listSection(
-            title: 'Способ обработки',
-            note: 'Обычно написан на пачке рядом с сортом',
+            title: texts.packFormProcessing,
+            note: texts.packFormProcessingNote,
             keyPrefix: 'processing',
             controllers: _processingMethodControllers,
             hints: possibleProcessingMethods,
-            fieldLabel: 'Обработка',
-            hintText: 'мытая',
-            addLabel: 'Добавить обработку',
+            fieldLabel: texts.packFormProcessingNumbered,
+            hintText: texts.packFormProcessingHint,
+            addLabel: texts.packFormAddProcessing,
           ),
           if (state.errorMessage != null) ...[
             const SizedBox(height: AppSpacing.s4),
@@ -331,7 +329,7 @@ class _InsertingPackInfoWidgetState
           ],
           const SizedBox(height: AppSpacing.s6),
           AppButton(
-            label: 'Отправить',
+            label: texts.packFormSubmit,
             icon: AppIcons.uiCheck,
             loading: state.isSubmitting,
             onPressed: _onSubmitTap,
@@ -349,7 +347,7 @@ class _InsertingPackInfoWidgetState
     required String keyPrefix,
     required List<TextEditingController> controllers,
     required List<String> hints,
-    required String fieldLabel,
+    required String Function(int number) fieldLabel,
     required String hintText,
     required String addLabel,
   }) {
@@ -368,7 +366,7 @@ class _InsertingPackInfoWidgetState
                 child: TextInputWithHints(
                   key: ValueKey('$keyPrefix-$index'),
                   hintsArray: hints,
-                  labelText: '$fieldLabel ${index + 1}',
+                  labelText: fieldLabel(index + 1),
                   hintText: hintText,
                   controller: controllers[index],
                   onEditingFinished: _commitFields,
@@ -380,7 +378,7 @@ class _InsertingPackInfoWidgetState
                   padding: const EdgeInsets.only(top: AppSpacing.s4),
                   child: IconButton(
                     onPressed: () => _removeField(controllers, index),
-                    tooltip: 'Убрать строку',
+                    tooltip: AppLocalizations.of(context).packFormRemoveLine,
                     icon: AppIcon(
                       AppIcons.uiTrash,
                       size: AppSizes.icon20,
@@ -426,7 +424,7 @@ class _FailurePlate extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Пачка не отправилась',
+                  AppLocalizations.of(context).packFormSubmitFailed,
                   style: context.texts.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: context.colors.onSurface,
@@ -435,7 +433,7 @@ class _FailurePlate extends StatelessWidget {
                 const SizedBox(height: AppSpacing.s1),
                 // Набранное никуда не делось: повторить можно той же кнопкой.
                 Text(
-                  '$reason. Набранное осталось — попробуйте ещё раз.',
+                  AppLocalizations.of(context).packFormSubmitFailedNote(reason),
                   style: context.texts.labelSmall,
                 ),
               ],

@@ -5,7 +5,9 @@
 // и заметить это можно только на выпитой чашке, которую уже не переоценить.
 
 import 'package:encrypt_shared_preferences/provider.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/prefs_key.dart';
 import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/rating_draft.dart';
@@ -81,6 +83,14 @@ RatingDraft draft({
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  late AppLocalizations ru;
+  late AppLocalizations en;
+
+  setUpAll(() async {
+    ru = await AppLocalizations.delegate.load(const Locale('ru'));
+    en = await AppLocalizations.delegate.load(const Locale('en'));
+  });
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -186,12 +196,29 @@ void main() {
 
     test('подпись плашки говорит, что именно осталось недосказанным', () async {
       expect(
-        draft(point: const TastePoint(0, -0.9), stars: 4, axes: const {'acidity': 7}).summary,
+        draft(point: const TastePoint(0, -0.9), stars: 4, axes: const {'acidity': 7})
+            .summaryFor(ru),
         'сильно слабо · 4 из 5 · 1 ось',
       );
       expect(
-        draft(point: TastePoint.center, stars: 0, axes: const {'acidity': 7, 'aroma': 6}).summary,
+        draft(point: TastePoint.center, stars: 0, axes: const {'acidity': 7, 'aroma': 6})
+            .summaryFor(ru),
         '2 оси',
+      );
+    });
+
+    test('на английском телефоне подпись плашки английская, со своим счётом осей', () async {
+      // Счёт осей — ICU, а не рука: у русского три формы, у английского две,
+      // и собранное вручную «1 axes» выдавало бы подделку под перевод.
+      expect(
+        draft(point: const TastePoint(0, -0.9), stars: 4, axes: const {'acidity': 7})
+            .summaryFor(en),
+        'very weak · 4 of 5 · 1 axis',
+      );
+      expect(
+        draft(point: TastePoint.center, stars: 0, axes: const {'acidity': 7, 'aroma': 6})
+            .summaryFor(en),
+        '2 axes',
       );
     });
   });

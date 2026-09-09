@@ -6,17 +6,18 @@
 // профиля.
 
 /// Вид кофемолки. Совпадает с колонкой kind справочника grinders.
+///
+/// В перечислении только код с провода: заголовок группы — слово для человека,
+/// и лежит оно в словаре, а не здесь. Модель обязана оставаться на двух языках
+/// одинаковой.
 enum GrinderKind {
-  manual('manual', 'Ручные'),
-  electric('electric', 'Электрические'),
-  unknown('', 'Прочие');
+  manual('manual'),
+  electric('electric'),
+  unknown('');
 
-  const GrinderKind(this.wireName, this.title);
+  const GrinderKind(this.wireName);
 
   final String wireName;
-
-  /// Заголовок группы в списке выбора.
-  final String title;
 
   static GrinderKind fromWire(String? value) {
     if (value == null || value.isEmpty) return GrinderKind.unknown;

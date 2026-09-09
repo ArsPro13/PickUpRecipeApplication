@@ -24,12 +24,12 @@ class AuthService {
     });
 
     if (response.statusCode != 200) {
-      throw AuthFailure.fromResponse(response, action: 'войти');
+      throw AuthFailure.fromResponse(response, action: AuthAction.login);
     }
 
     final data = jsonDecode(response.body);
     if (!data.containsKey('access_token') || !data.containsKey('refresh_token')) {
-      throw const AuthFailure('Сервер ответил без токенов');
+      throw const AuthFailure(AuthReason.noTokens);
     }
 
     await _saveTokens(data['access_token'], data['refresh_token']);
@@ -66,7 +66,7 @@ class AuthService {
     final response = await _apiClient.post('/auth/forgot_password', {'email': email});
 
     if (response.statusCode != 200 && response.statusCode != 404) {
-      throw AuthFailure.fromResponse(response, action: 'отправить письмо');
+      throw AuthFailure.fromResponse(response, action: AuthAction.sendLetter);
     }
   }
 
@@ -79,7 +79,7 @@ class AuthService {
     });
 
     if (response.statusCode != 200) {
-      throw AuthFailure.fromResponse(response, action: 'сменить пароль');
+      throw AuthFailure.fromResponse(response, action: AuthAction.changePassword);
     }
   }
 
@@ -102,7 +102,7 @@ class AuthService {
       });
 
       if (response.statusCode != 200) {
-        throw AuthFailure.fromResponse(response, action: 'зарегистрироваться');
+        throw AuthFailure.fromResponse(response, action: AuthAction.register);
       }
     } catch (e) {
       logger.e('Registration error', error: e);
@@ -125,10 +125,10 @@ class AuthService {
       // было бы неправдой, и человек не понял бы, что надо просто перенабрать.
       if (response.statusCode == 500) {
         logger.w('Wrong code');
-        throw const AuthFailure('Код не подошёл. Проверьте письмо ещё раз');
+        throw const AuthFailure(AuthReason.wrongCode);
       }
 
-      throw AuthFailure.fromResponse(response, action: 'подтвердить почту');
+      throw AuthFailure.fromResponse(response, action: AuthAction.verifyEmail);
     } catch (e) {
       logger.e('Registration error', error: e);
       rethrow;
