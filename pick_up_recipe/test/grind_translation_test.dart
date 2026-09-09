@@ -330,12 +330,18 @@ void main() {
   // «примерно 14» посреди английского экрана, как на видео владельца.
   // Проверяется исходник, потому что три из четырёх экранов в виджет-тесте
   // не поднимаются: они спрашивают роутер и сеть ещё в шапке.
+  //
+  // Сам файл перевода из проверки исключён: в нём вызов и объявлен.
   group('экраны передают словарь в grindReading', () {
-    test('ни один вызов в lib/src/pages не забыл texts', () {
+    test('ни один вызов в lib/src не забыл texts', () {
       final calls = <String>[];
 
-      for (final entity in Directory('lib/src/pages').listSync(recursive: true)) {
+      // Не только `pages`: подписи помола зовут и виджеты, и состояния,
+      // а забытый `texts:` нигде не падает — он молча берёт язык шаблона.
+      for (final entity in Directory('lib/src').listSync(recursive: true)) {
         if (entity is! File || !entity.path.endsWith('.dart')) continue;
+
+        if (entity.path.endsWith('grind_translation.dart')) continue;
 
         final source = entity.readAsStringSync();
         var at = source.indexOf('grindReading(');
