@@ -59,11 +59,7 @@ class _TwoScreenRouter extends RootStackRouter {
 
           return AutoRoutePage<dynamic>(
             routeData: data,
-            child: BrewPage(
-              recipe: args.recipe,
-              pack: args.pack,
-              autoStart: args.autoStart,
-            ),
+            child: BrewPage(recipe: args.recipe, pack: args.pack),
           );
         },
       };
@@ -156,7 +152,34 @@ void main() {
 
     // Без await: push отдаёт результат экрана и ждёт, пока тот закроется, —
     // то есть ровно того, что и проверяется ниже.
-    unawaited(router.push(BrewRoute(recipe: _recipe(), pack: null, autoStart: true)));
+    unawaited(router.push(BrewRoute(recipe: _recipe(), pack: null)));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    // Экран открывается рамкой «Смелите кофе»: отсчёт не начинается сам ни с
+    // какого входа. Часть входов раньше открывала заваривание уже идущим —
+    // владелец на видео попадал с карточки кофе прямо на предсмачивание и
+    // молол кофе, пока шёл первый шаг: «нету шага „смолол, начинаем“, надо
+    // вернуть». Проверяется это здесь, а не отдельным тестом: рамка стоит на
+    // пути у каждого захода в заваривание, и мимо неё не пройти незамеченной.
+    expect(
+      find.text('Смелите кофе'),
+      findsOneWidget,
+      reason: 'заваривание открылось, минуя помол',
+    );
+
+    // И главное: секунды не текут, пока стоит рамка. Первый шаг рецепта —
+    // тридцатисекундный, и через три секунды он показывал бы 0:27.
+    await tester.pump(const Duration(seconds: 3));
+    expect(
+      find.text('0:27'),
+      findsNothing,
+      reason: 'первый шаг начал отсчёт до того, как кофе смололи',
+    );
+
+    // Дальше проверяется уход с идущего заваривания, поэтому его надо
+    // начать — тем же нажатием, каким его начинает человек.
+    await tester.tap(find.text('Смолол, начинаем'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 

@@ -714,7 +714,7 @@ class _PlayButton extends StatelessWidget {
       label: AppLocalizations.of(context).recipesBrewAgain,
       child: InkWell(
         onTap: () => context.router.push(
-          BrewRoute(recipe: version.recipe, pack: pack, autoStart: true),
+          BrewRoute(recipe: version.recipe, pack: pack),
         ),
         customBorder: const CircleBorder(),
         child: Container(

@@ -348,9 +348,8 @@ class _RoasterRecipe extends StatelessWidget {
                 child: AppButton(
                   label: texts.chooseBrewWithTime(_formatTime(recipe.time)),
                   icon: AppIcons.uiPlay,
-                  // Числа рецепта уже над кнопкой — таймер идёт сразу.
                   onPressed: () => context.router.push(
-                    BrewRoute(recipe: recipe, pack: pack, autoStart: true),
+                    BrewRoute(recipe: recipe, pack: pack),
                   ),
                 ),
               ),

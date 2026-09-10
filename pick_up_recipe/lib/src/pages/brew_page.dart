@@ -81,19 +81,10 @@ class BrewPage extends ConsumerStatefulWidget {
     super.key,
     required this.recipe,
     required this.pack,
-    this.autoStart = false,
   });
 
   final RecipeData recipe;
   final PackData? pack;
-
-  /// Начать сразу, без idle-состояния «Смолол, начинаем».
-  ///
-  /// true у входов с экранов, где рецепт целиком уже был перед глазами
-  /// (базовый рецепт, конструктор): там «Заварить» и есть «начинаем», а
-  /// повтор той же подготовки читался как лишний экран. У входов из списков
-  /// подготовка остаётся: помол человек ещё не видел.
-  final bool autoStart;
 
   @override
   ConsumerState<BrewPage> createState() => _BrewPageState();
@@ -160,11 +151,12 @@ class _BrewPageState extends ConsumerState<BrewPage>
     // пятьдесят секунд иначе гаснет ровно на ней.
     ScreenWake.keepAwake(true);
 
-    if (widget.autoStart && _engine.steps.isNotEmpty) {
-      _engine.start();
-      _live.value = _engine.snapshot();
-      _syncFrames();
-    }
+    // Отсчёт не начинается сам ни с какого входа: сначала «Смелите кофе —
+    // Смолол, начинаем». Часть входов раньше пропускала эту рамку — считалось,
+    // что там рецепт уже был перед глазами и повтор читается лишним экраном.
+    // Но перед глазами он был прочитан, а не смолот: владелец, попав с
+    // карточки кофе сразу на предсмачивание, — «здесь плохо, что нету шага
+    // „смолол, начинаем“, надо вернуть».
   }
 
   @override

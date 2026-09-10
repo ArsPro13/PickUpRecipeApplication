@@ -822,9 +822,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   }
 
   void _brew() {
-    // Рецепт целиком перед глазами — «Заварить» начинает сразу, без
-    // повторного экрана подготовки.
-    context.router.push(BrewRoute(recipe: _recipe, pack: widget.pack, autoStart: true));
+    context.router.push(BrewRoute(recipe: _recipe, pack: widget.pack));
   }
 
 
