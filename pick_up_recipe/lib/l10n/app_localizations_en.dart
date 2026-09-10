@@ -1463,7 +1463,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get builderDone => 'Done';
 
   @override
-  String get builderMinutesSeconds => 'minutes and seconds';
+  String get builderHoursShort => 'h';
+
+  @override
+  String get builderMinutesShort => 'min';
+
+  @override
+  String get builderSecondsShort => 'sec';
 
   @override
   String get builderDecrease => 'decrease';

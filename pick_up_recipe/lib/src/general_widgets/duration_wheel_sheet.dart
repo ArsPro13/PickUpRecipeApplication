@@ -21,8 +21,15 @@ import 'app_surface.dart';
 /// соседние сверху и снизу — меньше, и барабан перестаёт читаться барабаном.
 const int _visibleRows = 5;
 
-/// Потолок минут. Часовые шаги колд брю живут отдельным экраном ожидания,
-/// а не строкой рецепта, и шестьдесят минут здесь — заведомо больше нужного.
+/// Потолок часов. Барабан часов стоит здесь по прямой просьбе владельца:
+/// «чтобы можно было ставить длинные шаги — это необходимо для долгих
+/// способов заваривания на несколько часов». До этого потолком были
+/// пятьдесят девять минут, и колд брю на двенадцать часов в рецепт было
+/// не записать вовсе.
+///
+/// Сутки — граница здравого смысла: шаг длиннее суток не заваривание,
+/// а описка в разряде.
+const int _hoursCount = 24;
 const int _minutesCount = 60;
 const int _secondsCount = 60;
 
@@ -91,16 +98,16 @@ class _DurationSheetState extends State<_DurationSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.title ?? texts.builderDuration,
-                    style: context.texts.bodyMedium,
-                  ),
-                ),
-                Text(texts.builderMinutesSeconds, style: context.texts.labelSmall),
-              ],
+            // Заголовок один: что означает каждый барабан, теперь подписано
+            // над самим барабаном. Прежняя строка «минуты и секунды» справа
+            // от заголовка называла разряды, но не говорила, который где, —
+            // владелец просил подписать «что слева минуты, справа секунды».
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                widget.title ?? texts.builderDuration,
+                style: context.texts.bodyMedium,
+              ),
             ),
             const SizedBox(height: AppSpacing.s4),
             DurationWheels(
@@ -119,7 +126,12 @@ class _DurationSheetState extends State<_DurationSheet> {
   }
 }
 
-/// Два барабана — минуты и секунды — и подсвеченная строка выбора между ними.
+/// Три барабана — часы, минуты и секунды — и подсвеченная строка выбора.
+///
+/// Каждый подписан своим разрядом: без подписи два одинаковых столбика цифр
+/// читаются одинаково, и владелец спрашивал, что из них минуты. Подпись
+/// стоит над барабаном, а не одной строкой сбоку, чтобы отвечать на этот
+/// вопрос там, где он возникает.
 ///
 /// Отдельным виджетом, а не куском шторки: так его можно поставить и на
 /// экран, где шторка лишняя, и проверить тестом без открытия шторки.
@@ -140,9 +152,17 @@ class DurationWheels extends StatefulWidget {
 }
 
 class _DurationWheelsState extends State<DurationWheels> {
-  late int _minutes = (widget.seconds ~/ 60).clamp(0, _minutesCount - 1);
+  /// Ширина двоеточия между барабанами. Задана числом, а не размером текста,
+  /// потому что по ней же расставлены подписи разрядов строкой выше: обе
+  /// строки делят ширину одинаково, иначе «мин» стоит не над минутами.
+  static const double _colonWidth = AppSpacing.s5;
+
+  late int _hours = (widget.seconds ~/ 3600).clamp(0, _hoursCount - 1);
+  late int _minutes = (widget.seconds % 3600) ~/ 60;
   late int _seconds = widget.seconds % 60;
 
+  late final FixedExtentScrollController _hourWheel =
+      FixedExtentScrollController(initialItem: _hours);
   late final FixedExtentScrollController _minuteWheel =
       FixedExtentScrollController(initialItem: _minutes);
   late final FixedExtentScrollController _secondWheel =
@@ -150,54 +170,105 @@ class _DurationWheelsState extends State<DurationWheels> {
 
   @override
   void dispose() {
+    _hourWheel.dispose();
     _minuteWheel.dispose();
     _secondWheel.dispose();
     super.dispose();
   }
 
-  void _report() => widget.onChanged(_minutes * 60 + _seconds);
+  void _report() => widget.onChanged(_hours * 3600 + _minutes * 60 + _seconds);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: AppSizes.tapTarget * _visibleRows,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Дорожка под выбранной строкой: без неё непонятно, какое из пяти
-          // чисел сейчас выбрано, — крайние читаются наравне со средним.
-          IgnorePointer(
-            child: Container(
-              height: AppSizes.tapTarget,
-              decoration: sunkenDecoration(context, borderRadius: AppRadius.medium),
-            ),
-          ),
-          Row(
+    final texts = AppLocalizations.of(context);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _captions([
+          texts.builderHoursShort,
+          texts.builderMinutesShort,
+          texts.builderSecondsShort,
+        ]),
+        const SizedBox(height: AppSpacing.s1),
+        SizedBox(
+          height: AppSizes.tapTarget * _visibleRows,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              _wheel(
-                controller: _minuteWheel,
-                count: _minutesCount,
-                selected: _minutes,
-                onChanged: (value) {
-                  setState(() => _minutes = value);
-                  _report();
-                },
+              // Дорожка под выбранной строкой: без неё непонятно, какое из пяти
+              // чисел сейчас выбрано, — крайние читаются наравне со средним.
+              IgnorePointer(
+                child: Container(
+                  height: AppSizes.tapTarget,
+                  decoration: sunkenDecoration(context, borderRadius: AppRadius.medium),
+                ),
               ),
-              Text(':', style: context.texts.titleMedium),
-              _wheel(
-                controller: _secondWheel,
-                count: _secondsCount,
-                selected: _seconds,
-                pad: true,
-                onChanged: (value) {
-                  setState(() => _seconds = value);
-                  _report();
-                },
+              Row(
+                children: [
+                  _wheel(
+                    controller: _hourWheel,
+                    count: _hoursCount,
+                    selected: _hours,
+                    onChanged: (value) {
+                      setState(() => _hours = value);
+                      _report();
+                    },
+                  ),
+                  _colon(context),
+                  _wheel(
+                    controller: _minuteWheel,
+                    count: _minutesCount,
+                    selected: _minutes,
+                    pad: true,
+                    onChanged: (value) {
+                      setState(() => _minutes = value);
+                      _report();
+                    },
+                  ),
+                  _colon(context),
+                  _wheel(
+                    controller: _secondWheel,
+                    count: _secondsCount,
+                    selected: _seconds,
+                    pad: true,
+                    onChanged: (value) {
+                      setState(() => _seconds = value);
+                      _report();
+                    },
+                  ),
+                ],
               ),
             ],
           ),
+        ),
+      ],
+    );
+  }
+
+  /// Подписи разрядов над барабанами — тем же делением ширины, что и сами
+  /// барабаны: столбцы `Expanded`, между ними двоеточие своей ширины.
+  Widget _captions(List<String> labels) {
+    return Row(
+      children: [
+        for (final (index, label) in labels.indexed) ...[
+          if (index > 0) const SizedBox(width: _colonWidth),
+          Expanded(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: context.texts.labelSmall,
+            ),
+          ),
         ],
-      ),
+      ],
+    );
+  }
+
+  Widget _colon(BuildContext context) {
+    return SizedBox(
+      width: _colonWidth,
+      child: Center(child: Text(':', style: context.texts.titleMedium)),
     );
   }
 
@@ -220,8 +291,8 @@ class _DurationWheelsState extends State<DurationWheels> {
             final chosen = index == selected;
             return Center(
               child: Text(
-                // Секунды двумя знаками, минуты — одним: так же, как
-                // длительность подписана в самом рецепте.
+                // Минуты и секунды двумя знаками, часы — одним: так же, как
+                // длительность подписана в самом рецепте («1:05:00»).
                 pad ? index.toString().padLeft(2, '0') : '$index',
                 style: (chosen ? context.texts.bodyLarge : context.texts.bodyMedium)?.copyWith(
                   color: chosen ? context.colors.primary : context.colors.secondary,

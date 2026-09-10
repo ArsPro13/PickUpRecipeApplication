@@ -2498,11 +2498,23 @@ abstract class AppLocalizations {
   /// **'Готово'**
   String get builderDone;
 
-  /// Шторка длительности: подпись справа от заголовка — что означают два барабана.
+  /// Шторка длительности: подпись над барабаном часов.
   ///
   /// In ru, this message translates to:
-  /// **'минуты и секунды'**
-  String get builderMinutesSeconds;
+  /// **'ч'**
+  String get builderHoursShort;
+
+  /// Шторка длительности: подпись над барабаном минут.
+  ///
+  /// In ru, this message translates to:
+  /// **'мин'**
+  String get builderMinutesShort;
+
+  /// Шторка длительности: подпись над барабаном секунд.
+  ///
+  /// In ru, this message translates to:
+  /// **'сек'**
+  String get builderSecondsShort;
 
   /// Счётчик величины: кнопка «минус». Видит только голосовой помощник.
   ///

@@ -4,6 +4,11 @@
 // меняет значение ровно на единицу своего разряда. Барабан, который отдаёт
 // минуты вместо секунд, портит рецепт молча — на вид он такой же.
 //
+// Барабанов три: часы добавлены по просьбе владельца — «чтобы можно было
+// ставить длинные шаги, это необходимо для долгих способов заваривания на
+// несколько часов». Разряд часов проверяется отдельно: он сдвинул остальные
+// вправо, и перепутать столбцы теперь стоит рецепта вдвое дороже.
+//
 // Отдельная группа — про саму шторку, а не про барабан внутри неё. Барабан
 // был исправен всё это время: жест до него не доходил. Шторка тянулась за
 // пальцем всей площадью и забирала вертикальное перетаскивание себе, поэтому
@@ -23,11 +28,23 @@ import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 Widget _wheels(int seconds, void Function(int) onChanged) {
   return MaterialApp(
     theme: lightTheme,
+    // Делегаты нужны самому барабану, а не обёртке: разряды над столбцами он
+    // подписывает из словаря. Локаль задана явно — подписи разрядов короткие,
+    // и системный язык машины с тестом менял бы их молча.
+    locale: const Locale('ru'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: DurationWheels(seconds: seconds, onChanged: onChanged),
     ),
   );
 }
+
+/// Порядок барабанов слева направо. Числами по месту их не назовёшь: часы
+/// сдвинули минуты и секунды вправо, и `0` в тесте перестал значить минуты.
+const int _hours = 0;
+const int _minutes = 1;
+const int _seconds = 2;
 
 /// Крутит барабан на [items] позиций вперёд.
 ///
@@ -43,12 +60,12 @@ Future<void> _spin(WidgetTester tester, int wheel, int items) async {
 }
 
 void main() {
-  group('барабан минут и секунд', () {
+  group('барабан часов, минут и секунд', () {
     testWidgets('поворот секунд меняет секунды', (tester) async {
       var picked = 0;
       await tester.pumpWidget(_wheels(35, (value) => picked = value));
 
-      await _spin(tester, 1, 5);
+      await _spin(tester, _seconds, 5);
 
       expect(picked, 40);
     });
@@ -57,23 +74,44 @@ void main() {
       var picked = 0;
       await tester.pumpWidget(_wheels(35, (value) => picked = value));
 
-      await _spin(tester, 0, 1);
+      await _spin(tester, _minutes, 1);
 
       expect(picked, 95);
+    });
+
+    testWidgets('поворот часов добавляет ровно час', (tester) async {
+      // Часы заведены ради колд брю: без них шаг упирался в 59:59, и
+      // двенадцатичасовое замачивание в рецепт было не записать.
+      var picked = 0;
+      await tester.pumpWidget(_wheels(35, (value) => picked = value));
+
+      await _spin(tester, _hours, 1);
+
+      expect(picked, 3635);
+    });
+
+    testWidgets('барабан открывается на часах, которые уже стоят в шаге', (tester) async {
+      var picked = 0;
+      // 12:30:00 — колд брю на ночь.
+      await tester.pumpWidget(_wheels(12 * 3600 + 30 * 60, (value) => picked = value));
+
+      await _spin(tester, _seconds, 1);
+
+      expect(picked, 12 * 3600 + 30 * 60 + 1);
     });
 
     testWidgets('барабан открывается на том, что было в рецепте', (tester) async {
       var picked = 0;
       await tester.pumpWidget(_wheels(160, (value) => picked = value));
 
-      // 2:40 — минуты на двойке, секунды на сорока. Ничего не крутили,
+      // 0:02:40 — минуты на двойке, секунды на сорока. Ничего не крутили,
       // значит и сообщать нечего.
-      expect(find.text('2'), findsWidgets);
+      expect(find.text('02'), findsWidgets);
       expect(find.text('40'), findsWidgets);
       expect(picked, 0);
 
       // А сдвинули на одну секунду назад — приехало 2:39, а не 0:39.
-      await _spin(tester, 1, -1);
+      await _spin(tester, _seconds, -1);
       expect(picked, 159);
     });
 
@@ -96,7 +134,7 @@ void main() {
       );
 
       await tester.pumpWidget(_wheels(target.time, (value) => target.time = value));
-      await _spin(tester, 0, 1);
+      await _spin(tester, _minutes, 1);
 
       expect(target.time, 95);
       expect(formatDuration(target.time), '1:35');
@@ -107,11 +145,11 @@ void main() {
     testWidgets('палец на барабане крутит барабан, а не тащит шторку', (tester) async {
       final host = await _openSheet(tester);
 
-      await _spin(tester, 0, 4);
+      await _spin(tester, _minutes, 4);
 
       // Сначала — что барабан вообще шевельнулся: пока жест забирала шторка,
       // четвёрка на экране не появлялась вовсе.
-      expect(find.text('4'), findsOneWidget);
+      expect(find.text('04'), findsWidgets);
 
       await tester.tap(find.text('Готово'));
       await tester.pumpAndSettle();
@@ -123,7 +161,7 @@ void main() {
     testWidgets('нажатие мимо шторки ничего не меняет в шаге', (tester) async {
       final host = await _openSheet(tester);
 
-      await _spin(tester, 0, 4);
+      await _spin(tester, _minutes, 4);
       // Мимо шторки — это по затемнению сверху, там же, где палец у человека,
       // передумавшего на полпути.
       await tester.tapAt(const Offset(10, 10));
@@ -169,7 +207,9 @@ void main() {
 
       final en = lookupAppLocalizations(const Locale('en'));
       expect(find.text(en.builderDuration), findsOneWidget);
-      expect(find.text(en.builderMinutesSeconds), findsOneWidget);
+      expect(find.text(en.builderHoursShort), findsOneWidget);
+      expect(find.text(en.builderMinutesShort), findsOneWidget);
+      expect(find.text(en.builderSecondsShort), findsOneWidget);
       expect(find.text(en.builderDone), findsOneWidget);
 
       // Смотрим внутрь шторки: кнопка, которая её открыла, принадлежит

@@ -1481,7 +1481,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get builderDone => 'Готово';
 
   @override
-  String get builderMinutesSeconds => 'минуты и секунды';
+  String get builderHoursShort => 'ч';
+
+  @override
+  String get builderMinutesShort => 'мин';
+
+  @override
+  String get builderSecondsShort => 'сек';
 
   @override
   String get builderDecrease => 'убавить';

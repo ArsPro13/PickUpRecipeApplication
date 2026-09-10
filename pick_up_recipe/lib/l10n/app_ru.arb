@@ -2340,9 +2340,19 @@
     "description": "Готово: подтверждение в окне правки значения и в шторке с барабаном длительности."
   },
 
-  "builderMinutesSeconds": "минуты и секунды",
-  "@builderMinutesSeconds": {
-    "description": "Шторка длительности: подпись справа от заголовка — что означают два барабана."
+  "builderHoursShort": "ч",
+  "@builderHoursShort": {
+    "description": "Шторка длительности: подпись над барабаном часов."
+  },
+
+  "builderMinutesShort": "мин",
+  "@builderMinutesShort": {
+    "description": "Шторка длительности: подпись над барабаном минут."
+  },
+
+  "builderSecondsShort": "сек",
+  "@builderSecondsShort": {
+    "description": "Шторка длительности: подпись над барабаном секунд."
   },
 
   "builderDecrease": "убавить",

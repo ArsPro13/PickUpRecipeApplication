@@ -801,7 +801,11 @@
 
   "builderDone": "Done",
 
-  "builderMinutesSeconds": "minutes and seconds",
+  "builderHoursShort": "h",
+
+  "builderMinutesShort": "min",
+
+  "builderSecondsShort": "sec",
 
   "builderDecrease": "decrease",
 
