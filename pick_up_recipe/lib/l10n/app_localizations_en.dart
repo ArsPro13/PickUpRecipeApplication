@@ -1023,10 +1023,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get packFormDateEmptyNote =>
-      'Do not know it — leave it empty and we will put today\'s date';
+      'Today\'s date is in — change it if the pack says otherwise';
 
   @override
-  String get packFormToday => 'Today';
+  String get packFormPickDate => 'Pick in a calendar';
 
   @override
   String get packFormDescriptors => 'Descriptors';

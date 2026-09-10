@@ -1040,10 +1040,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get packFormDateEmptyNote =>
-      'Не знаете — оставьте пустым, поставим сегодняшнюю';
+      'Стоит сегодняшняя — поправьте, если на пачке другая';
 
   @override
-  String get packFormToday => 'Сегодня';
+  String get packFormPickDate => 'Выбрать в календаре';
 
   @override
   String get packFormDescriptors => 'Дескрипторы';

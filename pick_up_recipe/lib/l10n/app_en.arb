@@ -555,9 +555,9 @@
 
   "packFormDateInvalid": "There is no such date",
 
-  "packFormDateEmptyNote": "Do not know it — leave it empty and we will put today's date",
+  "packFormDateEmptyNote": "Today's date is in — change it if the pack says otherwise",
 
-  "packFormToday": "Today",
+  "packFormPickDate": "Pick in a calendar",
 
   "packFormDescriptors": "Descriptors",
 

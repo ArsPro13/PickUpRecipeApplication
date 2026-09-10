@@ -287,6 +287,72 @@ void main() {
       expect((await submit(tester))['pack_date'], '2026-09-01T00:00:00Z');
     });
 
+    testWidgets('дата обжарки заполнена сегодняшней сразу', (tester) async {
+      // «По умолчанию стояла сегодняшняя», — владелец. Пачку заводят в день
+      // покупки, и набирать восемь цифр ради этого не надо.
+      await pumpForm(tester);
+
+      final today = DateTime.now();
+      final expected = '${today.day.toString().padLeft(2, '0')}.'
+          '${today.month.toString().padLeft(2, '0')}.${today.year}';
+
+      expect(textOf(tester, 'roast-date'), expected);
+    });
+
+    testWidgets('подставленная дата и правда уезжает на сервер', (tester) async {
+      // Поле заполнено, но состояние формы про это узнаёт отдельно: если
+      // подстановка туда не доедет, сервер молча поставит своё сегодняшнее
+      // число — и разница вылезет на пачке, заведённой за полночь.
+      await pumpForm(tester);
+      await fill(tester, 'country', 'Бразилия');
+
+      final today = DateTime.now();
+      final expected = '${today.year}-${today.month.toString().padLeft(2, '0')}'
+          '-${today.day.toString().padLeft(2, '0')}T00:00:00Z';
+
+      expect((await submit(tester))['pack_date'], expected);
+    });
+
+    testWidgets('кнопки «Сегодня» больше нет, есть календарь', (tester) async {
+      // Нажимать на «Сегодня» стало нечего: сегодняшняя дата уже в поле.
+      // Вместо неё — вход в календарь, о котором владелец и просил.
+      await pumpForm(tester);
+
+      expect(find.text('Сегодня'), findsNothing);
+      expect(find.text('Выбрать в календаре'), findsOneWidget);
+    });
+
+    testWidgets('календарь ставит выбранный день в поле', (tester) async {
+      await pumpForm(tester);
+
+      // Без pumpAndSettle: в форме живёт рамка съёмки со своей вечной
+      // анимацией, и «пока всё не успокоится» здесь не наступает никогда.
+      await tester.tap(find.text('Выбрать в календаре'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      // Календарь открылся на том, что стоит в поле, — на сегодняшнем дне.
+      // Берём первое число этого месяца: оно есть в календаре всегда и
+      // никогда не оказывается в будущем.
+      await tester.tap(find.text('1').last);
+      await tester.pump();
+
+      // Подпись кнопки согласия берём у самого календаря: она приходит из
+      // словаря Flutter и на русском пишется кириллицей, «ОК», а не «OK».
+      final buttons = MaterialLocalizations.of(
+        tester.element(find.byType(DatePickerDialog)),
+      );
+      await tester.tap(find.text(buttons.okButtonLabel));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      final today = DateTime.now();
+      expect(
+        textOf(tester, 'roast-date'),
+        '01.${today.month.toString().padLeft(2, '0')}.${today.year}',
+      );
+    });
+
     testWidgets('снимок пачки уезжает вместе с ней', (tester) async {
       // Прозрачный пиксель в base64 — ровно то, что кладёт в форму камера.
       const photo = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4'

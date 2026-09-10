@@ -6,8 +6,15 @@
 // сегодняшним числом. Вдобавок нажатие ловили сразу два обработчика — свой у
 // поля и свой у обёртки, — и календарь открывался и тут же закрывался.
 //
-// Календаря здесь больше нет намеренно: цифры с маской короче и на телефоне
-// набираются быстрее, чем календарь листается на три года назад.
+// Календарь вернулся по просьбе владельца: «для даты нужно, чтобы был виджет
+// календаря, чтобы можно было удобнее выбирать дату, и по умолчанию стояла
+// сегодняшняя; кнопку „Сегодня“ можно убрать». Набор цифр никуда не делся —
+// он и правда короче, когда дату знаешь наизусть; календарь стоит рядом
+// меткой, а не поверх поля: именно от двух обработчиков на одном нажатии он
+// в прошлый раз открывался и тут же закрывался.
+//
+// Кнопки «Сегодня» больше нет, потому что сегодняшняя дата стоит в поле
+// сразу: нажимать на неё было бы нечего.
 //
 // Маска — единственное на этом экране, что не переводится. Подпись поля,
 // пример внутри него и пояснение снизу берутся из словаря, а порядок частей
@@ -61,6 +68,19 @@ class _DateInputFieldState extends State<DateInputField> {
   void initState() {
     super.initState();
     _focusNode = FocusNode()..addListener(_onFocusChanged);
+
+    // Пустое поле — самый частый случай: дату обжарки печатают не на всякой
+    // пачке, а пачку заводят в день покупки. Ставим сегодняшнюю сразу, чтобы
+    // человеку осталось её поправить, а не набрать с нуля.
+    //
+    // Следующим кадром, а не здесь: значение уезжает в состояние формы, а
+    // менять его посреди сборки кадра нельзя.
+    if (widget.controller.text.trim().isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || widget.controller.text.trim().isNotEmpty) return;
+        _setToday();
+      });
+    }
   }
 
   @override
@@ -74,11 +94,31 @@ class _DateInputFieldState extends State<DateInputField> {
     widget.onEditingFinished?.call();
   }
 
-  void _setToday() {
-    final today = packDateFormat.format(DateTime.now());
+  void _setToday() => _fill(DateTime.now());
+
+  /// Календарь. Открывается меткой под полем, а не нажатием на само поле:
+  /// поле принимает цифры, и отдать ему оба жеста сразу нельзя.
+  Future<void> _pickInCalendar() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: parsePackDate(widget.controller.text) ?? now,
+      // Обжарка в будущем не бывает, а старше трёх лет её незачем искать:
+      // такой кофе давно выпит, а листать календарь тем дальше, чем шире
+      // окно выбора.
+      firstDate: DateTime(now.year - 3),
+      lastDate: now,
+    );
+
+    if (picked == null || !mounted) return;
+    _fill(picked);
+  }
+
+  void _fill(DateTime date) {
+    final text = packDateFormat.format(date);
     widget.controller.value = TextEditingValue(
-      text: today,
-      selection: TextSelection.collapsed(offset: today.length),
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
     widget.onEditingFinished?.call();
   }
@@ -122,7 +162,7 @@ class _DateInputFieldState extends State<DateInputField> {
               ),
             ),
             const SizedBox(width: AppSpacing.s2),
-            AppChip(label: texts.packFormToday, onTap: _setToday),
+            AppChip(label: texts.packFormPickDate, onTap: _pickInCalendar),
           ],
         ),
       ],
