@@ -794,10 +794,18 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     return leave ?? false;
   }
 
+  /// Уходит с экрана, спросив про несохранённые правки.
+  ///
+  /// `popForced`, а не `maybePop`: правки так и остались несохранёнными, а
+  /// значит `canPop` у `PopScope` выше по-прежнему false — `maybePop` спросил
+  /// бы его заново и открыл этот же диалог по кругу. Человек нажимал «Уйти»
+  /// и оставался в конструкторе. Ровно та же беда была на экране заваривания,
+  /// см. `_leave` в `brew_page.dart`.
   Future<void> _leave() async {
-    if (await _confirmLeave() && mounted) {
-      await context.router.maybePop();
-    }
+    if (!await _confirmLeave()) return;
+    if (!mounted) return;
+
+    context.router.popForced();
   }
 
   Future<void> _save() async {
