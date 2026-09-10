@@ -242,12 +242,21 @@ class _ScannerStatus extends StatelessWidget {
   }
 }
 
-/// Рисунок в кадре: пачка, надписи обжарщика и мелкий код в её нижнем углу.
+/// Рисунок в кадре: ровная пачка и мелкий QR в её левом нижнем углу.
 ///
-/// Прежний рисунок показывал крупный QR по центру пачки и прицел во весь
-/// кадр — так код не печатают. На упаковке он мелкий и стоит в углу, обычно
-/// нижнем левом, рядом с составом; рисунок должен показывать именно это,
-/// иначе человек ищет большой квадрат и не находит.
+/// Прежний рисунок пачку кривил — верх завален, бока не отвесны, низ провис,
+/// — а на месте кода стояла строка букв в широкой рамке. Владелец: «здесь
+/// надо поправить, чтобы пачка кофе была ровная; вот этот код — это QR-код,
+/// маленький, в левом нижнем углу, с подписью в виде кода под ним; всё должно
+/// быть ровно».
+///
+/// Поэтому: прямоугольник вместо мятого мешка, настоящий квадрат кода с
+/// тремя угловыми глазами вместо букв, и подпись под ним — по левому краю
+/// кода, а не по центру: так у рисунка одна вертикаль, вдоль которой и стоит
+/// всё остальное.
+///
+/// Пачка держится левее середины: в правом верхнем углу кадра живёт подпись
+/// «наведите», и посередине они легли бы друг на друга.
 class _ScannerPainter extends CustomPainter {
   const _ScannerPainter({required this.ink, required this.accent, required this.sweep});
 
@@ -257,13 +266,51 @@ class _ScannerPainter extends CustomPainter {
   /// 0…1 — положение бегущей полосы.
   final double sweep;
 
-  /// Рисунок задуман в прямоугольнике 260×130. Все числа ниже — координаты
-  /// внутри него, а не пиксели экрана: масштаб считается один раз.
+  /// Рисунок задуман в прямоугольнике 260×130 — той же пропорции 2:1, что и
+  /// кадр на экране. Все числа ниже — координаты внутри него, а не пиксели.
   static const Size _art = Size(260, 130);
 
-  /// Прицел вокруг кода. Он маленький и сдвинут в левый нижний угол пачки —
-  /// это и есть главное, что рисунок должен объяснить.
-  static const Rect _codeFrame = Rect.fromLTRB(44, 88, 124, 111);
+  /// Пачка. Отвесные бока и ровный верх: мятой её рисовать не за чем — на
+  /// прилавке она стоит, а не лежит.
+  static const Rect _pack = Rect.fromLTRB(40, 14, 150, 120);
+
+  /// Отступ содержимого от края пачки. Одна величина на всё: по ней стоят и
+  /// надписи обжарщика, и код, и его подпись — «всё должно быть ровно» это
+  /// прежде всего одна вертикаль слева.
+  static const double _inset = 12;
+
+  /// Код: квадрат в левом нижнем углу пачки. Восемь модулей по три единицы —
+  /// мельче, и глаза QR перестают читаться глазами.
+  static const int _qrModules = 8;
+  static const double _qrModule = 3;
+  static const double _qrSide = _qrModules * _qrModule;
+  static final Rect _qr = Rect.fromLTWH(
+    _pack.left + _inset,
+    _pack.bottom - _inset - 14 - _qrSide,
+    _qrSide,
+    _qrSide,
+  );
+
+  /// Прицел вокруг кода: по размеру кода, а не кадра. Он маленький и стоит в
+  /// углу — это и есть главное, что рисунок должен объяснить.
+  static final Rect _aim = Rect.fromLTRB(
+    _qr.left - 4,
+    _qr.top - 4,
+    _qr.right + 4,
+    _qr.bottom + 4,
+  );
+
+  /// Тёмные модули кода. Список постоянный: рисунок обязан выглядеть одним и
+  /// тем же на каждой перерисовке, а случайный узор мигал бы шестьдесят раз
+  /// в секунду. Глаза по трём углам добавляются отдельно.
+  static const List<(int, int)> _qrCells = [
+    (3, 0), (4, 1), (3, 2), (4, 2),
+    (0, 3), (2, 3), (4, 3), (5, 3), (7, 3),
+    (1, 4), (3, 4), (6, 4),
+    (3, 5), (5, 5), (7, 5),
+    (4, 6), (6, 6),
+    (3, 7), (5, 7), (6, 7),
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -288,29 +335,37 @@ class _ScannerPainter extends CustomPainter {
       ..color = ink.withValues(alpha: 0.4)
       ..strokeWidth = 1.6;
 
-    // Пачка: верх заварен планкой, низ чуть провис под зерном.
-    canvas.drawPath(
-      Path()
-        ..moveTo(38, 34)
-        ..lineTo(152, 30)
-        ..lineTo(158, 120)
-        ..quadraticBezierTo(98, 130, 32, 122)
-        ..close(),
+    final fill = Paint()..color = ink.withValues(alpha: 0.85);
+
+    // Пачка и планка, которой заварен верх.
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(_pack, const Radius.circular(4)),
       line,
     );
-    canvas.drawLine(const Offset(44, 42), const Offset(148, 39), thin);
-
-    // Надписи обжарщика: крупные, читаются издалека. Они здесь ради контраста
-    // с кодом — рядом с ними видно, насколько он мелкий.
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(48, 52, 26, 24), const Radius.circular(4)),
+    canvas.drawLine(
+      Offset(_pack.left + _inset / 2, _pack.top + 14),
+      Offset(_pack.right - _inset / 2, _pack.top + 14),
       thin,
     );
-    canvas.drawLine(const Offset(84, 58), const Offset(142, 56), thin);
-    canvas.drawLine(const Offset(84, 70), const Offset(120, 69), thin);
-    canvas.drawLine(const Offset(48, 86), const Offset(140, 84), thin);
 
-    // Сам код — тем же кеглем, каким его печатают: мелким.
+    // Надписи обжарщика: крупные, читаются издалека. Они здесь ради
+    // контраста — рядом с ними видно, насколько код мелкий.
+    final left = _pack.left + _inset;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(left, _pack.top + 28, 24, 24),
+        const Radius.circular(4),
+      ),
+      thin,
+    );
+    canvas.drawLine(Offset(left + 32, _pack.top + 34), Offset(_pack.right - _inset, _pack.top + 34), thin);
+    canvas.drawLine(Offset(left + 32, _pack.top + 46), Offset(_pack.right - _inset - 22, _pack.top + 46), thin);
+    canvas.drawLine(Offset(left, _pack.top + 64), Offset(_pack.right - _inset, _pack.top + 64), thin);
+
+    _paintCode(canvas, fill);
+
+    // Подпись под кодом — тем же кеглем, каким её печатают, и по левому краю
+    // кода: так у кода и подписи одна вертикаль.
     final label = TextPainter(
       text: TextSpan(
         text: 'ABCD-2345-68',
@@ -318,7 +373,7 @@ class _ScannerPainter extends CustomPainter {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    label.paint(canvas, Offset(_codeFrame.center.dx - label.width / 2, 94));
+    label.paint(canvas, Offset(_qr.left, _qr.bottom + 6));
 
     // Уголки прицела: короткие, по размеру кода, а не по размеру кадра.
     final bracket = Paint()
@@ -328,12 +383,12 @@ class _ScannerPainter extends CustomPainter {
       ..color = accent
       ..strokeWidth = 2.4;
 
-    const arm = 9.0;
+    const arm = 8.0;
     final corners = <(Offset, double, double)>[
-      (_codeFrame.topLeft, 1, 1),
-      (_codeFrame.topRight, -1, 1),
-      (_codeFrame.bottomLeft, 1, -1),
-      (_codeFrame.bottomRight, -1, -1),
+      (_aim.topLeft, 1, 1),
+      (_aim.topRight, -1, 1),
+      (_aim.bottomLeft, 1, -1),
+      (_aim.bottomRight, -1, -1),
     ];
     for (final (origin, towardsX, towardsY) in corners) {
       canvas.drawPath(
@@ -347,10 +402,10 @@ class _ScannerPainter extends CustomPainter {
 
     // Полоса ходит внутри прицела: она показывает, что читают именно код,
     // а не пачку целиком.
-    final y = _codeFrame.top + _codeFrame.height * sweep;
+    final y = _aim.top + _aim.height * sweep;
     canvas.drawLine(
-      Offset(_codeFrame.left, y),
-      Offset(_codeFrame.right, y),
+      Offset(_aim.left, y),
+      Offset(_aim.right, y),
       Paint()
         ..color = accent.withValues(alpha: 0.7)
         ..strokeWidth = 2.4
@@ -358,6 +413,33 @@ class _ScannerPainter extends CustomPainter {
     );
 
     canvas.restore();
+  }
+
+  /// Сам код: три угловых глаза и постоянный узор модулей между ними.
+  void _paintCode(Canvas canvas, Paint fill) {
+    Rect cell(int col, int row, [int span = 1]) => Rect.fromLTWH(
+          _qr.left + col * _qrModule,
+          _qr.top + row * _qrModule,
+          span * _qrModule,
+          span * _qrModule,
+        );
+
+    // Глаз — рамка три на три с закрашенной серединой: без них квадрат
+    // модулей читается ковриком, а не кодом.
+    for (final (col, row) in const [(0, 0), (5, 0), (0, 5)]) {
+      canvas.drawRect(
+        cell(col, row, 3),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = _qrModule * 0.7
+          ..color = fill.color,
+      );
+      canvas.drawRect(cell(col + 1, row + 1), fill);
+    }
+
+    for (final (col, row) in _qrCells) {
+      canvas.drawRect(cell(col, row), fill);
+    }
   }
 
   @override
