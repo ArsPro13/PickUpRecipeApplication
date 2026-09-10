@@ -1387,6 +1387,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get builderGrind => 'Grind';
 
   @override
+  String get builderClicks => 'clicks';
+
+  @override
   String get builderRatio => 'Ratio';
 
   @override

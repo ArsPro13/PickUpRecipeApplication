@@ -1405,6 +1405,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get builderGrind => 'Помол';
 
   @override
+  String get builderClicks => 'щ.';
+
+  @override
   String get builderRatio => 'Соотношение';
 
   @override

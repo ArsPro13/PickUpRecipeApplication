@@ -8,15 +8,19 @@
 // Ввод руками никуда не делся: набрать 250 с нуля — двести пятьдесят нажатий,
 // и зажатие спасает не всегда. Тап по самому числу открывает поле.
 //
-// Счётчик ставится не у каждого числа подряд, а там, где значение двигают
-// маленькими шагами. Четыре пары стрелок в столбик превращают экран
-// параметров в калькулятор — по этой же причине их нет у дозы и температуры.
+// Счётчик стоит у каждого числа, которое двигают: и у воды на шаге, и у всех
+// четырёх параметров рецепта. Раньше у дозы, температуры и помола его не
+// было — считалось, что четыре пары стрелок в столбик превращают экран в
+// калькулятор. Владелец попросил обратное, и по делу: без стрелок каждое
+// число правилось через окно с клавиатурой, а поправить дозу на грамм — это
+// одно нажатие, а не пять.
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/numbers.dart';
 import '../../l10n/app_localizations.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
@@ -51,19 +55,30 @@ class AmountStepper extends StatefulWidget {
     this.max = _defaultMax,
     this.step = 1,
     this.suffix = '',
+    this.scale = 1,
   });
 
+  /// Значение в мелких единицах — тех, в которых заданы [min], [max] и [step].
   final int value;
   final ValueChanged<int> onChanged;
 
   final int min;
   final int max;
 
-  /// На сколько меняет одно нажатие.
+  /// На сколько меняет одно нажатие. В мелких единицах: при [scale] 10 шаг в
+  /// один грамм — это `step: 10`.
   final int step;
 
   /// Единица рядом с числом: «г», «мл». Пусто — только число.
   final String suffix;
+
+  /// Во сколько раз хранимое значение мельче показанного.
+  ///
+  /// 1 — счётчик целых: вода на шаге и есть целые миллилитры. 10 — значение
+  /// живёт десятыми долями, а на экране стоит «17,1 г». Доза приходит именно
+  /// такой: её двигает пересчёт под вкус, и округлить её до целых граммов
+  /// значило бы молча испортить рецепт при первом же нажатии на стрелку.
+  final int scale;
 
   @override
   State<AmountStepper> createState() => _AmountStepperState();
@@ -137,21 +152,25 @@ class _AmountStepperState extends State<AmountStepper> {
     _repeat = null;
   }
 
+  /// Значение так, как его читает человек.
+  String get _shown =>
+      widget.scale == 1 ? '$_value' : formatDecimal(_value / widget.scale);
+
   void _startTyping() {
     setState(() {
       _editing = true;
-      _typed.text = '$_value';
+      _typed.text = _shown;
       _typed.selection = TextSelection(baseOffset: 0, extentOffset: _typed.text.length);
     });
   }
 
   void _commit() {
     if (!_editing) return;
-    final typed = int.tryParse(_typed.text.trim());
+    final typed = parseNumber(_typed.text);
     setState(() => _editing = false);
     // Пустое и мусор оставляют прежнее значение: очистить поле легко
     // случайно, и превращать это в ноль граммов — потеря рецепта.
-    if (typed != null) _set(typed);
+    if (typed != null) _set((typed * widget.scale).round());
   }
 
   @override
@@ -199,7 +218,7 @@ class _AmountStepperState extends State<AmountStepper> {
         ),
         alignment: Alignment.center,
         child: Text(
-          widget.suffix.isEmpty ? '$_value' : '$_value ${widget.suffix}',
+          widget.suffix.isEmpty ? _shown : '$_shown ${widget.suffix}',
           style: context.texts.bodyMedium,
           maxLines: 1,
         ),
@@ -216,8 +235,15 @@ class _AmountStepperState extends State<AmountStepper> {
         autofocus: true,
         textAlign: TextAlign.center,
         style: context.texts.bodyMedium,
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        keyboardType: TextInputType.numberWithOptions(decimal: widget.scale > 1),
+        // У целого счётчика — только цифры. У дробного к ним добавлен
+        // разделитель: клавиатура на разных прошивках даёт то запятую, то
+        // точку, и отказать одной из них значит отказать половине телефонов.
+        inputFormatters: [
+          widget.scale == 1
+              ? FilteringTextInputFormatter.digitsOnly
+              : FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+        ],
         decoration: InputDecoration(
           isDense: true,
           suffixText: widget.suffix.isEmpty ? null : widget.suffix,

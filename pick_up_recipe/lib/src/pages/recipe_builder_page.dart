@@ -18,9 +18,9 @@ import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/numbers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
@@ -47,6 +47,22 @@ import '../general_widgets/step_type_sheet.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
+
+/// Потолки счётчиков в строке параметров.
+///
+/// Нужны не ради запрета, а ради зажатой кнопки: без верхней границы
+/// автоповтор уезжает в бесконечность за пару секунд. Числа взяты с запасом
+/// от того, что бывает: двести граммов кофе, пять литров воды, кипяток,
+/// двести делений шкалы.
+const int _maxDoseTenths = 2000;
+const int _maxWater = 5000;
+const int _maxTemperatureTenths = 1000;
+const int _maxGrindTenths = 2000;
+
+/// С чего начинает счётчик температуры, если рецепт её не знает. У
+/// исторических записей температуры нет вовсе, а стрелке нужно от чего-то
+/// отсчитывать: девяносто три — то же число, что подставляло прежнее окно.
+const double _defaultTemperature = 93;
 
 @RoutePage()
 class RecipeBuilderPage extends ConsumerStatefulWidget {
@@ -282,11 +298,17 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             name: texts.builderDose,
             value: texts.unitGrams(formatDecimal(_recipe.load)),
             changed: _changed('load'),
-            onTap: () => _editDecimal(
-              title: texts.builderDose,
+            // Доза живёт десятыми долями грамма: её двигает пересчёт под
+            // вкус, и целыми граммами 17,1 не записать. Шаг при этом
+            // граммовый — по десятой доле дозу не правят.
+            control: AmountStepper(
+              value: (_recipe.load * 10).round(),
+              scale: 10,
+              step: 10,
+              min: 1,
+              max: _maxDoseTenths,
               suffix: texts.builderGram,
-              value: _recipe.load,
-              apply: (value) => _recipe.load = value,
+              onChanged: (value) => setState(() => _recipe.load = value / 10),
             ),
           ),
           _ParamRow(
@@ -294,11 +316,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             name: texts.builderWater,
             value: texts.unitMillilitres('${_recipe.water}'),
             changed: _changed('water'),
-            onTap: () => _editInt(
-              title: texts.builderWater,
-              suffix: texts.builderMillilitre,
+            control: AmountStepper(
               value: _recipe.water,
-              apply: (value) => _recipe.water = value,
+              max: _maxWater,
+              suffix: texts.builderMillilitre,
+              onChanged: (value) => setState(() => _recipe.water = value),
             ),
           ),
           _ParamRow(
@@ -308,11 +330,16 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
                 ? '—'
                 : '${formatDecimal(_recipe.temperature!)} °C',
             changed: _changed('temperature'),
-            onTap: () => _editDecimal(
-              title: texts.builderTemperature,
+            // Десятые доли и здесь: рецепты обжарщиков приезжают с 91,5 °C,
+            // а стрелка ходит градусом — полградуса на чайнике не выставить.
+            control: AmountStepper(
+              value: ((_recipe.temperature ?? _defaultTemperature) * 10).round(),
+              scale: 10,
+              step: 10,
+              min: 1,
+              max: _maxTemperatureTenths,
               suffix: '°C',
-              value: _recipe.temperature ?? 93,
-              apply: (value) => _recipe.temperature = value,
+              onChanged: (value) => setState(() => _recipe.temperature = value / 10),
             ),
           ),
           _ParamRow(
@@ -321,16 +348,25 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             caption: grind.caption,
             value: grind.isEmpty ? '—' : grind.label,
             changed: _changed('grind_step'),
+            // Стрелки — только у помола числом. Словом («Средне-тонкий») и
+            // подписью шкалы («2 круг + 3») его тоже записывают, и прибавить
+            // к такому единицу нечем: там остаётся тап по значению.
+            control: _grindClicks(grind) == null
+                ? null
+                : AmountStepper(
+                    value: (_grindClicks(grind)! * 10).round(),
+                    scale: 10,
+                    step: 10,
+                    max: _maxGrindTenths,
+                    suffix: texts.builderClicks,
+                    onChanged: (value) => setState(
+                      () => _setGrind(formatDecimal(value / 10), grinder),
+                    ),
+                  ),
             onTap: () => _editText(
               title: texts.builderGrind,
               value: _recipe.grindStep,
-              // Человек правит помол в делениях своей кофемолки, поэтому
-              // вместе со значением запоминается и она: иначе следующая
-              // отрисовка снова показала бы пересчитанное «примерно».
-              apply: (value) {
-                _recipe.grindStep = value;
-                if (grinder != null) _recipe.grinderId = grinder.id;
-              },
+              apply: (value) => _setGrind(value, grinder),
             ),
           ),
           // Соотношение не правится: оно производное от дозы и воды, и дать
@@ -345,6 +381,25 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         ],
       ),
     );
+  }
+
+  /// Помол числом делений — то, что можно подвинуть стрелкой.
+  ///
+  /// null: помол записан словом справочника или подписью шкалы вроде
+  /// «2 круг + 3». Прибавлять к ним нечего.
+  double? _grindClicks(GrindReading grind) {
+    if (grind.isEmpty || !grind.isDivision) return null;
+    return parseNumber(grind.value);
+  }
+
+  /// Записывает помол делением кофемолки человека.
+  ///
+  /// Вместе со значением запоминается и сама кофемолка: иначе следующая
+  /// отрисовка снова пересчитала бы деление из ступени крупности и показала
+  /// не то, что человек только что выставил.
+  void _setGrind(String value, Grinder? grinder) {
+    _recipe.grindStep = value;
+    if (grinder != null) _recipe.grinderId = grinder.id;
   }
 
   String _ratio() {
@@ -613,69 +668,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
 
   // ── Правка значений ──────────────────────────────────────────────────────
 
-  Future<void> _editInt({
-    required String title,
-    required String suffix,
-    required int value,
-    required void Function(int) apply,
-  }) async {
-    final result = await _askNumber(title: title, suffix: suffix, initial: '$value');
-    if (result == null) return;
-    setState(() => apply(result.round()));
-  }
-
-  Future<void> _editDecimal({
-    required String title,
-    required String suffix,
-    required double value,
-    required void Function(double) apply,
-  }) async {
-    final result = await _askNumber(
-      title: title,
-      suffix: suffix,
-      initial: formatDecimal(value),
-      decimal: true,
-    );
-    if (result == null) return;
-    setState(() => apply(result));
-  }
-
-  Future<double?> _askNumber({
-    required String title,
-    required String suffix,
-    required String initial,
-    bool decimal = false,
-  }) {
-    final controller = TextEditingController(text: initial);
-    final texts = AppLocalizations.of(context);
-
-    return showDialog<double>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(decimal ? RegExp(r'[0-9.,]') : RegExp(r'[0-9]')),
-          ],
-          decoration: InputDecoration(suffixText: suffix),
-          onSubmitted: (text) => Navigator.of(context).pop(parseNumber(text)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(texts.builderCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(parseNumber(controller.text)),
-            child: Text(texts.builderDone),
-          ),
-        ],
-      ),
-    );
-  }
+  // Окна с клавиатурой для дозы, воды и температуры здесь больше нет:
+  // все три правятся стрелками прямо в строке. «Хочу плюсики-минусики, чтобы
+  // менять без открытия этого поля ввода» — владелец, о каждом из четырёх
+  // параметров. Осталось одно окно, текстовое: им правят помол, записанный
+  // не числом.
 
   Future<void> _editDuration(RecipeStep step) async {
     final seconds = await showDurationSheet(context, seconds: step.time);
@@ -925,25 +922,64 @@ class _ParamRow extends StatelessWidget {
               ],
             ),
           ),
-          if (control != null)
-            control!
-          else if (readOnly)
+          if (readOnly)
             Text(value, style: context.texts.bodyMedium?.copyWith(color: context.colors.secondary))
           else
-            _ValueBox(value: value, changed: changed, onTap: onTap),
+            _Marked(
+              changed: changed,
+              child: control ?? _ValueBox(value: value, onTap: onTap),
+            ),
         ],
       ),
     );
   }
 }
 
-/// Значение параметра. Тап по числу открывает ввод — стрелок ± нет: на
-/// четырёх параметрах подряд они превращали экран в калькулятор.
+/// Точка «поправлено» поверх правого края строки.
+///
+/// Раньше её рисовала коробка со значением, и у строки со счётчиком точки
+/// не было вовсе. Стрелки стоят теперь у всех четырёх параметров, а показать,
+/// что значение подвинула поправка, надо по-прежнему у каждого.
+class _Marked extends StatelessWidget {
+  const _Marked({required this.changed, required this.child});
+
+  final bool changed;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!changed) return child;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        child,
+        Positioned(
+          top: -AppSpacing.s1 / 2,
+          right: -AppSpacing.s1,
+          child: Container(
+            height: AppSpacing.s2,
+            width: AppSpacing.s2,
+            decoration: BoxDecoration(
+              color: context.colors.primary,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Значение параметра, которое числом не подвинуть: тап открывает ввод.
+///
+/// Осталось там, где стрелки бессмысленны, — у помола, записанного словом
+/// («Средне-тонкий») или подписью шкалы («2 круг + 3»). Прибавить единицу к
+/// такому значению нечем.
 class _ValueBox extends StatelessWidget {
-  const _ValueBox({required this.value, this.changed = false, this.onTap});
+  const _ValueBox({required this.value, this.onTap});
 
   final String value;
-  final bool changed;
   final VoidCallback? onTap;
 
   @override
@@ -951,40 +987,22 @@ class _ValueBox extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: AppRadius.small,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            constraints: const BoxConstraints(minWidth: AppSpacing.s18),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.s4,
-              vertical: AppSpacing.s1,
-            ),
-            decoration: BoxDecoration(
-              color: context.colors.surface,
-              borderRadius: AppRadius.small,
-              border: Border.all(color: context.palette.border),
-            ),
-            child: Text(
-              value,
-              style: context.texts.bodyMedium,
-              textAlign: TextAlign.right,
-            ),
-          ),
-          if (changed)
-            Positioned(
-              top: -AppSpacing.s1 / 2,
-              right: -AppSpacing.s1,
-              child: Container(
-                height: AppSpacing.s2,
-                width: AppSpacing.s2,
-                decoration: BoxDecoration(
-                  color: context.colors.primary,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-        ],
+      child: Container(
+        constraints: const BoxConstraints(minWidth: AppSpacing.s18),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s4,
+          vertical: AppSpacing.s1,
+        ),
+        decoration: BoxDecoration(
+          color: context.colors.surface,
+          borderRadius: AppRadius.small,
+          border: Border.all(color: context.palette.border),
+        ),
+        child: Text(
+          value,
+          style: context.texts.bodyMedium,
+          textAlign: TextAlign.right,
+        ),
       ),
     );
   }
@@ -1223,27 +1241,12 @@ String stepSummary(RecipeStep step, AppLocalizations texts) {
 // Вынесено из виджетов: это единственная часть экрана, которую можно проверить
 // тестом без запуска приложения, и единственная, где ошибка стоит рецепта.
 
-/// Дробное число по-русски: запятая, и целое без хвоста. 16.0 → «16».
-String formatDecimal(double value) {
-  final rounded = (value * 10).round() / 10;
-  if (rounded == rounded.roundToDouble()) return rounded.round().toString();
-  return rounded.toStringAsFixed(1).replaceAll('.', ',');
-}
-
 /// Секунды в «м:сс». Часов не бывает даже у колд брю: там шаг в часах, но
 /// показывается он отдельным экраном ожидания, а не строкой рецепта.
 String formatDuration(int seconds) {
   final minutes = seconds ~/ 60;
   final rest = (seconds % 60).toString().padLeft(2, '0');
   return '$minutes:$rest';
-}
-
-/// Число из того, что напечатали. Запятая и точка равноправны: клавиатура
-/// на разных прошивках даёт разный разделитель, и это не повод отказать.
-double? parseNumber(String text) {
-  final normalized = text.trim().replaceAll(',', '.');
-  if (normalized.isEmpty) return null;
-  return double.tryParse(normalized);
 }
 
 /// «м:сс» или просто секунды. Пустое и мусор дают null — значение не меняется.

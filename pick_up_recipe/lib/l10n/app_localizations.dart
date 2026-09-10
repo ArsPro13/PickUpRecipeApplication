@@ -2354,6 +2354,12 @@ abstract class AppLocalizations {
   /// **'Помол'**
   String get builderGrind;
 
+  /// Строка параметров: единица помола рядом со счётчиком — щелчки кофемолки.
+  ///
+  /// In ru, this message translates to:
+  /// **'щ.'**
+  String get builderClicks;
+
   /// Конструктор: название производного параметра «кофе к воде». Не правится.
   ///
   /// In ru, this message translates to:
