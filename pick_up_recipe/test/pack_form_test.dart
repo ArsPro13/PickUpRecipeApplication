@@ -56,12 +56,24 @@ class _FakeApiClient extends ApiClient {
     'user_id': 1,
   };
 
+  /// Справочники, которыми форма подсказывает набранное. По умолчанию пусты:
+  /// почти всем проверкам здесь нужны поля, а не подсказки, — а непустой
+  /// справочник растит форму метками и двигает кнопку «Отправить».
+  Map<String, List<String>> possibleValues = const {};
+
   @override
   Future<http.Response> getPossibleValues(
     String endpoint,
     Map<String, String> queryParams,
   ) async {
-    return http.Response('[]', 200);
+    final name = endpoint.split('/').last;
+
+    // bodyBytes, а не текст: сервис читает ответ как utf-8, и русские
+    // названия иначе приезжают крокозябрами.
+    return http.Response.bytes(
+      utf8.encode(jsonEncode(possibleValues[name] ?? const <String>[])),
+      200,
+    );
   }
 
   @override
@@ -285,6 +297,48 @@ void main() {
       expect(textOf(tester, 'roast-date'), '01.09.2026');
 
       expect((await submit(tester))['pack_date'], '2026-09-01T00:00:00Z');
+    });
+
+    testWidgets('страна подсказывается из справочника', (tester) async {
+      // «Здесь нужно, чтобы было автодополнение по странам», — владелец.
+      // Справочник приезжает с сервера, и на видео подсказок не появлялось
+      // ни одной: проверить это глазами можно только с живым сервером.
+      // Не «Бразилия»: ровно она стоит бледным примером внутри пустого поля,
+      // и найтись по этому слову может не подсказка, а пример.
+      api.possibleValues = const {
+        'pack_country': ['Бразилия', 'Бурунди', 'Колумбия'],
+      };
+      await pumpForm(tester);
+
+      await tester.enterText(fieldByKey('country'), 'бур');
+      await tester.pump();
+
+      expect(find.text('Бурунди'), findsOneWidget);
+      expect(find.text('Колумбия'), findsNothing, reason: 'подсказка не по набранному');
+
+      await tester.tap(find.text('Бурунди'));
+      await tester.pump();
+
+      expect(textOf(tester, 'country'), 'Бурунди');
+    });
+
+    testWidgets('дескриптор подсказывается тем же способом', (tester) async {
+      // «Хочу, чтобы автозаполнение было и по дескрипторам тоже», — владелец.
+      // «малина» — пример внутри пустого поля, поэтому подсказку ищем другую.
+      api.possibleValues = const {
+        'pack_descriptors': ['клубника', 'малина', 'чернослив'],
+      };
+      await pumpForm(tester);
+
+      await tester.enterText(fieldByKey('descriptor-0'), 'клуб');
+      await tester.pump();
+
+      expect(find.text('клубника'), findsOneWidget);
+
+      await tester.tap(find.text('клубника'));
+      await tester.pump();
+
+      expect(textOf(tester, 'descriptor-0'), 'клубника');
     });
 
     testWidgets('дата обжарки заполнена сегодняшней сразу', (tester) async {
