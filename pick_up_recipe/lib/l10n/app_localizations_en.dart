@@ -1454,9 +1454,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get builderBrew => 'Brew';
 
   @override
-  String get builderToHome => 'Home';
-
-  @override
   String get builderCancel => 'Cancel';
 
   @override

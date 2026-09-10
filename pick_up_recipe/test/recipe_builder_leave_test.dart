@@ -255,6 +255,20 @@ void main() {
       expect(find.text('16 г'), findsOneWidget, reason: 'подвинутая доза потерялась');
     });
 
+    testWidgets('несохранившийся рецепт оставляет человека в конструкторе', (tester) async {
+      // «Сохранить» уводит на полку — но только когда версия и правда уехала.
+      // Сети в тесте нет, сервер отвечает отказом, и уйти с экрана значило бы
+      // сказать «сохранено» о том, чего не сохранилось.
+      await pumpBuilder(tester);
+      await nudgeDose(tester);
+
+      await tester.tap(find.text('Сохранить'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RecipeBuilderPage), findsOneWidget);
+      expect(find.text('Откуда пришли'), findsNothing);
+    });
+
     testWidgets('нетронутый рецепт уходит без вопроса', (tester) async {
       // Терять нечего — спрашивать не о чем: лишний вопрос на выходе из
       // просмотра надоедает быстрее, чем помогает.

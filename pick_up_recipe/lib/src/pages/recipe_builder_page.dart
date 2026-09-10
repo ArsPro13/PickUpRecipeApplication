@@ -108,10 +108,6 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   int? _openStep;
   bool _saving = false;
 
-  /// Идентификатор сохранённой версии. Пока null — рецепт не сохранён, и
-  /// уходить с экрана не с чем.
-  int? _savedId;
-
   /// Рецепт, каким он был на последнем сохранении (или при открытии).
   ///
   /// Сравнением с ним и определяется, есть ли что терять. Хранится строкой,
@@ -220,8 +216,6 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         Row(
           children: [
             Expanded(
-              // Кнопка не гаснет после сохранения: правку можно продолжить
-              // и сохранить ещё раз — цепочка версий это и есть.
               child: AppButton(
                 label: texts.builderSave,
                 kind: AppButtonKind.secondary,
@@ -239,15 +233,6 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             ),
           ],
         ),
-        // Сохранение — конец дела, и после него нужен выход, а не молчание:
-        // «Сохранено» в снекбаре гасло, а человек оставался в редакторе,
-        // не понимая, закончил он или нет.
-        if (_savedId != null)
-          AppButton(
-            label: texts.builderToHome,
-            icon: AppIcons.uiPack,
-            onPressed: () => context.router.navigate(const PacksRoute()),
-          ),
       ],
     );
 
@@ -818,12 +803,17 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         // экране уже те, что уехали, — перечитывать их незачем, а «Заварить»
         // после сохранения должно вести на сохранённое, а не на прежнее.
         _recipe.id = savedId;
-        _savedId = savedId;
         _saving = false;
         _corrected = false;
         _saved = jsonEncode(_recipe.toJson());
       });
       _say(savedId < 0 ? texts.builderSavedOffline : texts.builderSavedVersion);
+      // «После нажатия кнопки „Сохранить“ нужно сразу отправлять на главную»,
+      // — владелец. Раньше здесь появлялась кнопка «На главную», и уход был
+      // вторым нажатием: сохранение — конец дела, и держать человека в
+      // конструкторе после него незачем. Снекбар переживает переход: он
+      // живёт выше маршрута и остаётся видимым уже на полке.
+      context.router.navigate(const PacksRoute());
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);

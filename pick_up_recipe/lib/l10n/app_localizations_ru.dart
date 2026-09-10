@@ -1472,9 +1472,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get builderBrew => 'Заварить';
 
   @override
-  String get builderToHome => 'На главную';
-
-  @override
   String get builderCancel => 'Отмена';
 
   @override

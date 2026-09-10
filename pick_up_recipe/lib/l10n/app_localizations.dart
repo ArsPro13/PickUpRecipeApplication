@@ -2480,12 +2480,6 @@ abstract class AppLocalizations {
   /// **'Заварить'**
   String get builderBrew;
 
-  /// Конструктор: кнопка выхода к пачкам, появляется после сохранения.
-  ///
-  /// In ru, this message translates to:
-  /// **'На главную'**
-  String get builderToHome;
-
   /// Конструктор: отказ в окне правки значения. Ничего не меняет.
   ///
   /// In ru, this message translates to:
