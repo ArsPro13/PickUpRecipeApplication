@@ -85,7 +85,7 @@ void main() {
       final params = BrewParams.of(ru, source, grind: reading(source, grinder: comandante));
 
       expect(params.dose, '15 г');
-      expect(params.grind, '26');
+      expect(params.grind, '26 щ.');
       expect(params.water, '250 мл');
       expect(params.temperature, '93 °C');
       expect(params.isEmpty, isFalse);
@@ -126,7 +126,7 @@ void main() {
       final source = recipe();
       final params = BrewParams.of(ru, source, grind: reading(source, grinder: comandante));
 
-      expect(params.prepValue, '15 г · 26');
+      expect(params.prepValue, '15 г · 26 щ.');
       expect(params.prepHint, 'делений Comandante C40 · средне-тонкий');
     });
 
@@ -141,7 +141,9 @@ void main() {
 
     test('чужие деления не выдаются за свои, а пересчитываются', () {
       // 26 щелчков другой мельницы — не то же число. Показывается деление
-      // своей кофемолки, полученное через крупность, и помечается «примерно».
+      // своей кофемолки, полученное через крупность. Что оно пересчитано,
+      // говорит подпись под рамкой: в самой строке стоит одно число, как
+      // и просил владелец.
       final source = recipe(grinderId: 99, grindDescriptor: 'medium_fine');
       final params = BrewParams.of(
         ru,
@@ -149,7 +151,7 @@ void main() {
         grind: reading(source, grinder: comandante, reference: descriptors),
       );
 
-      expect(params.prepValue, '15 г · примерно 14');
+      expect(params.prepValue, '15 г · 14 щ.');
       expect(params.prepValue, isNot(contains('26')));
       expect(params.prepHint, 'делений Comandante C40 · Средне-тонкий');
     });

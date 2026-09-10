@@ -66,9 +66,14 @@ void main() {
       expect(grind.grinderName, 'Comandante C40');
     });
 
-    test('пересчитанное помечается словом «примерно»', () {
+    test('пересчитанное помечено флагом, но не словом на экране', () {
       // Шкалы кофемолок сходятся только по средней крупности, и считать
-      // переведённое число точным нельзя.
+      // переведённое число точным нельзя — флаг об этом остаётся, и им
+      // подписан экран заваривания, где под подпись есть строка.
+      //
+      // А в строке помола стоит одно число с единицей. «Помол выглядит так
+      // криво; достаточно писать 14 кликов» — владелец о прежнем «примерно
+      // 14» с именем кофемолки второй строкой.
       final grind = grindReading(
         descriptorSlug: 'medium_fine',
         reference: reference,
@@ -76,7 +81,7 @@ void main() {
       );
 
       expect(grind.isApproximate, isTrue);
-      expect(grind.label, 'примерно 14');
+      expect(grind.label, '14 щ.');
     });
 
     test('своё деление точнее любого перевода', () {
@@ -91,7 +96,7 @@ void main() {
 
       expect(grind.value, '17');
       expect(grind.isApproximate, isFalse);
-      expect(grind.label, '17');
+      expect(grind.label, '17 щ.');
     });
 
     test('деления чужой кофемолки пересчитываются, а не показываются как есть', () {
@@ -175,7 +180,9 @@ void main() {
       );
 
       expect(grind.value, '2 круг + 3');
-      expect(grind.label, 'примерно 2 круг + 3');
+      // Без «щ.» на хвосте: единица в такой подписи уже названа своими
+      // словами, и приписка превратила бы её в бессмыслицу.
+      expect(grind.label, '2 круг + 3');
       expect(grind.isDivision, isTrue);
     });
 
@@ -219,8 +226,8 @@ void main() {
         texts: en,
       );
 
-      expect(russian.label, 'примерно 14');
-      expect(english.label, 'about 14');
+      expect(russian.label, '14 щ.');
+      expect(english.label, '14 clicks');
     });
 
     test('приглашение выбрать кофемолку переведено', () {
@@ -269,7 +276,7 @@ void main() {
         grinder: comandante,
       );
 
-      expect(plain.label, ru.grinderApproximately('14'));
+      expect(plain.label, ru.grinderClicks('14'));
     });
   });
 
