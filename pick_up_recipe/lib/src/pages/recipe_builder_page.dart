@@ -281,6 +281,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           _ParamRow(
             kind: MetricKind.dose,
             name: texts.builderDose,
+            caption: texts.builderGram,
             value: texts.unitGrams(formatDecimal(_recipe.load)),
             changed: _changed('load'),
             // Доза живёт десятыми долями грамма: её двигает пересчёт под
@@ -292,25 +293,25 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
               step: 10,
               min: 1,
               max: _maxDoseTenths,
-              suffix: texts.builderGram,
               onChanged: (value) => setState(() => _recipe.load = value / 10),
             ),
           ),
           _ParamRow(
             kind: MetricKind.water,
             name: texts.builderWater,
+            caption: texts.builderMillilitre,
             value: texts.unitMillilitres('${_recipe.water}'),
             changed: _changed('water'),
             control: AmountStepper(
               value: _recipe.water,
               max: _maxWater,
-              suffix: texts.builderMillilitre,
               onChanged: (value) => setState(() => _recipe.water = value),
             ),
           ),
           _ParamRow(
             kind: MetricKind.temperature,
             name: texts.builderTemperature,
+            caption: '°C',
             value: _recipe.temperature == null
                 ? '—'
                 : '${formatDecimal(_recipe.temperature!)} °C',
@@ -323,14 +324,16 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
               step: 10,
               min: 1,
               max: _maxTemperatureTenths,
-              suffix: '°C',
               onChanged: (value) => setState(() => _recipe.temperature = value / 10),
             ),
           ),
           _ParamRow(
             kind: MetricKind.grind,
             name: texts.builderGrind,
-            caption: grind.caption,
+            // Единица — только когда на строке стоят стрелки: у помола
+            // словом («Средне-тонкий») щелчков нет, а на месте подписи
+            // стоит приглашение выбрать кофемолку.
+            caption: _grindClicks(grind) == null ? grind.caption : texts.builderClicks,
             value: grind.isEmpty ? '—' : grind.label,
             changed: _changed('grind_step'),
             // Стрелки — только у помола числом. Словом («Средне-тонкий») и
@@ -343,7 +346,6 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
                     scale: 10,
                     step: 10,
                     max: _maxGrindTenths,
-                    suffix: texts.builderClicks,
                     onChanged: (value) => setState(
                       () => _setGrind(formatDecimal(value / 10), grinder),
                     ),
@@ -899,7 +901,9 @@ class _ParamRow extends StatelessWidget {
       child: Row(
         children: [
           AppIcon(icon ?? kind.icon, size: AppSizes.icon20, color: kind.color(context)),
-          const SizedBox(width: AppSpacing.s3),
+          // Восемь точек, а не двенадцать: со счётчиком справа на слово
+          // слева остаётся впритык, и «Температура» ломается пополам.
+          const SizedBox(width: AppSpacing.s2),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1107,10 +1111,10 @@ class _StepRow extends StatelessWidget {
                 // справа, и на 360 подпись переехала бы на вторую строку.
                 // Внутри карточки шага другой воды всё равно нет.
                 name: texts.builderWater,
+                caption: texts.builderGram,
                 value: texts.unitGrams('${step.water}'),
                 control: AmountStepper(
                   value: step.water,
-                  suffix: texts.builderGram,
                   onChanged: onWaterChanged,
                 ),
               ),

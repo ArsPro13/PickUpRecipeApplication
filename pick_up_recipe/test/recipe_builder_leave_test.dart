@@ -252,7 +252,8 @@ void main() {
 
       expect(find.byType(RecipeBuilderPage), findsOneWidget);
       expect(find.text('Откуда пришли'), findsNothing);
-      expect(find.text('16 г'), findsOneWidget, reason: 'подвинутая доза потерялась');
+      // Единица стоит подписью под названием параметра, в коробке — число.
+      expect(find.text('16'), findsOneWidget, reason: 'подвинутая доза потерялась');
     });
 
     testWidgets('несохранившийся рецепт оставляет человека в конструкторе', (tester) async {

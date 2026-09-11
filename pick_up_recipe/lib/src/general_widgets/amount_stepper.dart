@@ -45,6 +45,17 @@ const int _rushFactor = 10;
 /// даже у колд брю, а без потолка зажатая кнопка уезжает в бесконечность.
 const int _defaultMax = 9999;
 
+/// Ширина коробки с числом.
+///
+/// Под число без единицы: «250», «17,1», «93». Единица стоит подписью под
+/// названием параметра, и вот почему. Пока она жила в коробке, на неё уходило
+/// двадцать шесть точек, коробка была в семьдесят две, и на слово слева
+/// оставалось девяносто две — а «Температура» занимает сто одну и ломалась
+/// пополам. На самом тесном телефоне, 360 точек в ширину, весь ряд — двести
+/// восемьдесят: два пальцевых квадрата по сорок восемь не ужать, значит
+/// ужимается всё остальное.
+const double _valueWidth = 44;
+
 /// Счётчик целого значения: минус, число, плюс.
 class AmountStepper extends StatefulWidget {
   const AmountStepper({
@@ -54,7 +65,6 @@ class AmountStepper extends StatefulWidget {
     this.min = 0,
     this.max = _defaultMax,
     this.step = 1,
-    this.suffix = '',
     this.scale = 1,
   });
 
@@ -68,9 +78,6 @@ class AmountStepper extends StatefulWidget {
   /// На сколько меняет одно нажатие. В мелких единицах: при [scale] 10 шаг в
   /// один грамм — это `step: 10`.
   final int step;
-
-  /// Единица рядом с числом: «г», «мл». Пусто — только число.
-  final String suffix;
 
   /// Во сколько раз хранимое значение мельче показанного.
   ///
@@ -189,7 +196,7 @@ class _AmountStepperState extends State<AmountStepper> {
         ),
         const SizedBox(width: AppSpacing.s1),
         SizedBox(
-          width: AppSpacing.s18,
+          width: _valueWidth,
           child: _editing ? _field(context) : _number(context),
         ),
         const SizedBox(width: AppSpacing.s1),
@@ -210,18 +217,14 @@ class _AmountStepperState extends State<AmountStepper> {
       borderRadius: AppRadius.small,
       child: Container(
         constraints: const BoxConstraints(minHeight: AppSizes.tapTarget),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s2),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s1),
         decoration: BoxDecoration(
           color: context.colors.surface,
           borderRadius: AppRadius.small,
           border: Border.all(color: context.palette.border),
         ),
         alignment: Alignment.center,
-        child: Text(
-          widget.suffix.isEmpty ? _shown : '$_shown ${widget.suffix}',
-          style: context.texts.bodyMedium,
-          maxLines: 1,
-        ),
+        child: Text(_shown, style: context.texts.bodyMedium, maxLines: 1),
       ),
     );
   }
@@ -244,10 +247,9 @@ class _AmountStepperState extends State<AmountStepper> {
               ? FilteringTextInputFormatter.digitsOnly
               : FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
         ],
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           isDense: true,
-          suffixText: widget.suffix.isEmpty ? null : widget.suffix,
-          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s2),
+          contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s1),
         ),
         onSubmitted: (_) => _commit(),
       ),

@@ -53,7 +53,6 @@ class _HostState extends State<_Host> {
             value: value,
             min: widget.min,
             max: widget.max,
-            suffix: 'г',
             onChanged: (next) => setState(() => value = next),
           ),
         ),
@@ -163,7 +162,7 @@ void main() {
     testWidgets('число вводится руками: двести пятьдесят не набирают кнопками', (tester) async {
       await tester.pumpWidget(const _Host(initial: 100));
 
-      await tester.tap(find.text('100 г'));
+      await tester.tap(find.text('100'));
       await tester.pump();
 
       await tester.enterText(find.byType(TextField), '250');
@@ -171,7 +170,7 @@ void main() {
       await tester.pump();
 
       expect(_value(tester), 250);
-      expect(find.text('250 г'), findsOneWidget);
+      expect(find.text('250'), findsOneWidget);
     });
 
     testWidgets('набранное доезжает до шага рецепта', (tester) async {
@@ -201,7 +200,6 @@ void main() {
           body: StatefulBuilder(
             builder: (context, setState) => AmountStepper(
               value: target.water,
-              suffix: 'г',
               onChanged: (next) => setState(() => target.water = next),
             ),
           ),
@@ -248,7 +246,7 @@ void main() {
       // рецепт: прежнее значение должно остаться.
       await tester.pumpWidget(const _Host(initial: 100));
 
-      await tester.tap(find.text('100 г'));
+      await tester.tap(find.text('100'));
       await tester.pump();
 
       await tester.enterText(find.byType(TextField), '');
