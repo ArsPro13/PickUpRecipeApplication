@@ -86,7 +86,8 @@ ProfileStats buildProfileStats(List<RecipeGroup> groups, List<PackData> packs) {
     }
   }
   if (favourite != null &&
-      byDevice.values.where((count) => count == favourite!.recipes).length > 1) {
+      byDevice.values.where((count) => count == favourite!.recipes).length >
+          1) {
     favourite = null;
   }
 
@@ -94,8 +95,16 @@ ProfileStats buildProfileStats(List<RecipeGroup> groups, List<PackData> packs) {
     recipes: groups.length,
     versions: versions,
     packs: packs.length,
-    countries: packs.map((pack) => pack.packCountry).where((it) => it.isNotEmpty).toSet().length,
-    varieties: packs.map((pack) => pack.packVariety).where((it) => it.isNotEmpty).toSet().length,
+    countries: packs
+        .map((pack) => pack.packCountry)
+        .where((it) => it.isNotEmpty)
+        .toSet()
+        .length,
+    varieties: packs
+        .map((pack) => pack.packVariety)
+        .where((it) => it.isNotEmpty)
+        .toSet()
+        .length,
     favourite: favourite,
     firstRecipeDate: earliest,
   );

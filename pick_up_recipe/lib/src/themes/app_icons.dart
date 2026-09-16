@@ -31,8 +31,10 @@ abstract final class AppIcons {
   static const String methodTricolate = '$_base/ico-method-tricolate.svg';
   static const String methodPulsar = '$_base/ico-method-pulsar.svg';
   static const String methodMelodrip = '$_base/ico-method-melodrip.svg';
-  static const String methodCafflanoKompact = '$_base/ico-method-cafflano-kompact.svg';
-  static const String methodCafflanoKlassic = '$_base/ico-method-cafflano-klassic.svg';
+  static const String methodCafflanoKompact =
+      '$_base/ico-method-cafflano-kompact.svg';
+  static const String methodCafflanoKlassic =
+      '$_base/ico-method-cafflano-klassic.svg';
   static const String methodDripBag = '$_base/ico-method-drip-bag.svg';
   static const String methodPhin = '$_base/ico-method-phin.svg';
   static const String methodEvaSolo = '$_base/ico-method-eva-solo.svg';
@@ -49,7 +51,8 @@ abstract final class AppIcons {
   static const String methodCupping = '$_base/ico-method-cupping.svg';
   static const String methodEspresso = '$_base/ico-method-espresso.svg';
   static const String methodFlair = '$_base/ico-method-flair.svg';
-  static const String methodCafelatRobot = '$_base/ico-method-cafelat-robot.svg';
+  static const String methodCafelatRobot =
+      '$_base/ico-method-cafelat-robot.svg';
   static const String methodLeverpresso = '$_base/ico-method-leverpresso.svg';
   static const String methodRok = '$_base/ico-method-rok.svg';
   static const String methodHandpresso = '$_base/ico-method-handpresso.svg';
@@ -61,12 +64,14 @@ abstract final class AppIcons {
   static const String methodNanopresso = '$_base/ico-method-nanopresso.svg';
   static const String methodMinipresso = '$_base/ico-method-minipresso.svg';
   static const String methodStaresso = '$_base/ico-method-staresso.svg';
-  static const String methodStaressoMini = '$_base/ico-method-staresso-mini.svg';
+  static const String methodStaressoMini =
+      '$_base/ico-method-staresso-mini.svg';
   static const String methodStaressoPro = '$_base/ico-method-staresso-pro.svg';
   static const String methodPipamoka = '$_base/ico-method-pipamoka.svg';
   static const String methodCuppamoka = '$_base/ico-method-cuppamoka.svg';
   static const String methodAeropress = '$_base/ico-method-aeropress.svg';
-  static const String methodAeropressInverted = '$_base/ico-method-aeropress-inverted.svg';
+  static const String methodAeropressInverted =
+      '$_base/ico-method-aeropress-inverted.svg';
   static const String methodMoka = '$_base/ico-method-moka.svg';
   static const String methodPercolator = '$_base/ico-method-percolator.svg';
   static const String methodPrismo = '$_base/ico-method-prismo.svg';

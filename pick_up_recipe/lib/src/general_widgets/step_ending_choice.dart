@@ -142,7 +142,8 @@ class _EndingCard extends StatelessWidget {
                         option.label(texts),
                         style: context.texts.bodyMedium?.copyWith(
                           color: context.colors.onSurface,
-                          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.w400,
                         ),
                       ),
                       Text(option.hint(texts), style: context.texts.labelSmall),
@@ -184,7 +185,8 @@ class _Mark extends StatelessWidget {
               child: Container(
                 width: AppSpacing.s2,
                 height: AppSpacing.s2,
-                decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                decoration:
+                    BoxDecoration(color: accent, shape: BoxShape.circle),
               ),
             )
           : null,

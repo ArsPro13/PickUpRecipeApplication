@@ -118,7 +118,8 @@ class _StepTypeSheet extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         color: context.colors.secondaryContainer,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.l)),
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(AppRadius.l)),
         boxShadow: context.shadows.level3,
       ),
       padding: const EdgeInsets.fromLTRB(
@@ -136,8 +137,9 @@ class _StepTypeSheet extends ConsumerWidget {
             reference.maybeWhen(
               data: (data) => _Header(
                 methodName: methodName,
-                shown: data.allowedFor(allowedStepTypes).fold<int>(
-                    0, (sum, group) => sum + group.types.length),
+                shown: data
+                    .allowedFor(allowedStepTypes)
+                    .fold<int>(0, (sum, group) => sum + group.types.length),
                 total: data.types.length,
                 own: own.length,
               ),
@@ -286,12 +288,14 @@ class _Types extends StatelessWidget {
     );
   }
 
-  static bool _isPauseText(GroupedStepTypes group) => group.slug == 'pause_text';
+  static bool _isPauseText(GroupedStepTypes group) =>
+      group.slug == 'pause_text';
 
   List<Widget> _group(BuildContext context, GroupedStepTypes group) {
     // Подзаголовок «меняет состояние прибора» — у группы, чьи типы ставят
     // строку состояния в шапку заваривания: «Клапан закрыт», «Перевёрнут».
-    final statefulGroup = group.types.any((type) => type.deviceState.isNotEmpty);
+    final statefulGroup =
+        group.types.any((type) => type.deviceState.isNotEmpty);
 
     final texts = AppLocalizations.of(context);
     // Группа «Прочие» собирается на телефоне, и имени с сервера у неё нет.
@@ -331,7 +335,9 @@ class _GroupHeader extends StatelessWidget {
         children: [
           Flexible(child: Text(name, style: context.texts.labelSmall)),
           const SizedBox(width: AppSpacing.s2),
-          Expanded(child: Divider(height: AppStroke.thin, color: context.palette.border)),
+          Expanded(
+              child: Divider(
+                  height: AppStroke.thin, color: context.palette.border)),
         ],
       ),
     );
@@ -413,7 +419,8 @@ class _TypeCell extends StatelessWidget {
                 child: Container(
                   width: AppSpacing.s2,
                   height: AppSpacing.s2,
-                  decoration: BoxDecoration(color: warnColor, shape: BoxShape.circle),
+                  decoration:
+                      BoxDecoration(color: warnColor, shape: BoxShape.circle),
                 ),
               ),
           ],
@@ -435,7 +442,8 @@ class _TypeCell extends StatelessWidget {
       return DashedBorderBox(
         color: accent,
         onTap: onTap,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s1, vertical: AppSpacing.s3),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.s1, vertical: AppSpacing.s3),
         child: content,
       );
     }

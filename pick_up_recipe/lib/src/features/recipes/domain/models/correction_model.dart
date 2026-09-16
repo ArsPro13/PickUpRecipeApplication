@@ -19,7 +19,8 @@ class CorrectionReason {
   /// Объяснение человеческим языком.
   final String text;
 
-  factory CorrectionReason.fromJson(Map<String, dynamic> json) => CorrectionReason(
+  factory CorrectionReason.fromJson(Map<String, dynamic> json) =>
+      CorrectionReason(
         complaint: json['complaint'] as String? ?? '',
         text: json['text'] as String? ?? '',
       );
@@ -51,7 +52,8 @@ class CorrectionChange {
   /// Подсказка к направлению — «минус — мельче».
   final String? hint;
 
-  factory CorrectionChange.fromJson(Map<String, dynamic> json) => CorrectionChange(
+  factory CorrectionChange.fromJson(Map<String, dynamic> json) =>
+      CorrectionChange(
         param: json['param'] as String? ?? '',
         from: json['from'] as num? ?? 0,
         to: json['to'] as num? ?? 0,
@@ -95,7 +97,8 @@ class CorrectionChange {
 
 /// Одна проверка техники — пункт списка «Что проверить».
 class ConflictCheck {
-  const ConflictCheck({required this.iconKey, required this.title, required this.text});
+  const ConflictCheck(
+      {required this.iconKey, required this.title, required this.text});
 
   /// Ключ иконки на клиенте — то же соглашение, что у справочников.
   final String iconKey;
@@ -127,7 +130,8 @@ class CorrectionConflict {
   final String explanation;
   final List<ConflictCheck> checks;
 
-  factory CorrectionConflict.fromJson(Map<String, dynamic> json) => CorrectionConflict(
+  factory CorrectionConflict.fromJson(Map<String, dynamic> json) =>
+      CorrectionConflict(
         complaints: [
           for (final complaint in (json['complaints'] as List<dynamic>? ?? []))
             complaint.toString(),
@@ -164,7 +168,8 @@ class RecipeCorrection {
 
   bool get hasConflicts => conflicts.isNotEmpty;
 
-  factory RecipeCorrection.fromJson(Map<String, dynamic> json) => RecipeCorrection(
+  factory RecipeCorrection.fromJson(Map<String, dynamic> json) =>
+      RecipeCorrection(
         changes: [
           for (final change in (json['changes'] as List<dynamic>? ?? []))
             CorrectionChange.fromJson(change as Map<String, dynamic>),
@@ -179,7 +184,8 @@ class RecipeCorrection {
         recipe: json['recipe'] == null
             ? null
             : RecipeData.fromResponse(
-                RecipeResponseModel.fromJson(json['recipe'] as Map<String, dynamic>),
+                RecipeResponseModel.fromJson(
+                    json['recipe'] as Map<String, dynamic>),
               ),
       );
 }

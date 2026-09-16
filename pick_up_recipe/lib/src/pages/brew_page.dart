@@ -297,7 +297,8 @@ class _BrewPageState extends ConsumerState<BrewPage>
       // достаточно близко, а точное место найдётся на следующей смене шага.
       final target = (_snapshot.stepIndex * _StepCard.collapsedHeight)
           .clamp(0.0, _steps.position.maxScrollExtent);
-      _steps.animateTo(target, duration: AppDuration.base, curve: AppCurves.out);
+      _steps.animateTo(target,
+          duration: AppDuration.base, curve: AppCurves.out);
     });
   }
 
@@ -416,7 +417,8 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// Уводит на оценку. Заменяет экран, а не кладёт поверх: возвращаться
   /// к отыгранному таймеру некуда, а «назад» из оценки должно вести в список.
   void _rate() {
-    context.router.replace(RatingRoute(recipe: widget.recipe, pack: widget.pack));
+    context.router
+        .replace(RatingRoute(recipe: widget.recipe, pack: widget.pack));
   }
 
   /// Правка рецепта. Отдельного экрана рецепта больше нет — этот и есть
@@ -437,7 +439,8 @@ class _BrewPageState extends ConsumerState<BrewPage>
     final long = widget.recipe.time > 3600;
     final finishedWhileAway = _engine.snapshot().isFinished;
     final steps = _engine.steps;
-    final stepLabel = steps[_snapshot.stepIndex.clamp(0, steps.length - 1)].label;
+    final stepLabel =
+        steps[_snapshot.stepIndex.clamp(0, steps.length - 1)].label;
 
     return Scaffold(
       appBar: AppBar(
@@ -560,6 +563,13 @@ class _BrewPageState extends ConsumerState<BrewPage>
             : _ParamsStrip(
                 params: params,
                 step: texts.brewStepOf(_snapshot.stepIndex + 1, steps.length),
+                // Помол — единственное из четырёх чисел, которое зависит не
+                // от рецепта, а от кофемолки человека. Уходить за ней на
+                // вкладку профиля посреди пролива невозможно: вода уже в
+                // воронке. Отсюда и возврат сам пересчитает щелчки —
+                // строка смотрит за состоянием кофемолки.
+                onGrinderTap: () =>
+                    context.router.push(const GrinderSelectRoute()),
               ),
       ),
       bottomNavigationBar: const AppBottomNav(),
@@ -629,8 +639,9 @@ class _BrewPageState extends ConsumerState<BrewPage>
                         // До старта кнопка подтверждает подготовку, а не
                         // запускает таймер: рамка над ней просит смолоть,
                         // и «Начать» отвечало бы не на тот вопрос.
-                        BrewStatus.idle =>
-                          params.hasPrep ? texts.brewGrindAndStart : texts.brewStart,
+                        BrewStatus.idle => params.hasPrep
+                            ? texts.brewGrindAndStart
+                            : texts.brewStart,
                         BrewStatus.running => texts.brewPause,
                         BrewStatus.paused => texts.brewResume,
                         // Шаг ждёт человека — и главная кнопка отвечает на
@@ -761,9 +772,16 @@ class _BrewPageState extends ConsumerState<BrewPage>
 /// что наливают. `FittedBox` вместо переноса: строка обязана остаться одной
 /// строкой, а на узком экране лучше уменьшить кегль, чем спрятать число.
 class _ParamsStrip extends StatelessWidget implements PreferredSizeWidget {
-  const _ParamsStrip({required this.params, required this.step});
+  const _ParamsStrip({
+    required this.params,
+    required this.step,
+    this.onGrinderTap,
+  });
 
   final BrewParams params;
+
+  /// Сменить кофемолку, не уходя с рецепта.
+  final VoidCallback? onGrinderTap;
 
   /// «шаг 2 из 5» — уехал сюда из шапки, к числам, с которыми его и сверяют.
   final String step;
@@ -778,12 +796,38 @@ class _ParamsStrip extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = <(String, String, Color)>[
-      if (params.dose != null) (AppIcons.metricDose, params.dose!, context.metrics.dose),
-      if (params.grind != null) (AppIcons.metricGrind, params.grind!, context.metrics.grind),
-      if (params.water != null) (AppIcons.metricWater, params.water!, context.metrics.water),
+    final texts = AppLocalizations.of(context);
+
+    final items =
+        <({String icon, String value, Color color, VoidCallback? onTap})>[
+      if (params.dose != null)
+        (
+          icon: AppIcons.metricDose,
+          value: params.dose!,
+          color: context.metrics.dose,
+          onTap: null
+        ),
+      if (params.grind != null)
+        (
+          icon: AppIcons.metricGrind,
+          value: params.grind!,
+          color: context.metrics.grind,
+          onTap: onGrinderTap,
+        ),
+      if (params.water != null)
+        (
+          icon: AppIcons.metricWater,
+          value: params.water!,
+          color: context.metrics.water,
+          onTap: null
+        ),
       if (params.temperature != null)
-        (AppIcons.metricTemperature, params.temperature!, context.metrics.temperature),
+        (
+          icon: AppIcons.metricTemperature,
+          value: params.temperature!,
+          color: context.metrics.temperature,
+          onTap: null,
+        ),
     ];
 
     return Container(
@@ -807,15 +851,12 @@ class _ParamsStrip extends StatelessWidget implements PreferredSizeWidget {
                 children: [
                   for (var i = 0; i < items.length; i++) ...[
                     if (i > 0) const SizedBox(width: AppSpacing.s4),
-                    AppIcon(items[i].$1, size: AppSizes.icon24, color: items[i].$3),
-                    const SizedBox(width: AppSpacing.s1),
-                    Text(
-                      items[i].$2,
-                      style: context.texts.titleMedium?.copyWith(
-                        color: context.colors.onSurface,
-                        fontWeight: FontWeight.w600,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
+                    _Param(
+                      icon: items[i].icon,
+                      value: items[i].value,
+                      color: items[i].color,
+                      onTap: items[i].onTap,
+                      actionLabel: texts.packsChangeGrinder,
                     ),
                   ],
                 ],
@@ -825,6 +866,75 @@ class _ParamsStrip extends StatelessWidget implements PreferredSizeWidget {
           const SizedBox(width: AppSpacing.s3),
           Text(step, style: context.texts.bodySmall),
         ],
+      ),
+    );
+  }
+}
+
+/// Одно число строки параметров.
+///
+/// Нажимаемое подчёркнуто пунктиром, а не залито и не обведено рамкой: строка
+/// стоит под шапкой узкой полосой, и любая поверхность внутри неё читалась бы
+/// как вторая шапка. Пунктир — самый тихий знак «сюда можно нажать», который
+/// не меняет высоту строки.
+class _Param extends StatelessWidget {
+  const _Param({
+    required this.icon,
+    required this.value,
+    required this.color,
+    required this.onTap,
+    required this.actionLabel,
+  });
+
+  final String icon;
+  final String value;
+  final Color color;
+  final VoidCallback? onTap;
+
+  /// Что произойдёт по нажатию — для голосового помощника.
+  final String actionLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final number = Text(
+      value,
+      style: context.texts.titleMedium?.copyWith(
+        color: context.colors.onSurface,
+        fontWeight: FontWeight.w600,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+    );
+
+    final row = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppIcon(icon, size: AppSizes.icon24, color: color),
+        const SizedBox(width: AppSpacing.s1),
+        if (onTap == null)
+          number
+        else
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                  bottom: BorderSide(color: color, width: AppStroke.thick)),
+            ),
+            child: number,
+          ),
+      ],
+    );
+
+    if (onTap == null) return row;
+
+    return Semantics(
+      button: true,
+      label: actionLabel,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.small,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s1),
+          child: row,
+        ),
       ),
     );
   }
@@ -874,7 +984,8 @@ class _ResumeScreen extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppIcon(AppIcons.uiCheck, size: AppSizes.icon20, color: context.colors.primary),
+                AppIcon(AppIcons.uiCheck,
+                    size: AppSizes.icon20, color: context.colors.primary),
                 const SizedBox(width: AppSpacing.s3),
                 Expanded(
                   child: Text(
@@ -938,7 +1049,6 @@ class _ResumeScreen extends StatelessWidget {
       ],
     );
   }
-
 }
 
 /// Длительность словами: «13 ч», «4 минуты», «40 с».
@@ -984,7 +1094,8 @@ class _ResumeOption extends StatelessWidget {
         child: QuietSurface(
           child: Row(
             children: [
-              AppIcon(icon, size: AppSizes.icon20, color: context.colors.primary),
+              AppIcon(icon,
+                  size: AppSizes.icon20, color: context.colors.primary),
               const SizedBox(width: AppSpacing.s3),
               Expanded(
                 child: Column(
@@ -1040,7 +1151,8 @@ class _BrewFrame extends StatelessWidget {
 
   /// «Часы»: шаг длиннее получаса — показываем не отсчёт, а «готово в».
   bool get _clockStep =>
-      template == BrewTemplate.long && step.duration > const Duration(minutes: 30);
+      template == BrewTemplate.long &&
+      step.duration > const Duration(minutes: 30);
 
   @override
   Widget build(BuildContext context) {
@@ -1075,7 +1187,8 @@ class _BrewFrame extends StatelessWidget {
                 AppIcon(
                   icon,
                   size: AppSizes.icon32,
-                  color: _isPrep ? context.metrics.grind : context.metrics.water,
+                  color:
+                      _isPrep ? context.metrics.grind : context.metrics.water,
                 ),
                 const SizedBox(height: AppSpacing.s2),
                 Text(
@@ -1241,7 +1354,8 @@ class _FrameProgressPainter extends CustomPainter {
     const radius = AppRadius.l;
     const inset = AppStroke.thick;
     final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(inset, inset, size.width - inset * 2, size.height - inset * 2),
+      Rect.fromLTWH(
+          inset, inset, size.width - inset * 2, size.height - inset * 2),
       const Radius.circular(radius),
     );
 
@@ -1294,9 +1408,11 @@ class _FrameProgressPainter extends CustomPainter {
       ..lineTo(right - radius, top)
       ..arcToPoint(Offset(right, top + radius), radius: Radius.circular(radius))
       ..lineTo(right, bottom - radius)
-      ..arcToPoint(Offset(right - radius, bottom), radius: Radius.circular(radius))
+      ..arcToPoint(Offset(right - radius, bottom),
+          radius: Radius.circular(radius))
       ..lineTo(left + radius, bottom)
-      ..arcToPoint(Offset(left, bottom - radius), radius: Radius.circular(radius))
+      ..arcToPoint(Offset(left, bottom - radius),
+          radius: Radius.circular(radius))
       ..lineTo(left, top + radius)
       ..arcToPoint(Offset(left + radius, top), radius: Radius.circular(radius))
       ..lineTo(centerX, top);
@@ -1435,8 +1551,9 @@ class _StepCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
-    final icon = AppIcons.byKey('step-${step.type.wireName.replaceAll('_', '-')}') ??
-        AppIcons.stepCustom;
+    final icon =
+        AppIcons.byKey('step-${step.type.wireName.replaceAll('_', '-')}') ??
+            AppIcons.stepCustom;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.s2),
@@ -1460,7 +1577,8 @@ class _StepCard extends StatelessWidget {
             border: Border.all(
               color: _isActive ? context.colors.primary : Colors.transparent,
             ),
-            boxShadow: _isActive ? context.shadows.level2 : context.shadows.level1,
+            boxShadow:
+                _isActive ? context.shadows.level2 : context.shadows.level1,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1475,7 +1593,9 @@ class _StepCard extends StatelessWidget {
                     size: AppSizes.icon24,
                     color: _isDone
                         ? context.palette.success
-                        : (_isActive ? context.metrics.water : context.colors.onSurface),
+                        : (_isActive
+                            ? context.metrics.water
+                            : context.colors.onSurface),
                   ),
                   const SizedBox(width: AppSpacing.s3),
                   Expanded(
@@ -1490,7 +1610,8 @@ class _StepCard extends StatelessWidget {
                   // У шага, который ждёт человека, длительности нет, и «0:00»
                   // отвечало на этот вопрос неправдой — поэтому там стоит то,
                   // чем шаг кончится.
-                  if (brewStepEndNote(texts, step) case final note when note.isNotEmpty)
+                  if (brewStepEndNote(texts, step) case final note
+                      when note.isNotEmpty)
                     Text(
                       note,
                       style: context.texts.labelSmall?.copyWith(
@@ -1502,7 +1623,9 @@ class _StepCard extends StatelessWidget {
                       _isActive
                           ? formatDuration(snapshot.remainingInStep)
                           : formatDuration(step.duration),
-                      style: _isActive ? context.texts.bodySmall : context.texts.labelSmall,
+                      style: _isActive
+                          ? context.texts.bodySmall
+                          : context.texts.labelSmall,
                     ),
                 ],
               ),
@@ -1585,9 +1708,8 @@ class _BrewStepTipState extends State<BrewStepTip> {
         // Меряем по той ширине, в которой текст живёт вместе с шевроном.
         // Без шеврона текста поместилось бы только больше, поэтому решение
         // «не влезло» само себя не переворачивает.
-        final free = constraints.maxWidth -
-            (AppSizes.icon16 + AppSpacing.s1) -
-            _chevron;
+        final free =
+            constraints.maxWidth - (AppSizes.icon16 + AppSpacing.s1) - _chevron;
 
         // Мерить надо ровно тем, чем рисуем: Text домешивает стиль по
         // умолчанию, и без него замер разойдётся с разметкой на пограничных
@@ -1733,7 +1855,8 @@ class _EndMark extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
-                style: context.texts.labelSmall?.copyWith(color: context.colors.primary),
+                style: context.texts.labelSmall
+                    ?.copyWith(color: context.colors.primary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1768,7 +1891,8 @@ class _WarningNote extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: context.texts.labelSmall?.copyWith(color: context.colors.tertiary),
+            style: context.texts.labelSmall
+                ?.copyWith(color: context.colors.tertiary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -1817,7 +1941,8 @@ class BrewParams {
   final String? prepHint;
 
   /// Ни одного числа — строку и подготовку показывать не из чего.
-  bool get isEmpty => dose == null && grind == null && water == null && temperature == null;
+  bool get isEmpty =>
+      dose == null && grind == null && water == null && temperature == null;
 
   /// Есть что молоть: доза или помол известны.
   bool get hasPrep => prepValue != null;

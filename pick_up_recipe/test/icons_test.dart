@@ -22,15 +22,29 @@ void main() {
     test('каждому методу каталога есть иконка', () {
       // Ключи — icon_key из миграций 20260729000200 и 20260813100000.
       // Разошедшийся ключ здесь означает пустой квадрат на плитке метода.
-      for (final key in ['v60', 'kalita', 'switch', 'batch', 'french_press',
-        'aeropress_inverted', 'kono', 'pulsar', 'flair', 'nine_barista',
-        'toddy', 'pour_over', 'karlsbader', 'bripe']) {
+      for (final key in [
+        'v60',
+        'kalita',
+        'switch',
+        'batch',
+        'french_press',
+        'aeropress_inverted',
+        'kono',
+        'pulsar',
+        'flair',
+        'nine_barista',
+        'toddy',
+        'pour_over',
+        'karlsbader',
+        'bripe'
+      ]) {
         expect(AppIcons.byKey('method-$key'), isNotNull, reason: key);
       }
     });
 
     test('каждый файл существует', () {
-      final missing = AppIcons.all.where((path) => !File(path).existsSync()).toList();
+      final missing =
+          AppIcons.all.where((path) => !File(path).existsSync()).toList();
 
       expect(
         missing,
@@ -62,7 +76,8 @@ void main() {
 
     test('сетка 24×24 у всех', () {
       for (final path in AppIcons.all) {
-        expect(File(path).readAsStringSync(), contains('viewBox="0 0 24 24"'), reason: path);
+        expect(File(path).readAsStringSync(), contains('viewBox="0 0 24 24"'),
+            reason: path);
       }
     });
 

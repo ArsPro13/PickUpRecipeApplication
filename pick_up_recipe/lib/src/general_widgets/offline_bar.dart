@@ -78,7 +78,8 @@ class _Bar extends StatelessWidget {
               AppIcon(
                 offline ? AppIcons.uiWarning : AppIcons.uiHistory,
                 size: AppSizes.icon16,
-                color: offline ? context.colors.secondary : context.colors.primary,
+                color:
+                    offline ? context.colors.secondary : context.colors.primary,
               ),
               const SizedBox(width: AppSpacing.s2),
               Expanded(

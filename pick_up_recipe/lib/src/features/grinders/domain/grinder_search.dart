@@ -28,6 +28,20 @@ List<Grinder> selectableGrinders(List<Grinder> catalog) {
   return catalog.where((grinder) => grinder.id != baseGrinderId).toList();
 }
 
+/// Справочник по алфавиту.
+///
+/// Сравнение без учёта регистра: справочник заполняли руками, и рядом с
+/// «Timemore» встречается «timemore» — при сравнении по кодам символов
+/// строчная буква уезжает за всю латиницу, то есть в конец списка.
+///
+/// Имена с кириллицей естественным образом встают после латинских, и это
+/// верный порядок для этого справочника: латинских моделей в нём
+/// подавляющее большинство, а кириллические — уточнения к ним.
+List<Grinder> grindersByName(List<Grinder> grinders) {
+  return [...grinders]
+    ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+}
+
 /// Насколько запрос попал в имя. Порядок значений — порядок выдачи.
 enum GrinderMatchRank {
   /// Имя или одно из его слов начинается с запроса.
@@ -95,9 +109,13 @@ List<GrinderHit> searchGrinders(List<Grinder> catalog, String query) {
 /// Порог здесь на одну поправку шире, чем у поиска: строку показывают только
 /// когда поиск не нашёл ничего, и лучше предложить неточный вариант, чем
 /// оставить человека в пустом экране.
-List<Grinder> grinderDidYouMean(List<Grinder> catalog, String query, {int limit = 3}) {
+List<Grinder> grinderDidYouMean(List<Grinder> catalog, String query,
+    {int limit = 3}) {
   if (normalizeGrinderText(query).isEmpty) return const [];
-  return _search(catalog, query, 1).take(limit).map((hit) => hit.grinder).toList();
+  return _search(catalog, query, 1)
+      .take(limit)
+      .map((hit) => hit.grinder)
+      .toList();
 }
 
 // ── Внутреннее ──────────────────────────────────────────────────────────────
@@ -127,7 +145,8 @@ List<GrinderHit> _search(List<Grinder> catalog, String query, int bonus) {
     for (var i = 0; i < starts.length; i++) {
       if (!name.startsWith(needle, starts[i])) continue;
       found.add(_Scored(
-        _hit(grinder, GrinderMatchRank.start, folded, starts[i], starts[i] + needle.length),
+        _hit(grinder, GrinderMatchRank.start, folded, starts[i],
+            starts[i] + needle.length),
         i,
         order,
       ));
@@ -139,7 +158,8 @@ List<GrinderHit> _search(List<Grinder> catalog, String query, int bonus) {
     final inside = name.indexOf(needle);
     if (inside >= 0) {
       found.add(_Scored(
-        _hit(grinder, GrinderMatchRank.inside, folded, inside, inside + needle.length),
+        _hit(grinder, GrinderMatchRank.inside, folded, inside,
+            inside + needle.length),
         inside,
         order,
       ));
@@ -156,7 +176,8 @@ List<GrinderHit> _search(List<Grinder> catalog, String query, int bonus) {
     var bestLength = 0;
     for (final at in starts) {
       final until = at + needle.length + budget;
-      final candidate = name.substring(at, until < name.length ? until : name.length);
+      final candidate =
+          name.substring(at, until < name.length ? until : name.length);
       final measured = _distance(needle, candidate);
       if (measured.prefix < best) {
         best = measured.prefix;
@@ -166,7 +187,8 @@ List<GrinderHit> _search(List<Grinder> catalog, String query, int bonus) {
     }
     if (best <= budget) {
       found.add(_Scored(
-        _hit(grinder, GrinderMatchRank.typo, folded, bestAt, bestAt + bestLength),
+        _hit(grinder, GrinderMatchRank.typo, folded, bestAt,
+            bestAt + bestLength),
         best,
         order,
       ));
@@ -198,7 +220,8 @@ class _Scored {
 }
 
 /// Переносит границы совпадения из нормализованной строки в исходную.
-GrinderHit _hit(Grinder grinder, GrinderMatchRank rank, _Folded folded, int from, int to) {
+GrinderHit _hit(
+    Grinder grinder, GrinderMatchRank rank, _Folded folded, int from, int to) {
   final limit = folded.source.length;
   if (to <= from || from >= limit) {
     return GrinderHit(grinder: grinder, rank: rank);
@@ -284,14 +307,54 @@ bool _isKept(String symbol) {
 /// чтобы поиск прощал набор латиницей вместо кириллицы и наоборот. В словарь
 /// она не выносится ни на каком языке — от перевода поиск сломается.
 const Map<String, String> _alphabet = {
-  'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
-  'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'i', 'к': 'k', 'л': 'l', 'м': 'm',
-  'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
-  'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'kh', 'ш': 'sh', 'щ': 'skh',
-  'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
-  'c': 'k', 'q': 'k', 'w': 'v', 'x': 'ks',
-  'ä': 'a', 'ö': 'o', 'ü': 'u', 'ß': 'ss',
-  'á': 'a', 'é': 'e', 'è': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ñ': 'n',
+  'а': 'a',
+  'б': 'b',
+  'в': 'v',
+  'г': 'g',
+  'д': 'd',
+  'е': 'e',
+  'ё': 'e',
+  'ж': 'zh',
+  'з': 'z',
+  'и': 'i',
+  'й': 'i',
+  'к': 'k',
+  'л': 'l',
+  'м': 'm',
+  'н': 'n',
+  'о': 'o',
+  'п': 'p',
+  'р': 'r',
+  'с': 's',
+  'т': 't',
+  'у': 'u',
+  'ф': 'f',
+  'х': 'h',
+  'ц': 'ts',
+  'ч': 'kh',
+  'ш': 'sh',
+  'щ': 'skh',
+  'ъ': '',
+  'ы': 'y',
+  'ь': '',
+  'э': 'e',
+  'ю': 'yu',
+  'я': 'ya',
+  'c': 'k',
+  'q': 'k',
+  'w': 'v',
+  'x': 'ks',
+  'ä': 'a',
+  'ö': 'o',
+  'ü': 'u',
+  'ß': 'ss',
+  'á': 'a',
+  'é': 'e',
+  'è': 'e',
+  'í': 'i',
+  'ó': 'o',
+  'ú': 'u',
+  'ñ': 'n',
 };
 
 class _Measured {

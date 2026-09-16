@@ -107,7 +107,8 @@ class _LegalSheetState extends State<_LegalSheet> {
                     return Padding(
                       padding: const EdgeInsets.all(AppSpacing.s6),
                       child: Text(
-                        texts.svcLegalUnavailable('${Uri.parse(widget.kind.path)}'),
+                        texts.svcLegalUnavailable(
+                            '${Uri.parse(widget.kind.path)}'),
                         style: context.texts.bodyMedium,
                       ),
                     );

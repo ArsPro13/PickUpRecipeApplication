@@ -31,7 +31,8 @@ class _SlowProfileService implements GrinderService {
     await Future<void>.delayed(const Duration(milliseconds: 40));
     return const [
       UserGrinder(
-        grinder: Grinder(id: 1, name: 'Comandante C40', kind: GrinderKind.manual),
+        grinder:
+            Grinder(id: 1, name: 'Comandante C40', kind: GrinderKind.manual),
         isPrimary: true,
       ),
     ];
@@ -69,7 +70,8 @@ void main() {
     expect(notifier.state.primary?.name, 'Comandante C40');
   });
 
-  test('повторная загрузка справочника не ходит на сервер второй раз', () async {
+  test('повторная загрузка справочника не ходит на сервер второй раз',
+      () async {
     final notifier = GrinderStateNotifier(_SlowProfileService());
 
     await notifier.loadCatalog();

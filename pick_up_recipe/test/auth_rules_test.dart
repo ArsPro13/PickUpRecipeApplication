@@ -60,7 +60,8 @@ void main() {
 
   group('повтор пароля', () {
     test('несовпадение ловится', () {
-      expect(AuthRules.repeatProblem('qwerty', 'qwerti'), RepeatProblem.mismatch);
+      expect(
+          AuthRules.repeatProblem('qwerty', 'qwerti'), RepeatProblem.mismatch);
     });
 
     test('пустой повтор — не то же самое, что несовпадение', () {
@@ -74,7 +75,11 @@ void main() {
 
   group('почта', () {
     test('обычные адреса проходят', () {
-      for (final email in ['a@a.ru', 'user.name@example.co.uk', 'x+tag@mail.ru']) {
+      for (final email in [
+        'a@a.ru',
+        'user.name@example.co.uk',
+        'x+tag@mail.ru'
+      ]) {
         expect(AuthRules.emailProblem(email), isNull, reason: email);
       }
     });
@@ -118,8 +123,10 @@ void main() {
   group('разбор ответа сервера', () {
     // encoding: utf8 обязателен — http.Response по умолчанию latin1,
     // и кириллица в теле роняет сам конструктор ответа.
-    AuthFailure failureOf(int status, [String body = '']) => AuthFailure.fromResponse(
-          http.Response(body, status, headers: const {'content-type': 'application/json'}),
+    AuthFailure failureOf(int status, [String body = '']) =>
+        AuthFailure.fromResponse(
+          http.Response(body, status,
+              headers: const {'content-type': 'application/json'}),
           action: AuthAction.login,
         );
 
@@ -161,7 +168,8 @@ void main() {
     test('объяснение пятисотки важнее общей фразы про сервер', () {
       // 503 «отправка писем не настроена» говорит человеку, что дело не в нём.
       // «Сервер не отвечает» отправило бы его проверять связь.
-      final failure = failureOf(503, '{"message":"отправка писем не настроена, попробуйте позже"}');
+      final failure = failureOf(
+          503, '{"message":"отправка писем не настроена, попробуйте позже"}');
 
       expect(failure.text(ru), 'отправка писем не настроена, попробуйте позже');
     });
@@ -183,7 +191,8 @@ void main() {
   // остаться той же — иначе «перевели» превращается в «переписали».
   group('тексты ошибок входа на русском не изменились', () {
     AuthFailure failureOf(int status) => AuthFailure.fromResponse(
-          http.Response('', status, headers: const {'content-type': 'application/json'}),
+          http.Response('', status,
+              headers: const {'content-type': 'application/json'}),
           action: AuthAction.login,
         );
 
@@ -211,7 +220,8 @@ void main() {
 
     test('«Не удалось <действие>» собрано целой фразой на каждое действие', () {
       String failed(AuthAction action) => AuthFailure.fromResponse(
-            http.Response('', 418, headers: const {'content-type': 'application/json'}),
+            http.Response('', 418,
+                headers: const {'content-type': 'application/json'}),
             action: action,
           ).text(ru);
 

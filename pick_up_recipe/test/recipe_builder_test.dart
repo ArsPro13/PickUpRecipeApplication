@@ -98,11 +98,14 @@ void main() {
       expect(stepEndsByUser(step(stepType: 'custom', untilUser: true)), isTrue);
     });
 
-    test('подпись берётся из того же перечисления, что и форма своего типа', () {
+    test('подпись берётся из того же перечисления, что и форма своего типа',
+        () {
       expect(stepEnding(step()), StepEndsWith.timer);
-      expect(stepEnding(step(stepType: 'custom', untilUser: true)), StepEndsWith.user);
+      expect(stepEnding(step(stepType: 'custom', untilUser: true)),
+          StepEndsWith.user);
       expect(
-        stepEnding(step(stepType: 'custom', untilUser: true, untilSign: 'воронка пуста')),
+        stepEnding(step(
+            stepType: 'custom', untilUser: true, untilSign: 'воронка пуста')),
         StepEndsWith.none,
       );
 
@@ -185,13 +188,15 @@ void main() {
     });
 
     test('у паузы — только время', () {
-      expect(stepSummary(step(stepType: 'wait', water: 0, time: 65), ru), '1:05');
+      expect(
+          stepSummary(step(stepType: 'wait', water: 0, time: 65), ru), '1:05');
     });
 
     test('у шага по кнопке вместо времени — чем он кончается', () {
       // Было «0:09»: девять секунд, которые никто не отсчитывал.
       expect(
-        stepSummary(step(stepType: 'custom', water: 2, time: 9, untilUser: true), ru),
+        stepSummary(
+            step(stepType: 'custom', water: 2, time: 9, untilUser: true), ru),
         ru.builderEndsUser,
       );
     });
@@ -202,7 +207,8 @@ void main() {
       final en = lookupAppLocalizations(const Locale('en'));
 
       expect(
-        stepSummary(step(stepType: 'custom', water: 2, time: 9, untilUser: true), en),
+        stepSummary(
+            step(stepType: 'custom', water: 2, time: 9, untilUser: true), en),
         en.builderEndsUser,
       );
       expect(stepSummary(step(water: 100, time: 30), en), '100 g · 0:30');
@@ -295,7 +301,10 @@ void main() {
           notes: '',
           grindDescriptor: 'medium_fine',
           agitationLevel: 2,
-          steps: [step(), step(seqNum: 2, instruction: 'Пауза', water: 0, stepType: 'wait')],
+          steps: [
+            step(),
+            step(seqNum: 2, instruction: 'Пауза', water: 0, stepType: 'wait')
+          ],
         );
 
     test('поля едут именами бэкенда, а не клиентской модели', () {
@@ -380,7 +389,10 @@ void main() {
           notes: '',
           grindDescriptor: 'medium_fine',
           agitationLevel: 2,
-          steps: [step(), step(seqNum: 2, instruction: 'Пауза', water: 0, stepType: 'wait')],
+          steps: [
+            step(),
+            step(seqNum: 2, instruction: 'Пауза', water: 0, stepType: 'wait')
+          ],
         );
 
     test('шаги копируются, а не падают приведением типа', () {
@@ -505,7 +517,6 @@ void main() {
       });
     }
   });
-
 }
 
 /// Строки в кавычках, в которых осталась кириллица.

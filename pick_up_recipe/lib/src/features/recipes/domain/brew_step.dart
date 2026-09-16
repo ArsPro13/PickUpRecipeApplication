@@ -154,5 +154,6 @@ class BrewStep {
   }
 
   @override
-  String toString() => 'BrewStep($id, ${type.wireName}, ${duration.inSeconds}s)';
+  String toString() =>
+      'BrewStep($id, ${type.wireName}, ${duration.inSeconds}s)';
 }

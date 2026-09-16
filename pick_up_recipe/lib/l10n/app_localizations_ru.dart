@@ -1328,9 +1328,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get grinderKindOther => 'Прочие';
 
   @override
-  String get grinderMakePrimary => 'сделать основной';
-
-  @override
   String get grinderSave => 'Сохранить';
 
   @override
@@ -1657,4 +1654,43 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get svcLoadFailedNote =>
       'Обычно это связь. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get recipesNotRated => 'Не оценено';
+
+  @override
+  String methodsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count прибора',
+      many: '$count приборов',
+      few: '$count прибора',
+      one: '$count прибор',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chooseOtherPacks => 'С прошлых пачек';
+
+  @override
+  String get chooseOtherPacksNote => 'тот же прибор, другое зерно';
+
+  @override
+  String get rateForYou =>
+      'Это ваша заметка. По ней приложение поправит помол и время в следующий раз — обжарщик видит только обезличенную статистику.';
+
+  @override
+  String get rateOverallNote =>
+      'Ни на что не влияет — просто чтобы потом найти лучшую чашку';
+
+  @override
+  String get profileAppTitle => 'Приложение';
+
+  @override
+  String get profileLanguage => 'Язык';
+
+  @override
+  String get profileLanguageSystem => 'Как в системе';
 }

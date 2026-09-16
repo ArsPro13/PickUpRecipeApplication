@@ -93,7 +93,9 @@ class _InsertingPackInfoCameraWidgetState
                     ? texts.packFormPhotoTake
                     : texts.packFormPhotoRetake,
                 icon: AppIcons.uiCamera,
-                kind: image == null ? AppButtonKind.primary : AppButtonKind.secondary,
+                kind: image == null
+                    ? AppButtonKind.primary
+                    : AppButtonKind.secondary,
                 loading: _busy,
                 onPressed: () => _pickImage(ImageSource.camera),
               ),
@@ -113,7 +115,8 @@ class _InsertingPackInfoCameraWidgetState
           const SizedBox(height: AppSpacing.s2),
           Text(
             texts.packFormPhotoFailed,
-            style: context.texts.labelSmall?.copyWith(color: context.colors.error),
+            style:
+                context.texts.labelSmall?.copyWith(color: context.colors.error),
           ),
         ],
       ],
@@ -135,7 +138,8 @@ class _PhotoHint extends StatefulWidget {
   State<_PhotoHint> createState() => _PhotoHintState();
 }
 
-class _PhotoHintState extends State<_PhotoHint> with SingleTickerProviderStateMixin {
+class _PhotoHintState extends State<_PhotoHint>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _breath = AnimationController(
     vsync: this,
     duration: AppDuration.ambient,
@@ -191,7 +195,8 @@ class _PhotoHintState extends State<_PhotoHint> with SingleTickerProviderStateMi
 
 /// Прицел, дышащий вокруг пачки: уголки то сходятся к ней, то расходятся.
 class _FramingPainter extends CustomPainter {
-  const _FramingPainter({required this.ink, required this.accent, required this.breath});
+  const _FramingPainter(
+      {required this.ink, required this.accent, required this.breath});
 
   final Color ink;
   final Color accent;
@@ -237,7 +242,8 @@ class _FramingPainter extends CustomPainter {
 
     // Уголки прицела: на вдохе отходят от пачки, на выдохе прижимаются.
     final spread = 8 + 10 * (1 - breath);
-    final frame = Rect.fromLTRB(46 - spread, 11 - spread, 76 + spread, 61 + spread);
+    final frame =
+        Rect.fromLTRB(46 - spread, 11 - spread, 76 + spread, 61 + spread);
 
     final bracket = Paint()
       ..style = PaintingStyle.stroke

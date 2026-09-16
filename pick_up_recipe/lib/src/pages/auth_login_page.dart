@@ -83,7 +83,9 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
         _passwordError = failure.text(texts);
       });
     } catch (_) {
-      if (mounted) setState(() => _passwordError = AuthFailure.offline.text(texts));
+      if (mounted) {
+        setState(() => _passwordError = AuthFailure.offline.text(texts));
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -125,7 +127,9 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
                 autofillHints: const [AutofillHints.password],
                 onSubmitted: (_) => _submit(),
                 onChanged: (_) {
-                  if (_passwordError != null) setState(() => _passwordError = null);
+                  if (_passwordError != null) {
+                    setState(() => _passwordError = null);
+                  }
                 },
               ),
               const SizedBox(height: AppSpacing.s2),
@@ -137,7 +141,8 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
                   ),
                   child: Text(
                     texts.loginForgot,
-                    style: context.texts.bodySmall?.copyWith(color: context.colors.primary),
+                    style: context.texts.bodySmall
+                        ?.copyWith(color: context.colors.primary),
                   ),
                 ),
               ),
@@ -146,7 +151,10 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
         ),
       ],
       bottom: [
-        AppButton(label: texts.authSignIn, loading: _busy, onPressed: _busy ? null : _submit),
+        AppButton(
+            label: texts.authSignIn,
+            loading: _busy,
+            onPressed: _busy ? null : _submit),
         SwapLine(
           question: texts.loginNoAccount,
           action: texts.loginCreate,

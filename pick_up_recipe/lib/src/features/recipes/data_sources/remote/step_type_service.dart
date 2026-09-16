@@ -22,7 +22,8 @@ class StepTypeService {
       throw Exception('Не удалось получить типы шагов: ${response.statusCode}');
     }
 
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>?;
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>?;
     if (data == null) return const StepTypeReference();
     return StepTypeReference.fromJson(data);
   }

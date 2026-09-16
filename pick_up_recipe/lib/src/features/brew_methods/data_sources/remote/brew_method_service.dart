@@ -23,8 +23,12 @@ class BrewMethodService {
       throw Exception('Не удалось получить методы: ${response.statusCode}');
     }
 
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ?? const [];
-    return data.map((item) => BrewMethod.fromJson(item as Map<String, dynamic>)).toList();
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ??
+            const [];
+    return data
+        .map((item) => BrewMethod.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<BrewMethodGroup>> getGroups() async {
@@ -34,10 +38,15 @@ class BrewMethodService {
       cacheKey: 'brew_method_groups',
     );
     if (response.statusCode != 200) {
-      throw Exception('Не удалось получить группы методов: ${response.statusCode}');
+      throw Exception(
+          'Не удалось получить группы методов: ${response.statusCode}');
     }
 
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ?? const [];
-    return data.map((item) => BrewMethodGroup.fromJson(item as Map<String, dynamic>)).toList();
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ??
+            const [];
+    return data
+        .map((item) => BrewMethodGroup.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 }

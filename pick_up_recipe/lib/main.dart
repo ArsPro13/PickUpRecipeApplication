@@ -9,6 +9,7 @@ import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/prefs_key.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state.dart';
+import 'package:pick_up_recipe/src/features/settings/application/locale_state.dart';
 import 'package:pick_up_recipe/src/features/authentication/provider/authentication_state_notifier.dart';
 import 'package:pick_up_recipe/src/general_widgets/offline_bar.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_surface.dart';
@@ -63,8 +64,9 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
     // Чем щупаем сеть, пока висим офлайн: самый дешёвый справочник. Заодно
     // обновляет его копию на телефоне — то есть проба не пропадает зря.
-    NetworkStatus.probe = () =>
-        getIt<ApiClient>().getCached('/brew_methods/groups', const {}, cacheKey: 'brew_method_groups');
+    NetworkStatus.probe = () => getIt<ApiClient>().getCached(
+        '/brew_methods/groups', const {},
+        cacheKey: 'brew_method_groups');
 
     OfflineSync.wire();
 
@@ -91,6 +93,10 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     setupGetIt(ref);
 
+    // Выбранный человеком язык. null — он ничего не выбирал, и тогда всё
+    // решает система, как и раньше.
+    final chosen = ref.watch(localeProvider);
+
     // Сессия кончилась не по нашей воле — сервер отверг токены. Гвард к этому
     // моменту уже пропустил человека внутрь и второй раз не сработает: без
     // этого он остаётся на экране, который больше ничего не покажет.
@@ -107,13 +113,15 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       scaffoldMessengerKey: messengerKey,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      // Язык берётся из системного: есть такой .arb — на нём и говорим.
+      // Выбор человека сильнее системы. Пусто — язык берётся из системного:
+      // есть такой .arb — на нём и говорим.
       //
       // Для любого третьего языка запасной — английский, и он назван здесь
       // прямо, а не взят первым элементом supportedLocales: список туда
       // собирает генератор по именам файлов, и новый .arb молча сдвинул бы
       // умолчание на язык, которого никто не выбирал. Человеку, не знающему
       // русского, английский экран понятнее русского.
+      locale: chosen,
       localeResolutionCallback: (locale, supported) {
         for (final candidate in supported) {
           if (candidate.languageCode == locale?.languageCode) return candidate;

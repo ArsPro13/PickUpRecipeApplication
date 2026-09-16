@@ -79,22 +79,26 @@ void main() {
 
       await tester.tap(find.text('политика обработки данных'));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.close), findsOneWidget, reason: 'лист не открылся');
+      expect(find.byIcon(Icons.close), findsOneWidget,
+          reason: 'лист не открылся');
 
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.close), findsNothing, reason: 'лист не закрылся');
+      expect(find.byIcon(Icons.close), findsNothing,
+          reason: 'лист не закрылся');
 
       expect(
         tester.testTextInput.isVisible,
         isFalse,
         reason: 'клавиатура вернулась сама, хотя человек её прятал',
       );
-      expect(focus.hasFocus, isFalse, reason: 'фокус вернулся в поле и позвал клавиатуру');
+      expect(focus.hasFocus, isFalse,
+          reason: 'фокус вернулся в поле и позвал клавиатуру');
       expect(controller.text, 'me@example.com', reason: 'набранное потерялось');
     });
 
-    testWidgets('лист, потянутый вниз, тоже не возвращает клавиатуру', (tester) async {
+    testWidgets('лист, потянутый вниз, тоже не возвращает клавиатуру',
+        (tester) async {
       await tester.pumpWidget(_formWithLegalLink(controller, focus));
 
       await tester.enterText(find.byType(TextField), 'me@example.com');
@@ -107,14 +111,16 @@ void main() {
       // Жест владельца: тянем лист вниз, пока он не уедет за нижний край.
       await tester.drag(find.byIcon(Icons.close), const Offset(0, 600));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.close), findsNothing, reason: 'лист не закрылся жестом');
+      expect(find.byIcon(Icons.close), findsNothing,
+          reason: 'лист не закрылся жестом');
 
       expect(tester.testTextInput.isVisible, isFalse);
       expect(focus.hasFocus, isFalse);
       expect(controller.text, 'me@example.com');
     });
 
-    testWidgets('открытая клавиатура уходит вместе с открытием листа', (tester) async {
+    testWidgets('открытая клавиатура уходит вместе с открытием листа',
+        (tester) async {
       await tester.pumpWidget(_formWithLegalLink(controller, focus));
 
       await tester.enterText(find.byType(TextField), 'me@example.com');

@@ -38,7 +38,8 @@ class FakeApiClient extends ApiClient {
 
   /// Что отвечать на POST по адресу. Функция, а не значение: ответ бывает
   /// разным на первый и второй вызов.
-  final Map<String, http.Response Function(Map<String, dynamic> body)> replies = {};
+  final Map<String, http.Response Function(Map<String, dynamic> body)> replies =
+      {};
 
   /// Что правда ушло на сервер — по порядку.
   final List<(String, Map<String, dynamic>)> calls = [];
@@ -154,17 +155,20 @@ void main() {
   });
 
   group('очередь отправки', () {
-    test('без сети правка получает отрицательный id и живёт на телефоне', () async {
+    test('без сети правка получает отрицательный id и живёт на телефоне',
+        () async {
       api.offline = true;
 
       final saved = await RecipeService().evolveRecipe(recipe(id: 42));
 
-      expect(saved, lessThan(0), reason: 'локальный id не должен путаться с серверным');
+      expect(saved, lessThan(0),
+          reason: 'локальный id не должен путаться с серверным');
       expect(Outbox.pending.value, 1);
       expect(LocalRecipes.all().map((it) => it.id), [saved]);
     });
 
-    test('сохранённая без сети версия остаётся рецептом, а не обломком', () async {
+    test('сохранённая без сети версия остаётся рецептом, а не обломком',
+        () async {
       api.offline = true;
 
       final localId = await RecipeService().evolveRecipe(recipe(id: 42));
@@ -203,11 +207,13 @@ void main() {
       expect(report.sent, 2);
       expect(Outbox.pending.value, 0);
 
-      final estimation = api.calls.firstWhere((call) => call.$1 == '/recipe/estimation');
+      final estimation =
+          api.calls.firstWhere((call) => call.$1 == '/recipe/estimation');
       expect(estimation.$2['recipe_id'], 777,
           reason: 'оценка должна уехать на версию, которую завёл сервер');
 
-      expect(LocalRecipes.all(), isEmpty, reason: 'уехавшая версия живёт уже на сервере');
+      expect(LocalRecipes.all(), isEmpty,
+          reason: 'уехавшая версия живёт уже на сервере');
     });
 
     test('порядок сохраняется: сперва версия, потом оценка', () async {
@@ -221,7 +227,12 @@ void main() {
       api.replies['/recipe/evolve'] = (_) => http.Response('{"id": 777}', 200);
       await Outbox.flush();
 
-      expect(api.calls.map((call) => call.$1).where((path) => path != '/recipe/evolve').length, 1);
+      expect(
+          api.calls
+              .map((call) => call.$1)
+              .where((path) => path != '/recipe/evolve')
+              .length,
+          1);
       expect(api.calls.first.$1, '/recipe/evolve');
     });
 
@@ -242,7 +253,8 @@ void main() {
       final report = await Outbox.flush();
 
       expect(report.sent, 0);
-      expect(report.dropped, 2, reason: 'оценку некуда вешать, если версии нет');
+      expect(report.dropped, 2,
+          reason: 'оценку некуда вешать, если версии нет');
       expect(Outbox.pending.value, 0);
       expect(LocalRecipes.all(), isEmpty);
     });
@@ -256,19 +268,22 @@ void main() {
 
       api.offline = false;
       var next = 200;
-      api.replies['/recipe/evolve'] = (_) => http.Response('{"id": ${next++}}', 200);
+      api.replies['/recipe/evolve'] =
+          (_) => http.Response('{"id": ${next++}}', 200);
 
       final report = await Outbox.flush();
 
       expect(report.sent, 2);
 
-      final evolves = api.calls.where((call) => call.$1 == '/recipe/evolve').toList();
+      final evolves =
+          api.calls.where((call) => call.$1 == '/recipe/evolve').toList();
       expect(evolves.first.$2['id'], 125);
       expect(evolves.last.$2['id'], 200,
           reason: 'вторая правка встаёт следом за первой, а не спорит с ней');
     });
 
-    test('устаревшая правка встаёт следом за тем, что уже на сервере', () async {
+    test('устаревшая правка встаёт следом за тем, что уже на сервере',
+        () async {
       api.offline = true;
       await RecipeService().evolveRecipe(recipe(id: 125, packId: 7));
 
@@ -294,11 +309,15 @@ void main() {
 
       final report = await Outbox.flush();
 
-      expect(report.sent, 1, reason: 'правку человека нельзя терять из-за того, что рецепт ушёл вперёд');
+      expect(report.sent, 1,
+          reason:
+              'правку человека нельзя терять из-за того, что рецепт ушёл вперёд');
       expect(report.dropped, 0);
 
-      final evolves = api.calls.where((call) => call.$1 == '/recipe/evolve').toList();
-      expect(evolves.length, 2, reason: 'вторая попытка — уже от головы цепочки');
+      final evolves =
+          api.calls.where((call) => call.$1 == '/recipe/evolve').toList();
+      expect(evolves.length, 2,
+          reason: 'вторая попытка — уже от головы цепочки');
       expect(evolves.last.$2['id'], 154);
     });
 
@@ -311,13 +330,15 @@ void main() {
 
       for (var attempt = 1; attempt <= 4; attempt++) {
         await Outbox.flush();
-        expect(Outbox.pending.value, 1, reason: 'попытка $attempt ещё не последняя');
+        expect(Outbox.pending.value, 1,
+            reason: 'попытка $attempt ещё не последняя');
       }
 
       final last = await Outbox.flush();
 
       expect(last.dropped, 1);
-      expect(Outbox.pending.value, 0, reason: 'иначе одно дело держит всю очередь');
+      expect(Outbox.pending.value, 0,
+          reason: 'иначе одно дело держит всю очередь');
     });
 
     test('ошибка сервера очередь не съедает — попробуем позже', () async {
@@ -382,14 +403,16 @@ void main() {
     });
 
     test('чужой прибор не показывается', () {
-      final merged = withUnsentRecipes([recipe(id: 5)], unsent, device: 'chemex');
+      final merged =
+          withUnsentRecipes([recipe(id: 5)], unsent, device: 'chemex');
 
       expect(merged.map((it) => it.id), [5]);
     });
   });
 
   group('оценка без чисел', () {
-    test('пустые оси не уезжают вовсе — ноль значил бы «отвратительно»', () async {
+    test('пустые оси не уезжают вовсе — ноль значил бы «отвратительно»',
+        () async {
       await RecipeService().postEstimation(recipeId: 5, comment: 'горчит');
 
       final call = api.calls.single;
@@ -423,18 +446,24 @@ void main() {
     });
 
     test('счёт по-русски', () {
-      expect(offlineBarText(ru, online: false, waiting: 1), contains('1 дело уедет'));
-      expect(offlineBarText(ru, online: false, waiting: 2), contains('2 дела уедут'));
-      expect(offlineBarText(ru, online: false, waiting: 5), contains('5 дел уедут'));
-      expect(offlineBarText(ru, online: false, waiting: 11), contains('11 дел уедут'));
-      expect(offlineBarText(ru, online: false, waiting: 21), contains('21 дело уедет'));
+      expect(offlineBarText(ru, online: false, waiting: 1),
+          contains('1 дело уедет'));
+      expect(offlineBarText(ru, online: false, waiting: 2),
+          contains('2 дела уедут'));
+      expect(offlineBarText(ru, online: false, waiting: 5),
+          contains('5 дел уедут'));
+      expect(offlineBarText(ru, online: false, waiting: 11),
+          contains('11 дел уедут'));
+      expect(offlineBarText(ru, online: false, waiting: 21),
+          contains('21 дело уедет'));
     });
 
     test('английская локаль считает по своим правилам', () {
       final en = lookupAppLocalizations(const Locale('en'));
 
       expect(offlineBarText(en, online: false, waiting: 1), contains('1 item'));
-      expect(offlineBarText(en, online: false, waiting: 5), contains('5 items'));
+      expect(
+          offlineBarText(en, online: false, waiting: 5), contains('5 items'));
     });
   });
 
@@ -482,7 +511,8 @@ void main() {
     });
 
     test('одно дело числом не называется — у единицы своя ветка', () {
-      expect(outboxReportText(en, const OutboxReport(sent: 1)), isNot(contains('1')));
+      expect(outboxReportText(en, const OutboxReport(sent: 1)),
+          isNot(contains('1')));
       expect(outboxReportText(en, const OutboxReport(sent: 2)), contains('2'));
     });
   });

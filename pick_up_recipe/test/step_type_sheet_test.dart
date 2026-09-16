@@ -73,7 +73,8 @@ Future<_Outcome> _openSheet(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        stepTypesProvider.overrideWith((ref) async => reference ?? _reference()),
+        stepTypesProvider
+            .overrideWith((ref) async => reference ?? _reference()),
       ],
       child: MaterialApp(
         theme: lightTheme,
@@ -84,8 +85,8 @@ Future<_Outcome> _openSheet(
           body: Builder(
             builder: (context) => TextButton(
               onPressed: () async {
-                outcome.pick =
-                    await showStepTypeSheet(context, allowedStepTypes: const []);
+                outcome.pick = await showStepTypeSheet(context,
+                    allowedStepTypes: const []);
                 outcome.closed = true;
               },
               child: const Text('открыть'),
@@ -104,17 +105,20 @@ Future<_Outcome> _openSheet(
 
 void main() {
   group('лист выбора типа шага', () {
-    testWidgets('палец по списку листает список, а не тащит шторку', (tester) async {
+    testWidgets('палец по списку листает список, а не тащит шторку',
+        (tester) async {
       await _openSheet(tester);
 
       final before = tester.getTopLeft(find.text('Тип 0')).dy;
       final sheetBefore = tester.getRect(find.byType(BottomSheet));
 
-      await tester.drag(find.byType(ListView), const Offset(0, -200), touchSlopY: 0);
+      await tester.drag(find.byType(ListView), const Offset(0, -200),
+          touchSlopY: 0);
       await tester.pumpAndSettle();
 
       // Список уехал вверх ровно настолько, насколько его тащили.
-      expect(tester.getTopLeft(find.text('Тип 0')).dy, closeTo(before - 200, 1));
+      expect(
+          tester.getTopLeft(find.text('Тип 0')).dy, closeTo(before - 200, 1));
       // А сам лист остался на месте: это была прокрутка, а не закрытие.
       expect(tester.getRect(find.byType(BottomSheet)), sheetBefore);
     });

@@ -37,7 +37,8 @@ void main() {
   }
 
   group('код с пачки', () {
-    testWidgets('кнопка «На пачке нет кода» видна на 360×640 без прокрутки', (tester) async {
+    testWidgets('кнопка «На пачке нет кода» видна на 360×640 без прокрутки',
+        (tester) async {
       await pumpScan(tester);
 
       final button = find.text('На пачке нет кода');
@@ -65,7 +66,8 @@ void main() {
       );
     });
 
-    testWidgets('устройство проверки кода на экране не объясняется', (tester) async {
+    testWidgets('устройство проверки кода на экране не объясняется',
+        (tester) async {
       await pumpScan(tester);
 
       expect(find.textContaining('контрольн'), findsNothing);

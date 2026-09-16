@@ -1310,9 +1310,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get grinderKindOther => 'Other';
 
   @override
-  String get grinderMakePrimary => 'make primary';
-
-  @override
   String get grinderSave => 'Save';
 
   @override
@@ -1638,4 +1635,41 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get svcLoadFailedNote =>
       'Usually it is the connection. Check the internet and try again.';
+
+  @override
+  String get recipesNotRated => 'Not rated';
+
+  @override
+  String methodsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count devices',
+      one: '$count device',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chooseOtherPacks => 'From earlier bags';
+
+  @override
+  String get chooseOtherPacksNote => 'same brewer, different beans';
+
+  @override
+  String get rateForYou =>
+      'This is your own note. The app will adjust grind and time next time — the roaster only sees anonymised statistics.';
+
+  @override
+  String get rateOverallNote =>
+      'Changes nothing — just so you can find your best cup later';
+
+  @override
+  String get profileAppTitle => 'App';
+
+  @override
+  String get profileLanguage => 'Language';
+
+  @override
+  String get profileLanguageSystem => 'Match system';
 }

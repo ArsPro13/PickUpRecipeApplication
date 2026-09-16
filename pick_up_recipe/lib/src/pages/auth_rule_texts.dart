@@ -20,7 +20,8 @@ extension EmailProblemText on EmailProblem {
 extension PasswordProblemText on PasswordProblem {
   String text(AppLocalizations texts) => switch (this) {
         PasswordProblem.empty => texts.rulePasswordEmpty,
-        PasswordProblem.tooShort => texts.rulePasswordTooShort(AuthRules.minPasswordLength),
+        PasswordProblem.tooShort =>
+          texts.rulePasswordTooShort(AuthRules.minPasswordLength),
       };
 }
 

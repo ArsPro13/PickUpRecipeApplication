@@ -74,7 +74,9 @@ abstract final class AuthRules {
     if (at <= 0 || at != value.lastIndexOf('@')) return EmailProblem.atSign;
 
     final domain = value.substring(at + 1);
-    if (!domain.contains('.') || domain.startsWith('.') || domain.endsWith('.')) {
+    if (!domain.contains('.') ||
+        domain.startsWith('.') ||
+        domain.endsWith('.')) {
       return EmailProblem.domain;
     }
     if (value.contains(' ')) return EmailProblem.spaces;
@@ -85,7 +87,9 @@ abstract final class AuthRules {
   /// Что не так с паролем. null — всё в порядке.
   static PasswordProblem? passwordProblem(String password) {
     if (password.isEmpty) return PasswordProblem.empty;
-    if (password.runes.length < minPasswordLength) return PasswordProblem.tooShort;
+    if (password.runes.length < minPasswordLength) {
+      return PasswordProblem.tooShort;
+    }
     return null;
   }
 
@@ -212,15 +216,18 @@ class AuthFailure implements Exception {
           detail: detail,
           statusCode: 400,
         ),
-      401 => AuthFailure(AuthReason.wrongCredentials, action: action, statusCode: 401),
+      401 => AuthFailure(AuthReason.wrongCredentials,
+          action: action, statusCode: 401),
       403 => AuthFailure(
           AuthReason.emailNotVerified,
           action: action,
           detail: detail,
           statusCode: 403,
         ),
-      404 => AuthFailure(AuthReason.unknownEmail, action: action, statusCode: 404),
-      409 => AuthFailure(AuthReason.emailTaken, action: action, statusCode: 409),
+      404 =>
+        AuthFailure(AuthReason.unknownEmail, action: action, statusCode: 404),
+      409 =>
+        AuthFailure(AuthReason.emailTaken, action: action, statusCode: 409),
       // Ограничение частоты стоит на всех почтовых ручках: без него отправкой
       // писем можно засыпать чужой ящик.
       429 => AuthFailure(AuthReason.tooOften, action: action, statusCode: 429),

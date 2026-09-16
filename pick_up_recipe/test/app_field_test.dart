@@ -45,7 +45,8 @@ Widget _oneField(TextEditingController controller, {String? error}) {
     home: Scaffold(
       body: SizedBox(
         width: 200,
-        child: AppField(label: 'Название', controller: controller, error: error),
+        child:
+            AppField(label: 'Название', controller: controller, error: error),
       ),
     ),
   );
@@ -55,7 +56,8 @@ Widget _oneField(TextEditingController controller, {String? error}) {
 BorderSide _frame(WidgetTester tester) {
   final box = tester.widget<Container>(
     find
-        .ancestor(of: find.byType(TextField).first, matching: find.byType(Container))
+        .ancestor(
+            of: find.byType(TextField).first, matching: find.byType(Container))
         .first,
   );
 
@@ -145,7 +147,8 @@ void main() {
     // «Свой тип шага». Прозрачная рамка оставляла на месте поля полосу фона.
     expect(frame.color.a, greaterThan(0), reason: 'поле сливается с фоном');
     expect(frame.color, lightTheme.extension<AppColors>()!.border);
-    expect(frame.width, AppStroke.thin, reason: 'форма из полей не должна стать решёткой');
+    expect(frame.width, AppStroke.thin,
+        reason: 'форма из полей не должна стать решёткой');
   });
 
   testWidgets('покой, фокус и ошибка различимы', (tester) async {
@@ -159,7 +162,8 @@ void main() {
     await tester.pump();
     final focused = _frame(tester);
 
-    await tester.pumpWidget(_oneField(name, error: 'Название не может быть пустым'));
+    await tester
+        .pumpWidget(_oneField(name, error: 'Название не может быть пустым'));
     await tester.pump();
     final broken = _frame(tester);
 

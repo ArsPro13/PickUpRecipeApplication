@@ -13,10 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Версия закреплена той, что требует pubspec.lock (flutter >= 3.44.0).
+      #
+      # Стояла 3.24.3 — и на ней прогон не мог пройти в принципе: во Flutter
+      # 3.24 пакет flutter_localizations жёстко тянет intl 0.19.0, а pubspec
+      # просит ^0.20.2, и `flutter pub get` падает на разрешении зависимостей,
+      # не дойдя ни до анализа, ни до тестов. Незамеченным это осталось
+      # потому, что прогон висит только на main, а работа идёт в develop.
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'
+          flutter-version: '3.44.9'
           channel: 'stable'
 
       - name: Install dependencies

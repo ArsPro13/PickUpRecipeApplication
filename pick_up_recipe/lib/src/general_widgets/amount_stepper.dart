@@ -141,7 +141,8 @@ class _AmountStepperState extends State<AmountStepper> {
     setState(() {
       _editing = true;
       _typed.text = '$_value';
-      _typed.selection = TextSelection(baseOffset: 0, extentOffset: _typed.text.length);
+      _typed.selection =
+          TextSelection(baseOffset: 0, extentOffset: _typed.text.length);
     });
   }
 
@@ -273,7 +274,8 @@ class _StepperButton extends StatelessWidget {
               child: AppIcon(
                 icon,
                 size: AppSizes.icon20,
-                color: enabled ? context.colors.onSurface : context.palette.border,
+                color:
+                    enabled ? context.colors.onSurface : context.palette.border,
               ),
             ),
           ),

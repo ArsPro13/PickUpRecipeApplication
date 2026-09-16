@@ -56,6 +56,16 @@ class RecipeResponseModel {
   @JsonKey(name: "brew_method_id")
   late int? brewMethodId;
 
+  /// У чашки уже есть оценка.
+  ///
+  /// Считает сервер вместе со списком (см. recipeColumns в reciperepo): иначе
+  /// список не отличит неоценённую чашку от оценённой, не спросив про каждую
+  /// карточку отдельно. Умолчание false: у старых ответов поля нет, и «не
+  /// знаем» здесь безопаснее трактовать как «не оценено» — человек увидит
+  /// предложение оценить, а не молчание.
+  @JsonKey(name: "has_estimation", defaultValue: false)
+  late bool hasEstimation;
+
   late List<RecipeResponseStepModel> steps;
 
   RecipeResponseModel({

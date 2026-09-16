@@ -16,10 +16,13 @@ class GrindDescriptorService {
       cacheKey: 'grind_descriptors',
     );
     if (response.statusCode != 200) {
-      throw Exception('Не удалось получить крупность помола: ${response.statusCode}');
+      throw Exception(
+          'Не удалось получить крупность помола: ${response.statusCode}');
     }
 
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ?? const [];
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ??
+            const [];
     return data
         .map((item) => GrindDescriptor.fromJson(item as Map<String, dynamic>))
         .toList();

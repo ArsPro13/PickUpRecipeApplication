@@ -22,12 +22,14 @@ class AuthGuard extends AutoRouteGuard {
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     final deadline = DateTime.now().add(_sessionTimeout);
 
-    while (ref.read(authenticationStateNotifierProvider).status == AuthState.isLoading &&
+    while (ref.read(authenticationStateNotifierProvider).status ==
+            AuthState.isLoading &&
         DateTime.now().isBefore(deadline)) {
       await Future<void>.delayed(const Duration(milliseconds: 50));
     }
 
-    if (ref.read(authenticationStateNotifierProvider).status == AuthState.isAuthenticated) {
+    if (ref.read(authenticationStateNotifierProvider).status ==
+        AuthState.isAuthenticated) {
       resolver.next(true);
       return;
     }

@@ -190,7 +190,8 @@ class _AppFieldState extends State<AppField> {
                     disabledBorder: InputBorder.none,
                     filled: false,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.s3),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.s3),
                   ),
                 ),
               ),
@@ -226,7 +227,8 @@ class _AppFieldState extends State<AppField> {
                 Expanded(
                   child: Text(
                     widget.error!,
-                    style: context.texts.labelSmall?.copyWith(color: context.colors.error),
+                    style: context.texts.labelSmall
+                        ?.copyWith(color: context.colors.error),
                   ),
                 ),
               ],
@@ -243,7 +245,8 @@ class _AppFieldState extends State<AppField> {
 }
 
 class _IconAction extends StatelessWidget {
-  const _IconAction({required this.icon, required this.label, required this.onTap});
+  const _IconAction(
+      {required this.icon, required this.label, required this.onTap});
 
   final String icon;
   final String label;
@@ -259,7 +262,8 @@ class _IconAction extends StatelessWidget {
         radius: AppSizes.icon24,
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s1),
-          child: AppIcon(icon, size: AppSizes.icon20, color: context.colors.secondary),
+          child: AppIcon(icon,
+              size: AppSizes.icon20, color: context.colors.secondary),
         ),
       ),
     );
@@ -287,7 +291,8 @@ class PasswordRule extends StatelessWidget {
           width: AppSizes.icon16,
           height: AppSizes.icon16,
           child: met
-              ? AppIcon(AppIcons.uiCheck, size: AppSizes.icon16, color: context.palette.success)
+              ? AppIcon(AppIcons.uiCheck,
+                  size: AppSizes.icon16, color: context.palette.success)
               : Center(
                   child: Container(
                     width: AppSpacing.s1 + 2,

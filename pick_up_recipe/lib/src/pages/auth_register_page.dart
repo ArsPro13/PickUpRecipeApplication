@@ -87,7 +87,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
     super.dispose();
   }
 
-  bool get _lengthMet => _password.text.runes.length >= AuthRules.minPasswordLength;
+  bool get _lengthMet =>
+      _password.text.runes.length >= AuthRules.minPasswordLength;
 
   Future<void> _submit() async {
     final texts = AppLocalizations.of(context);
@@ -95,10 +96,14 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
     setState(() {
       _emailError = AuthRules.emailProblem(_email.text)?.text(texts);
       _passwordError = AuthRules.passwordProblem(_password.text)?.text(texts);
-      _repeatError = AuthRules.repeatProblem(_password.text, _repeat.text)?.text(texts);
+      _repeatError =
+          AuthRules.repeatProblem(_password.text, _repeat.text)?.text(texts);
       _formError = _consent ? null : texts.registerConsentRequired;
     });
-    if (_emailError != null || _passwordError != null || _repeatError != null || !_consent) {
+    if (_emailError != null ||
+        _passwordError != null ||
+        _repeatError != null ||
+        !_consent) {
       return;
     }
 
@@ -120,7 +125,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
           .read(authenticationStateNotifierProvider.notifier)
           .register(_email.text.trim(), _password.text, _consentVersion);
       if (mounted) {
-        await context.router.replace(AuthVerifyRoute(email: _email.text.trim()));
+        await context.router
+            .replace(AuthVerifyRoute(email: _email.text.trim()));
       }
     } on AuthFailure catch (failure) {
       if (!mounted) return;
@@ -157,7 +163,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                 icon: AppIcons.uiMail,
                 hint: 'you@example.com',
                 error: _emailError,
-                valid: _emailError == null && AuthRules.emailProblem(_email.text) == null,
+                valid: _emailError == null &&
+                    AuthRules.emailProblem(_email.text) == null,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
@@ -186,7 +193,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
                 icon: AppIcons.uiLock,
                 obscure: true,
                 error: _repeatError,
-                valid: _repeat.text.isNotEmpty && _repeat.text == _password.text,
+                valid:
+                    _repeat.text.isNotEmpty && _repeat.text == _password.text,
                 textInputAction: TextInputAction.go,
                 onSubmitted: (_) => _submit(),
                 onChanged: (_) => setState(() => _repeatError = null),
@@ -206,7 +214,8 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
           const SizedBox(height: AppSpacing.s3),
           Text(
             _formError!,
-            style: context.texts.bodySmall?.copyWith(color: context.colors.error),
+            style:
+                context.texts.bodySmall?.copyWith(color: context.colors.error),
           ),
         ],
         const SizedBox(height: AppSpacing.s4),

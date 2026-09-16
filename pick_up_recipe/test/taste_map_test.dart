@@ -54,18 +54,21 @@ void main() {
 
     test('кольца задают силу отклонения', () {
       expect(const TastePoint(0.3, 0).extractionStrength, TasteStrength.slight);
-      expect(const TastePoint(0.6, 0).extractionStrength, TasteStrength.noticeable);
+      expect(const TastePoint(0.6, 0).extractionStrength,
+          TasteStrength.noticeable);
       expect(const TastePoint(0.9, 0).extractionStrength, TasteStrength.strong);
     });
 
     test('подпись собирается словами, а не координатами', () {
-      expect(const TastePoint(-0.6, -0.3).summaryFor(ru), 'Заметно кисло, чуть слабо');
+      expect(const TastePoint(-0.6, -0.3).summaryFor(ru),
+          'Заметно кисло, чуть слабо');
       expect(const TastePoint(0.9, 0).summaryFor(ru), 'Сильно горько');
       expect(const TastePoint(0, 0.6).summaryFor(ru), 'Заметно крепко');
     });
 
     test('на английском словаре подпись английская и с большой буквы', () {
-      expect(const TastePoint(-0.6, -0.3).summaryFor(en), 'Noticeably sour, slightly weak');
+      expect(const TastePoint(-0.6, -0.3).summaryFor(en),
+          'Noticeably sour, slightly weak');
       expect(const TastePoint(0.9, 0).summaryFor(en), 'Very bitter');
       expect(TastePoint.center.summaryFor(en), 'Turned out just as intended');
     });
@@ -81,9 +84,11 @@ void main() {
         const TastePoint(-0.9, 0).summaryFor(ru),
       ];
 
-      expect(said, ['Сильно крепко', 'Сильно слабо', 'Сильно горько', 'Сильно кисло']);
+      expect(said,
+          ['Сильно крепко', 'Сильно слабо', 'Сильно горько', 'Сильно кисло']);
       for (final line in said) {
-        expect(line, isNot(contains('ее')), reason: 'сравнительной степени быть не должно');
+        expect(line, isNot(contains('ее')),
+            reason: 'сравнительной степени быть не должно');
       }
     });
 
@@ -127,7 +132,8 @@ void main() {
         expect(
           cyrillic.hasMatch(point.summaryFor(en)),
           isFalse,
-          reason: 'на английском экране осталось русское слово: ${point.summaryFor(en)}',
+          reason:
+              'на английском экране осталось русское слово: ${point.summaryFor(en)}',
         );
       }
     });

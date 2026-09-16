@@ -35,11 +35,17 @@ Map<String, String> _messages(Map<String, dynamic> arb) {
 /// английский текст вокруг них разный, а подстановки обязаны совпасть,
 /// иначе перевод упадёт при первом вызове.
 Set<String> _placeholders(String message) {
+  // Имя ветки обязано стоять отдельным словом: `\b` перед ним — не украшение.
+  // Без границы слова итальянское «versione {number}» разбиралось как ветка
+  // `one{`, и подстановка {number} пропадала из разбора — паритет с русским
+  // «версия {number}» не сходился на ровном месте. Ветка `=1{` под границу
+  // слова не подходит (перед знаком равенства её нет) и разбирается отдельно.
+  //
   // Скобка, открывающая ветку множественного числа, подстановки не начинает:
   // в `one{recipe}` в ней стоит английское слово. Иначе любая ветка из одного
   // слова читалась бы как подстановка — и паритет не сходился бы никогда: в
   // русской ветке на том же месте кириллица, а её этот разбор не видит.
-  final branches = RegExp(r'(?:zero|one|two|few|many|other|=\d+)\s*\{');
+  final branches = RegExp(r'(?:\b(?:zero|one|two|few|many|other)|=\d+)\s*\{');
   final pattern = RegExp(r'\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*[,}]');
 
   return pattern
@@ -48,91 +54,102 @@ Set<String> _placeholders(String message) {
       .toSet();
 }
 
+/// Языки перевода: всё, что должно догонять русский шаблон.
+///
+/// Список руками, а не обходом каталога: файл, забытый в lib/l10n без
+/// подключения к приложению, проходил бы проверку и создавал впечатление,
+/// что язык готов. Добавили язык в приложение — добавьте и сюда.
+const List<String> translations = ['en', 'it'];
+
 void main() {
   final ruArb = _arb('ru');
   final ru = _messages(ruArb);
-  final en = _messages(_arb('en'));
 
   group('локали', () {
     test('в русском файле есть строки', () {
       expect(ru, isNotEmpty, reason: 'шаблон пуст — сравнивать не с чем');
     });
 
-    test('набор ключей совпадает', () {
-      expect(
-        en.keys.toSet().difference(ru.keys.toSet()),
-        isEmpty,
-        reason: 'английские строки без русского оригинала',
-      );
-      expect(
-        ru.keys.toSet().difference(en.keys.toSet()),
-        isEmpty,
-        reason: 'строку добавили по-русски и забыли перевести',
-      );
-    });
+    for (final language in translations) {
+      final other = _messages(_arb(language));
 
-    test('английский файл без кириллицы', () {
-      final cyrillic = RegExp('[а-яёА-ЯЁ]');
-
-      for (final entry in en.entries) {
+      test('$language: набор ключей совпадает', () {
         expect(
-          cyrillic.hasMatch(entry.value),
-          isFalse,
-          reason: 'ключ ${entry.key}: русский текст оставлен под видом перевода',
+          other.keys.toSet().difference(ru.keys.toSet()),
+          isEmpty,
+          reason: '$language: строки без русского оригинала',
         );
-      }
-    });
-
-    test('подстановки совпадают в паре', () {
-      for (final key in ru.keys) {
-        if (!en.containsKey(key)) continue;
-
         expect(
-          _placeholders(en[key]!),
-          _placeholders(ru[key]!),
-          reason: 'ключ $key: подстановки разошлись',
+          ru.keys.toSet().difference(other.keys.toSet()),
+          isEmpty,
+          reason: 'строку добавили по-русски и забыли перевести на $language',
         );
-      }
-    });
+      });
+
+      test('$language: файл без кириллицы', () {
+        final cyrillic = RegExp('[а-яёА-ЯЁ]');
+
+        for (final entry in other.entries) {
+          expect(
+            cyrillic.hasMatch(entry.value),
+            isFalse,
+            reason:
+                'ключ ${entry.key}: русский текст оставлен под видом перевода',
+          );
+        }
+      });
+
+      test('$language: подстановки совпадают с русским', () {
+        for (final key in ru.keys) {
+          if (!other.containsKey(key)) continue;
+
+          expect(
+            _placeholders(other[key]!),
+            _placeholders(ru[key]!),
+            reason: 'ключ $key: подстановки разошлись в $language',
+          );
+        }
+      });
+
+      // Одно русское слово — один перевод, и это правило про каждый язык.
+      //
+      // Ночью экраны переводили семь потоков сразу, и одно и то же «по кнопке»
+      // стало «by button» в конструкторе и «by tap» на заваривании: один и тот
+      // же шаг рецепта назывался по-разному на соседних экранах. Глазами это
+      // не ловится — строки лежат в разных концах словаря.
+      //
+      // Если перевод и правда должен различаться по месту, значит русский
+      // тоже говорит о двух разных вещах — и русских строк тоже должно быть
+      // две, разных. Исключений у правила нет намеренно.
+      test('$language: одинаковые русские строки переведены одинаково', () {
+        final byRussian = <String, List<String>>{};
+        for (final entry in ru.entries) {
+          byRussian.putIfAbsent(entry.value, () => []).add(entry.key);
+        }
+
+        final drifted = <String>[];
+        for (final entry in byRussian.entries) {
+          if (entry.value.length < 2) continue;
+
+          final translated = {for (final key in entry.value) other[key]};
+          if (translated.length > 1) {
+            drifted.add(
+              '«${entry.key}» → ${entry.value.join(', ')} → ${translated.join(' / ')}',
+            );
+          }
+        }
+
+        expect(drifted, isEmpty, reason: drifted.join('\n'));
+      });
+    }
 
     test('ветка множественного числа — не подстановка', () {
-      expect(_placeholders('{count, plural, one{recipe} other{recipes}}'), {'count'});
+      expect(_placeholders('{count, plural, one{recipe} other{recipes}}'),
+          {'count'});
       expect(
         _placeholders('{n, plural, one{{n} type} other{{n} types}} из {total}'),
         {'n', 'total'},
       );
-    });
-
-
-    // Одно русское слово — один английский перевод.
-    //
-    // Ночью экраны переводили семь потоков сразу, и одно и то же «по кнопке»
-    // стало «by button» в конструкторе и «by tap» на заваривании: один и тот
-    // же шаг рецепта назывался по-разному на соседних экранах. Глазами это
-    // не ловится — строки лежат в разных концах словаря.
-    //
-    // Если английский и правда должен различаться по месту, значит русский
-    // тоже говорит о двух разных вещах — и русских строк тоже должно быть
-    // две, разных. Исключений у правила нет намеренно.
-    test('одинаковые русские строки переведены одинаково', () {
-      final byRussian = <String, List<String>>{};
-      for (final entry in ru.entries) {
-        byRussian.putIfAbsent(entry.value, () => []).add(entry.key);
-      }
-
-      final drifted = <String>[];
-      for (final entry in byRussian.entries) {
-        if (entry.value.length < 2) continue;
-
-        final englishes = {for (final key in entry.value) en[key]};
-        if (englishes.length > 1) {
-          drifted.add(
-            '«${entry.key}» → ${entry.value.join(', ')} → ${englishes.join(' / ')}',
-          );
-        }
-      }
-
-      expect(drifted, isEmpty, reason: drifted.join('\n'));
     });
 
     test('у каждой подстановки описан тип', () {
@@ -140,8 +157,8 @@ void main() {
         final names = _placeholders(entry.value);
         if (names.isEmpty) continue;
 
-        final described = (ruArb['@${entry.key}'] as Map<String, dynamic>?)?['placeholders']
-            as Map<String, dynamic>?;
+        final described = (ruArb['@${entry.key}']
+            as Map<String, dynamic>?)?['placeholders'] as Map<String, dynamic>?;
 
         expect(
           described?.keys.toSet() ?? <String>{},

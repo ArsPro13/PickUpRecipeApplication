@@ -2,6 +2,7 @@
 // и её можно проверить без сети.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pick_up_recipe/src/pages/choosing_recipe_page.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/application/brew_methods_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/step_type_model.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/domain/brew_method.dart';
@@ -23,9 +24,24 @@ BrewMethod method(String slug, {int? groupId, int sortOrder = 0}) {
 void main() {
   group('методы заваривания', () {
     const groups = [
-      BrewMethodGroup(id: 1, slug: 'pour_over', name: 'Пуровер', iconKey: 'v60', sortOrder: 1),
-      BrewMethodGroup(id: 2, slug: 'immersion', name: 'Иммерсия', iconKey: 'fp', sortOrder: 2),
-      BrewMethodGroup(id: 3, slug: 'pressure', name: 'Давление', iconKey: 'es', sortOrder: 3),
+      BrewMethodGroup(
+          id: 1,
+          slug: 'pour_over',
+          name: 'Пуровер',
+          iconKey: 'v60',
+          sortOrder: 1),
+      BrewMethodGroup(
+          id: 2,
+          slug: 'immersion',
+          name: 'Иммерсия',
+          iconKey: 'fp',
+          sortOrder: 2),
+      BrewMethodGroup(
+          id: 3,
+          slug: 'pressure',
+          name: 'Давление',
+          iconKey: 'es',
+          sortOrder: 3),
     ];
 
     test('порядок групп — из справочника, а не из порядка методов', () {
@@ -130,7 +146,8 @@ void main() {
     });
 
     test('без справочника вместо имени идёт slug, а не пустота', () {
-      final result = groupRecipes([recipe(1, 'hario_v60', '2026-08-01T08:00:00Z')]);
+      final result =
+          groupRecipes([recipe(1, 'hario_v60', '2026-08-01T08:00:00Z')]);
 
       expect(result.single.methodName, 'hario_v60');
       expect(result.single.methodIconKey, 'hario_v60');
@@ -156,15 +173,22 @@ void main() {
         methodsOfPack(groups, 1).map((it) => it.name).toList(),
         ['Hario V60', 'Chemex'],
       );
-      expect(methodsOfPack(groups, 1).map((it) => it.slug).toList(), ['hario_v60', 'chemex']);
-      expect(methodsOfPack(groups, 2).map((it) => it.name).toList(), ['AeroPress']);
+      expect(methodsOfPack(groups, 1).map((it) => it.slug).toList(),
+          ['hario_v60', 'chemex']);
+      expect(methodsOfPack(groups, 2).map((it) => it.name).toList(),
+          ['AeroPress']);
       expect(methodsOfPack(groups, 3), isEmpty);
     });
   });
 
   group('экран кофе: чем заварить', () {
     const groups = [
-      BrewMethodGroup(id: 1, slug: 'pour_over', name: 'Пуровер', iconKey: 'v60', sortOrder: 1),
+      BrewMethodGroup(
+          id: 1,
+          slug: 'pour_over',
+          name: 'Пуровер',
+          iconKey: 'v60',
+          sortOrder: 1),
     ];
 
     RecipeData packRecipe(String device) => RecipeData(
@@ -202,7 +226,7 @@ void main() {
       expect(result.single.methods.first.hasRecipe, isTrue);
     });
 
-    test('порядок справочника внутри половин сохраняется', () {
+    test('внутри половин — алфавит, а не порядок справочника', () {
       final grouped = groupMethods([
         method('hario_v60', groupId: 1, sortOrder: 1),
         method('chemex', groupId: 1, sortOrder: 2),
@@ -215,15 +239,19 @@ void main() {
         [packRecipe('orea'), packRecipe('chemex')],
       );
 
-      // Наверху — с рецептами, между собой в порядке справочника;
-      // ниже — остальные, тоже в своём порядке.
+      // Наверху — с рецептами, между собой по алфавиту; ниже — остальные,
+      // тоже по алфавиту. Порядок справочника здесь ни на что не влияет:
+      // sortOrder у orea тридцатый, а стоит она второй.
       expect(
         result.single.methods.map((m) => m.slug).toList(),
         ['chemex', 'orea', 'hario_v60', 'origami'],
       );
     });
 
-    test('без рецептов порядок остаётся справочным', () {
+    test('без рецептов список идёт по алфавиту', () {
+      // Порядок справочника — это порядок строк в миграции. Для человека,
+      // который ищет свой прибор глазами в свёрнутой группе, он случаен:
+      // hario_v60 стоит в справочнике первым, а по алфавиту — вторым.
       final grouped = groupMethods([
         method('hario_v60', groupId: 1, sortOrder: 1),
         method('chemex', groupId: 1, sortOrder: 2),
@@ -232,8 +260,108 @@ void main() {
       final (result, _) = buildCoffeeMethods(grouped, const []);
 
       expect(result.single.methods.map((m) => m.slug).toList(),
-          ['hario_v60', 'chemex']);
+          ['chemex', 'hario_v60']);
+    });
+
+    test('группы по алфавиту, «Прочие» последними', () {
+      // «Прочие» собираются на телефоне и имени с сервера не имеют: по
+      // алфавиту пустое имя встало бы первым, а это корзина для всего, что
+      // справочник никуда не отнёс, — её место в конце.
+      final grouped = groupMethods(
+        [
+          method('aeropress', groupId: 2, sortOrder: 1),
+          method('hario_v60', groupId: 1, sortOrder: 1),
+          method('cezve', sortOrder: 1),
+        ],
+        [
+          const BrewMethodGroup(
+              id: 1,
+              slug: 'pourover',
+              name: 'Пуроверы',
+              iconKey: 'v60',
+              sortOrder: 1),
+          const BrewMethodGroup(
+              id: 2,
+              slug: 'immersion',
+              name: 'Иммерсия',
+              iconKey: 'fp',
+              sortOrder: 2),
+        ],
+      );
+
+      final (result, _) = buildCoffeeMethods(grouped, const []);
+
+      expect(result.map((group) => group.slug).toList(),
+          ['immersion', 'pourover', 'other']);
     });
   });
 
+  group('рецепты с прошлых пачек', () {
+    RecipeData byPack(int packId, String date) => RecipeData(
+          id: packId * 100 + date.hashCode % 90,
+          device: 'hario_v60',
+          date: date,
+          packId: packId,
+          grinderId: 1,
+          grindStep: '18',
+          grindSubStep: null,
+          water: 250,
+          time: 150,
+          temperature: 93,
+          load: 15,
+          title: '',
+          notes: '',
+          grindDescriptor: '',
+          agitationLevel: null,
+          steps: const [],
+        );
+
+    test('по одной записи на пачку, свежая', () {
+      final result = latestPerPack(
+        [
+          byPack(7, '2026-09-01T10:00:00Z'),
+          byPack(7, '2026-09-05T10:00:00Z'),
+          byPack(9, '2026-09-03T10:00:00Z'),
+        ],
+        exceptPack: 0,
+      );
+
+      expect(result.map((recipe) => recipe.packId).toList(), [7, 9]);
+      expect(result.first.date, '2026-09-05T10:00:00Z');
+    });
+
+    test('нынешняя пачка не повторяется', () {
+      // Её версии уже стоят разделом выше: предложить их ещё раз значило бы
+      // показать один и тот же рецепт дважды под разными заголовками.
+      final result = latestPerPack(
+        [byPack(7, '2026-09-05T10:00:00Z'), byPack(9, '2026-09-03T10:00:00Z')],
+        exceptPack: 7,
+      );
+
+      expect(result.map((recipe) => recipe.packId).toList(), [9]);
+    });
+
+    test('справочный рецепт метода в список не идёт', () {
+      // У него pack_id нулевой, и он уже стоит отдельной строкой «базовый».
+      final result = latestPerPack(
+        [byPack(0, '2026-09-05T10:00:00Z'), byPack(9, '2026-09-03T10:00:00Z')],
+        exceptPack: 7,
+      );
+
+      expect(result.map((recipe) => recipe.packId).toList(), [9]);
+    });
+
+    test('пачки идут от свежей к старой', () {
+      final result = latestPerPack(
+        [
+          byPack(1, '2026-08-01T10:00:00Z'),
+          byPack(2, '2026-09-10T10:00:00Z'),
+          byPack(3, '2026-09-05T10:00:00Z'),
+        ],
+        exceptPack: 0,
+      );
+
+      expect(result.map((recipe) => recipe.packId).toList(), [2, 3, 1]);
+    });
+  });
 }

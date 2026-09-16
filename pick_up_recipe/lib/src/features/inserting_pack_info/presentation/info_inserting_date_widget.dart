@@ -109,7 +109,9 @@ class _DateInputFieldState extends State<DateInputField> {
             // Пустое поле — не ошибка: дату обжарки печатают не на всякой
             // пачке. Тогда сервер поставит сегодняшнее число.
             if (text.isEmpty) return null;
-            return parsePackDate(text) == null ? texts.packFormDateInvalid : null;
+            return parsePackDate(text) == null
+                ? texts.packFormDateInvalid
+                : null;
           },
         ),
         const SizedBox(height: AppSpacing.s2),

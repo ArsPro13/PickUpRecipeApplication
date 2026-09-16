@@ -137,7 +137,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     return null;
   }
 
-  bool get _showsCorrection => widget.correctionLabel != null && widget.original != null && _corrected;
+  bool get _showsCorrection =>
+      widget.correctionLabel != null && widget.original != null && _corrected;
 
   /// Общая вода расходится с суммой по шагам. Не запрет, а предупреждение:
   /// у части методов часть воды не наливается шагом — она уже в приборе.
@@ -146,8 +147,9 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   /// Вода по шагам — только с тех, которые её льют. Остальным она в рецепте
   /// не нужна: плеер такую воду выбрасывает, и, считая её здесь, экран
   /// предупреждал бы о расхождении, которого в заваривании не будет.
-  int get _stepWater =>
-      _recipe.steps.where(stepTypeTakesWater).fold(0, (sum, step) => sum + step.water);
+  int get _stepWater => _recipe.steps
+      .where(stepTypeTakesWater)
+      .fold(0, (sum, step) => sum + step.water);
 
   int get _totalTime => _recipe.steps.fold(0, (sum, step) => sum + step.time);
 
@@ -177,7 +179,9 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         const SizedBox(height: AppSpacing.s4),
         Row(
           children: [
-            Expanded(child: Text(texts.builderSteps, style: context.texts.bodyMedium)),
+            Expanded(
+                child:
+                    Text(texts.builderSteps, style: context.texts.bodyMedium)),
             Text(texts.builderDragHint, style: context.texts.labelSmall),
           ],
         ),
@@ -189,11 +193,13 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AppIcon(AppIcons.uiPlus, size: AppSizes.icon20, color: context.colors.secondary),
+              AppIcon(AppIcons.uiPlus,
+                  size: AppSizes.icon20, color: context.colors.secondary),
               const SizedBox(width: AppSpacing.s2),
-              Text(texts.builderAddStep, style: context.texts.bodyMedium?.copyWith(
-                color: context.colors.secondary,
-              )),
+              Text(texts.builderAddStep,
+                  style: context.texts.bodyMedium?.copyWith(
+                    color: context.colors.secondary,
+                  )),
             ],
           ),
         ),
@@ -251,7 +257,10 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     final method = _method;
     final parts = [
       if (widget.pack?.packName.isNotEmpty ?? false) widget.pack!.packName,
-      if (method != null) method.name else if (_recipe.device.isNotEmpty) _recipe.device,
+      if (method != null)
+        method.name
+      else if (_recipe.device.isNotEmpty)
+        _recipe.device,
     ];
     return parts.join(' · ');
   }
@@ -378,7 +387,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             type: reference?.bySlug(step.stepType),
             open: _openStep == index,
             changed: _stepChanged(index),
-            onToggle: () => setState(() => _openStep = _openStep == index ? null : index),
+            onToggle: () =>
+                setState(() => _openStep = _openStep == index ? null : index),
             onPickType: () => _pickType(index),
             onWaterChanged: (value) => setState(() => step.water = value),
             onEditTime: () => _editDuration(step),
@@ -433,7 +443,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   ///
   /// «Новый» сначала уводит в форму своего типа: шаг появится, только если
   /// заготовку сохранили. null — человек передумал.
-  Future<RecipeStep?> _stepFromPick(StepTypePick pick, BrewMethod? method) async {
+  Future<RecipeStep?> _stepFromPick(
+      StepTypePick pick, BrewMethod? method) async {
     switch (pick) {
       case BuiltInStepPick(:final type):
         return RecipeStep(
@@ -469,7 +480,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
 
       case CustomStepPick():
         final created = await context.router.push<UserStepType>(
-          CustomStepRoute(brewMethodId: method?.id ?? 0, methodName: method?.name),
+          CustomStepRoute(
+              brewMethodId: method?.id ?? 0, methodName: method?.name),
         );
         if (created == null) return null;
         return RecipeStep(
@@ -507,7 +519,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       // Подпись меняется вместе с типом только если её не правили руками:
       // человек, назвавший шаг «долить до 250», не должен потерять это
       // название из-за смены типа с пролива на долив.
-      final untouched = step.instruction.isEmpty || _isTypeName(step.instruction);
+      final untouched =
+          step.instruction.isEmpty || _isTypeName(step.instruction);
       step.stepType = replacement.stepType;
       if (untouched) step.instruction = replacement.instruction;
       if (step.warning.isEmpty) step.warning = replacement.warning;
@@ -546,25 +559,34 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
               AppIcon(
                 _waterMismatch ? AppIcons.uiWarning : AppIcons.uiCheck,
                 size: AppSizes.icon20,
-                color: _waterMismatch ? context.colors.error : context.palette.success,
+                color: _waterMismatch
+                    ? context.colors.error
+                    : context.palette.success,
               ),
               const SizedBox(width: AppSpacing.s3),
-              Expanded(child: Text(texts.builderStepWater, style: context.texts.bodySmall)),
+              Expanded(
+                  child: Text(texts.builderStepWater,
+                      style: context.texts.bodySmall)),
               Text(
                 texts.builderStepWaterValue(_stepWater, _recipe.water),
-                style: context.texts.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                style: context.texts.bodySmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),
           Divider(height: AppSpacing.s6, color: context.palette.border),
           Row(
             children: [
-              AppIcon(AppIcons.metricTime, size: AppSizes.icon20, color: context.colors.secondary),
+              AppIcon(AppIcons.metricTime,
+                  size: AppSizes.icon20, color: context.colors.secondary),
               const SizedBox(width: AppSpacing.s3),
-              Expanded(child: Text(texts.builderTotalTime, style: context.texts.bodySmall)),
+              Expanded(
+                  child: Text(texts.builderTotalTime,
+                      style: context.texts.bodySmall)),
               Text(
                 formatDuration(_totalTime),
-                style: context.texts.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                style: context.texts.bodySmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -619,7 +641,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     required int value,
     required void Function(int) apply,
   }) async {
-    final result = await _askNumber(title: title, suffix: suffix, initial: '$value');
+    final result =
+        await _askNumber(title: title, suffix: suffix, initial: '$value');
     if (result == null) return;
     setState(() => apply(result.round()));
   }
@@ -658,7 +681,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           autofocus: true,
           keyboardType: TextInputType.numberWithOptions(decimal: decimal),
           inputFormatters: [
-            FilteringTextInputFormatter.allow(decimal ? RegExp(r'[0-9.,]') : RegExp(r'[0-9]')),
+            FilteringTextInputFormatter.allow(
+                decimal ? RegExp(r'[0-9.,]') : RegExp(r'[0-9]')),
           ],
           decoration: InputDecoration(suffixText: suffix),
           onSubmitted: (text) => Navigator.of(context).pop(parseNumber(text)),
@@ -669,7 +693,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             child: Text(texts.builderCancel),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(parseNumber(controller.text)),
+            onPressed: () =>
+                Navigator.of(context).pop(parseNumber(controller.text)),
             child: Text(texts.builderDone),
           ),
         ],
@@ -829,9 +854,9 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   void _brew() {
     // Рецепт целиком перед глазами — «Заварить» начинает сразу, без
     // повторного экрана подготовки.
-    context.router.push(BrewRoute(recipe: _recipe, pack: widget.pack, autoStart: true));
+    context.router
+        .push(BrewRoute(recipe: _recipe, pack: widget.pack, autoStart: true));
   }
-
 
   void _say(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
@@ -852,14 +877,17 @@ class _CorrectionRow extends StatelessWidget {
     return QuietSurface(
       child: Row(
         children: [
-          AppIcon(AppIcons.uiInfo, size: AppSizes.icon20, color: context.colors.primary),
+          AppIcon(AppIcons.uiInfo,
+              size: AppSizes.icon20, color: context.colors.primary),
           const SizedBox(width: AppSpacing.s3),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(texts.builderCorrectedFor(label), style: context.texts.bodySmall),
-                Text(texts.builderCorrectedNote, style: context.texts.labelSmall),
+                Text(texts.builderCorrectedFor(label),
+                    style: context.texts.bodySmall),
+                Text(texts.builderCorrectedNote,
+                    style: context.texts.labelSmall),
               ],
             ),
           ),
@@ -905,7 +933,8 @@ class _ParamRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.s2),
       child: Row(
         children: [
-          AppIcon(icon ?? kind.icon, size: AppSizes.icon20, color: kind.color(context)),
+          AppIcon(icon ?? kind.icon,
+              size: AppSizes.icon20, color: kind.color(context)),
           const SizedBox(width: AppSpacing.s3),
           Expanded(
             child: Column(
@@ -920,7 +949,9 @@ class _ParamRow extends StatelessWidget {
           if (control != null)
             control!
           else if (readOnly)
-            Text(value, style: context.texts.bodyMedium?.copyWith(color: context.colors.secondary))
+            Text(value,
+                style: context.texts.bodyMedium
+                    ?.copyWith(color: context.colors.secondary))
           else
             _ValueBox(value: value, changed: changed, onTap: onTap),
         ],
@@ -1019,8 +1050,9 @@ class _StepRow extends StatelessWidget {
 
     // Цветом воды помечены только те шаги, которые её льют. У паузы и ремарки
     // воды нет, и синий значок обещал бы то, чего на шаге не происходит.
-    final iconColor =
-        step.showsWater && step.water > 0 ? context.metrics.water : context.colors.onSurface;
+    final iconColor = step.showsWater && step.water > 0
+        ? context.metrics.water
+        : context.colors.onSurface;
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.s3),
@@ -1061,7 +1093,8 @@ class _StepRow extends StatelessWidget {
                   Container(
                     height: AppSpacing.s2,
                     width: AppSpacing.s2,
-                    decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                    decoration:
+                        BoxDecoration(color: accent, shape: BoxShape.circle),
                   ),
                 ],
                 const SizedBox(width: AppSpacing.s2),
@@ -1077,7 +1110,9 @@ class _StepRow extends StatelessWidget {
             Divider(height: AppSpacing.s6, color: context.palette.border),
             Row(
               children: [
-                Expanded(child: Text(texts.stepTypeLabel, style: context.texts.labelSmall)),
+                Expanded(
+                    child: Text(texts.stepTypeLabel,
+                        style: context.texts.labelSmall)),
                 TextButton(
                   onPressed: onPickType,
                   child: Text(type?.name ?? texts.builderChoose),
@@ -1122,7 +1157,9 @@ class _StepRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    step.tip.isEmpty ? texts.builderNoTip : texts.builderTipValue(step.tip),
+                    step.tip.isEmpty
+                        ? texts.builderNoTip
+                        : texts.builderTipValue(step.tip),
                     style: context.texts.labelSmall,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1254,4 +1291,3 @@ int? parseDuration(String text) {
 
   return minutes * 60 + seconds;
 }
-

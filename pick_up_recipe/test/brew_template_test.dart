@@ -48,15 +48,18 @@ void main() {
   group('resolveBrewTemplate', () {
     test('воронка — опорный пролив', () {
       expect(
-        resolveBrewTemplate(_recipe('hario_v60', 165, ['bloom', 'pour', 'wait'])),
+        resolveBrewTemplate(
+            _recipe('hario_v60', 165, ['bloom', 'pour', 'wait'])),
         BrewTemplate.pour,
       );
     });
 
-    test('клапан главнее пролива: шаг живёт пять секунд, состояние — минуту', () {
+    test('клапан главнее пролива: шаг живёт пять секунд, состояние — минуту',
+        () {
       expect(
         resolveBrewTemplate(
-          _recipe('hario_switch', 185, ['close_valve', 'bloom', 'pour', 'open_valve']),
+          _recipe('hario_switch', 185,
+              ['close_valve', 'bloom', 'pour', 'open_valve']),
         ),
         BrewTemplate.valve,
       );
@@ -64,12 +67,14 @@ void main() {
 
     test('отжим и переворот — усилие', () {
       expect(
-        resolveBrewTemplate(_recipe('aeropress', 130, ['pour', 'stir', 'wait', 'press'])),
+        resolveBrewTemplate(
+            _recipe('aeropress', 130, ['pour', 'stir', 'wait', 'press'])),
         BrewTemplate.press,
       );
       expect(
         resolveBrewTemplate(
-          _recipe('aeropress_inverted', 135, ['invert', 'pour', 'flip', 'press']),
+          _recipe(
+              'aeropress_inverted', 135, ['invert', 'pour', 'flip', 'press']),
         ),
         BrewTemplate.press,
       );
@@ -109,7 +114,8 @@ void main() {
     test('дольше часа — часы, что бы ни было в шагах', () {
       expect(
         resolveBrewTemplate(
-          _recipe('cold_brew', 43410, ['pour', 'stir', 'wait', 'remove_filter']),
+          _recipe(
+              'cold_brew', 43410, ['pour', 'stir', 'wait', 'remove_filter']),
           methodGroup: 'cold',
         ),
         BrewTemplate.long,

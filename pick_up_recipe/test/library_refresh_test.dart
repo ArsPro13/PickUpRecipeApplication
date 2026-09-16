@@ -54,7 +54,8 @@ class EmptyMethodService extends BrewMethodService {
   Future<List<BrewMethodGroup>> getGroups() async => const [];
 }
 
-RecipeData recipe({int id = 1, String date = '2026-09-05T10:00:00Z'}) => RecipeData(
+RecipeData recipe({int id = 1, String date = '2026-09-05T10:00:00Z'}) =>
+    RecipeData(
       id: id,
       device: 'hario_v60',
       date: date,
@@ -85,7 +86,8 @@ void main() {
     await EncryptedSharedPreferences.getInstance().clear();
 
     await GetIt.instance.reset();
-    GetIt.instance.registerSingleton<ApiClient>(ApiClient(onAuthError: () async {}));
+    GetIt.instance
+        .registerSingleton<ApiClient>(ApiClient(onAuthError: () async {}));
 
     recipes = CountingRecipeService();
     container = ProviderContainer(
@@ -109,15 +111,18 @@ void main() {
       LibraryRevision.bump();
       await Future<void>.delayed(Duration.zero);
 
-      expect(recipes.calls, 2, reason: 'после сигнала список ходит за данными заново');
-      expect(container.read(recipesListProvider).groups.single.latest.recipe.id, 5);
+      expect(recipes.calls, 2,
+          reason: 'после сигнала список ходит за данными заново');
+      expect(container.read(recipesListProvider).groups.single.latest.recipe.id,
+          5);
     });
 
     test('без сигнала список сам себя не перечитывает', () async {
       await container.read(recipesListProvider.notifier).load();
       await Future<void>.delayed(Duration.zero);
 
-      expect(recipes.calls, 1, reason: 'обновление по сигналу, а не по таймеру');
+      expect(recipes.calls, 1,
+          reason: 'обновление по сигналу, а не по таймеру');
     });
 
     test('каждый сигнал считается отдельно', () async {

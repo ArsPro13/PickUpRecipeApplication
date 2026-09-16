@@ -34,8 +34,8 @@ enum OutboxKind {
   /// POST /user/step_types — свой тип шага.
   userStepType;
 
-  static OutboxKind byName(String name) =>
-      OutboxKind.values.firstWhere((kind) => kind.name == name, orElse: () => evolve);
+  static OutboxKind byName(String name) => OutboxKind.values
+      .firstWhere((kind) => kind.name == name, orElse: () => evolve);
 }
 
 class OutboxEntry {
@@ -146,7 +146,8 @@ abstract final class Outbox {
     try {
       final list = jsonDecode(raw) as List<dynamic>;
       return [
-        for (final item in list) OutboxEntry.fromJson(item as Map<String, dynamic>),
+        for (final item in list)
+          OutboxEntry.fromJson(item as Map<String, dynamic>),
       ];
     } catch (_) {
       return [];
@@ -319,7 +320,8 @@ abstract final class Outbox {
                 .where(
                   (waiting) =>
                       waiting.kind != OutboxKind.estimation ||
-                      (waiting.payload['recipe_id'] as num?)?.toInt() != entry.localId,
+                      (waiting.payload['recipe_id'] as num?)?.toInt() !=
+                          entry.localId,
                 )
                 .toList();
             dropped += before - queue.length;
@@ -390,7 +392,8 @@ abstract final class Outbox {
           throw _statusFailure(response.statusCode, response.body);
         }
 
-        final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        final data =
+            jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
         final serverId = (data['id'] as num?)?.toInt();
         if (serverId != null) {
           await _rememberHead(source, serverId);
@@ -431,7 +434,8 @@ abstract final class Outbox {
   /// берётся свежая: правку продолжают от того, чем заваривали последним.
   ///
   /// null — спросить не вышло: тогда дело уходит по обычному пути ошибки.
-  static Future<int?> _serverHead(ApiClient api, Map<String, dynamic> payload) async {
+  static Future<int?> _serverHead(
+      ApiClient api, Map<String, dynamic> payload) async {
     final packId = (payload['pack_id'] as num?)?.toInt();
     final device = payload['device'] as String?;
     if (packId == null || device == null || device.isEmpty) return null;
@@ -443,7 +447,9 @@ abstract final class Outbox {
       });
       if (response.statusCode != 200) return null;
 
-      final list = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ?? const [];
+      final list =
+          jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ??
+              const [];
 
       int? best;
       var bestDate = '';

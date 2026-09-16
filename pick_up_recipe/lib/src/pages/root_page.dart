@@ -34,16 +34,25 @@ class RootScreen extends StatelessWidget {
   ) {
     return [
       (route: const PacksRoute(), label: texts.tabPacks, icon: AppIcons.uiPack),
-      (route: const RecipesRoute(), label: texts.tabRecipes, icon: AppIcons.uiHistory),
+      (
+        route: const RecipesRoute(),
+        label: texts.tabRecipes,
+        icon: AppIcons.uiHistory
+      ),
       (route: const ScanRoute(), label: texts.tabScan, icon: AppIcons.uiScan),
-      (route: const ProfileRoute(), label: texts.tabProfile, icon: AppIcons.uiUser),
+      (
+        route: const ProfileRoute(),
+        label: texts.tabProfile,
+        icon: AppIcons.uiUser
+      ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     return AutoTabsScaffold(
-      routes: tabs(AppLocalizations.of(context)).map((tab) => tab.route).toList(),
+      routes:
+          tabs(AppLocalizations.of(context)).map((tab) => tab.route).toList(),
       bottomNavigationBuilder: (_, tabsRouter) {
         return _TabBar(tabsRouter: tabsRouter);
       },
@@ -89,7 +98,8 @@ class _TabBar extends StatelessWidget {
 }
 
 class _TabItem extends StatelessWidget {
-  const _TabItem({required this.tab, required this.selected, required this.onTap});
+  const _TabItem(
+      {required this.tab, required this.selected, required this.onTap});
 
   final ({PageRouteInfo<dynamic> route, String label, String icon}) tab;
   final bool selected;

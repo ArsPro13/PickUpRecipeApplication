@@ -713,7 +713,6 @@
 
   "grinderKindOther": "Other",
 
-  "grinderMakePrimary": "make primary",
 
   "grinderSave": "Save",
 
@@ -893,5 +892,23 @@
 
   "svcGroupOther": "Other",
 
-  "svcLoadFailedNote": "Usually it is the connection. Check the internet and try again."
+  "svcLoadFailedNote": "Usually it is the connection. Check the internet and try again.",
+
+  "recipesNotRated": "Not rated",
+
+  "methodsCount": "{count, plural, one{{count} device} other{{count} devices}}",
+
+  "chooseOtherPacks": "From earlier bags",
+
+  "chooseOtherPacksNote": "same brewer, different beans",
+
+  "rateForYou": "This is your own note. The app will adjust grind and time next time — the roaster only sees anonymised statistics.",
+
+  "rateOverallNote": "Changes nothing — just so you can find your best cup later",
+
+  "profileAppTitle": "App",
+
+  "profileLanguage": "Language",
+
+  "profileLanguageSystem": "Match system"
 }

@@ -63,11 +63,13 @@ class _HostState extends State<_Host> {
 }
 
 Finder _button(String icon) => find.ancestor(
-      of: find.byWidgetPredicate((widget) => widget is AppIcon && widget.asset == icon),
+      of: find.byWidgetPredicate(
+          (widget) => widget is AppIcon && widget.asset == icon),
       matching: find.byType(InkWell),
     );
 
-int _value(WidgetTester tester) => tester.state<_HostState>(find.byType(_Host)).value;
+int _value(WidgetTester tester) =>
+    tester.state<_HostState>(find.byType(_Host)).value;
 
 void main() {
   group('множитель зажатия', () {
@@ -125,10 +127,12 @@ void main() {
       expect(_value(tester), 5);
     });
 
-    testWidgets('зажатие разгоняется, а не идёт по грамму до утра', (tester) async {
+    testWidgets('зажатие разгоняется, а не идёт по грамму до утра',
+        (tester) async {
       await tester.pumpWidget(const _Host(initial: 0, max: 9999));
 
-      final gesture = await tester.startGesture(tester.getCenter(_button(AppIcons.uiPlus)));
+      final gesture =
+          await tester.startGesture(tester.getCenter(_button(AppIcons.uiPlus)));
       await tester.pump();
 
       await tester.pump(AppDuration.ambient);
@@ -149,7 +153,8 @@ void main() {
     testWidgets('отпустили — счётчик остановился', (tester) async {
       await tester.pumpWidget(const _Host(initial: 0));
 
-      final gesture = await tester.startGesture(tester.getCenter(_button(AppIcons.uiPlus)));
+      final gesture =
+          await tester.startGesture(tester.getCenter(_button(AppIcons.uiPlus)));
       await tester.pump(AppDuration.ambient);
       await gesture.up();
       await tester.pump();
@@ -160,7 +165,8 @@ void main() {
       expect(_value(tester), stopped);
     });
 
-    testWidgets('число вводится руками: двести пятьдесят не набирают кнопками', (tester) async {
+    testWidgets('число вводится руками: двести пятьдесят не набирают кнопками',
+        (tester) async {
       await tester.pumpWidget(const _Host(initial: 100));
 
       await tester.tap(find.text('100 г'));
@@ -216,7 +222,8 @@ void main() {
       expect(target.water, 102);
     });
 
-    testWidgets('счётчик умещается в строку карточки шага на 360 точках', (tester) async {
+    testWidgets('счётчик умещается в строку карточки шага на 360 точках',
+        (tester) async {
       await tester.pumpWidget(const _Host(initial: 250));
 
       // На узком экране строке шага достаётся 296 точек: 360 без полей

@@ -67,7 +67,8 @@ class _ScanPageState extends State<ScanPage> {
     setState(() {});
   }
 
-  bool get _isComplete => PackCode.normalize(_code.text).length == PackCode.length;
+  bool get _isComplete =>
+      PackCode.normalize(_code.text).length == PackCode.length;
 
   void _submit() {
     final normalized = PackCode.normalize(_code.text);
@@ -143,7 +144,8 @@ class _CameraFrame extends StatefulWidget {
   State<_CameraFrame> createState() => _CameraFrameState();
 }
 
-class _CameraFrameState extends State<_CameraFrame> with SingleTickerProviderStateMixin {
+class _CameraFrameState extends State<_CameraFrame>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _sweep = AnimationController(
     vsync: this,
     duration: AppDuration.ambient,
@@ -222,7 +224,8 @@ class _ScannerStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3, vertical: AppSpacing.s1),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s3, vertical: AppSpacing.s1),
       decoration: BoxDecoration(
         color: ink.withValues(alpha: 0.16),
         borderRadius: AppRadius.rounded,
@@ -249,7 +252,8 @@ class _ScannerStatus extends StatelessWidget {
 /// нижнем левом, рядом с составом; рисунок должен показывать именно это,
 /// иначе человек ищет большой квадрат и не находит.
 class _ScannerPainter extends CustomPainter {
-  const _ScannerPainter({required this.ink, required this.accent, required this.sweep});
+  const _ScannerPainter(
+      {required this.ink, required this.accent, required this.sweep});
 
   final Color ink;
   final Color accent;
@@ -303,7 +307,8 @@ class _ScannerPainter extends CustomPainter {
     // Надписи обжарщика: крупные, читаются издалека. Они здесь ради контраста
     // с кодом — рядом с ними видно, насколько он мелкий.
     canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(48, 52, 26, 24), const Radius.circular(4)),
+      RRect.fromRectAndRadius(
+          const Rect.fromLTWH(48, 52, 26, 24), const Radius.circular(4)),
       thin,
     );
     canvas.drawLine(const Offset(84, 58), const Offset(142, 56), thin);
@@ -314,7 +319,10 @@ class _ScannerPainter extends CustomPainter {
     final label = TextPainter(
       text: TextSpan(
         text: 'ABCD-2345-68',
-        style: TextStyle(color: ink.withValues(alpha: 0.85), fontSize: 8, letterSpacing: 0.6),
+        style: TextStyle(
+            color: ink.withValues(alpha: 0.85),
+            fontSize: 8,
+            letterSpacing: 0.6),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -362,7 +370,9 @@ class _ScannerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_ScannerPainter oldDelegate) {
-    return oldDelegate.sweep != sweep || oldDelegate.ink != ink || oldDelegate.accent != accent;
+    return oldDelegate.sweep != sweep ||
+        oldDelegate.ink != ink ||
+        oldDelegate.accent != accent;
   }
 }
 
@@ -397,14 +407,16 @@ class _ManualEntry extends StatelessWidget {
         children: [
           Row(
             children: [
-              AppIcon(AppIcons.uiEdit, size: AppSizes.icon20, color: context.colors.secondary),
+              AppIcon(AppIcons.uiEdit,
+                  size: AppSizes.icon20, color: context.colors.secondary),
               const SizedBox(width: AppSpacing.s2),
               // Expanded, а не голый Text: при крупном системном шрифте
               // заголовок не влезал в строку и вылезал за карточку.
               Expanded(
                 child: Text(
                   texts.scanManualTitle,
-                  style: context.texts.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                  style: context.texts.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -415,7 +427,8 @@ class _ManualEntry extends StatelessWidget {
               context,
               outline: error != null ? context.colors.error : null,
             ),
-            padding: const EdgeInsets.only(left: AppSpacing.s4, right: AppSpacing.s2),
+            padding: const EdgeInsets.only(
+                left: AppSpacing.s4, right: AppSpacing.s2),
             child: Row(
               children: [
                 Expanded(
@@ -434,10 +447,12 @@ class _ManualEntry extends StatelessWidget {
                       // приводим к печатному виду на лету, чтобы человек видел
                       // ровно то же, что напечатано на пачке.
                       TextInputFormatter.withFunction((oldValue, newValue) {
-                        final formatted = PackCode.format(PackCode.normalize(newValue.text));
+                        final formatted =
+                            PackCode.format(PackCode.normalize(newValue.text));
                         return TextEditingValue(
                           text: formatted,
-                          selection: TextSelection.collapsed(offset: formatted.length),
+                          selection:
+                              TextSelection.collapsed(offset: formatted.length),
                         );
                       }),
                     ],
@@ -452,7 +467,8 @@ class _ManualEntry extends StatelessWidget {
                       focusedBorder: InputBorder.none,
                       filled: false,
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.s3),
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: AppSpacing.s3),
                     ),
                   ),
                 ),
@@ -474,12 +490,14 @@ class _ManualEntry extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppIcon(AppIcons.uiWarning, size: AppSizes.icon20, color: context.colors.error),
+                AppIcon(AppIcons.uiWarning,
+                    size: AppSizes.icon20, color: context.colors.error),
                 const SizedBox(width: AppSpacing.s2),
                 Expanded(
                   child: Text(
                     error!,
-                    style: context.texts.bodySmall?.copyWith(color: context.colors.error),
+                    style: context.texts.bodySmall
+                        ?.copyWith(color: context.colors.error),
                   ),
                 ),
               ],

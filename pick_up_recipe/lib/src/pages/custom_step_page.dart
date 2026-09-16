@@ -27,7 +27,14 @@ import '../themes/app_tokens.dart';
 /// Значки, из которых можно выбрать. Набор шагов, без приборных: значок
 /// должен читаться в строке списка при 20 px.
 const _iconChoices = [
-  'press', 'swirl', 'stir', 'pour', 'grind', 'serve', 'note', 'custom',
+  'press',
+  'swirl',
+  'stir',
+  'pour',
+  'grind',
+  'serve',
+  'note',
+  'custom',
 ];
 
 @RoutePage()
@@ -72,12 +79,13 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
     });
 
     try {
-      final created = await ref.read(stepTypeServiceProvider).createUserStepType(
-            brewMethodId: widget.brewMethodId,
-            label: label,
-            icon: _icon,
-            endsWith: _endsWith,
-          );
+      final created =
+          await ref.read(stepTypeServiceProvider).createUserStepType(
+                brewMethodId: widget.brewMethodId,
+                label: label,
+                icon: _icon,
+                endsWith: _endsWith,
+              );
       // Лист выбора читает заготовки из провайдера — без инвалидации новая
       // появится там только после перезапуска.
       ref.invalidate(userStepTypesProvider(widget.brewMethodId));
@@ -101,7 +109,8 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
       title: texts.customStepTitle,
       body: [
         if (method != null)
-          Text(texts.customStepForMethod(method), style: context.texts.bodySmall),
+          Text(texts.customStepForMethod(method),
+              style: context.texts.bodySmall),
         const SizedBox(height: AppSpacing.s4),
         AppField(
           controller: _label,
@@ -136,7 +145,8 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppIcon(AppIcons.uiInfo, size: AppSizes.icon20, color: context.colors.secondary),
+              AppIcon(AppIcons.uiInfo,
+                  size: AppSizes.icon20, color: context.colors.secondary),
               const SizedBox(width: AppSpacing.s3),
               Expanded(
                 child: Text(
@@ -160,7 +170,8 @@ class _CustomStepPageState extends ConsumerState<CustomStepPage> {
 }
 
 class _IconChoice extends StatelessWidget {
-  const _IconChoice({required this.icon, required this.selected, required this.onTap});
+  const _IconChoice(
+      {required this.icon, required this.selected, required this.onTap});
 
   final String icon;
   final bool selected;

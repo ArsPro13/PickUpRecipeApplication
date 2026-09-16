@@ -29,7 +29,8 @@ import 'models/grinder_model.dart';
 /// Стоит, пока экран не передал свой: помол показывают четыре экрана из разных
 /// веток, и перевести их одной правкой этого файла нельзя. Русского текста в
 /// коде при этом не остаётся — строка всё равно приходит из `app_ru.arb`.
-final AppLocalizations _templateTexts = lookupAppLocalizations(const Locale('ru'));
+final AppLocalizations _templateTexts =
+    lookupAppLocalizations(const Locale('ru'));
 
 /// Помол так, как его показывают человеку.
 class GrindReading {
@@ -72,7 +73,8 @@ class GrindReading {
   bool get isEmpty => value.isEmpty;
 
   /// Готовая строка на месте помола.
-  String get label => isApproximate ? _words.grinderApproximately(value) : value;
+  String get label =>
+      isApproximate ? _words.grinderApproximately(value) : value;
 
   /// Короткая подпись — для плиток показателей, где места на одно слово.
   String? get caption {
@@ -131,7 +133,8 @@ GrindReading grindReading({
     );
   }
 
-  final microns = recipeMicrons ?? grindDescriptorMicrons(reference, descriptorSlug);
+  final microns =
+      recipeMicrons ?? grindDescriptorMicrons(reference, descriptorSlug);
 
   if (grinder != null && microns != null && microns > 0) {
     final mode = nearestGrinderMode(grinder.modes, microns);
@@ -151,7 +154,8 @@ GrindReading grindReading({
   // неизвестна. Остаётся слово — пустое место на месте помола читалось бы как
   // «помол неизвестен», а это неправда.
   if (word.isNotEmpty) {
-    return GrindReading(value: word, needsGrinder: grinder == null, texts: texts);
+    return GrindReading(
+        value: word, needsGrinder: grinder == null, texts: texts);
   }
 
   // Слова нет — у исторических рецептов его и не было. Тогда показывается
@@ -159,7 +163,8 @@ GrindReading grindReading({
   // сказать нечего.
   if (step.isNotEmpty) {
     return GrindReading(
-      value: (texts ?? _templateTexts).grinderClicks(grinderDivisionLabel(step)),
+      value:
+          (texts ?? _templateTexts).grinderClicks(grinderDivisionLabel(step)),
       needsGrinder: grinder == null,
       texts: texts,
     );

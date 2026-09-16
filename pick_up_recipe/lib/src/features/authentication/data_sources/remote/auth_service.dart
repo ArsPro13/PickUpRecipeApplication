@@ -28,7 +28,8 @@ class AuthService {
     }
 
     final data = jsonDecode(response.body);
-    if (!data.containsKey('access_token') || !data.containsKey('refresh_token')) {
+    if (!data.containsKey('access_token') ||
+        !data.containsKey('refresh_token')) {
       throw const AuthFailure(AuthReason.noTokens);
     }
 
@@ -50,7 +51,8 @@ class AuthService {
   /// и отвечает сроком до следующей попытки — и при отказе, и при успехе.
   Future<ResendOutcome> resendVerificationCode(String email) async {
     try {
-      final response = await _apiClient.post('/mail/send_verify_email', {'email': email});
+      final response =
+          await _apiClient.post('/mail/send_verify_email', {'email': email});
 
       return ResendOutcome.fromResponse(response);
     } on OfflineException {
@@ -63,7 +65,8 @@ class AuthService {
   /// Ответ одинаковый и на известный, и на неизвестный адрес (ответ 39):
   /// иначе форма превращается в проверялку, зарегистрирован ли человек.
   Future<void> requestPasswordReset(String email) async {
-    final response = await _apiClient.post('/auth/forgot_password', {'email': email});
+    final response =
+        await _apiClient.post('/auth/forgot_password', {'email': email});
 
     if (response.statusCode != 200 && response.statusCode != 404) {
       throw AuthFailure.fromResponse(response, action: AuthAction.sendLetter);
@@ -71,7 +74,8 @@ class AuthService {
   }
 
   /// Сброс пароля по коду из письма.
-  Future<void> resetPassword(String email, String code, String newPassword) async {
+  Future<void> resetPassword(
+      String email, String code, String newPassword) async {
     final response = await _apiClient.post('/auth/reset_password', {
       'email': email,
       'code': code,
@@ -79,7 +83,8 @@ class AuthService {
     });
 
     if (response.statusCode != 200) {
-      throw AuthFailure.fromResponse(response, action: AuthAction.changePassword);
+      throw AuthFailure.fromResponse(response,
+          action: AuthAction.changePassword);
     }
   }
 
@@ -149,7 +154,8 @@ class AuthService {
   static Future<void>? _refreshing;
 
   Future<void> refreshTokens() {
-    return _refreshing ??= _refreshTokens().whenComplete(() => _refreshing = null);
+    return _refreshing ??=
+        _refreshTokens().whenComplete(() => _refreshing = null);
   }
 
   Future<void> _refreshTokens() async {

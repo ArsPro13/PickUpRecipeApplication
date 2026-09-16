@@ -99,7 +99,8 @@ class _DurationSheetState extends State<_DurationSheet> {
                     style: context.texts.bodyMedium,
                   ),
                 ),
-                Text(texts.builderMinutesSeconds, style: context.texts.labelSmall),
+                Text(texts.builderMinutesSeconds,
+                    style: context.texts.labelSmall),
               ],
             ),
             const SizedBox(height: AppSpacing.s4),
@@ -169,7 +170,8 @@ class _DurationWheelsState extends State<DurationWheels> {
           IgnorePointer(
             child: Container(
               height: AppSizes.tapTarget,
-              decoration: sunkenDecoration(context, borderRadius: AppRadius.medium),
+              decoration:
+                  sunkenDecoration(context, borderRadius: AppRadius.medium),
             ),
           ),
           Row(
@@ -223,8 +225,13 @@ class _DurationWheelsState extends State<DurationWheels> {
                 // Секунды двумя знаками, минуты — одним: так же, как
                 // длительность подписана в самом рецепте.
                 pad ? index.toString().padLeft(2, '0') : '$index',
-                style: (chosen ? context.texts.bodyLarge : context.texts.bodyMedium)?.copyWith(
-                  color: chosen ? context.colors.primary : context.colors.secondary,
+                style: (chosen
+                        ? context.texts.bodyLarge
+                        : context.texts.bodyMedium)
+                    ?.copyWith(
+                  color: chosen
+                      ? context.colors.primary
+                      : context.colors.secondary,
                   fontWeight: chosen ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),

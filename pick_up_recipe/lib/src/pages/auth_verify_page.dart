@@ -84,7 +84,8 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
 
   void _startCooldown([Duration pause = ResendCooldown.serverPause]) {
     _ticker?.cancel();
-    setState(() => _cooldown = ResendCooldown.sentAt(DateTime.now(), pause: pause));
+    setState(
+        () => _cooldown = ResendCooldown.sentAt(DateTime.now(), pause: pause));
 
     // Секунда здесь — шаг перерисовки, а не сам отсчёт: остаток считается от
     // момента готовности, и приложение, свёрнутое на полминуты, возвращается
@@ -111,8 +112,9 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
       _notice = null;
     });
 
-    final outcome =
-        await ref.read(authenticationStateNotifierProvider.notifier).resendVerificationCode(email);
+    final outcome = await ref
+        .read(authenticationStateNotifierProvider.notifier)
+        .resendVerificationCode(email);
     if (!mounted) return;
 
     final wait = outcome.retryAfter ?? ResendCooldown.serverPause;
@@ -156,7 +158,9 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
       await ref
           .read(authenticationStateNotifierProvider.notifier)
           .verifyMail(widget.email ?? '', _code.text.trim());
-      if (mounted) await context.router.replace(AuthLoginRoute(email: widget.email));
+      if (mounted) {
+        await context.router.replace(AuthLoginRoute(email: widget.email));
+      }
     } on AuthFailure catch (failure) {
       if (mounted) setState(() => _error = failure.text(texts));
     } catch (_) {
@@ -202,7 +206,8 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
                   button: true,
                   label: texts.verifyChangeEmail,
                   child: InkResponse(
-                    onTap: () => context.router.replace(const AuthRegisterRoute()),
+                    onTap: () =>
+                        context.router.replace(const AuthRegisterRoute()),
                     radius: AppSizes.icon24,
                     child: AppIcon(
                       AppIcons.uiEdit,
@@ -228,7 +233,8 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
                 const SizedBox(height: AppSpacing.s3),
                 Text(
                   _error!,
-                  style: context.texts.labelSmall?.copyWith(color: context.colors.error),
+                  style: context.texts.labelSmall
+                      ?.copyWith(color: context.colors.error),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -246,7 +252,8 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
                       switch ((_resending, canResend)) {
                         (true, _) => texts.verifySending,
                         (false, true) => texts.verifyResend,
-                        (false, false) => texts.verifyResendIn(ResendCooldown.format(left)),
+                        (false, false) =>
+                          texts.verifyResendIn(ResendCooldown.format(left)),
                       },
                     ),
                   ),
@@ -257,7 +264,9 @@ class _AuthVerifyPageState extends ConsumerState<AuthVerifyPage> {
                 Text(
                   _notice!.text,
                   style: context.texts.labelSmall?.copyWith(
-                    color: _notice!.good ? context.palette.success : context.colors.error,
+                    color: _notice!.good
+                        ? context.palette.success
+                        : context.colors.error,
                   ),
                   textAlign: TextAlign.center,
                 ),

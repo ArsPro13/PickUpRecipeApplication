@@ -100,8 +100,14 @@ class _SilentApiClient extends ApiClient {
   }
 }
 
-RecipeData _recipe({required int id, required String date, required double load}) {
+RecipeData _recipe({
+  required int id,
+  required String date,
+  required double load,
+  bool rated = true,
+}) {
   return RecipeData(
+    hasEstimation: rated,
     id: id,
     device: 'hario_v60',
     date: date,
@@ -137,8 +143,19 @@ final _playButtons = find.byWidgetPredicate(
   (widget) => widget is AppIcon && widget.asset == AppIcons.uiPlay,
 );
 
+/// Кружок оценки: стоит только у версии без оценки.
+final _rateButtons = find.byWidgetPredicate(
+  (widget) => widget is AppIcon && widget.asset == AppIcons.uiStar,
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  late AppLocalizations ru;
+
+  setUpAll(() async {
+    ru = await AppLocalizations.delegate.load(const Locale('ru'));
+  });
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -149,13 +166,19 @@ void main() {
     GetIt.instance.registerSingleton<ApiClient>(_SilentApiClient());
   });
 
-  Future<_RecordingRouter> pumpRecipes(WidgetTester tester) async {
+  /// [versions] — что отдаст история. Умолчание: стопка из трёх оценённых
+  /// версий, на которой проверяется сам барабан.
+  Future<_RecordingRouter> pumpRecipes(
+    WidgetTester tester, {
+    List<RecipeData>? versions,
+  }) async {
     final router = _RecordingRouter();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          recipeServiceProvider.overrideWithValue(_StaticRecipeService(_versions)),
+          recipeServiceProvider
+              .overrideWithValue(_StaticRecipeService(versions ?? _versions)),
           brewMethodServiceProvider.overrideWithValue(_EmptyMethodService()),
         ],
         child: MaterialApp(
@@ -207,7 +230,8 @@ void main() {
   });
 
   group('правка рецепта с экрана «Рецепты»', () {
-    testWidgets('кружок правки есть у каждой карточки стопки, а не только у верхней',
+    testWidgets(
+        'кружок правки есть у каждой карточки стопки, а не только у верхней',
         (tester) async {
       await pumpRecipes(tester);
 
@@ -220,7 +244,8 @@ void main() {
       );
     });
 
-    testWidgets('у кружка есть подпись для голосового помощника', (tester) async {
+    testWidgets('у кружка есть подпись для голосового помощника',
+        (tester) async {
       final handle = tester.ensureSemantics();
       await pumpRecipes(tester);
 
@@ -237,7 +262,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(router.pushed, hasLength(1));
-      expect(builderArgs(router).recipe.id, 301, reason: 'сверху лежит свежая версия');
+      expect(builderArgs(router).recipe.id, 301,
+          reason: 'сверху лежит свежая версия');
     });
 
     testWidgets('пролистанная стопка отдаёт в конструктор новую верхнюю версию',
@@ -291,6 +317,43 @@ void main() {
         isEmpty,
       );
       expect(router.pushed.single.routeName, RecipeBuilderRoute.name);
+    });
+  });
+
+  group('неоценённая чашка', () {
+    testWidgets('оценённая версия не помечена и кнопки оценки не несёт',
+        (tester) async {
+      await pumpRecipes(tester);
+
+      expect(find.text(ru.recipesNotRated), findsNothing);
+      expect(_rateButtons, findsNothing);
+    });
+
+    testWidgets('неоценённая помечена словом и даёт кнопку оценить',
+        (tester) async {
+      // Верхняя карточка стопки — самая свежая версия: её и не оценили.
+      await pumpRecipes(tester, versions: [
+        _recipe(id: 301, date: '2026-09-09T10:00:00Z', load: 15, rated: false),
+        _recipe(id: 302, date: '2026-09-08T10:00:00Z', load: 16),
+        _recipe(id: 303, date: '2026-09-07T10:00:00Z', load: 17),
+      ]);
+
+      expect(find.text(ru.recipesNotRated), findsOneWidget);
+      expect(_rateButtons, findsOneWidget);
+    });
+
+    testWidgets('кнопка ведёт на оценку именно этой версии', (tester) async {
+      final router = await pumpRecipes(tester, versions: [
+        _recipe(id: 301, date: '2026-09-09T10:00:00Z', load: 15, rated: false),
+        _recipe(id: 302, date: '2026-09-08T10:00:00Z', load: 16),
+      ]);
+
+      await tester.tap(_rateButtons);
+      await tester.pumpAndSettle();
+
+      final route = router.pushed.last;
+      expect(route.routeName, RatingRoute.name);
+      expect((route.args as RatingRouteArgs).recipe.id, 301);
     });
   });
 }

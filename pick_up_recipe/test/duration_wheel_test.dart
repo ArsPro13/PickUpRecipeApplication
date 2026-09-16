@@ -62,7 +62,8 @@ void main() {
       expect(picked, 95);
     });
 
-    testWidgets('барабан открывается на том, что было в рецепте', (tester) async {
+    testWidgets('барабан открывается на том, что было в рецепте',
+        (tester) async {
       var picked = 0;
       await tester.pumpWidget(_wheels(160, (value) => picked = value));
 
@@ -77,7 +78,8 @@ void main() {
       expect(picked, 159);
     });
 
-    testWidgets('выбранное ложится в шаг секундами, а не минутами', (tester) async {
+    testWidgets('выбранное ложится в шаг секундами, а не минутами',
+        (tester) async {
       // Ошибка в единице не видна глазом: барабан выглядит так же, а шаг
       // на полторы минуты уезжает в рецепт полутора часами.
       final target = RecipeStep(
@@ -95,7 +97,8 @@ void main() {
         warning: '',
       );
 
-      await tester.pumpWidget(_wheels(target.time, (value) => target.time = value));
+      await tester
+          .pumpWidget(_wheels(target.time, (value) => target.time = value));
       await _spin(tester, 0, 1);
 
       expect(target.time, 95);
@@ -104,7 +107,8 @@ void main() {
   });
 
   group('шторка длительности', () {
-    testWidgets('палец на барабане крутит барабан, а не тащит шторку', (tester) async {
+    testWidgets('палец на барабане крутит барабан, а не тащит шторку',
+        (tester) async {
       final host = await _openSheet(tester);
 
       await _spin(tester, 0, 4);
@@ -129,7 +133,8 @@ void main() {
       await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
 
-      expect(find.text('Готово'), findsNothing, reason: 'шторка должна закрыться');
+      expect(find.text('Готово'), findsNothing,
+          reason: 'шторка должна закрыться');
       expect(host.answer, isNull);
       expect(host.stepTime, 0);
     });
@@ -145,7 +150,8 @@ void main() {
       expect(host.stepTime, 0);
     });
 
-    testWidgets('за ручку-полоску шторку по-прежнему стягивают вниз', (tester) async {
+    testWidgets('за ручку-полоску шторку по-прежнему стягивают вниз',
+        (tester) async {
       final host = await _openSheet(tester);
 
       // Ручка живёт в верхней полосе шторки высотой в наименьшую цель для
@@ -190,7 +196,6 @@ void main() {
   });
 }
 
-
 /// Шторка с барабаном поверх экрана, который запоминает её ответ.
 ///
 /// Локаль задана явно: шторка подписана строками из словаря, а не системным
@@ -229,7 +234,8 @@ class _SheetHostState extends State<_SheetHost> {
           builder: (context) => TextButton(
             onPressed: () async {
               opened++;
-              final picked = await showDurationSheet(context, seconds: stepTime);
+              final picked =
+                  await showDurationSheet(context, seconds: stepTime);
               if (!context.mounted) return;
               setState(() {
                 answer = picked;

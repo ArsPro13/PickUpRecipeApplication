@@ -90,11 +90,13 @@ abstract final class PackCode {
     for (final rune in code.runes) {
       final symbol = String.fromCharCode(rune);
       if (!alphabet.contains(symbol)) {
-        return PackCodeProblem(PackCodeProblemKind.unknownSymbol, symbol: symbol);
+        return PackCodeProblem(PackCodeProblemKind.unknownSymbol,
+            symbol: symbol);
       }
     }
 
-    if (code[code.length - 1] != _checksum(code.substring(0, code.length - 1))) {
+    if (code[code.length - 1] !=
+        _checksum(code.substring(0, code.length - 1))) {
       return const PackCodeProblem(PackCodeProblemKind.checksum);
     }
 

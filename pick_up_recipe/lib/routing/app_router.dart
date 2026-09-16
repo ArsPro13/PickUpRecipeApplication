@@ -56,18 +56,43 @@ class AppRouter extends _$AppRouter {
         // Диплинк по коду с упаковки: /r/{code} ведёт прямо на страницу кофе
         // (ADR 0004). Путь короткий намеренно — он печатается на пачке вместе
         // с доменом, и каждый символ там на счету.
-        AutoRoute(page: CoffeeRoute.page, path: '/r/:code', guards: [AuthGuard(ref)]),
-        AutoRoute(page: CoffeeRoute.page, path: '/coffee', guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: CoffeeRoute.page, path: '/r/:code', guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: CoffeeRoute.page, path: '/coffee', guards: [AuthGuard(ref)]),
 
-        AutoRoute(page: RecipesForCoffeeRoute.page, path: '/coffee/methods', guards: [AuthGuard(ref)]),
-        AutoRoute(page: GrinderSelectRoute.page, path: '/grinder', guards: [AuthGuard(ref)]),
-        AutoRoute(page: CustomStepRoute.page, path: '/recipe/custom-step', guards: [AuthGuard(ref)]),
-        AutoRoute(page: BrewRoute.page, path: '/brew', guards: [AuthGuard(ref)]),
-        AutoRoute(page: RatingRoute.page, path: '/rating', guards: [AuthGuard(ref)]),
-        AutoRoute(page: RatingConflictRoute.page, path: '/rating_conflict', guards: [AuthGuard(ref)]),
-        AutoRoute(page: RecipeBuilderRoute.page, path: '/recipe/edit', guards: [AuthGuard(ref)]),
-        AutoRoute(page: ChoosingRecipeRoute.page, path: '/choose-recipe', guards: [AuthGuard(ref)]),
-        AutoRoute(page: RecognitionCameraRoute.page, path: '/pack-photo', guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: RecipesForCoffeeRoute.page,
+            path: '/coffee/methods',
+            guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: GrinderSelectRoute.page,
+            path: '/grinder',
+            guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: CustomStepRoute.page,
+            path: '/recipe/custom-step',
+            guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: BrewRoute.page, path: '/brew', guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: RatingRoute.page, path: '/rating', guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: RatingConflictRoute.page,
+            path: '/rating_conflict',
+            guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: RecipeBuilderRoute.page,
+            path: '/recipe/edit',
+            guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: ChoosingRecipeRoute.page,
+            path: '/choose-recipe',
+            guards: [AuthGuard(ref)]),
+        AutoRoute(
+            page: RecognitionCameraRoute.page,
+            path: '/pack-photo',
+            guards: [AuthGuard(ref)]),
 
         // Вход разбит на отдельные экраны, а не на режимы одной страницы:
         // у каждого своя шапка с «назад», и вернуться из регистрации в

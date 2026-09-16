@@ -16,7 +16,8 @@ import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_mo
 import 'package:pick_up_recipe/src/pages/recipes_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-RecipeStep step({int id = 1, int water = 45, String instruction = 'Предсмачивание'}) {
+RecipeStep step(
+    {int id = 1, int water = 45, String instruction = 'Предсмачивание'}) {
   return RecipeStep(
     seqNum: 1,
     instruction: instruction,
@@ -108,7 +109,8 @@ void main() {
 
     test('повторный вход в тот же рецепт не плодит второй черновик', () async {
       await RecipeDrafts.remember(recipe(water: 260));
-      await RecipeDrafts.remember(recipe(water: 260, id: 99, date: '2026-09-06T08:00:00Z'));
+      await RecipeDrafts.remember(
+          recipe(water: 260, id: 99, date: '2026-09-06T08:00:00Z'));
 
       expect(RecipeDrafts.all().length, 1);
     });
@@ -130,12 +132,17 @@ void main() {
       expect(RecipeDrafts.all().first.water, 200 + RecipeDrafts.limit + 4);
     });
 
-    test('догнавший сохранённую версию черновик перестаёт быть черновиком', () async {
+    test('догнавший сохранённую версию черновик перестаёт быть черновиком',
+        () async {
       await RecipeDrafts.remember(recipe(water: 260));
 
       // Сервер завёл версию: свой идентификатор, своё время, свои id шагов.
       await RecipeDrafts.forgetKnown([
-        recipe(water: 260, id: 777, date: '2026-09-06T21:00:00Z', steps: [step(id: 900)]),
+        recipe(
+            water: 260,
+            id: 777,
+            date: '2026-09-06T21:00:00Z',
+            steps: [step(id: 900)]),
       ]);
 
       expect(RecipeDrafts.all(), isEmpty);
@@ -166,7 +173,8 @@ void main() {
       );
 
       expect(merged.length, 2);
-      expect(merged.first.water, 260, reason: 'самое свежее и самое неготовое — сверху');
+      expect(merged.first.water, 260,
+          reason: 'самое свежее и самое неготовое — сверху');
     });
 
     test('сохранённая версия свой черновик в список не пускает', () {
@@ -176,7 +184,8 @@ void main() {
         drafts: [recipe(id: 5, water: 260)],
       );
 
-      expect(merged.length, 1, reason: 'иначе одна и та же версия стояла бы дважды');
+      expect(merged.length, 1,
+          reason: 'иначе одна и та же версия стояла бы дважды');
     });
 
     test('неотправленная версия тоже гасит свой черновик', () {
@@ -234,7 +243,8 @@ void main() {
 
       expect(groups.single.versions.length, 2);
       expect(groups.single.depth, 1);
-      expect(groups.single.latest.draft, isTrue, reason: 'самое свежее — сверху стопки');
+      expect(groups.single.latest.draft, isTrue,
+          reason: 'самое свежее — сверху стопки');
     });
 
     test('черновик не плодит лишних меток на карточке пачки', () {

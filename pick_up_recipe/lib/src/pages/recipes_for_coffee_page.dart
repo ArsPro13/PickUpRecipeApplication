@@ -23,7 +23,8 @@ class RecipesForCoffeePage extends ConsumerStatefulWidget {
   final int? packId;
 
   @override
-  ConsumerState<RecipesForCoffeePage> createState() => _RecipesForCoffeePageState();
+  ConsumerState<RecipesForCoffeePage> createState() =>
+      _RecipesForCoffeePageState();
 }
 
 class _RecipesForCoffeePageState extends ConsumerState<RecipesForCoffeePage> {
@@ -43,7 +44,8 @@ class _RecipesForCoffeePageState extends ConsumerState<RecipesForCoffeePage> {
     return Scaffold(
       appBar: AppBar(title: Text(texts.methodsTitle)),
       body: switch (state.status) {
-        BrewMethodsStatus.loading => const Center(child: CircularProgressIndicator()),
+        BrewMethodsStatus.loading =>
+          const Center(child: CircularProgressIndicator()),
         BrewMethodsStatus.failed => AppState(
             icon: AppIcons.stateError,
             title: texts.methodsFailed,

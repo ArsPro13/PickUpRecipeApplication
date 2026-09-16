@@ -67,7 +67,8 @@ abstract final class RecipeDrafts {
     try {
       final list = jsonDecode(raw) as List<dynamic>;
       return [
-        for (final item in list) RecipeData.fromJson(item as Map<String, dynamic>),
+        for (final item in list)
+          RecipeData.fromJson(item as Map<String, dynamic>),
       ];
     } catch (_) {
       // Битый список — то же, что пустой: чинить его не из чего.
@@ -76,7 +77,8 @@ abstract final class RecipeDrafts {
   }
 
   /// Отпечатки всех черновиков. По ним список ставит пометку.
-  static Set<String> keys() => {for (final draft in all()) recipeFingerprint(draft)};
+  static Set<String> keys() =>
+      {for (final draft in all()) recipeFingerprint(draft)};
 
   /// Запоминает рецепт, по которому начали заваривать.
   ///
@@ -98,7 +100,8 @@ abstract final class RecipeDrafts {
     if (known.isEmpty) return;
 
     final saved = {for (final recipe in known) recipeFingerprint(recipe)};
-    final kept = all().where((it) => !saved.contains(recipeFingerprint(it))).toList();
+    final kept =
+        all().where((it) => !saved.contains(recipeFingerprint(it))).toList();
     if (kept.length == all().length) return;
 
     await _save(kept);

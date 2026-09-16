@@ -27,7 +27,8 @@ void main() {
         expect(
           PackCode.alphabet.length % divisor,
           isNot(0),
-          reason: 'при составной длине контрольная сумма пропускает часть опечаток',
+          reason:
+              'при составной длине контрольная сумма пропускает часть опечаток',
         );
       }
     });
@@ -112,9 +113,11 @@ void main() {
       expect(PackCode.problem('')?.kind, PackCodeProblemKind.empty);
       expect(PackCode.problem('ABCD')?.kind, PackCodeProblemKind.length);
       expect(PackCode.problem('ABCD')?.entered, 4);
-      expect(PackCode.problem('ABCD23456O')?.kind, PackCodeProblemKind.unknownSymbol);
+      expect(PackCode.problem('ABCD23456O')?.kind,
+          PackCodeProblemKind.unknownSymbol);
       expect(PackCode.problem('ABCD23456O')?.symbol, 'O');
-      expect(PackCode.problem('ABCD234567')?.kind, PackCodeProblemKind.checksum);
+      expect(
+          PackCode.problem('ABCD234567')?.kind, PackCodeProblemKind.checksum);
     });
   });
 
@@ -123,7 +126,8 @@ void main() {
   group('объяснения для человека', () {
     test('по-русски слово в слово как было', () {
       expect(PackCode.problem('')?.text(ru), 'Введите код с упаковки');
-      expect(PackCode.problem('ABCD')?.text(ru), 'В коде 10 символов, а введено 4');
+      expect(PackCode.problem('ABCD')?.text(ru),
+          'В коде 10 символов, а введено 4');
       expect(
         PackCode.problem('ABCD23456O')?.text(ru),
         'Символа «O» в кодах не бывает — проверьте, не 0 ли это вместо O',

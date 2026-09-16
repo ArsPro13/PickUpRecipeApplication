@@ -103,9 +103,12 @@ class _ConflictPlate extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppIcon(AppIcons.uiWarning, size: AppSizes.icon20, color: context.colors.tertiary),
+          AppIcon(AppIcons.uiWarning,
+              size: AppSizes.icon20, color: context.colors.tertiary),
           const SizedBox(width: AppSpacing.s3),
-          Expanded(child: Text(conflict.explanation, style: context.texts.bodySmall)),
+          Expanded(
+              child:
+                  Text(conflict.explanation, style: context.texts.bodySmall)),
         ],
       ),
     );

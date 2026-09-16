@@ -12,7 +12,8 @@ void main() {
   group('имя пачки', () {
     test('страна и регион — то, что различает две бразильские пачки', () {
       expect(
-        packTitleFrom(country: 'Бразилия', region: 'Серрадо', variety: 'бурбон'),
+        packTitleFrom(
+            country: 'Бразилия', region: 'Серрадо', variety: 'бурбон'),
         'Бразилия · Серрадо',
       );
     });
@@ -25,7 +26,8 @@ void main() {
     });
 
     test('нет ни региона, ни сорта — остаётся страна', () {
-      expect(packTitleFrom(country: 'Бразилия', region: '', variety: ''), 'Бразилия');
+      expect(packTitleFrom(country: 'Бразилия', region: '', variety: ''),
+          'Бразилия');
     });
 
     test('пробелы по краям в имя не уезжают', () {

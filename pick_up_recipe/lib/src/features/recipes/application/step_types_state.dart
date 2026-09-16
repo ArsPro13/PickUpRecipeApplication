@@ -6,7 +6,8 @@ import '../domain/models/grind_descriptor_model.dart';
 import '../domain/models/step_type_model.dart';
 import '../domain/models/user_step_type_model.dart';
 
-final stepTypeServiceProvider = Provider<StepTypeService>((ref) => StepTypeService());
+final stepTypeServiceProvider =
+    Provider<StepTypeService>((ref) => StepTypeService());
 
 /// Справочник типов шагов, загруженный один раз на весь запуск.
 ///

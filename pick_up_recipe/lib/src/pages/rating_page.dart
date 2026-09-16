@@ -11,6 +11,16 @@
 // теперь уезжают как «не сказал» (в базе NULL), а не как ноль — ноль на шкале
 // 0…10 значит «отвратительно» и попал бы в среднюю по позиции у обжарщика.
 //
+// НО НЕОБЯЗАТЕЛЬНОСТЬ НАДО ЕЩЁ И ПОКАЗАТЬ. Звёзды стояли ВЫШЕ разделителя
+// «Необязательно», то есть ровно там, где он обещает обязательную часть, —
+// и экран целиком читался как анкета, которую сдают обжарщику. Звёзды уехали
+// под разделитель, к осям, и подписаны прямо: на поправку рецепта они не
+// влияют, они нужны самому человеку, чтобы потом найти свою лучшую чашку.
+//
+// А над всем этим стоит плашка, отвечающая на вопрос, который человек задаёт
+// себе первым: зачем это заполнять. Ответ — «чтобы следующая чашка вышла
+// лучше», и он про него, а не про обжарщика.
+//
 // Карта вместо анкеты потому, что одна точка отвечает на оба вопроса правил:
 // горизонталь — экстракция (помол, температура, время), вертикаль —
 // концентрация (соотношение). Шесть ползунков спрашивали бы то же самое
@@ -302,7 +312,9 @@ class _RatingPageState extends ConsumerState<RatingPage> {
 
     final subtitle = [
       widget.pack?.packName,
-      widget.recipe.title.isNotEmpty ? widget.recipe.title : widget.recipe.device,
+      widget.recipe.title.isNotEmpty
+          ? widget.recipe.title
+          : widget.recipe.device,
     ].whereType<String>().where((it) => it.isNotEmpty).join(' · ');
 
     return AppScreen(
@@ -312,6 +324,11 @@ class _RatingPageState extends ConsumerState<RatingPage> {
           Text(subtitle, style: context.texts.bodySmall),
           const SizedBox(height: AppSpacing.s3),
         ],
+
+        // Первым делом — зачем это всё. Плашка стоит до карты, а не после:
+        // прочитанное после заполнения уже ничего не меняет.
+        const _ForYouPlate(),
+        const SizedBox(height: AppSpacing.s3),
 
         HeroSurface(
           padding: const EdgeInsets.all(AppSpacing.s4),
@@ -335,7 +352,30 @@ class _RatingPageState extends ConsumerState<RatingPage> {
                 },
         ),
 
-        const SizedBox(height: AppSpacing.s3),
+        if (_error != null) ...[
+          const SizedBox(height: AppSpacing.s3),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppIcon(AppIcons.uiWarning,
+                  size: AppSizes.icon20, color: context.colors.error),
+              const SizedBox(width: AppSpacing.s2),
+              Expanded(
+                child: Text(
+                  _error!,
+                  style: context.texts.bodySmall
+                      ?.copyWith(color: context.colors.error),
+                ),
+              ),
+            ],
+          ),
+        ],
+
+        const _OptionalDivider(),
+
+        // Звёзды — первое в необязательной части: это самый привычный способ
+        // сказать «понравилось», и прятать его за шестью ползунками значило
+        // бы спрятать единственное, что человек и правда хочет отметить.
         _Stars(
           value: _stars,
           onChanged: (value) {
@@ -346,25 +386,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
             _remember();
           },
         ),
-
-        if (_error != null) ...[
-          const SizedBox(height: AppSpacing.s3),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppIcon(AppIcons.uiWarning, size: AppSizes.icon20, color: context.colors.error),
-              const SizedBox(width: AppSpacing.s2),
-              Expanded(
-                child: Text(
-                  _error!,
-                  style: context.texts.bodySmall?.copyWith(color: context.colors.error),
-                ),
-              ),
-            ],
-          ),
-        ],
-
-        const _OptionalDivider(),
+        const SizedBox(height: AppSpacing.s5),
 
         Text(texts.rateAxesTitle, style: context.texts.bodyMedium),
         const SizedBox(height: AppSpacing.s1),
@@ -563,21 +585,26 @@ class _TasteMapPainter extends CustomPainter {
         ..color = target,
     );
 
-    _label(canvas, ends.sour, Offset(center.dx - field - AppSpacing.s2, center.dy), ink,
+    _label(canvas, ends.sour,
+        Offset(center.dx - field - AppSpacing.s2, center.dy), ink,
         align: TextAlign.right, anchorRight: true);
-    _label(canvas, ends.bitter, Offset(center.dx + field + AppSpacing.s2, center.dy), ink);
+    _label(canvas, ends.bitter,
+        Offset(center.dx + field + AppSpacing.s2, center.dy), ink);
     // Все четыре подписи — наречия, одной частью речи. «Крепче» и «слабее»
     // рядом с «кисло» и «горько» читались как два разных вопроса на одном
     // круге: одна ось спрашивала «по сравнению с чем», вторая — «какое».
     // То же правило держит и английский: одна часть речи на все четыре конца.
-    _label(canvas, ends.strong, Offset(center.dx, center.dy - field - AppSpacing.s5), ink,
+    _label(canvas, ends.strong,
+        Offset(center.dx, center.dy - field - AppSpacing.s5), ink,
         centered: true);
-    _label(canvas, ends.weak, Offset(center.dx, center.dy + field + AppSpacing.s3), ink,
+    _label(canvas, ends.weak,
+        Offset(center.dx, center.dy + field + AppSpacing.s3), ink,
         centered: true);
 
     if (point.isCenter) return;
 
-    final you = Offset(center.dx + point.x * field, center.dy - point.y * field);
+    final you =
+        Offset(center.dx + point.x * field, center.dy - point.y * field);
 
     canvas.drawLine(
       center,
@@ -586,7 +613,8 @@ class _TasteMapPainter extends CustomPainter {
         ..strokeWidth = AppStroke.thin
         ..color = accent.withValues(alpha: 0.5),
     );
-    canvas.drawCircle(you, AppSpacing.s5, Paint()..color = accent.withValues(alpha: 0.18));
+    canvas.drawCircle(
+        you, AppSpacing.s5, Paint()..color = accent.withValues(alpha: 0.18));
     canvas.drawCircle(you, AppSpacing.s2, Paint()..color = accent);
   }
 
@@ -636,10 +664,14 @@ class _SummaryLine extends StatelessWidget {
           AppIcon(
             point.isCenter ? AppIcons.uiCheck : AppIcons.uiWarning,
             size: AppSizes.icon20,
-            color: point.isCenter ? context.palette.success : context.colors.primary,
+            color: point.isCenter
+                ? context.palette.success
+                : context.colors.primary,
           ),
           const SizedBox(width: AppSpacing.s3),
-          Expanded(child: Text(point.summaryFor(texts), style: context.texts.bodyMedium)),
+          Expanded(
+              child: Text(point.summaryFor(texts),
+                  style: context.texts.bodyMedium)),
           if (onReset != null)
             IconButton(
               onPressed: onReset,
@@ -668,31 +700,77 @@ class _Stars extends StatelessWidget {
     final texts = AppLocalizations.of(context);
 
     return QuietSurface(
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(texts.rateOverall, style: context.texts.bodyMedium),
-          const SizedBox(width: AppSpacing.s2),
-          for (var star = 1; star <= 5; star++)
-            IconButton(
-              onPressed: () => onChanged(star),
-              tooltip: texts.rateStarsOf(star),
-              constraints: const BoxConstraints(
-                minWidth: AppSizes.tapTarget - AppSpacing.s4,
-                minHeight: AppSizes.tapTarget - AppSpacing.s4,
-              ),
-              padding: EdgeInsets.zero,
-              icon: AppIcon(
-                star <= value ? AppIcons.uiStarFilled : AppIcons.uiStar,
-                size: AppSizes.icon24,
-                color: star <= value ? context.colors.primary : context.colors.secondary,
-              ),
-            ),
-          const Spacer(),
-          if (value > 0)
-            Text(
-              '$value',
-              style: context.texts.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
+          Row(
+            children: [
+              Text(texts.rateOverall, style: context.texts.bodyMedium),
+              const SizedBox(width: AppSpacing.s2),
+              for (var star = 1; star <= 5; star++)
+                IconButton(
+                  onPressed: () => onChanged(star),
+                  tooltip: texts.rateStarsOf(star),
+                  constraints: const BoxConstraints(
+                    minWidth: AppSizes.tapTarget - AppSpacing.s4,
+                    minHeight: AppSizes.tapTarget - AppSpacing.s4,
+                  ),
+                  padding: EdgeInsets.zero,
+                  icon: AppIcon(
+                    star <= value ? AppIcons.uiStarFilled : AppIcons.uiStar,
+                    size: AppSizes.icon24,
+                    color: star <= value
+                        ? context.colors.primary
+                        : context.colors.secondary,
+                  ),
+                ),
+              const Spacer(),
+              if (value > 0)
+                Text(
+                  '$value',
+                  style: context.texts.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s1),
+          Text(texts.rateOverallNote, style: context.texts.labelSmall),
+        ],
+      ),
+    );
+  }
+}
+
+/// Плашка «оценка нужна вам».
+///
+/// Отдельным виджетом, а не строкой текста: у неё своя поверхность фирменного
+/// цвета, и на экране она читается как ответ, а не как мелкая сноска, которую
+/// пропускают. Ровно этот вопрос — «зачем мне это заполнять» — и превращал
+/// экран в анкету, которую пролистывают к кнопке.
+class _ForYouPlate extends StatelessWidget {
+  const _ForYouPlate();
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.s3),
+      decoration: BoxDecoration(
+        color: context.colors.primary.withValues(alpha: 0.09),
+        borderRadius: AppRadius.medium,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppIcon(
+            AppIcons.uiUser,
+            size: AppSizes.icon20,
+            color: context.colors.primary,
+          ),
+          const SizedBox(width: AppSpacing.s3),
+          Expanded(
+              child: Text(texts.rateForYou, style: context.texts.labelSmall)),
         ],
       ),
     );
@@ -722,7 +800,8 @@ class _OptionalDivider extends StatelessWidget {
 
 /// Одна ось развёрнутой оценки.
 class _Axis extends StatelessWidget {
-  const _Axis({required this.label, required this.value, required this.onChanged});
+  const _Axis(
+      {required this.label, required this.value, required this.onChanged});
 
   final String label;
   final double value;
@@ -732,7 +811,9 @@ class _Axis extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(width: AppSpacing.s18 + AppSpacing.s5, child: Text(label, style: context.texts.bodySmall)),
+        SizedBox(
+            width: AppSpacing.s18 + AppSpacing.s5,
+            child: Text(label, style: context.texts.bodySmall)),
         Expanded(
           child: Slider(
             value: value,

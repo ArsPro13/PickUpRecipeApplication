@@ -367,7 +367,8 @@ void main() {
         ..restore(
           startedAt: DateTime.parse(saved['started_at'] as String),
           pausedTotal: Duration(milliseconds: saved['paused_total_ms'] as int),
-          skippedTotal: Duration(milliseconds: saved['skipped_total_ms'] as int),
+          skippedTotal:
+              Duration(milliseconds: saved['skipped_total_ms'] as int),
         );
 
       expect(restored.snapshot().elapsedTotal, expected);
@@ -389,8 +390,10 @@ void main() {
         ..restore(
           startedAt: DateTime.parse(saved['started_at'] as String),
           pausedTotal: Duration(milliseconds: saved['paused_total_ms'] as int),
-          skippedTotal: Duration(milliseconds: saved['skipped_total_ms'] as int),
-          waitingTotal: Duration(milliseconds: saved['waiting_total_ms'] as int),
+          skippedTotal:
+              Duration(milliseconds: saved['skipped_total_ms'] as int),
+          waitingTotal:
+              Duration(milliseconds: saved['waiting_total_ms'] as int),
           confirmedSteps: (saved['confirmed_steps'] as List).cast<int>(),
         );
 
@@ -458,9 +461,11 @@ void main() {
 
       expect(snapshot.status, BrewStatus.awaitingUser);
       expect(snapshot.isAwaitingUser, isTrue);
-      expect(snapshot.stepIndex, 1, reason: 'стоим на ждущем шаге, а не за ним');
+      expect(snapshot.stepIndex, 1,
+          reason: 'стоим на ждущем шаге, а не за ним');
       expect(snapshot.remainingInStep, Duration.zero);
-      expect(snapshot.waterPouredG, 250, reason: 'вода предыдущих шагов уже налита');
+      expect(snapshot.waterPouredG, 250,
+          reason: 'вода предыдущих шагов уже налита');
     });
 
     test('«сделал» заканчивает заваривание', () {
@@ -642,7 +647,8 @@ void main() {
 
       expect(step.type, BrewStepType.custom);
       expect(step.id, 's0');
-      expect(step.label, 'Предсмачивание', reason: 'подпись сохраняется дословно');
+      expect(step.label, 'Предсмачивание',
+          reason: 'подпись сохраняется дословно');
     });
 
     test('шаг формата v1 разбирается по типу', () {

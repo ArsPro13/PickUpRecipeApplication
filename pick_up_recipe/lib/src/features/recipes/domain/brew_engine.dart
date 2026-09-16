@@ -438,8 +438,8 @@ class BrewEngine {
 
     for (var i = 0; i < _steps.length; i++) {
       offset += _steps[i].duration;
-      times.add(startedAt
-          .add(offset + _pausedTotal + _waitingTotal - _skippedTotal));
+      times.add(
+          startedAt.add(offset + _pausedTotal + _waitingTotal - _skippedTotal));
 
       // За шагом, который ждёт человека, расписания нет: когда начнётся
       // следующий, решит он, а уведомление невпопад хуже, чем его отсутствие.

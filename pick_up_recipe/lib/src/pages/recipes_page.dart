@@ -12,9 +12,15 @@
 //     выглядели соседними карточками, а не историей одного рецепта.
 // Барабан оставляет стопку и делает её листаемой жестом, который знают все.
 //
-// Чего здесь нет: оценки. Она лежит в `/recipe/estimations` по одному запросу
-// на рецепт, и ради звезды в списке платить запросом за карточку рано —
-// на месте оценки стоит повтор заваривания.
+// Оценка на карточке есть, но не числом: показывается только ОТСУТСТВИЕ
+// оценки. Сама оценка лежит в `/recipe/estimations` по одному запросу на
+// рецепт, и платить двадцатью запросами за двадцать звёзд в списке по-прежнему
+// не за что. А вот «эту чашку вы не оценили» приезжает вместе со списком
+// одним полем (has_estimation) и стоит ноль запросов.
+//
+// Неоценённая версия обведена фирменным цветом и несёт кнопку со звездой:
+// метка без выхода была бы упрёком, а оценка нужна самому человеку — по ней
+// приложение правит его же рецепт.
 //
 // Про жест не написано, он показан: верхняя карточка первой стопки один раз
 // за сессию уходит вбок и возвращается. Прежняя подпись у точек объясняла
@@ -85,7 +91,10 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(recipesListProvider);
-    final packs = ref.watch(activePacksNotifierProvider).activePacks;
+    // Справочник виденных пачек, а не страница полки: заваривание могло быть
+    // по пачке, которая лежит дальше прочитанных страниц. Недостающие
+    // дочитываются точечно — см. _body.
+    final packs = ref.watch(activePacksNotifierProvider).known;
 
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).recipesTitle)),
@@ -96,7 +105,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
     );
   }
 
-  Widget _body(RecipesListState state, List<PackData> packs) {
+  Widget _body(RecipesListState state, Map<int, PackData> packs) {
     if (state.isLoading && state.groups.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -140,7 +149,19 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
       );
     }
 
-    final byId = {for (final pack in packs) pack.packId: pack};
+    // Пачки, о которых история знает, а полка ещё нет. Просим их один раз
+    // за построение списка: ensurePacks сам отсеет уже известные, а запрос
+    // на пачку кэширован.
+    final missing = state.groups
+        .map((group) => group.packId)
+        .where((id) => !packs.containsKey(id))
+        .toSet();
+    if (missing.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(activePacksNotifierProvider.notifier).ensurePacks(missing);
+      });
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(
@@ -154,7 +175,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
         final group = state.groups[index];
         return _Group(
           group: group,
-          pack: byId[group.packId],
+          pack: packs[group.packId],
           // Единственный главный элемент экрана — верхняя карточка первой
           // группы. Поднимать все значит не поднять ни одну.
           hero: index == 0,
@@ -222,7 +243,16 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
   int _top = 0;
 
   /// Насколько карточку увели пальцем прямо сейчас.
-  Offset _drag = Offset.zero;
+  ///
+  /// Отдельным слушаемым значением, а не полем состояния, — и это не
+  /// стилистика, а причина, по которой фото пачки мигало. `setState` на
+  /// каждом движении пальца перестраивал ВСЮ стопку: три карточки, в каждой
+  /// фото, метки и две кнопки. Полсотни таких перестроек в секунду — это и
+  /// есть «фотка каждый раз как бы рендерится».
+  ///
+  /// Теперь на смещение подписана только обёртка с двумя Transform: за кадр
+  /// пересчитываются две матрицы, а карточка остаётся тем же экземпляром.
+  final ValueNotifier<Offset> _drag = ValueNotifier<Offset>(Offset.zero);
 
   /// Идёт полёт — жесты в это время не принимаем.
   bool _flying = false;
@@ -237,6 +267,7 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
   @override
   void dispose() {
     _fly.dispose();
+    _drag.dispose();
     super.dispose();
   }
 
@@ -278,10 +309,10 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
   }
 
   void _animateDrag(Offset target, {VoidCallback? then}) {
-    final tween = Tween<Offset>(begin: _drag, end: target)
+    final tween = Tween<Offset>(begin: _drag.value, end: target)
         .animate(CurvedAnimation(parent: _fly, curve: AppCurves.out));
 
-    void tick() => setState(() => _drag = tween.value);
+    void tick() => _drag.value = tween.value;
 
     _fly
       ..reset()
@@ -294,23 +325,27 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
   }
 
   void _release(double width) {
-    if (_drag.dx.abs() < _flyThreshold) {
+    if (_drag.value.dx.abs() < _flyThreshold) {
       // Не дотянули — карточка возвращается на место, а не остаётся косой.
       _animateDrag(Offset.zero, then: () => setState(() => _flying = false));
       return;
     }
 
-    final direction = _drag.dx.isNegative ? -1 : 1;
+    final direction = _drag.value.dx.isNegative ? -1 : 1;
     setState(() => _flying = true);
 
     _animateDrag(
-      Offset(direction * width * 1.4, _drag.dy),
+      Offset(direction * width * 1.4, _drag.value.dy),
       then: () {
+        // Обнуление и смена верхней карточки идут подряд в одном такте:
+        // слушатель смещения и setState оба помечают дерево грязным, и до
+        // отрисовки дело доходит один раз — промежуточного кадра, в котором
+        // старая карточка уже вернулась на место, человек не увидит.
+        _drag.value = Offset.zero;
         setState(() {
           // Влево — к следующей версии, вправо — к предыдущей: барабан
           // крутится в обе стороны, как его ни толкни.
           _top = direction < 0 ? _at(1) : _at(widget.group.versions.length - 1);
-          _drag = Offset.zero;
           _flying = false;
         });
       },
@@ -374,25 +409,32 @@ class _GroupState extends State<_Group> with SingleTickerProviderStateMixin {
                       left: 0,
                       right: 0,
                       height: _cardHeight,
-                      child: Transform.translate(
-                        offset: _drag,
-                        child: Transform.rotate(
-                          // Наклон от того, насколько увели: движение
-                          // читается как «карточку отбрасывают», а не как
-                          // «она едет по рельсам».
-                          angle: _drag.dx / width * 0.22,
-                          child: GestureDetector(
-                            onHorizontalDragUpdate: single || _flying
-                                ? null
-                                : (details) => setState(() => _drag += details.delta),
-                            onHorizontalDragEnd:
-                                single || _flying ? null : (_) => _release(width),
-                            child: _VersionCard(
-                              version: versions[_top],
-                              pack: widget.pack,
-                              hero: widget.hero && _top == 0,
-                              latest: _top == 0,
-                            ),
+                      child: ValueListenableBuilder<Offset>(
+                        valueListenable: _drag,
+                        // Карточка собирается ОДИН раз на построение экрана и
+                        // приезжает в builder готовой: перетаскивание её не
+                        // трогает вовсе.
+                        child: GestureDetector(
+                          onHorizontalDragUpdate: single || _flying
+                              ? null
+                              : (details) => _drag.value += details.delta,
+                          onHorizontalDragEnd:
+                              single || _flying ? null : (_) => _release(width),
+                          child: _VersionCard(
+                            version: versions[_top],
+                            pack: widget.pack,
+                            hero: widget.hero && _top == 0,
+                            latest: _top == 0,
+                          ),
+                        ),
+                        builder: (context, drag, card) => Transform.translate(
+                          offset: drag,
+                          child: Transform.rotate(
+                            // Наклон от того, насколько увели: движение
+                            // читается как «карточку отбрасывают», а не как
+                            // «она едет по рельсам».
+                            angle: drag.dx / width * 0.22,
+                            child: card,
                           ),
                         ),
                       ),
@@ -454,7 +496,8 @@ class _Header extends ConsumerWidget {
               // Название не обрезается: длинное переносится на две строки.
               Text(
                 _title(),
-                style: context.texts.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: context.texts.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
               Text(
                 _subtitle(AppLocalizations.of(context)),
@@ -478,7 +521,8 @@ class _Header extends ConsumerWidget {
       formatRecipeDate(texts, group.latest.date),
       // Склонение «1 версия / 2 версии / 5 версий» считает ICU: таблица форм
       // у каждого языка своя, и написанная руками была верной для одного.
-      if (group.versions.length > 1) texts.recipesVersionsCount(group.versions.length),
+      if (group.versions.length > 1)
+        texts.recipesVersionsCount(group.versions.length),
     ];
     return parts.join(' · ');
   }
@@ -502,7 +546,9 @@ class _Pager extends StatelessWidget {
   String _now(BuildContext context) {
     final texts = AppLocalizations.of(context);
 
-    return MediaQuery.disableAnimationsOf(context) ? texts.recipesNowSwipe : texts.recipesNow;
+    return MediaQuery.disableAnimationsOf(context)
+        ? texts.recipesNowSwipe
+        : texts.recipesNow;
   }
 
   @override
@@ -515,9 +561,8 @@ class _Pager extends StatelessWidget {
             height: AppSpacing.s1 + 2,
             width: i == index ? AppSpacing.s4 : AppSpacing.s1 + 2,
             decoration: BoxDecoration(
-              color: i == index
-                  ? context.colors.primary
-                  : context.palette.border,
+              color:
+                  i == index ? context.colors.primary : context.palette.border,
               borderRadius: AppRadius.rounded,
             ),
           ),
@@ -558,6 +603,9 @@ class _VersionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Черновик не «неоценён»: его ещё не заваривали, оценивать нечего.
+    final rated = version.recipe.hasEstimation || version.draft;
+
     return Material(
       color: context.colors.secondaryContainer,
       borderRadius: hero ? AppRadius.large : AppRadius.medium,
@@ -571,12 +619,21 @@ class _VersionCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: hero ? AppRadius.large : AppRadius.medium,
             boxShadow: hero ? context.shadows.level2 : context.shadows.level1,
+            // Обводка, а не заливка: заливка спорила бы с фотографией пачки,
+            // которая занимает левые четыре десятых карточки.
+            border: rated
+                ? null
+                : Border.all(
+                    color: context.colors.primary, width: AppStroke.thick),
           ),
           child: Row(
             children: [
               Expanded(
                 flex: 4,
-                child: _Photo(pack: pack, caption: formatRecipeDate(AppLocalizations.of(context), version.date)),
+                child: _Photo(
+                    pack: pack,
+                    caption: formatRecipeDate(
+                        AppLocalizations.of(context), version.date)),
               ),
               Expanded(
                 flex: 6,
@@ -585,15 +642,41 @@ class _VersionCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        version.draft
-                            ? AppLocalizations.of(context).recipesDraft
-                            : (latest
-                                ? AppLocalizations.of(context).recipesCurrent
-                                : AppLocalizations.of(context).recipesPastVersion),
-                        style: context.texts.labelSmall?.copyWith(
-                          color: version.draft ? context.colors.primary : null,
-                        ),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              version.draft
+                                  ? AppLocalizations.of(context).recipesDraft
+                                  : (latest
+                                      ? AppLocalizations.of(context)
+                                          .recipesCurrent
+                                      : AppLocalizations.of(context)
+                                          .recipesPastVersion),
+                              style: context.texts.labelSmall?.copyWith(
+                                color: version.draft
+                                    ? context.colors.primary
+                                    : null,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (!rated) ...[
+                            const SizedBox(width: AppSpacing.s2),
+                            Flexible(
+                              child: Text(
+                                AppLocalizations.of(context).recipesNotRated,
+                                style: context.texts.labelSmall?.copyWith(
+                                  color: context.colors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: AppSpacing.s2),
                       // Показатели метками, а не строкой текста: цвет метки
@@ -615,7 +698,8 @@ class _VersionCard extends StatelessWidget {
                           if (version.temperatureC != null)
                             MetricTag(
                               kind: MetricKind.temperature,
-                              label: '${version.temperatureC!.toStringAsFixed(0)} °C',
+                              label:
+                                  '${version.temperatureC!.toStringAsFixed(0)} °C',
                             ),
                           MetricTag(
                             kind: MetricKind.time,
@@ -627,9 +711,14 @@ class _VersionCard extends StatelessWidget {
                       Row(
                         children: [
                           const Spacer(),
+                          if (!rated) ...[
+                            _RateButton(version: version, pack: pack),
+                            const SizedBox(width: AppSpacing.s2),
+                          ],
                           _EditButton(version: version, pack: pack),
                           const SizedBox(width: AppSpacing.s2),
-                          _PlayButton(version: version, pack: pack, filled: hero),
+                          _PlayButton(
+                              version: version, pack: pack, filled: hero),
                         ],
                       ),
                     ],
@@ -661,6 +750,10 @@ class _Photo extends StatelessWidget {
           child: PackImage(
             base64Image: pack?.packImage ?? '',
             roastLevel: pack?.roastLevel ?? '',
+            // По низу этой картинки идёт дата заваривания, и слово обжарки
+            // вставало ровно под ней: на снимке это читалось как
+            // «12 сентябряяя». Цвет заливки остаётся — он и различает пачки.
+            showRoastLabel: false,
           ),
         ),
         // Подпись читается поверх любого фото только с затемнением: пачки
@@ -678,7 +771,10 @@ class _Photo extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)],
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.55)
+                ],
               ),
             ),
             child: Text(
@@ -699,7 +795,8 @@ class _Photo extends StatelessWidget {
 /// Своего размера, а не `AppButton`: тот держит высоту 50 и разрезал бы
 /// карточку пополам. У неглавных версий повтор тише — контур вместо заливки.
 class _PlayButton extends StatelessWidget {
-  const _PlayButton({required this.version, required this.pack, required this.filled});
+  const _PlayButton(
+      {required this.version, required this.pack, required this.filled});
 
   final RecipeVersion version;
   final PackData? pack;
@@ -729,7 +826,51 @@ class _PlayButton extends StatelessWidget {
             child: AppIcon(
               AppIcons.uiPlay,
               size: AppSizes.icon16,
-              color: filled ? context.colors.secondaryContainer : context.colors.secondary,
+              color: filled
+                  ? context.colors.secondaryContainer
+                  : context.colors.secondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Круглая кнопка «оценить чашку».
+///
+/// Стоит только у неоценённых версий и только в паре с меткой: метка говорит,
+/// чего не хватает, кнопка — как это исправить. Залита фирменным цветом, в
+/// отличие от соседних контурных: из трёх кружков этот единственный
+/// предлагает доделать начатое, а не начать заново.
+class _RateButton extends StatelessWidget {
+  const _RateButton({required this.version, required this.pack});
+
+  final RecipeVersion version;
+  final PackData? pack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: AppLocalizations.of(context).brewRate,
+      child: InkWell(
+        onTap: () => context.router.push(
+          RatingRoute(recipe: version.recipe, pack: pack),
+        ),
+        customBorder: const CircleBorder(),
+        child: Container(
+          height: AppSpacing.s8,
+          width: AppSpacing.s8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: context.colors.primary,
+          ),
+          child: Center(
+            child: AppIcon(
+              AppIcons.uiStar,
+              size: AppSizes.icon16,
+              color: context.colors.secondaryContainer,
             ),
           ),
         ),

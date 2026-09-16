@@ -3,8 +3,14 @@
 // Список сгруппирован по виду — ручные и электрические (ответ E7): в
 // справочнике полсотни записей, и без группировки найти свою на глаз тяжело.
 //
-// Основная отмечается явно: в рецепте показывается одно число щелчков, и
-// выбрать, чьи это деления, приложение за человека не может.
+// Кофемолка выбирается ОДНА и одним касанием. До этого экран собирал набор
+// галочками, а из набора отдельной кнопкой «сделать основной» назначалась
+// главная: два действия ради одного решения, причём про второе легко было
+// забыть — и тогда щелчки в рецептах считались по чужой шкале.
+//
+// Приложению нужна ровно одна: её имя стоит кнопкой в шапке главного экрана,
+// её делениями подписан помол в каждом рецепте. Набор из нескольких нигде
+// не использовался — только как место, откуда берут основную.
 //
 // Поиск нестрогий (пункт 16). Точное вхождение подстроки отвечало «такой
 // кофемолки нет» на «commondante», «команданте» и на имя с двойным пробелом,
@@ -47,10 +53,9 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
 
   static const Duration _pause = AppDuration.base;
 
-  /// Выбранные кофемолки и та из них, что основная. Правки применяются
-  /// кнопкой, а не сразу: случайное касание не должно менять пересчёт помола.
-  final Set<int> _selected = {};
-  int? _primary;
+  /// Выбранная кофемолка. Правка применяется кнопкой, а не сразу: случайное
+  /// касание не должно менять пересчёт помола во всех рецептах разом.
+  int? _chosen;
 
   bool _initialised = false;
 
@@ -70,12 +75,11 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     super.dispose();
   }
 
-  /// Переносит уже сохранённый набор в локальный выбор ровно один раз.
+  /// Переносит уже сохранённую кофемолку в локальный выбор ровно один раз.
   void _seedFrom(GrinderState state) {
     if (_initialised || state.userGrinders.isEmpty) return;
     _initialised = true;
-    _selected.addAll(state.userGrinders.map((item) => item.grinder.id));
-    _primary = state.primary?.id;
+    _chosen = state.primary?.id;
   }
 
   void _onQueryChanged(String value) {
@@ -161,7 +165,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
               child: AppButton(
                 label: texts.grinderSave,
                 loading: state.isLoading && state.catalog.isNotEmpty,
-                onPressed: _selected.isEmpty ? null : () => _save(state),
+                onPressed: _chosen == null ? null : () => _save(state),
               ),
             ),
           ),
@@ -205,6 +209,11 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     final byKind = <GrinderKind, List<Grinder>>{};
     for (final grinder in catalog) {
       byKind.putIfAbsent(grinder.kind, () => []).add(grinder);
+    }
+    // По алфавиту внутри каждой группы. Порядок справочника — это порядок
+    // строк в миграции: для того, кто ищет свою модель глазами, он случаен.
+    for (final kind in byKind.keys) {
+      byKind[kind] = grindersByName(byKind[kind]!);
     }
 
     return ListView(
@@ -269,41 +278,17 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
   }
 
   Widget _tile(Grinder grinder, GrinderHit? hit) {
-    final texts = AppLocalizations.of(context);
-    final selected = _selected.contains(grinder.id);
+    final chosen = _chosen == grinder.id;
 
     return AppRow(
       label: grinder.name,
       labelSpan: hit == null ? null : _highlight(grinder.name, hit),
       icon: AppIcons.metricGrind,
-      onTap: () => setState(() {
-        if (selected) {
-          _selected.remove(grinder.id);
-          if (_primary == grinder.id) _primary = null;
-        } else {
-          _selected.add(grinder.id);
-          _primary ??= grinder.id;
-        }
-      }),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (selected)
-            TextButton(
-              onPressed: () => setState(() => _primary = grinder.id),
-              child: Text(
-                _primary == grinder.id
-                    ? texts.profileGrinderPrimary
-                    : texts.grinderMakePrimary,
-              ),
-            ),
-          AppIcon(
-            selected ? AppIcons.uiCheck : AppIcons.uiPlus,
-            size: AppSizes.icon20,
-            color: selected ? context.colors.primary : context.colors.secondary,
-          ),
-        ],
-      ),
+      // Повторное касание выбор не снимает. «Кофемолки нет» — не то
+      // состояние, за которым сюда шли: уйти в него можно было бы случайно
+      // и не заметить, а помол в рецептах перестал бы показываться числом.
+      onTap: () => setState(() => _chosen = grinder.id),
+      trailing: _ChoiceMark(chosen: chosen),
     );
   }
 
@@ -329,9 +314,11 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
 
   Future<void> _save(GrinderState state) async {
     final texts = AppLocalizations.of(context);
-    final chosen = state.catalog.where((g) => _selected.contains(g.id)).toList();
+    final chosen = state.catalog.where((g) => g.id == _chosen).toList();
 
-    await ref.read(grinderStateProvider.notifier).save(chosen, primaryGrinderId: _primary);
+    await ref
+        .read(grinderStateProvider.notifier)
+        .save(chosen, primaryGrinderId: _chosen);
 
     if (!mounted) return;
 
@@ -353,5 +340,43 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     }
 
     await context.router.maybePop();
+  }
+}
+
+/// Отметка одиночного выбора: кружок, залитый у выбранной строки.
+///
+/// Галочка тут не годится: она говорит «отмечено», то есть допускает, что
+/// отмечено может быть и несколько. Кружок говорит «выбрано одно из» —
+/// разницу видно, не читая подписей.
+class _ChoiceMark extends StatelessWidget {
+  const _ChoiceMark({required this.chosen});
+
+  final bool chosen;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.colors.primary;
+
+    return Container(
+      height: AppSizes.icon20,
+      width: AppSizes.icon20,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: chosen ? accent : context.palette.border,
+          width: chosen ? AppStroke.thick : AppStroke.thin,
+        ),
+      ),
+      child: chosen
+          ? Center(
+              child: Container(
+                height: AppSpacing.s2,
+                width: AppSpacing.s2,
+                decoration:
+                    BoxDecoration(color: accent, shape: BoxShape.circle),
+              ),
+            )
+          : null,
+    );
   }
 }

@@ -73,7 +73,8 @@ class AppScreen extends StatelessWidget {
               leading: showBack && context.router.canPop()
                   ? IconButton(
                       onPressed: onBack ?? () => context.router.maybePop(),
-                      icon: const AppIcon(AppIcons.uiBack, size: AppSizes.icon24),
+                      icon:
+                          const AppIcon(AppIcons.uiBack, size: AppSizes.icon24),
                       tooltip: AppLocalizations.of(context).back,
                     )
                   : null,
@@ -218,7 +219,8 @@ class IconRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppIcon(icon, size: iconSize, color: iconColor ?? context.colors.primary),
+        AppIcon(icon,
+            size: iconSize, color: iconColor ?? context.colors.primary),
         const SizedBox(width: AppSpacing.s3),
         Expanded(
           child: Column(
@@ -255,14 +257,18 @@ class SwapLine extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(question, style: context.texts.bodyMedium?.copyWith(color: context.colors.secondary)),
+        Text(question,
+            style: context.texts.bodyMedium
+                ?.copyWith(color: context.colors.secondary)),
         TextButton(
           onPressed: onTap,
           style: TextButton.styleFrom(
             minimumSize: const Size(0, AppSizes.tapTarget - AppSpacing.s4),
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s2),
           ),
-          child: Text(action, style: context.texts.bodyMedium?.copyWith(color: context.colors.primary)),
+          child: Text(action,
+              style: context.texts.bodyMedium
+                  ?.copyWith(color: context.colors.primary)),
         ),
       ],
     );

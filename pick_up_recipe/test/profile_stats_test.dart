@@ -69,7 +69,8 @@ void main() {
 
       expect(groups.length, 2);
       expect(stats.recipes, 2, reason: 'рецепт — это пара «кофе + прибор»');
-      expect(stats.versions, 3, reason: 'версий столько, сколько карточек в стопках');
+      expect(stats.versions, 3,
+          reason: 'версий столько, сколько карточек в стопках');
     });
 
     test('пачки, страны и сорта считаются по непустым полям', () {
@@ -80,7 +81,8 @@ void main() {
       ]);
 
       expect(stats.packs, 3);
-      expect(stats.countries, 1, reason: 'одна страна на две пачки — это одна страна');
+      expect(stats.countries, 1,
+          reason: 'одна страна на две пачки — это одна страна');
       expect(stats.varieties, 2);
     });
 
@@ -138,7 +140,8 @@ void main() {
         recipe(1, 'hario_v60', '2026-07-28T08:00:00Z'),
       ]);
 
-      expect(buildProfileStats(groups, const []).firstRecipeDate, '2026-07-20T08:00:00Z');
+      expect(buildProfileStats(groups, const []).firstRecipeDate,
+          '2026-07-20T08:00:00Z');
     });
 
     test('пустой профиль — это пусто, а не четыре нуля', () {

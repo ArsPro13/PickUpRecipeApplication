@@ -25,7 +25,9 @@ import '../features/authentication/provider/authentication_state_notifier.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/application/state/active_packs_state.dart';
 import '../features/profile/application/profile_stats.dart';
+import '../features/settings/application/locale_state.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
+import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
@@ -60,6 +62,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final packs = ref.watch(activePacksNotifierProvider);
     final stats = buildProfileStats(recipes.groups, packs.activePacks);
     final texts = AppLocalizations.of(context);
+    final chosen = ref.watch(localeProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(texts.profileTitle)),
@@ -91,14 +94,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               children: [
                 if (grinders.userGrinders.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.s4),
                     child: Text(
                       texts.profileNoGrinder,
                       style: context.texts.bodySmall,
                     ),
                   )
                 else
-                  for (var index = 0; index < grinders.userGrinders.length; index++)
+                  for (var index = 0;
+                      index < grinders.userGrinders.length;
+                      index++)
                     AppRow(
                       label: grinders.userGrinders[index].grinder.name,
                       icon: AppIcons.metricGrind,
@@ -106,7 +112,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           ? texts.profileGrinderPrimary
                           : null,
                       divider: index < grinders.userGrinders.length - 1,
-                      onTap: () => context.router.push(const GrinderSelectRoute()),
+                      onTap: () =>
+                          context.router.push(const GrinderSelectRoute()),
                     ),
               ],
             ),
@@ -119,6 +126,25 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             kind: AppButtonKind.secondary,
             onPressed: () => context.router.push(const GrinderSelectRoute()),
           ),
+          SectionTitle(texts.profileAppTitle),
+          AppCard(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
+            child: AppRow(
+              label: texts.profileLanguage,
+              icon: AppIcons.uiSettings,
+              // Название выбранного языка — на нём самом. «Итальянский»
+              // по-русски не поможет тому, кто ищет Italiano, а именно он
+              // сюда и приходит.
+              value: chosen == null
+                  ? texts.profileLanguageSystem
+                  : appLocales
+                      .firstWhere((item) =>
+                          item.locale.languageCode == chosen.languageCode)
+                      .label,
+              divider: false,
+              onTap: () => _chooseLanguage(context, ref, chosen),
+            ),
+          ),
           SectionTitle(texts.profileAccountTitle),
           AppCard(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
@@ -130,11 +156,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 // Выход стирает и очередь отправки. Если в ней что-то есть,
                 // человек об этом узнаёт до, а не после: оценка, поставленная
                 // в лесу, иначе просто исчезнет вместе с аккаунтом.
-                if (Outbox.pending.value > 0 && !await _confirmLogout(context)) {
+                if (Outbox.pending.value > 0 &&
+                    !await _confirmLogout(context)) {
                   return;
                 }
 
-                await ref.read(authenticationStateNotifierProvider.notifier).logout();
+                await ref
+                    .read(authenticationStateNotifierProvider.notifier)
+                    .logout();
                 if (context.mounted) {
                   await context.router.replaceAll([const AuthWelcomeRoute()]);
                 }
@@ -143,6 +172,89 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Выбор языка листом снизу.
+///
+/// Листом, а не отдельным экраном: вариантов четыре, и уводить ради них с
+/// профиля значило бы обставить переключение языка навигацией. Выбор
+/// применяется сразу — приложение перерисовывается под рукой, и это самый
+/// понятный ответ на вопрос «а что изменится».
+Future<void> _chooseLanguage(
+    BuildContext context, WidgetRef ref, Locale? chosen) async {
+  final texts = AppLocalizations.of(context);
+
+  await showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: context.colors.secondaryContainer,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.l)),
+    ),
+    builder: (sheetContext) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.s5,
+              AppSpacing.s5,
+              AppSpacing.s5,
+              AppSpacing.s2,
+            ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child:
+                  Text(texts.profileLanguage, style: context.texts.titleMedium),
+            ),
+          ),
+          AppRow(
+            label: texts.profileLanguageSystem,
+            icon: AppIcons.uiSettings,
+            trailing: _LanguageMark(chosen: chosen == null),
+            onTap: () {
+              ref.read(localeProvider.notifier).choose(null);
+              Navigator.of(sheetContext).pop();
+            },
+          ),
+          for (var index = 0; index < appLocales.length; index++)
+            AppRow(
+              label: appLocales[index].label,
+              icon: AppIcons.uiInfo,
+              divider: index < appLocales.length - 1,
+              trailing: _LanguageMark(
+                chosen: chosen?.languageCode ==
+                    appLocales[index].locale.languageCode,
+              ),
+              onTap: () {
+                ref
+                    .read(localeProvider.notifier)
+                    .choose(appLocales[index].locale);
+                Navigator.of(sheetContext).pop();
+              },
+            ),
+          const SizedBox(height: AppSpacing.s4),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Галочка у выбранного языка.
+class _LanguageMark extends StatelessWidget {
+  const _LanguageMark({required this.chosen});
+
+  final bool chosen;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!chosen) return const SizedBox(width: AppSizes.icon20);
+
+    return AppIcon(
+      AppIcons.uiCheck,
+      size: AppSizes.icon20,
+      color: context.colors.primary,
     );
   }
 }

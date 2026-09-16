@@ -54,7 +54,8 @@ const Grinder comandante = Grinder(
 );
 
 const List<GrindDescriptor> descriptors = [
-  GrindDescriptor(slug: 'medium_fine', name: 'Средне-тонкий', microns: 600, sortOrder: 3),
+  GrindDescriptor(
+      slug: 'medium_fine', name: 'Средне-тонкий', microns: 600, sortOrder: 3),
 ];
 
 GrindReading reading(
@@ -82,7 +83,8 @@ void main() {
   group('строка параметров', () {
     test('все четыре числа на месте', () {
       final source = recipe();
-      final params = BrewParams.of(ru, source, grind: reading(source, grinder: comandante));
+      final params = BrewParams.of(ru, source,
+          grind: reading(source, grinder: comandante));
 
       expect(params.dose, '15 г');
       expect(params.grind, '26');
@@ -106,7 +108,12 @@ void main() {
     test('исторический рецепт без чисел не рисует строку вовсе', () {
       final params = BrewParams.of(
         ru,
-        recipe(load: 0, water: 0, temperature: null, grindStep: '', grindDescriptor: ''),
+        recipe(
+            load: 0,
+            water: 0,
+            temperature: null,
+            grindStep: '',
+            grindDescriptor: ''),
       );
 
       expect(params.isEmpty, isTrue);
@@ -116,7 +123,8 @@ void main() {
     test('целые числа идут без хвоста, дробные с запятой', () {
       expect(BrewParams.of(ru, recipe(load: 15)).dose, '15 г');
       expect(BrewParams.of(ru, recipe(load: 15.5)).dose, '15,5 г');
-      expect(BrewParams.of(ru, recipe(temperature: 92.5)).temperature, '92,5 °C');
+      expect(
+          BrewParams.of(ru, recipe(temperature: 92.5)).temperature, '92,5 °C');
       expect(BrewParams.of(ru, recipe(temperature: 93.0)).temperature, '93 °C');
     });
   });
@@ -124,7 +132,8 @@ void main() {
   group('рамка до старта', () {
     test('со своей кофемолкой деления объясняет подпись', () {
       final source = recipe();
-      final params = BrewParams.of(ru, source, grind: reading(source, grinder: comandante));
+      final params = BrewParams.of(ru, source,
+          grind: reading(source, grinder: comandante));
 
       expect(params.prepValue, '15 г · 26');
       expect(params.prepHint, 'делений Comandante C40 · средне-тонкий');
@@ -156,13 +165,15 @@ void main() {
 
     test('без дескриптора остаётся одна кофемолка', () {
       final source = recipe(grindDescriptor: '');
-      final params = BrewParams.of(ru, source, grind: reading(source, grinder: comandante));
+      final params = BrewParams.of(ru, source,
+          grind: reading(source, grinder: comandante));
 
       expect(params.prepHint, 'делений Comandante C40');
     });
 
     test('без помола молоть нечего — остаётся одна доза', () {
-      final params = BrewParams.of(ru, recipe(grindStep: '', grindDescriptor: ''));
+      final params =
+          BrewParams.of(ru, recipe(grindStep: '', grindDescriptor: ''));
 
       expect(params.prepValue, '15 г');
       expect(params.prepHint, isNull);
@@ -189,7 +200,8 @@ void main() {
     });
 
     test('без дозы и помола подготовки нет, рамка остаётся таймером', () {
-      final params = BrewParams.of(ru, recipe(load: 0, grindStep: '', grindDescriptor: ''));
+      final params = BrewParams.of(
+          ru, recipe(load: 0, grindStep: '', grindDescriptor: ''));
 
       expect(params.hasPrep, isFalse);
       expect(params.prepValue, isNull);

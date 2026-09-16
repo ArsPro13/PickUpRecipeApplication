@@ -8,6 +8,12 @@
 // Кнопка имела смысл, пока сверху стояло фото пачки и занимало пол-экрана;
 // фотографии нет, и единственным содержимым страницы оказывались три
 // дескриптора и кнопка — то есть лишний шаг ради пустоты.
+//
+// Но развёрнутыми все группы держать тоже нельзя: приборов семьдесят один,
+// и до нижних групп человек пролистывал экран пять раз. Группы свёрнуты,
+// открывается та, которую попросили. Свёрнутая строка при этом не немая —
+// она говорит, сколько внутри приборов и есть ли среди них готовый рецепт
+// обжарщика: иначе выбирать, какую открыть, пришлось бы наугад.
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +37,10 @@ import '../themes/app_tokens.dart';
 
 @RoutePage()
 class CoffeePage extends ConsumerStatefulWidget {
-  const CoffeePage({super.key, @QueryParam('code') this.code, @QueryParam('pack') this.packId});
+  const CoffeePage(
+      {super.key,
+      @QueryParam('code') this.code,
+      @QueryParam('pack') this.packId});
 
   /// Код с упаковки. Заполнен, если пришли по диплинку или ручным вводом.
   final String? code;
@@ -48,7 +57,9 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(coffeeStateProvider.notifier).open(code: widget.code, packId: widget.packId);
+      ref
+          .read(coffeeStateProvider.notifier)
+          .open(code: widget.code, packId: widget.packId);
     });
   }
 
@@ -72,10 +83,12 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(state.pack?.packName ?? AppLocalizations.of(context).coffeeTitle),
+        title: Text(
+            state.pack?.packName ?? AppLocalizations.of(context).coffeeTitle),
       ),
       body: switch (state.status) {
-        CoffeeStatus.loading => const Center(child: CircularProgressIndicator()),
+        CoffeeStatus.loading =>
+          const Center(child: CircularProgressIndicator()),
         CoffeeStatus.notFound => _notFound(),
         CoffeeStatus.withdrawn => _withdrawn(state),
         CoffeeStatus.failed => _failed(state),
@@ -101,8 +114,9 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
         AppState(
           icon: AppIcons.stateError,
           title: texts.coffeeNotFound,
-          description:
-              code == null ? texts.coffeeNotFoundNoCode : texts.coffeeNotFoundNote,
+          description: code == null
+              ? texts.coffeeNotFoundNoCode
+              : texts.coffeeNotFoundNote,
         ),
         if (code != null) ...[
           const SizedBox(height: AppSpacing.s3),
@@ -142,7 +156,8 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
         AppSpacing.s8,
       ),
       children: [
-        _WithdrawnPlate(name: state.withdrawnName, roaster: state.withdrawnRoaster),
+        _WithdrawnPlate(
+            name: state.withdrawnName, roaster: state.withdrawnRoaster),
         const SizedBox(height: AppSpacing.s6),
         AppButton(
           label: AppLocalizations.of(context).coffeeToPacks,
@@ -197,7 +212,9 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           Wrap(
             spacing: AppSpacing.s2,
             runSpacing: AppSpacing.s2,
-            children: [for (final descriptor in descriptors) AppChip(label: descriptor)],
+            children: [
+              for (final descriptor in descriptors) AppChip(label: descriptor)
+            ],
           ),
         ],
         if (state.lastBrewed != null) ...[
@@ -215,15 +232,14 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           // Счётчика «рецепт есть у 1 из 20» здесь нет намеренно: он считает
           // не то, что человек выбирает. Разницу несёт сама строка метода —
           // с рецептом поднятая и белая, без рецепта прозрачная.
-          Text(AppLocalizations.of(context).methodsTitle, style: context.texts.titleMedium),
-          for (final group in state.groups) ...[
-            _GroupHeader(group: group),
-            for (final method in group.methods)
-              _MethodRow(
-                method: method,
-                onTap: () => _openMethod(method, pack),
-              ),
-          ],
+          Text(AppLocalizations.of(context).methodsTitle,
+              style: context.texts.titleMedium),
+          const SizedBox(height: AppSpacing.s2),
+          for (final group in state.groups)
+            _MethodGroup(
+              group: group,
+              onPick: (method) => _openMethod(method, pack),
+            ),
         ],
       ],
     );
@@ -246,17 +262,20 @@ class _WithdrawnPlate extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppIcon(AppIcons.uiInfo, size: AppSizes.icon20, color: context.colors.tertiary),
+          AppIcon(AppIcons.uiInfo,
+              size: AppSizes.icon20, color: context.colors.tertiary),
           const SizedBox(width: AppSpacing.s3),
           Expanded(
             child: Text.rich(
               TextSpan(children: [
                 TextSpan(
                   text: texts.coffeeWithdrawnTitle,
-                  style: context.texts.bodySmall?.copyWith(fontWeight: FontWeight.w700),
+                  style: context.texts.bodySmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 TextSpan(
-                  text: texts.coffeeWithdrawnNote(what.isEmpty ? '' : ' ($what)'),
+                  text:
+                      texts.coffeeWithdrawnNote(what.isEmpty ? '' : ' ($what)'),
                 ),
               ]),
               style: context.texts.bodySmall,
@@ -312,7 +331,8 @@ class _OfflineFallbackState extends State<_OfflineFallback> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppIcon(AppIcons.stateOffline, size: AppSizes.icon20, color: context.colors.tertiary),
+              AppIcon(AppIcons.stateOffline,
+                  size: AppSizes.icon20, color: context.colors.tertiary),
               const SizedBox(width: AppSpacing.s3),
               Expanded(
                 child: Text(
@@ -368,7 +388,8 @@ class _OfflineFallbackState extends State<_OfflineFallback> {
 }
 
 class _OfflineRow extends StatelessWidget {
-  const _OfflineRow({required this.icon, required this.title, required this.note});
+  const _OfflineRow(
+      {required this.icon, required this.title, required this.note});
 
   final String icon;
   final String title;
@@ -405,7 +426,9 @@ class _PackHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final origin = [pack.packCountry, pack.packVariety].where((it) => it.isNotEmpty).join(' · ');
+    final origin = [pack.packCountry, pack.packVariety]
+        .where((it) => it.isNotEmpty)
+        .join(' · ');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,7 +449,8 @@ class _PackHeader extends StatelessWidget {
 /// десяти человек вернулся именно за этим, и заставлять его искать свой
 /// прибор среди двадцати — то же самое, что не помнить его выбор.
 class _QuickStart extends StatelessWidget {
-  const _QuickStart({required this.method, required this.date, required this.onStart});
+  const _QuickStart(
+      {required this.method, required this.date, required this.onStart});
 
   final CoffeeMethod method;
   final String date;
@@ -451,7 +475,8 @@ class _QuickStart extends StatelessWidget {
               children: [
                 Text(
                   method.name,
-                  style: context.texts.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                  style: context.texts.bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
@@ -503,21 +528,100 @@ class _PlayButton extends StatelessWidget {
   }
 }
 
-/// Заголовок группы методов со счётчиком рецептов.
-class _GroupHeader extends StatelessWidget {
-  const _GroupHeader({required this.group});
+/// Свёрнутая группа приборов: строка-заголовок, под ней — содержимое.
+///
+/// Раскрытие держит сама группа, а не экран: одновременно открытых может быть
+/// сколько угодно, и сводить их в одно состояние страницы значило бы закрывать
+/// пуроверы ровно тогда, когда человек открыл иммерсию, чтобы сравнить.
+class _MethodGroup extends StatefulWidget {
+  const _MethodGroup({required this.group, required this.onPick});
 
   final CoffeeMethodGroup group;
+  final ValueChanged<CoffeeMethod> onPick;
+
+  @override
+  State<_MethodGroup> createState() => _MethodGroupState();
+}
+
+class _MethodGroupState extends State<_MethodGroup> {
+  bool _open = false;
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+    final group = widget.group;
+
+    final name =
+        group.slug == otherGroupSlug ? texts.svcGroupOther : group.name;
+    final ready = group.methods.any((method) => method.hasRecipe);
+
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.s4, bottom: AppSpacing.s2),
-      child: Text(
-        group.slug == otherGroupSlug
-            ? AppLocalizations.of(context).svcGroupOther
-            : group.name,
-        style: context.texts.bodyMedium,
+      padding: const EdgeInsets.only(bottom: AppSpacing.s2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Material(
+            color: Colors.transparent,
+            borderRadius: AppRadius.medium,
+            child: InkWell(
+              onTap: () => setState(() => _open = !_open),
+              borderRadius: AppRadius.medium,
+              child: Container(
+                constraints:
+                    const BoxConstraints(minHeight: AppSizes.tapTarget),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.s4,
+                  vertical: AppSpacing.s2,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.medium,
+                  border: Border.all(color: context.palette.border),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: context.texts.bodyMedium,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Точка «здесь есть готовый рецепт обжарщика». Не счётчик
+                    // «1 из 20» — тот считает не то, что человек выбирает, — а
+                    // ответ ровно на один вопрос, который создаёт свёрнутый
+                    // список: какую группу открывать первой.
+                    if (ready) ...[
+                      Container(
+                        height: AppSpacing.s2,
+                        width: AppSpacing.s2,
+                        decoration: BoxDecoration(
+                          color: context.colors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.s2),
+                    ],
+                    Text(
+                      texts.methodsCount(group.methods.length),
+                      style: context.texts.labelSmall,
+                    ),
+                    const SizedBox(width: AppSpacing.s2),
+                    AppIcon(
+                      _open ? AppIcons.uiChevronUp : AppIcons.uiChevronDown,
+                      size: AppSizes.icon20,
+                      color: context.colors.secondary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (_open) ...[
+            const SizedBox(height: AppSpacing.s2),
+            for (final method in group.methods)
+              _MethodRow(method: method, onTap: () => widget.onPick(method)),
+          ],
+        ],
       ),
     );
   }
@@ -546,7 +650,9 @@ class _MethodRow extends StatelessWidget {
           boxShadow: method.hasRecipe ? context.shadows.level1 : null,
         ),
         child: Material(
-          color: method.hasRecipe ? context.colors.secondaryContainer : Colors.transparent,
+          color: method.hasRecipe
+              ? context.colors.secondaryContainer
+              : Colors.transparent,
           borderRadius: AppRadius.medium,
           child: InkWell(
             onTap: onTap,
@@ -573,7 +679,8 @@ class _MethodRow extends StatelessWidget {
                       method.name,
                       style: method.hasRecipe
                           ? context.texts.bodyMedium
-                          : context.texts.bodyMedium?.copyWith(color: context.colors.secondary),
+                          : context.texts.bodyMedium
+                              ?.copyWith(color: context.colors.secondary),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),

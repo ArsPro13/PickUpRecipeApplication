@@ -6,4 +6,6 @@
 import 'dart:io';
 
 bool isPlatformNetworkError(Object error) =>
-    error is SocketException || error is HandshakeException || error is HttpException;
+    error is SocketException ||
+    error is HandshakeException ||
+    error is HttpException;

@@ -52,7 +52,9 @@ BrewTemplate resolveBrewTemplate(
   if (types.contains('open_valve') || types.contains('close_valve')) {
     return BrewTemplate.valve;
   }
-  if (types.contains('press') || types.contains('invert') || types.contains('flip')) {
+  if (types.contains('press') ||
+      types.contains('invert') ||
+      types.contains('flip')) {
     return BrewTemplate.press;
   }
 
@@ -60,7 +62,9 @@ BrewTemplate resolveBrewTemplate(
   // а не отсчитывается. Турка и брю-пайп греются без давления, но признак
   // у них тот же — пена, — и по группе их не поймать.
   if (methodGroup == 'pressure') return BrewTemplate.cue;
-  if (recipe.device == 'cezve' || recipe.device == 'bripe' || recipe.device == 'siphon') {
+  if (recipe.device == 'cezve' ||
+      recipe.device == 'bripe' ||
+      recipe.device == 'siphon') {
     return BrewTemplate.cue;
   }
 

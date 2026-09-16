@@ -16,13 +16,20 @@ import 'package:pick_up_recipe/src/features/recipes/domain/models/grind_descript
 
 /// Справочник крупности целиком — тот же, что засеян миграцией.
 const List<GrindDescriptor> reference = [
-  GrindDescriptor(slug: 'extra_fine', name: 'Очень тонкий', microns: 200, sortOrder: 1),
+  GrindDescriptor(
+      slug: 'extra_fine', name: 'Очень тонкий', microns: 200, sortOrder: 1),
   GrindDescriptor(slug: 'fine', name: 'Тонкий', microns: 400, sortOrder: 2),
-  GrindDescriptor(slug: 'medium_fine', name: 'Средне-тонкий', microns: 600, sortOrder: 3),
+  GrindDescriptor(
+      slug: 'medium_fine', name: 'Средне-тонкий', microns: 600, sortOrder: 3),
   GrindDescriptor(slug: 'medium', name: 'Средний', microns: 800, sortOrder: 4),
-  GrindDescriptor(slug: 'medium_coarse', name: 'Средне-крупный', microns: 1000, sortOrder: 5),
+  GrindDescriptor(
+      slug: 'medium_coarse',
+      name: 'Средне-крупный',
+      microns: 1000,
+      sortOrder: 5),
   GrindDescriptor(slug: 'coarse', name: 'Крупный', microns: 1200, sortOrder: 6),
-  GrindDescriptor(slug: 'extra_coarse', name: 'Очень крупный', microns: 1400, sortOrder: 7),
+  GrindDescriptor(
+      slug: 'extra_coarse', name: 'Очень крупный', microns: 1400, sortOrder: 7),
 ];
 
 /// Кусок настоящей шкалы Comandante C40 из базы grinder_translator.
@@ -94,7 +101,8 @@ void main() {
       expect(grind.label, '17');
     });
 
-    test('деления чужой кофемолки пересчитываются, а не показываются как есть', () {
+    test('деления чужой кофемолки пересчитываются, а не показываются как есть',
+        () {
       final grind = grindReading(
         descriptorSlug: 'medium',
         reference: reference,
@@ -129,7 +137,8 @@ void main() {
 
   group('кофемолки нет', () {
     test('остаётся слово и приглашение выбрать кофемолку', () {
-      final grind = grindReading(descriptorSlug: 'medium_fine', reference: reference);
+      final grind =
+          grindReading(descriptorSlug: 'medium_fine', reference: reference);
 
       expect(grind.value, 'Средне-тонкий');
       expect(grind.isDivision, isFalse);
@@ -139,7 +148,8 @@ void main() {
     });
 
     test('помол не прячется — слово честнее пустоты', () {
-      final grind = grindReading(descriptorSlug: 'coarse', reference: reference);
+      final grind =
+          grindReading(descriptorSlug: 'coarse', reference: reference);
 
       expect(grind.isEmpty, isFalse);
       expect(grind.label, 'Крупный');
@@ -361,7 +371,8 @@ void main() {
           }
 
           if (!source.substring(at, end).contains('texts:')) {
-            calls.add('${entity.path}: ${source.substring(at, end).split('\n').first}');
+            calls.add(
+                '${entity.path}: ${source.substring(at, end).split('\n').first}');
           }
           at = source.indexOf('grindReading(', end);
         }

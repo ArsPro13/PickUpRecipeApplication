@@ -165,7 +165,8 @@ void main() {
   }
 
   group('экран оценки', () {
-    testWidgets('на английском телефоне русских слов на экране не остаётся', (tester) async {
+    testWidgets('на английском телефоне русских слов на экране не остаётся',
+        (tester) async {
       await pumpRating(tester, const Locale('en'));
 
       for (final line in _shownText(tester)) {
@@ -186,7 +187,8 @@ void main() {
       expect(find.text('Adjust the recipe'), findsOneWidget);
     });
 
-    testWidgets('карта вкуса читается голосовым помощником на языке экрана', (tester) async {
+    testWidgets('карта вкуса читается голосовым помощником на языке экрана',
+        (tester) async {
       await pumpRating(tester, const Locale('en'));
 
       expect(
@@ -195,7 +197,8 @@ void main() {
       );
     });
 
-    testWidgets('комментарий к оценке уезжает на сервер по-русски', (tester) async {
+    testWidgets('комментарий к оценке уезжает на сервер по-русски',
+        (tester) async {
       await pumpRating(tester, const Locale('en'));
 
       // На экране фраза английская — и ровно та же жалоба уходит на сервер

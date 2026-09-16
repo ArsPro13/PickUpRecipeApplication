@@ -49,6 +49,14 @@ class RecipeData {
 
   late List<RecipeStep> steps;
 
+  /// У этой чашки уже есть оценка. Приезжает вместе со списком рецептов.
+  ///
+  /// Умолчание false, и параметр конструктора необязательный: рецепт, только
+  /// что собранный конструктором или поправкой, оценки заведомо не имеет, и
+  /// требовать её указания от каждого вызывающего было бы шумом.
+  @JsonKey(name: "has_estimation", defaultValue: false)
+  late bool hasEstimation;
+
   RecipeData({
     required this.id,
     required this.device,
@@ -66,6 +74,7 @@ class RecipeData {
     required this.grindDescriptor,
     required this.agitationLevel,
     required this.steps,
+    this.hasEstimation = false,
   });
 
   factory RecipeData.fromJson(Map<String, dynamic> json) =>
@@ -90,6 +99,7 @@ class RecipeData {
         grindDescriptor: response.grindDescriptor,
         agitationLevel: response.agitationLevel,
         steps: response.steps.map((e) => RecipeStep.fromResponse(e)).toList(),
+        hasEstimation: response.hasEstimation,
       );
 }
 
@@ -104,5 +114,6 @@ class RecipeData {
 /// падает на приведении типа. jsonEncode проходит по шагам сам и превращает
 /// их в карты — как это делает отправка на сервер.
 RecipeData copyRecipe(RecipeData recipe) {
-  return RecipeData.fromJson(jsonDecode(jsonEncode(recipe)) as Map<String, dynamic>);
+  return RecipeData.fromJson(
+      jsonDecode(jsonEncode(recipe)) as Map<String, dynamic>);
 }

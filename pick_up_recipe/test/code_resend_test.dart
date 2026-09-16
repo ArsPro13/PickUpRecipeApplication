@@ -44,7 +44,8 @@ class _FakeApiClient extends ApiClient {
 
 /// Ответ сервера с заголовками: тело по умолчанию пустое — так отвечает
 /// бэкенд, когда сказать ему нечего.
-http.Response _response(int status, {String body = '', Map<String, String> headers = const {}}) {
+http.Response _response(int status,
+    {String body = '', Map<String, String> headers = const {}}) {
   return http.Response(body, status, headers: {
     'content-type': 'application/json',
     ...headers,
@@ -81,11 +82,14 @@ void main() {
       // обязан показать двадцать, а не ту же минуту, на которой его прервали.
       final cooldown = ResendCooldown.sentAt(sent);
 
-      expect(cooldown.left(sent.add(const Duration(seconds: 40))), const Duration(seconds: 20));
+      expect(cooldown.left(sent.add(const Duration(seconds: 40))),
+          const Duration(seconds: 20));
     });
 
     test('остаток не уходит в минус', () {
-      expect(ResendCooldown.sentAt(sent).left(sent.add(const Duration(hours: 1))), Duration.zero);
+      expect(
+          ResendCooldown.sentAt(sent).left(sent.add(const Duration(hours: 1))),
+          Duration.zero);
     });
 
     test('письма ещё не было — ждать нечего', () {
@@ -96,7 +100,8 @@ void main() {
     });
 
     test('сервер попросил ждать дольше — ждём столько', () {
-      final cooldown = ResendCooldown.sentAt(sent, pause: const Duration(seconds: 90));
+      final cooldown =
+          ResendCooldown.sentAt(sent, pause: const Duration(seconds: 90));
 
       expect(cooldown.ready(sent.add(const Duration(seconds: 60))), isFalse);
       expect(cooldown.ready(sent.add(const Duration(seconds: 90))), isTrue);
@@ -114,7 +119,8 @@ void main() {
       // Тело ответа — CodeRequestResponse из controller/authhandler.go: срок
       // приходит и при успехе, чтобы кнопка не придумывала свою минуту рядом
       // с серверной.
-      final outcome = ResendOutcome.fromResponse(_response(200, body: '{"retry_after":60}'));
+      final outcome = ResendOutcome.fromResponse(
+          _response(200, body: '{"retry_after":60}'));
 
       expect(outcome.status, ResendStatus.sent);
       expect(outcome.retryAfter, const Duration(seconds: 60));
@@ -124,14 +130,16 @@ void main() {
       final outcome = ResendOutcome.fromResponse(_response(200));
 
       expect(outcome.status, ResendStatus.sent);
-      expect(outcome.retryAfter, isNull, reason: 'сервер промолчал — отсчёт возьмёт своё значение');
+      expect(outcome.retryAfter, isNull,
+          reason: 'сервер промолчал — отсчёт возьмёт своё значение');
     });
 
     test('ответы ручки разбираются ровно так, как она отвечает', () {
       // Оба тела списаны с обработчика: tooSoonForCode и mailFailureResponse.
       final tooOften = ResendOutcome.fromResponse(_response(
         429,
-        body: '{"retry_after":42,"message":"код уже отправлен, следующий можно запросить позже"}',
+        body:
+            '{"retry_after":42,"message":"код уже отправлен, следующий можно запросить позже"}',
         headers: {'retry-after': '42'},
       ));
 
@@ -143,7 +151,8 @@ void main() {
         body: '{"message":"отправка писем не настроена, попробуйте позже"}',
       ));
 
-      expect(disabled.status, ResendStatus.mailDown, reason: 'почта выключена — человек не виноват');
+      expect(disabled.status, ResendStatus.mailDown,
+          reason: 'почта выключена — человек не виноват');
     });
 
     test('429 без срока — минута, ограничение сервера', () {
@@ -168,11 +177,14 @@ void main() {
 
     test('429 со сроком в теле — этот срок', () {
       expect(
-        ResendOutcome.fromResponse(_response(429, body: '{"retry_after":15}')).retryAfter,
+        ResendOutcome.fromResponse(_response(429, body: '{"retry_after":15}'))
+            .retryAfter,
         const Duration(seconds: 15),
       );
       expect(
-        ResendOutcome.fromResponse(_response(429, body: '{"retry_after_seconds":"25"}')).retryAfter,
+        ResendOutcome.fromResponse(
+                _response(429, body: '{"retry_after_seconds":"25"}'))
+            .retryAfter,
         const Duration(seconds: 25),
       );
     });
@@ -181,7 +193,8 @@ void main() {
       // Дата вместо секунд, битое тело, ноль — во всех случаях остаётся
       // серверное ограничение, а не отсутствие отсчёта.
       for (final response in [
-        _response(429, headers: {'retry-after': 'Wed, 21 Oct 2026 07:28:00 GMT'}),
+        _response(429,
+            headers: {'retry-after': 'Wed, 21 Oct 2026 07:28:00 GMT'}),
         _response(429, body: 'not json at all'),
         _response(429, body: '{"retry_after":0}'),
       ]) {
@@ -195,17 +208,23 @@ void main() {
     test('500 на этой ручке значит, что письмо не ушло', () {
       // sendRegisterVerification отвечает 500 только тогда, когда отправка
       // не удалась, — значит это поломка почты, а не «сервер прилёг».
-      expect(ResendOutcome.fromResponse(_response(500)).status, ResendStatus.mailDown);
-      expect(ResendOutcome.fromResponse(_response(502)).status, ResendStatus.mailDown);
+      expect(ResendOutcome.fromResponse(_response(500)).status,
+          ResendStatus.mailDown);
+      expect(ResendOutcome.fromResponse(_response(502)).status,
+          ResendStatus.mailDown);
     });
 
     test('признак поломки почты в теле разбирается', () {
       expect(
-        ResendOutcome.fromResponse(_response(503, body: '{"code":"mail_unavailable"}')).status,
+        ResendOutcome.fromResponse(
+                _response(503, body: '{"code":"mail_unavailable"}'))
+            .status,
         ResendStatus.mailDown,
       );
       expect(
-        ResendOutcome.fromResponse(_response(400, body: '{"error":"MAIL_DOWN"}')).status,
+        ResendOutcome.fromResponse(
+                _response(400, body: '{"error":"MAIL_DOWN"}'))
+            .status,
         ResendStatus.mailDown,
       );
     });
@@ -231,17 +250,20 @@ void main() {
     test('уходит на почтовую ручку с тем же адресом', () async {
       api.reply = _response(200, body: '{"retry_after":60}');
 
-      final outcome = await AuthService().resendVerificationCode('me@example.com');
+      final outcome =
+          await AuthService().resendVerificationCode('me@example.com');
 
       expect(outcome.status, ResendStatus.sent);
       expect(api.calls.single.$1, '/mail/send_verify_email');
       expect(api.calls.single.$2['email'], 'me@example.com');
     });
 
-    test('«слишком часто» доходит до экрана сроком, а не общей ошибкой', () async {
+    test('«слишком часто» доходит до экрана сроком, а не общей ошибкой',
+        () async {
       api.reply = _response(429, headers: {'retry-after': '30'});
 
-      final outcome = await AuthService().resendVerificationCode('me@example.com');
+      final outcome =
+          await AuthService().resendVerificationCode('me@example.com');
 
       expect(outcome.status, ResendStatus.tooOften);
       expect(outcome.retryAfter, const Duration(seconds: 30));
@@ -250,7 +272,8 @@ void main() {
     test('неработающая почта доходит отдельным исходом', () async {
       api.reply = _response(500);
 
-      final outcome = await AuthService().resendVerificationCode('me@example.com');
+      final outcome =
+          await AuthService().resendVerificationCode('me@example.com');
 
       expect(outcome.status, ResendStatus.mailDown);
     });
@@ -258,7 +281,8 @@ void main() {
     test('нет связи — не поломка почты, и до сервера ничего не ушло', () async {
       api.offline = true;
 
-      final outcome = await AuthService().resendVerificationCode('me@example.com');
+      final outcome =
+          await AuthService().resendVerificationCode('me@example.com');
 
       expect(outcome.status, ResendStatus.offline);
       expect(api.calls, isEmpty);

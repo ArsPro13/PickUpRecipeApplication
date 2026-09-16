@@ -6,6 +6,7 @@ import '../../packs/data_sources/remote/pack_service.dart';
 import '../../packs/domain/models/pack_model.dart';
 import '../../recipes/data_sources/remote/recipe_service.dart';
 import '../../recipes/domain/models/recipe_data_model.dart';
+import '../../recipes/domain/models/step_type_model.dart';
 import '../domain/pack_code.dart';
 
 enum CoffeeStatus { loading, ready, notFound, withdrawn, failed }
@@ -82,7 +83,8 @@ class CoffeeState {
 /// Код проверяется локально до похода на сервер: контрольный символ ловит
 /// опечатку ручного ввода, и незачем ради этого ждать ответа сети.
 class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
-  CoffeeStateNotifier(this._packs, this._methods, this._recipes) : super(const CoffeeState());
+  CoffeeStateNotifier(this._packs, this._methods, this._recipes)
+      : super(const CoffeeState());
 
   final PackService _packs;
   final BrewMethodService _methods;
@@ -106,7 +108,11 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
           case CodeNotFound():
             state = const CoffeeState(status: CoffeeStatus.notFound);
             return;
-          case CodeWithdrawn(packId: final found, :final packName, :final roasterName):
+          case CodeWithdrawn(
+              packId: final found,
+              :final packName,
+              :final roasterName
+            ):
             withdrawn = true;
             withdrawnName = packName;
             withdrawnRoaster = roasterName;
@@ -161,13 +167,15 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
     }
   }
 
-  Future<(List<CoffeeMethodGroup>, ({CoffeeMethod method, String date})?)> _loadMethods(
+  Future<(List<CoffeeMethodGroup>, ({CoffeeMethod method, String date})?)>
+      _loadMethods(
     int packId,
   ) async {
     try {
       final methods = await _methods.getMethods();
       final groups = await _methods.getGroups();
-      final recipes = await _recipes.getByParams(packId: packId) ?? const <RecipeData>[];
+      final recipes =
+          await _recipes.getByParams(packId: packId) ?? const <RecipeData>[];
       return buildCoffeeMethods(groupMethods(methods, groups), recipes);
     } catch (_) {
       return (const <CoffeeMethodGroup>[], null);
@@ -178,26 +186,34 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
   static bool isCodeUsable(String code) => PackCode.isValid(code);
 }
 
-/// Приборы с рецептом обжарщика — в начало своей группы.
+/// Приборы с рецептом обжарщика — в начало своей группы, дальше по алфавиту.
 ///
 /// В каталоге семьдесят один прибор, и рецепт обжарщика есть у двух-трёх.
 /// В порядке справочника они разбросаны между двумя десятками прозрачных
 /// строк: Orea с готовым рецептом стояла тридцатой, и до неё надо было
 /// листать. Белая строка отличается от прозрачной, только если её видно.
 ///
-/// Порядок справочника внутри каждой половины сохраняется: это не сортировка
-/// по имени, а перенос вверх — привычные приборы остаются на привычных
-/// местах друг относительно друга.
-List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods) => [
-      ...methods.where((method) => method.hasRecipe),
-      ...methods.where((method) => !method.hasRecipe),
-    ];
+/// Внутри каждой половины — алфавит. Порядок справочника — это порядок строк
+/// в миграции: для человека, который ищет свой прибор глазами по свёрнутой
+/// группе, он случаен. Разделение на «с рецептом» и «без» при этом остаётся:
+/// оно отвечает на другой вопрос, чем алфавит, — не «где искать», а «что
+/// здесь уже готово».
+List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods) {
+  int byName(CoffeeMethod a, CoffeeMethod b) =>
+      a.name.toLowerCase().compareTo(b.name.toLowerCase());
+
+  return [
+    ...methods.where((method) => method.hasRecipe).toList()..sort(byName),
+    ...methods.where((method) => !method.hasRecipe).toList()..sort(byName),
+  ];
+}
 
 /// Раскладывает справочник методов и рецепты зерна в то, что рисует экран.
 ///
 /// Отдельной функцией, а не внутри нотифаера: это единственная нетривиальная
 /// логика страницы, и проверять её тестом без сети дешевле, чем через виджет.
-(List<CoffeeMethodGroup>, ({CoffeeMethod method, String date})?) buildCoffeeMethods(
+(List<CoffeeMethodGroup>, ({CoffeeMethod method, String date})?)
+    buildCoffeeMethods(
   List<GroupedMethods> grouped,
   List<RecipeData> recipes,
 ) {
@@ -220,6 +236,16 @@ List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods) => [
       ),
   ];
 
+  // Группы тоже по алфавиту, но «Прочие» держим последними: это не семья
+  // приборов, а корзина для всего, что справочник никуда не отнёс, и её
+  // место в конце списка независимо от того, на какую букву её назовут
+  // на очередном языке.
+  groups.sort((a, b) {
+    if (a.slug == otherGroupSlug) return 1;
+    if (b.slug == otherGroupSlug) return -1;
+    return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+  });
+
   if (recipes.isEmpty) return (groups, null);
 
   // Быстрый старт — по свежему рецепту, а не по частоте: человек возвращается
@@ -230,14 +256,19 @@ List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods) => [
       .where((candidate) => candidate.slug == latest.first.device)
       .firstOrNull;
 
-  return (groups, method == null ? null : (method: method, date: latest.first.date));
+  return (
+    groups,
+    method == null ? null : (method: method, date: latest.first.date)
+  );
 }
 
 final packServiceProvider = Provider<PackService>((ref) => PackService());
 
-final coffeeRecipeServiceProvider = Provider<RecipeService>((ref) => RecipeService());
+final coffeeRecipeServiceProvider =
+    Provider<RecipeService>((ref) => RecipeService());
 
-final coffeeStateProvider = StateNotifierProvider<CoffeeStateNotifier, CoffeeState>(
+final coffeeStateProvider =
+    StateNotifierProvider<CoffeeStateNotifier, CoffeeState>(
   (ref) => CoffeeStateNotifier(
     ref.watch(packServiceProvider),
     ref.watch(brewMethodServiceProvider),

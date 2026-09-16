@@ -101,7 +101,9 @@ class _TextInputWithHintsState extends State<TextInputWithHints> {
         ? const <String>[]
         : [
             for (final hint in widget.hintsArray)
-              if (hint.toLowerCase().contains(query) && hint.toLowerCase() != query) hint,
+              if (hint.toLowerCase().contains(query) &&
+                  hint.toLowerCase() != query)
+                hint,
           ].take(_maxHints).toList();
 
     if (listEquals(matches, _matches)) return;
@@ -142,7 +144,8 @@ class _TextInputWithHintsState extends State<TextInputWithHints> {
             spacing: AppSpacing.s2,
             runSpacing: AppSpacing.s2,
             children: [
-              for (final hint in _matches) AppChip(label: hint, onTap: () => _pick(hint)),
+              for (final hint in _matches)
+                AppChip(label: hint, onTap: () => _pick(hint)),
             ],
           ),
         ],

@@ -56,7 +56,8 @@ class _OnePackApiClient extends ApiClient {
 }
 
 void main() {
-  Future<void> pumpCard(WidgetTester tester, {required String roasterName}) async {
+  Future<void> pumpCard(WidgetTester tester,
+      {required String roasterName}) async {
     await GetIt.instance.reset();
     GetIt.instance.registerSingleton<ApiClient>(
       _OnePackApiClient(roasterName: roasterName),
@@ -79,7 +80,8 @@ void main() {
   }
 
   group('карточка кофе', () {
-    testWidgets('у пачки, заведённой руками, обещаний обжарщика нет', (tester) async {
+    testWidgets('у пачки, заведённой руками, обещаний обжарщика нет',
+        (tester) async {
       await pumpCard(tester, roasterName: '');
 
       expect(find.text('бразилия'), findsWidgets);

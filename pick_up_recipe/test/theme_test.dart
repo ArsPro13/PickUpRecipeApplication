@@ -29,13 +29,17 @@ void main() {
     test('в тёмной теме он читается на фоне', () {
       // Сам #8E6341 на фоне #191617 даёт 3.4:1 — хватает крупным элементам,
       // но не тексту. Светлый оттенок той же гаммы поднимает контраст.
-      final value = contrast(darkTheme.colorScheme.primary, darkTheme.colorScheme.surface);
-      expect(value, greaterThan(4.5), reason: 'фирменным цветом пишут текст, а не только заливают');
+      final value = contrast(
+          darkTheme.colorScheme.primary, darkTheme.colorScheme.surface);
+      expect(value, greaterThan(4.5),
+          reason: 'фирменным цветом пишут текст, а не только заливают');
     });
 
     test('успех зелёный в обеих темах', () {
-      expect(lightTheme.extension<AppColors>()!.success, const Color(0xFF00932A));
-      expect(darkTheme.extension<AppColors>()!.success, const Color(0xFF3FBF63));
+      expect(
+          lightTheme.extension<AppColors>()!.success, const Color(0xFF00932A));
+      expect(
+          darkTheme.extension<AppColors>()!.success, const Color(0xFF3FBF63));
     });
   });
 
@@ -43,12 +47,18 @@ void main() {
     // Это смысловые цвета предметной области, а не оформление: вода синяя
     // в любой теме, иначе метка «вода» перестанет узнаваться.
     test('одинаковы в обеих темах', () {
-      expect(lightTheme.extension<MetricColors>(), darkTheme.extension<MetricColors>());
+      expect(lightTheme.extension<MetricColors>(),
+          darkTheme.extension<MetricColors>());
     });
 
     test('все четыре различимы между собой', () {
       const metrics = MetricColors.standard;
-      final colors = [metrics.temperature, metrics.water, metrics.dose, metrics.grind];
+      final colors = [
+        metrics.temperature,
+        metrics.water,
+        metrics.dose,
+        metrics.grind
+      ];
 
       expect(colors.toSet(), hasLength(4));
     });
@@ -57,8 +67,10 @@ void main() {
   group('основной текст', () {
     for (final entry in {'светлая': lightTheme, 'тёмная': darkTheme}.entries) {
       test('читается на фоне: ${entry.key}', () {
-        final value = contrast(entry.value.colorScheme.onSurface, entry.value.colorScheme.surface);
-        expect(value, greaterThan(7), reason: 'основной текст — это AAA, а не «как-нибудь»');
+        final value = contrast(
+            entry.value.colorScheme.onSurface, entry.value.colorScheme.surface);
+        expect(value, greaterThan(7),
+            reason: 'основной текст — это AAA, а не «как-нибудь»');
       });
     }
   });
@@ -77,7 +89,8 @@ void main() {
           texts.labelSmall,
         ]) {
           expect(style?.fontSize, isNotNull);
-          expect(style?.height, isNotNull, reason: 'межстрочный интервал — часть токена');
+          expect(style?.height, isNotNull,
+              reason: 'межстрочный интервал — часть токена');
         }
       }
     });

@@ -8,7 +8,8 @@ enum BrewMethodsStatus { loading, ready, failed }
 
 /// Группа вместе с попавшими в неё методами — то, что рисует экран.
 class GroupedMethods {
-  const GroupedMethods({required this.name, required this.methods, this.slug = ''});
+  const GroupedMethods(
+      {required this.name, required this.methods, this.slug = ''});
 
   final String name;
 
@@ -68,7 +69,8 @@ class BrewMethodsNotifier extends StateNotifier<BrewMethodsState> {
         },
       );
     } catch (error) {
-      state = BrewMethodsState(status: BrewMethodsStatus.failed, error: error.toString());
+      state = BrewMethodsState(
+          status: BrewMethodsStatus.failed, error: error.toString());
     }
   }
 }
@@ -77,8 +79,10 @@ class BrewMethodsNotifier extends StateNotifier<BrewMethodsState> {
 ///
 /// Метод без группы не теряется, а попадает в «Прочие»: двадцать методов в
 /// списке, и молча спрятать один — худшее, что можно сделать с экраном выбора.
-List<GroupedMethods> groupMethods(List<BrewMethod> methods, List<BrewMethodGroup> groups) {
-  final ordered = [...groups]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+List<GroupedMethods> groupMethods(
+    List<BrewMethod> methods, List<BrewMethodGroup> groups) {
+  final ordered = [...groups]
+    ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
   final byGroup = <int?, List<BrewMethod>>{};
 
   for (final method in methods) {
@@ -92,7 +96,8 @@ List<GroupedMethods> groupMethods(List<BrewMethod> methods, List<BrewMethodGroup
   for (final group in ordered) {
     final inGroup = byGroup.remove(group.id);
     if (inGroup != null && inGroup.isNotEmpty) {
-      result.add(GroupedMethods(name: group.name, slug: group.slug, methods: inGroup));
+      result.add(
+          GroupedMethods(name: group.name, slug: group.slug, methods: inGroup));
     }
   }
 
@@ -101,14 +106,17 @@ List<GroupedMethods> groupMethods(List<BrewMethod> methods, List<BrewMethodGroup
     orphans.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     // Имени с сервера у этой группы нет: она собирается здесь. Слово для
     // заголовка подставляет экран по метке — домен языка не знает.
-    result.add(GroupedMethods(name: '', slug: otherGroupSlug, methods: orphans));
+    result
+        .add(GroupedMethods(name: '', slug: otherGroupSlug, methods: orphans));
   }
 
   return result;
 }
 
-final brewMethodServiceProvider = Provider<BrewMethodService>((ref) => BrewMethodService());
+final brewMethodServiceProvider =
+    Provider<BrewMethodService>((ref) => BrewMethodService());
 
-final brewMethodsProvider = StateNotifierProvider<BrewMethodsNotifier, BrewMethodsState>(
+final brewMethodsProvider =
+    StateNotifierProvider<BrewMethodsNotifier, BrewMethodsState>(
   (ref) => BrewMethodsNotifier(ref.watch(brewMethodServiceProvider)),
 );

@@ -48,4 +48,5 @@ class LibraryRevisionNotifier extends StateNotifier<int> {
 }
 
 final libraryRevisionProvider =
-    StateNotifierProvider<LibraryRevisionNotifier, int>((ref) => LibraryRevisionNotifier());
+    StateNotifierProvider<LibraryRevisionNotifier, int>(
+        (ref) => LibraryRevisionNotifier());

@@ -91,7 +91,8 @@ class GrinderStateNotifier extends StateNotifier<GrinderState> {
   Future<void> save(List<Grinder> grinders, {int? primaryGrinderId}) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final saved = await _service.setUserGrinders(grinders, primaryGrinderId: primaryGrinderId);
+      final saved = await _service.setUserGrinders(grinders,
+          primaryGrinderId: primaryGrinderId);
       state = state.copyWith(userGrinders: saved, isLoading: false);
     } catch (error) {
       state = state.copyWith(isLoading: false, error: error.toString());
@@ -106,8 +107,10 @@ class GrinderStateNotifier extends StateNotifier<GrinderState> {
   }
 }
 
-final grinderServiceProvider = Provider<GrinderService>((ref) => GrinderService());
+final grinderServiceProvider =
+    Provider<GrinderService>((ref) => GrinderService());
 
-final grinderStateProvider = StateNotifierProvider<GrinderStateNotifier, GrinderState>(
+final grinderStateProvider =
+    StateNotifierProvider<GrinderStateNotifier, GrinderState>(
   (ref) => GrinderStateNotifier(ref.watch(grinderServiceProvider)),
 );

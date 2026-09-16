@@ -31,11 +31,16 @@ class GrinderService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Не удалось получить справочник кофемолок: ${response.statusCode}');
+      throw Exception(
+          'Не удалось получить справочник кофемолок: ${response.statusCode}');
     }
 
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ?? const [];
-    return data.map((item) => Grinder.fromJson(item as Map<String, dynamic>)).toList();
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ??
+            const [];
+    return data
+        .map((item) => Grinder.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   /// Кофемолки пользователя вместе с признаком основной.
@@ -50,7 +55,8 @@ class GrinderService {
       throw Exception('Не удалось получить профиль: ${response.statusCode}');
     }
 
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     final grinders = data['grinders'] as List<dynamic>? ?? const [];
 
     return grinders
@@ -72,13 +78,17 @@ class GrinderService {
     });
 
     if (response.statusCode != 200) {
-      logger.e('Не удалось сохранить кофемолки: ${response.statusCode} ${response.body}');
+      logger.e(
+          'Не удалось сохранить кофемолки: ${response.statusCode} ${response.body}');
       throw Exception('Не удалось сохранить кофемолки: ${response.statusCode}');
     }
 
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     final saved = data['grinders'] as List<dynamic>? ?? const [];
 
-    return saved.map((item) => UserGrinder.fromJson(item as Map<String, dynamic>)).toList();
+    return saved
+        .map((item) => UserGrinder.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 }

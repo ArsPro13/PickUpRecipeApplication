@@ -1,12 +1,21 @@
 // Рецепты под конкретное зерно и конкретный метод.
 //
-// Три раздела в порядке, в котором человек их выбирает: рецепт обжарщика под
-// это зерно, базовый рецепт метода и свои прошлые рецепты. Пустых разделов не
-// показываем — заголовок над пустотой хуже, чем его отсутствие.
+// Четыре раздела в порядке, в котором человек их выбирает: рецепт обжарщика
+// под это зерно, базовый рецепт метода, свои прошлые версии по ЭТОЙ пачке и
+// рецепты того же прибора с прошлых пачек. Пустых разделов не показываем —
+// заголовок над пустотой хуже, чем его отсутствие.
+//
+// Четвёртый раздел появился потому, что новую пачку заваривают не с нуля: у
+// человека уже есть выверенный рецепт под свою воронку и свою кофемолку, и
+// начинать с базового рецепта справочника, имея его, — шаг назад. Рецепты
+// показываются с именем зерна, по которому их вели: без него две записи
+// «22 щелчка, 2:30» неразличимы.
 //
 // Раньше здесь был выпадающий список из одного реального метода и кнопка
 // Generate: метод выбирается на предыдущем экране, а генерация — это способ
 // собрать базовый рецепт, а не отдельная функция продукта.
+
+import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +27,7 @@ import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/grinders/domain/grind_translation.dart';
+import '../features/packs/application/state/active_packs_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
@@ -57,6 +67,12 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
   final RecipeService _service = RecipeService();
 
   List<RecipeData> _recipes = const [];
+
+  /// Рецепты того же прибора по ДРУГИМ пачкам, свежие сверху, по одной
+  /// записи на пачку: показывать все версии чужой пачки здесь незачем —
+  /// человек выбирает, с чего начать, а не листает историю.
+  List<RecipeData> _otherPacks = const [];
+
   bool _loading = true;
   String? _error;
 
@@ -94,11 +110,34 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
         packId: widget.packId,
         device: widget.method,
       );
+
+      // Второй запрос — тем же прибором, но без пачки. Отдельным, а не
+      // вычитанием из общего списка: общий пришлось бы тянуть целиком,
+      // со всеми приборами, ради одного.
+      final byMethod = widget.method == null || widget.method!.isEmpty
+          ? const <RecipeData>[]
+          : await _service.getByParams(device: widget.method) ??
+              const <RecipeData>[];
+
       if (!mounted) return;
+
+      final others = latestPerPack(byMethod, exceptPack: widget.packId);
+
       setState(() {
         _recipes = [...?recipes]..sort((a, b) => b.date.compareTo(a.date));
+        _otherPacks = others;
         _loading = false;
       });
+
+      // Имена зёрен: рецепт знает только идентификатор пачки, а строка без
+      // названия кофе ничего не сообщает.
+      if (others.isNotEmpty) {
+        unawaited(
+          ref
+              .read(activePacksNotifierProvider.notifier)
+              .ensurePacks(others.map((recipe) => recipe.packId)),
+        );
+      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -159,7 +198,8 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
                     title: texts.chooseFailed,
                     description: _error,
                     isError: true,
-                    primaryAction: AppButton(label: texts.retry, onPressed: _load),
+                    primaryAction:
+                        AppButton(label: texts.retry, onPressed: _load),
                   ),
                 ]
               : _content(),
@@ -184,7 +224,9 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
   List<Widget> _content() {
     final texts = AppLocalizations.of(context);
     final roaster = _recipes.isEmpty ? null : _recipes.first;
-    final mine = _recipes.length > 1 ? _recipes.sublist(1) : const <RecipeData>[];
+    final mine =
+        _recipes.length > 1 ? _recipes.sublist(1) : const <RecipeData>[];
+    final known = ref.watch(activePacksNotifierProvider).known;
 
     return [
       if (widget.pack != null)
@@ -196,7 +238,8 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
           title: texts.chooseRoaster,
           note: texts.chooseRoasterNote,
         ),
-        _RoasterRecipe(recipe: roaster, pack: widget.pack, grind: _grind(roaster)),
+        _RoasterRecipe(
+            recipe: roaster, pack: widget.pack, grind: _grind(roaster)),
       ],
 
       _Section(
@@ -229,9 +272,11 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(texts.chooseMethodRecipe, style: context.texts.bodyMedium),
+                    Text(texts.chooseMethodRecipe,
+                        style: context.texts.bodyMedium),
                     const SizedBox(height: AppSpacing.s1),
-                    Text(texts.chooseMethodRecipeNote, style: context.texts.labelSmall),
+                    Text(texts.chooseMethodRecipeNote,
+                        style: context.texts.labelSmall),
                   ],
                 ),
               ),
@@ -258,7 +303,18 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
           title: texts.chooseMine,
           note: texts.chooseMineNote,
         ),
-        for (final recipe in mine) _VersionRow(recipe: recipe, pack: widget.pack),
+        for (final recipe in mine)
+          _VersionRow(recipe: recipe, pack: widget.pack),
+      ],
+
+      if (_otherPacks.isNotEmpty) ...[
+        _Section(
+          icon: AppIcons.uiPack,
+          title: texts.chooseOtherPacks,
+          note: texts.chooseOtherPacksNote,
+        ),
+        for (final recipe in _otherPacks)
+          _OtherPackRow(recipe: recipe, pack: known[recipe.packId]),
       ],
 
       const SizedBox(height: AppSpacing.s6),
@@ -312,16 +368,26 @@ class _RoasterRecipe extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              MetricTile(kind: MetricKind.dose, value: texts.unitGrams('${recipe.load}')),
+              MetricTile(
+                  kind: MetricKind.dose,
+                  value: texts.unitGrams('${recipe.load}')),
               MetricTile(
                 kind: MetricKind.water,
                 value: texts.unitMillilitres('${recipe.water}'),
               ),
-              MetricTile(kind: MetricKind.temperature, value: '${recipe.temperature} °C'),
+              MetricTile(
+                  kind: MetricKind.temperature,
+                  value: '${recipe.temperature} °C'),
               MetricTile(
                 kind: MetricKind.grind,
                 value: grind.isEmpty ? '—' : grind.label,
                 caption: grind.caption,
+                // Помол показан делениями кофемолки человека, и если на
+                // плитке стоит прочерк или чужая шкала — менять кофемолку
+                // надо отсюда, с открытым рецептом. Возврат пересчитает
+                // щелчки сам: плитка смотрит за состоянием кофемолки.
+                semanticsLabel: texts.packsChangeGrinder,
+                onTap: () => context.router.push(const GrinderSelectRoute()),
               ),
             ],
           ),
@@ -358,6 +424,52 @@ class _RoasterRecipe extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Свежий рецепт по каждой из прошлых пачек, по одному на пачку.
+///
+/// Вынесено функцией ради теста: правило «одна запись на пачку, свежая» —
+/// единственное, что здесь можно сделать неправильно и не заметить.
+List<RecipeData> latestPerPack(List<RecipeData> recipes,
+    {required int exceptPack}) {
+  final freshest = <int, RecipeData>{};
+
+  for (final recipe in recipes) {
+    // Пачка 0 — справочный рецепт метода: он уже стоит отдельной строкой
+    // выше, и повторять его здесь значило бы предложить одно и то же дважды.
+    if (recipe.packId == exceptPack || recipe.packId == 0) continue;
+
+    final kept = freshest[recipe.packId];
+    if (kept == null || recipe.date.compareTo(kept.date) > 0) {
+      freshest[recipe.packId] = recipe;
+    }
+  }
+
+  return freshest.values.toList()..sort((a, b) => b.date.compareTo(a.date));
+}
+
+/// Рецепт с другой пачки: то же зерно спрашивать не надо — надо назвать его.
+class _OtherPackRow extends StatelessWidget {
+  const _OtherPackRow({required this.recipe, required this.pack});
+
+  final RecipeData recipe;
+
+  /// Пачка, по которой вели рецепт. null — ещё не дочиталась: строка тогда
+  /// показывает дату, а не пустое место на месте названия.
+  final PackData? pack;
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+    final date = _formatDate(texts, recipe.date);
+
+    return AppRow(
+      label: pack?.packName ?? date,
+      value: '${recipe.temperature} °C · ${_formatTime(recipe.time)}',
+      icon: AppIcons.uiPack,
+      onTap: () => context.router.push(BrewRoute(recipe: recipe, pack: pack)),
     );
   }
 }

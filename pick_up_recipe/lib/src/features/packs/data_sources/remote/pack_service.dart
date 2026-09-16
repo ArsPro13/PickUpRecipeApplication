@@ -19,7 +19,10 @@ sealed class CodeResolution {
 
 /// Кофе жив: код ведёт на пачку.
 class CodeFound extends CodeResolution {
-  const CodeFound({required this.packId, required this.packName, required this.roasterName});
+  const CodeFound(
+      {required this.packId,
+      required this.packName,
+      required this.roasterName});
 
   final int packId;
   final String packName;
@@ -29,7 +32,10 @@ class CodeFound extends CodeResolution {
 /// Код существует, но кофе снят с продажи. Пачка на полке никуда не делась,
 /// и рецепты по ней остаются доступны (DECISIONS §2.3).
 class CodeWithdrawn extends CodeResolution {
-  const CodeWithdrawn({required this.packId, required this.packName, required this.roasterName});
+  const CodeWithdrawn(
+      {required this.packId,
+      required this.packName,
+      required this.roasterName});
 
   final int packId;
   final String packName;
@@ -76,14 +82,17 @@ class PackService {
       throw Exception('Код не проверился: ${response.statusCode}');
     }
 
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     final packId = (data['pack_id'] as num?)?.toInt() ?? 0;
     final packName = data['pack_name'] as String? ?? '';
     final roasterName = data['roaster_name'] as String? ?? '';
 
     return response.statusCode == 403
-        ? CodeWithdrawn(packId: packId, packName: packName, roasterName: roasterName)
-        : CodeFound(packId: packId, packName: packName, roasterName: roasterName);
+        ? CodeWithdrawn(
+            packId: packId, packName: packName, roasterName: roasterName)
+        : CodeFound(
+            packId: packId, packName: packName, roasterName: roasterName);
   }
 
   Future<List<PackData>?> getPacks({
@@ -111,7 +120,8 @@ class PackService {
         query,
         // Ключ по самому запросу: полка с поиском по стране и полка целиком —
         // разные ответы, и подменять один другим без сети нельзя.
-        cacheKey: 'packs:${query.entries.map((e) => '${e.key}=${e.value}').join('&')}',
+        cacheKey:
+            'packs:${query.entries.map((e) => '${e.key}=${e.value}').join('&')}',
       );
 
       if (response.statusCode == 200) {

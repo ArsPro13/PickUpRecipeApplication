@@ -118,7 +118,8 @@ class AppButton extends StatelessWidget {
         ? SizedBox(
             height: AppSizes.icon20,
             width: AppSizes.icon20,
-            child: CircularProgressIndicator(strokeWidth: AppStroke.thick, color: foreground),
+            child: CircularProgressIndicator(
+                strokeWidth: AppStroke.thick, color: foreground),
           )
         : Row(
             mainAxisSize: MainAxisSize.min,
@@ -178,15 +179,30 @@ class MetricTile extends StatelessWidget {
     required this.kind,
     required this.value,
     this.caption,
+    this.onTap,
+    this.semanticsLabel,
   });
 
   final MetricKind kind;
   final String value;
   final String? caption;
 
+  /// Плитку можно нажать. Пусто — плитка показывает число и только.
+  ///
+  /// Нужна помолу: он единственный из четырёх показателей зависит не от
+  /// рецепта, а от кофемолки человека, и менять её приходится прямо здесь —
+  /// с открытым рецептом, а не уходя за ним на другую вкладку.
+  final VoidCallback? onTap;
+
+  /// Что услышит голосовой помощник вместо голого числа. Нажимаемая плитка
+  /// обязана сказать, что произойдёт: «22 щелчка» о нажатии не говорит.
+  final String? semanticsLabel;
+
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final tappable = onTap != null;
+
+    final tile = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
@@ -195,16 +211,37 @@ class MetricTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: kind.color(context).withValues(alpha: 0.3),
             borderRadius: AppRadius.medium,
+            // Нажимаемая плитка обведена: цвет заливки у всех четырёх свой,
+            // и «поднять» её тенью значило бы спорить с этим цветом.
+            border: tappable
+                ? Border.all(color: kind.color(context), width: AppStroke.thick)
+                : null,
           ),
           child: Center(
-            child: AppIcon(kind.icon, size: AppSizes.metricIcon, color: context.colors.onSurface),
+            child: AppIcon(kind.icon,
+                size: AppSizes.metricIcon, color: context.colors.onSurface),
           ),
         ),
         const SizedBox(height: AppSpacing.s2),
-        Text(value, style: context.texts.bodySmall?.copyWith(color: context.colors.onSurface)),
+        Text(value,
+            style: context.texts.bodySmall
+                ?.copyWith(color: context.colors.onSurface)),
         if (caption != null)
-          Text(caption!, style: context.texts.labelSmall, textAlign: TextAlign.center),
+          Text(caption!,
+              style: context.texts.labelSmall, textAlign: TextAlign.center),
       ],
+    );
+
+    if (!tappable) return tile;
+
+    return Semantics(
+      button: true,
+      label: semanticsLabel,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.medium,
+        child: tile,
+      ),
     );
   }
 }
@@ -219,7 +256,8 @@ class MetricTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3, vertical: AppSpacing.s1),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s3, vertical: AppSpacing.s1),
       decoration: BoxDecoration(
         color: kind.color(context).withValues(alpha: 0.3),
         borderRadius: AppRadius.rounded,
@@ -227,9 +265,12 @@ class MetricTag extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppIcon(kind.icon, size: AppSizes.icon16, color: context.colors.onSurface),
+          AppIcon(kind.icon,
+              size: AppSizes.icon16, color: context.colors.onSurface),
           const SizedBox(width: AppSpacing.s1),
-          Text(label, style: context.texts.labelSmall?.copyWith(color: context.colors.onSurface)),
+          Text(label,
+              style: context.texts.labelSmall
+                  ?.copyWith(color: context.colors.onSurface)),
         ],
       ),
     );
@@ -258,7 +299,8 @@ class AppChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = color ?? context.colors.primary;
-    final foreground = selected ? context.colors.secondaryContainer : context.colors.onSurface;
+    final foreground =
+        selected ? context.colors.secondaryContainer : context.colors.onSurface;
 
     return Material(
       color: selected ? accent : context.colors.secondaryContainer,
@@ -267,10 +309,12 @@ class AppChip extends StatelessWidget {
         onTap: onTap,
         borderRadius: AppRadius.rounded,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4, vertical: AppSpacing.s2),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s4, vertical: AppSpacing.s2),
           decoration: BoxDecoration(
             borderRadius: AppRadius.rounded,
-            border: Border.all(color: selected ? accent : context.palette.border),
+            border:
+                Border.all(color: selected ? accent : context.palette.border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -279,7 +323,8 @@ class AppChip extends StatelessWidget {
                 AppIcon(icon!, size: AppSizes.icon16, color: foreground),
                 const SizedBox(width: AppSpacing.s1),
               ],
-              Text(label, style: context.texts.bodySmall?.copyWith(color: foreground)),
+              Text(label,
+                  style: context.texts.bodySmall?.copyWith(color: foreground)),
             ],
           ),
         ),
@@ -331,7 +376,8 @@ class AppRow extends StatelessWidget {
         child: Row(
           children: [
             if (icon != null) ...[
-              AppIcon(icon!, size: AppSizes.icon20, color: context.colors.secondary),
+              AppIcon(icon!,
+                  size: AppSizes.icon20, color: context.colors.secondary),
               const SizedBox(width: AppSpacing.s3),
             ],
             Expanded(
@@ -340,11 +386,13 @@ class AppRow extends StatelessWidget {
                   : Text.rich(labelSpan!, style: context.texts.bodyMedium),
             ),
             if (value != null)
-              Text(value!, style: context.texts.bodySmall, textAlign: TextAlign.right),
+              Text(value!,
+                  style: context.texts.bodySmall, textAlign: TextAlign.right),
             if (trailing != null) trailing!,
             if (onTap != null && trailing == null) ...[
               const SizedBox(width: AppSpacing.s2),
-              AppIcon(AppIcons.uiForward, size: AppSizes.icon20, color: context.colors.secondary),
+              AppIcon(AppIcons.uiForward,
+                  size: AppSizes.icon20, color: context.colors.secondary),
             ],
           ],
         ),
@@ -390,7 +438,8 @@ class AppState extends StatelessWidget {
               color: isError ? context.colors.error : context.colors.secondary,
             ),
             const SizedBox(height: AppSpacing.s4),
-            Text(title, style: context.texts.titleMedium, textAlign: TextAlign.center),
+            Text(title,
+                style: context.texts.titleMedium, textAlign: TextAlign.center),
             if (description != null) ...[
               const SizedBox(height: AppSpacing.s2),
               Text(

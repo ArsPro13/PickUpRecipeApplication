@@ -81,9 +81,9 @@ class _InsertingPackInfoWidgetState
           await _possibleValuesService.getByEndpoint('pack_descriptors') ?? [];
       possibleVariety =
           await _possibleValuesService.getByEndpoint('pack_variety') ?? [];
-      possibleProcessingMethods =
-          await _possibleValuesService.getByEndpoint('pack_processing_method') ??
-              [];
+      possibleProcessingMethods = await _possibleValuesService
+              .getByEndpoint('pack_processing_method') ??
+          [];
     } catch (e) {
       // Справочник подсказок — удобство, а не условие работы формы: без сети
       // подсказок не будет, а заполнить поля руками по-прежнему можно.

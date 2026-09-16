@@ -59,7 +59,8 @@ class RecipeService {
       throw Exception('Базовый рецепт не пришёл: ${response.statusCode}');
     }
 
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     return RecipeData.fromResponse(RecipeResponseModel.fromJson(data));
   }
 
@@ -231,7 +232,8 @@ class RecipeService {
         throw Exception('Рецепт не сохранился: ${response.statusCode}');
       }
 
-      final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      final data =
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
 
       // Новая версия обязана появиться в «Рецептах» и в метках на карточке
       // пачки сама — человек сохранил её и переключил вкладку.
@@ -318,7 +320,8 @@ Map<String, dynamic> evolvePayload(RecipeData recipe) {
     if (recipe.temperature != null) 'temperature': recipe.temperature,
     if (recipe.title.isNotEmpty) 'title': recipe.title,
     if (recipe.notes.isNotEmpty) 'notes': recipe.notes,
-    if (recipe.grindDescriptor.isNotEmpty) 'grind_descriptor': recipe.grindDescriptor,
+    if (recipe.grindDescriptor.isNotEmpty)
+      'grind_descriptor': recipe.grindDescriptor,
     if (recipe.agitationLevel != null) 'agitation_level': recipe.agitationLevel,
     'steps': [
       for (final step in recipe.steps)

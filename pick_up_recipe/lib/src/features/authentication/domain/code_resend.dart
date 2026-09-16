@@ -53,7 +53,8 @@ class ResendOutcome {
     // следующую просьбу, и придумывать свою минуту рядом с его минутой
     // значит рано или поздно с ней разойтись.
     if (code == 200) {
-      return ResendOutcome(ResendStatus.sent, retryAfter: _retryAfter(response));
+      return ResendOutcome(ResendStatus.sent,
+          retryAfter: _retryAfter(response));
     }
 
     if (code == 429) {

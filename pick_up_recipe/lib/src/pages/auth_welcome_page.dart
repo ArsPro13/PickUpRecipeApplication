@@ -59,7 +59,8 @@ class AuthWelcomePage extends StatelessWidget {
             const SizedBox(height: AppSpacing.s2),
             Text(
               texts.welcomeTagline,
-              style: context.texts.bodyMedium?.copyWith(color: context.colors.secondary),
+              style: context.texts.bodyMedium
+                  ?.copyWith(color: context.colors.secondary),
               textAlign: TextAlign.center,
             ),
           ],

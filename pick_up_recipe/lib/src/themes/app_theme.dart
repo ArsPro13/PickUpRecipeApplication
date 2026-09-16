@@ -163,7 +163,8 @@ class AppShadows extends ThemeExtension<AppShadows> {
     ],
     level3: [
       BoxShadow(color: Color(0x1A20242D), blurRadius: 16, offset: Offset(0, 6)),
-      BoxShadow(color: Color(0x1F20242D), blurRadius: 34, offset: Offset(0, 14)),
+      BoxShadow(
+          color: Color(0x1F20242D), blurRadius: 34, offset: Offset(0, 14)),
     ],
     sunkenTint: Color(0x1A20242D),
   );
@@ -181,7 +182,8 @@ class AppShadows extends ThemeExtension<AppShadows> {
     ],
     level3: [
       BoxShadow(color: Color(0x66000000), blurRadius: 16, offset: Offset(0, 6)),
-      BoxShadow(color: Color(0x5C000000), blurRadius: 34, offset: Offset(0, 14)),
+      BoxShadow(
+          color: Color(0x5C000000), blurRadius: 34, offset: Offset(0, 14)),
     ],
     sunkenTint: Color(0x59000000),
   );
@@ -267,13 +269,32 @@ extension AppThemeContext on BuildContext {
 /// Типографика. Семь ступеней вместо десяти захардкоженных размеров.
 TextTheme _textTheme(Color primary, Color secondary) {
   return TextTheme(
-    displayLarge: TextStyle(fontSize: 30, fontWeight: FontWeight.w700, height: 1.2, color: primary),
-    titleLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, height: 1.25, color: primary),
-    titleMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, height: 1.3, color: primary),
-    bodyLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 1.4, color: primary),
-    bodyMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, height: 1.45, color: primary),
-    bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.4, color: secondary),
-    labelSmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, height: 1.35, color: secondary),
+    displayLarge: TextStyle(
+        fontSize: 30, fontWeight: FontWeight.w700, height: 1.2, color: primary),
+    titleLarge: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        height: 1.25,
+        color: primary),
+    titleMedium: TextStyle(
+        fontSize: 20, fontWeight: FontWeight.w500, height: 1.3, color: primary),
+    bodyLarge: TextStyle(
+        fontSize: 18, fontWeight: FontWeight.w400, height: 1.4, color: primary),
+    bodyMedium: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        height: 1.45,
+        color: primary),
+    bodySmall: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        height: 1.4,
+        color: secondary),
+    labelSmall: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+        height: 1.35,
+        color: secondary),
   );
 }
 
@@ -292,7 +313,12 @@ ThemeData _theme(
     // залитый цветом Scaffold закрыл бы текстуру.
     scaffoldBackgroundColor: Colors.transparent,
     textTheme: texts,
-    extensions: <ThemeExtension<dynamic>>[MetricColors.standard, palette, shadows, paper],
+    extensions: <ThemeExtension<dynamic>>[
+      MetricColors.standard,
+      palette,
+      shadows,
+      paper
+    ],
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
@@ -312,7 +338,8 @@ ThemeData _theme(
         backgroundColor: scheme.primary,
         foregroundColor: scheme.secondaryContainer,
         minimumSize: const Size(0, AppSizes.buttonHeight),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s6, vertical: AppSpacing.s3),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.s6, vertical: AppSpacing.s3),
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.rounded),
         textStyle: texts.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
         elevation: 0,
@@ -322,7 +349,8 @@ ThemeData _theme(
       style: OutlinedButton.styleFrom(
         foregroundColor: scheme.onSurface,
         minimumSize: const Size(0, AppSizes.buttonHeight),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s6, vertical: AppSpacing.s3),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.s6, vertical: AppSpacing.s3),
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.rounded),
         side: BorderSide(color: palette.border, width: AppStroke.thin),
         textStyle: texts.bodyMedium,
@@ -380,7 +408,8 @@ ThemeData _theme(
       ),
       showDragHandle: true,
     ),
-    dividerTheme: DividerThemeData(color: palette.border, thickness: AppStroke.thin, space: 0),
+    dividerTheme: DividerThemeData(
+        color: palette.border, thickness: AppStroke.thin, space: 0),
     // Без этого переключатель и ползунок берут зелёный по умолчанию M3 —
     // цвет, которого в наборе нет вовсе: зелёный у нас означает «успех».
     switchTheme: SwitchThemeData(
@@ -390,7 +419,9 @@ ThemeData _theme(
             : scheme.secondary,
       ),
       trackColor: WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.selected) ? scheme.primary : palette.border,
+        (states) => states.contains(WidgetState.selected)
+            ? scheme.primary
+            : palette.border,
       ),
       trackOutlineColor: WidgetStateProperty.all(palette.border),
     ),
@@ -400,7 +431,8 @@ ThemeData _theme(
       thumbColor: scheme.primary,
       overlayColor: scheme.primary.withValues(alpha: 0.12),
       valueIndicatorColor: scheme.primary,
-      valueIndicatorTextStyle: texts.labelSmall?.copyWith(color: scheme.secondaryContainer),
+      valueIndicatorTextStyle:
+          texts.labelSmall?.copyWith(color: scheme.secondaryContainer),
     ),
     chipTheme: ChipThemeData(
       backgroundColor: scheme.secondaryContainer,

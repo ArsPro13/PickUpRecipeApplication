@@ -10,7 +10,8 @@ import '../features/codes/domain/pack_code.dart';
 extension PackCodeProblemText on PackCodeProblem {
   String text(AppLocalizations texts) => switch (kind) {
         PackCodeProblemKind.empty => texts.svcCodeEmpty,
-        PackCodeProblemKind.length => texts.svcCodeLength(PackCode.length, entered),
+        PackCodeProblemKind.length =>
+          texts.svcCodeLength(PackCode.length, entered),
         PackCodeProblemKind.unknownSymbol => texts.svcCodeUnknownSymbol(symbol),
         PackCodeProblemKind.checksum => texts.svcCodeChecksum,
       };

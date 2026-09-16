@@ -79,7 +79,8 @@ class TastePoint {
   TasteStrength get concentrationStrength => _strength(y);
 
   bool get isCenter =>
-      extractionStrength == TasteStrength.none && concentrationStrength == TasteStrength.none;
+      extractionStrength == TasteStrength.none &&
+      concentrationStrength == TasteStrength.none;
 
   /// Жалобы в терминах `pkg/correction`.
   ///
@@ -136,17 +137,21 @@ class TastePoint {
   /// читают люди в кабинете обжарщика, и одна и та же жалоба обязана
   /// приходить к ним одними и теми же словами. Основа у обеих фраз общая —
   /// [summaryFor]; разный у них только словарь.
-  String get summaryRu => summaryFor(lookupAppLocalizations(const Locale('ru')));
+  String get summaryRu =>
+      summaryFor(lookupAppLocalizations(const Locale('ru')));
 
   TastePoint clamped() {
-    return TastePoint(x.clamp(-1.0, 1.0).toDouble(), y.clamp(-1.0, 1.0).toDouble());
+    return TastePoint(
+        x.clamp(-1.0, 1.0).toDouble(), y.clamp(-1.0, 1.0).toDouble());
   }
 
   @override
-  String toString() => 'TastePoint(${x.toStringAsFixed(2)}, ${y.toStringAsFixed(2)})';
+  String toString() =>
+      'TastePoint(${x.toStringAsFixed(2)}, ${y.toStringAsFixed(2)})';
 
   @override
-  bool operator ==(Object other) => other is TastePoint && other.x == x && other.y == y;
+  bool operator ==(Object other) =>
+      other is TastePoint && other.x == x && other.y == y;
 
   @override
   int get hashCode => Object.hash(x, y);

@@ -201,7 +201,8 @@ void main() {
         expect(
           container.read(formNotifierProvider).descriptors ?? const <String>[],
           isEmpty,
-          reason: 'начало слова «$typed» уехало в форму, не дождавшись конца ввода',
+          reason:
+              'начало слова «$typed» уехало в форму, не дождавшись конца ввода',
         );
       }
 
@@ -209,7 +210,8 @@ void main() {
       expect(textOf(tester, 'descriptor-0'), 'малина');
     });
 
-    testWidgets('законченный ввод кладёт в форму слово целиком', (tester) async {
+    testWidgets('законченный ввод кладёт в форму слово целиком',
+        (tester) async {
       final container = await pumpForm(tester);
 
       await fill(tester, 'descriptor-0', 'малина');
@@ -217,7 +219,8 @@ void main() {
       expect(container.read(formNotifierProvider).descriptors, ['малина']);
     });
 
-    testWidgets('однобуквенный дескриптор не уезжает на сервер', (tester) async {
+    testWidgets('однобуквенный дескриптор не уезжает на сервер',
+        (tester) async {
       await pumpForm(tester);
 
       await fill(tester, 'country', 'Бразилия');
@@ -245,7 +248,8 @@ void main() {
       }
     });
 
-    testWidgets('поля «Название» нет, «Регион» есть и необязателен', (tester) async {
+    testWidgets('поля «Название» нет, «Регион» есть и необязателен',
+        (tester) async {
       await pumpForm(tester);
 
       expect(find.byKey(const ValueKey('region')), findsOneWidget);
@@ -264,7 +268,8 @@ void main() {
       expect((await submit(tester))['pack_name'], 'Бразилия · Серрадо');
     });
 
-    testWidgets('без страны пачка не уезжает: имя было бы пустым', (tester) async {
+    testWidgets('без страны пачка не уезжает: имя было бы пустым',
+        (tester) async {
       await pumpForm(tester);
 
       await fill(tester, 'descriptor-0', 'малина');
@@ -293,7 +298,9 @@ void main() {
           '2mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
       final container = await pumpForm(tester);
-      await container.read(formNotifierProvider.notifier).updateImage(image: photo);
+      await container
+          .read(formNotifierProvider.notifier)
+          .updateImage(image: photo);
       await tester.pump();
 
       await fill(tester, 'country', 'Бразилия');
@@ -318,7 +325,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('следующее поле появляется по кнопке, а не само', (tester) async {
+    testWidgets('следующее поле появляется по кнопке, а не само',
+        (tester) async {
       await pumpForm(tester);
 
       await tester.enterText(fieldByKey('descriptor-0'), 'малина');
@@ -336,7 +344,8 @@ void main() {
       expect(find.byKey(const ValueKey('descriptor-1')), findsOneWidget);
     });
 
-    testWidgets('на английской локали форма не рисует кириллицу', (tester) async {
+    testWidgets('на английской локали форма не рисует кириллицу',
+        (tester) async {
       await pumpForm(tester, locale: const Locale('en'));
       final texts = textsOf(tester);
 
@@ -405,7 +414,8 @@ void main() {
           expect(
             (await submit(tester))['pack_date'],
             sent,
-            reason: 'дата обжарки уехала не той на локали ${locale.languageCode}',
+            reason:
+                'дата обжарки уехала не той на локали ${locale.languageCode}',
           );
         }
       }

@@ -94,7 +94,9 @@ BoxDecoration sunkenDecoration(
 
   return BoxDecoration(
     borderRadius: borderRadius,
-    border: outline == null ? null : Border.all(color: outline, width: outlineWidth),
+    border: outline == null
+        ? null
+        : Border.all(color: outline, width: outlineWidth),
     gradient: LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,

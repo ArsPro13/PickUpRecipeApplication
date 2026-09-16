@@ -67,7 +67,6 @@ class RatingDraft {
     return parts.join(' · ');
   }
 
-
   Map<String, dynamic> toJson() => {
         'saved_at': savedAt.toIso8601String(),
         'recipe': recipe.toJson(),
@@ -92,7 +91,8 @@ class RatingDraft {
           for (final entry in (json['axes'] as Map? ?? const {}).entries)
             entry.key as String: (entry.value as num).toDouble(),
         },
-        savedAt: DateTime.tryParse(json['saved_at'] as String? ?? '') ?? DateTime(0),
+        savedAt:
+            DateTime.tryParse(json['saved_at'] as String? ?? '') ?? DateTime(0),
       );
 }
 
@@ -107,7 +107,8 @@ abstract final class RatingDrafts {
   /// `ValueNotifier`, как `Outbox.pending`: пишет черновик экран оценки, а
   /// показывает его совсем другая вкладка, и связывать их через ещё один
   /// провайдер значило бы завести второй источник правды.
-  static final ValueNotifier<RatingDraft?> current = ValueNotifier<RatingDraft?>(null);
+  static final ValueNotifier<RatingDraft?> current =
+      ValueNotifier<RatingDraft?>(null);
 
   static EncryptedSharedPreferences get _prefs =>
       EncryptedSharedPreferences.getInstance();
@@ -133,7 +134,8 @@ abstract final class RatingDrafts {
     }
 
     try {
-      final draft = RatingDraft.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      final draft =
+          RatingDraft.fromJson(jsonDecode(raw) as Map<String, dynamic>);
       if (DateTime.now().difference(draft.savedAt) > lifetime) {
         await clear();
         return null;

@@ -33,6 +33,13 @@ class PacksPage extends ConsumerStatefulWidget {
 }
 
 class _PacksPageState extends ConsumerState<PacksPage> {
+  /// За сколько карточек до конца просим следующую страницу.
+  ///
+  /// Не на последней: страница едет секунду-другую, и долиставший до самого
+  /// низа упёрся бы в пустоту. Три карточки — примерно пол-экрана запаса,
+  /// которого хватает, чтобы догрузка прошла незаметно.
+  static const int _loadAheadBy = 3;
+
   @override
   void initState() {
     super.initState();
@@ -72,7 +79,9 @@ class _PacksPageState extends ConsumerState<PacksPage> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
-                await ref.read(activePacksNotifierProvider.notifier).fetchPacks();
+                await ref
+                    .read(activePacksNotifierProvider.notifier)
+                    .fetchPacks();
                 await ref.read(recipesListProvider.notifier).load();
               },
               child: _body(packs),
@@ -119,13 +128,40 @@ class _PacksPageState extends ConsumerState<PacksPage> {
         if (index == packs.activePacks.length) {
           return Padding(
             padding: const EdgeInsets.only(top: AppSpacing.s1),
-            child: AppButton(
-              label: AppLocalizations.of(context).packsAdd,
-              icon: AppIcons.uiPlus,
-              kind: AppButtonKind.secondary,
-              onPressed: () => AutoTabsRouter.of(context).setActiveIndex(2),
+            child: Column(
+              children: [
+                // Догрузка показывается строкой, а не крутилкой на весь
+                // экран: полка остаётся на месте, и человек не теряет
+                // карточку, которую в этот момент читал.
+                if (packs.isLoadingMore)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: AppSpacing.s4),
+                    child: SizedBox(
+                      height: AppSizes.icon24,
+                      width: AppSizes.icon24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                AppButton(
+                  label: AppLocalizations.of(context).packsAdd,
+                  icon: AppIcons.uiPlus,
+                  kind: AppButtonKind.secondary,
+                  onPressed: () => AutoTabsRouter.of(context).setActiveIndex(2),
+                ),
+              ],
             ),
           );
+        }
+
+        // Следующая страница просится, когда до конца загруженного осталось
+        // несколько карточек. Через postFrameCallback: трогать провайдер
+        // прямо во время построения списка нельзя — состояние менялось бы
+        // посреди отрисовки того, что от него зависит.
+        if (packs.hasMore && index >= packs.activePacks.length - _loadAheadBy) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            ref.read(activePacksNotifierProvider.notifier).loadMore();
+          });
         }
 
         final groups = ref.watch(recipesListProvider).groups;
@@ -193,11 +229,13 @@ class UnfinishedRatingPlate extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(texts.ratingDraftTitle, style: context.texts.bodyMedium),
+                      Text(texts.ratingDraftTitle,
+                          style: context.texts.bodyMedium),
                       Text(
                         draft.summaryFor(texts).isEmpty
                             ? texts.ratingDraftContinue
-                            : texts.ratingDraftContinueWith(draft.summaryFor(texts)),
+                            : texts.ratingDraftContinueWith(
+                                draft.summaryFor(texts)),
                         style: context.texts.labelSmall,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -241,7 +279,8 @@ class GrinderButton extends ConsumerWidget {
         onTap: () => context.router.push(const GrinderSelectRoute()),
         borderRadius: AppRadius.rounded,
         child: Container(
-          constraints: const BoxConstraints(minHeight: AppSizes.tapTarget - AppSpacing.s2),
+          constraints: const BoxConstraints(
+              minHeight: AppSizes.tapTarget - AppSpacing.s2),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.s3,
             vertical: AppSpacing.s2,
@@ -262,7 +301,8 @@ class GrinderButton extends ConsumerWidget {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 140),
                 child: Text(
-                  primary?.name ?? AppLocalizations.of(context).profileChooseGrinder,
+                  primary?.name ??
+                      AppLocalizations.of(context).profileChooseGrinder,
                   style: context.texts.bodySmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -369,7 +409,9 @@ class PackCard extends StatelessWidget {
     final date = formatRecipeDate(texts, pack.packDate);
     if (pack.roasterName.isNotEmpty) return '${pack.roasterName} · $date';
 
-    final origin = [pack.packCountry, pack.packVariety].where((it) => it.isNotEmpty).join(' · ');
+    final origin = [pack.packCountry, pack.packVariety]
+        .where((it) => it.isNotEmpty)
+        .join(' · ');
     return origin.isEmpty ? date : '$origin · $date';
   }
 }
@@ -486,6 +528,7 @@ class PackImage extends StatelessWidget {
     required this.base64Image,
     this.fit = BoxFit.cover,
     this.roastLevel = '',
+    this.showRoastLabel = true,
   });
 
   final String base64Image;
@@ -493,6 +536,14 @@ class PackImage extends StatelessWidget {
 
   /// Степень обжарки: ею закрашивается место фото, пока фото нет.
   final String roastLevel;
+
+  /// Подписывать ли заливку словом «светлая», «средняя», «тёмная».
+  ///
+  /// Выключается там, где по низу картинки уже идёт своя подпись: на карточке
+  /// версии в «Рецептах» это дата заваривания, и два текста налезали друг на
+  /// друга — выходило «12 сентябряяя». Цвет заливки при этом остаётся и
+  /// продолжает различать пачки, а слово в том месте всё равно не читалось.
+  final bool showRoastLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -502,12 +553,27 @@ class PackImage extends StatelessWidget {
     // повторялся на всей полке — десять одинаковых пятен. Заливка цвета
     // обжарки различает пачки с расстояния и ничего не обещает: это
     // очевидно не фотография.
-    if (bytes == null) return _RoastFill(roastLevel: roastLevel);
+    if (bytes == null) {
+      return _RoastFill(roastLevel: roastLevel, showLabel: showRoastLabel);
+    }
 
-    return Image.memory(
-      bytes,
-      fit: fit,
-      errorBuilder: (context, _, __) => _RoastFill(roastLevel: roastLevel),
+    // gaplessPlayback — вторая половина лечения мигания (первая живёт в
+    // decodePackImage). Без него виджет на время загрузки новых байтов
+    // показывает ПУСТОТУ, и при смене пачки в барабане между двумя фото
+    // мелькает дыра. С ним на месте остаётся прошлый кадр до готовности
+    // следующего.
+    //
+    // RepaintBoundary отделяет фото от того, что ездит вокруг: перетаскивание
+    // карточки перерисовывает слой с тенью и наклоном, а растр пачки при этом
+    // остаётся на своей текстуре и заново не растрируется.
+    return RepaintBoundary(
+      child: Image.memory(
+        bytes,
+        fit: fit,
+        gaplessPlayback: true,
+        errorBuilder: (context, _, __) =>
+            _RoastFill(roastLevel: roastLevel, showLabel: showRoastLabel),
+      ),
     );
   }
 }
@@ -515,9 +581,12 @@ class PackImage extends StatelessWidget {
 /// Заливка на месте фото: тёплый песок у светлой обжарки, тёмный кофе у
 /// тёмной. Подпись словом — чтобы цвет не пришлось расшифровывать.
 class _RoastFill extends StatelessWidget {
-  const _RoastFill({required this.roastLevel});
+  const _RoastFill({required this.roastLevel, this.showLabel = true});
 
   final String roastLevel;
+
+  /// Подписывать ли заливку словом. См. PackImage.showRoastLabel.
+  final bool showLabel;
 
   static const _light = [Color(0xFFDCB68A), Color(0xFFB07E4F)];
   static const _medium = [Color(0xFFB98A5F), Color(0xFF6D4426)];
@@ -528,7 +597,10 @@ class _RoastFill extends StatelessWidget {
     final texts = AppLocalizations.of(context);
     final (colors, label) = switch (roastLevel) {
       'light' => (_light, texts.roastLight),
-      'medium' || 'medium_light' || 'medium_dark' => (_medium, texts.roastMedium),
+      'medium' || 'medium_light' || 'medium_dark' => (
+          _medium,
+          texts.roastMedium
+        ),
       'dark' => (_dark, texts.roastDark),
       _ => (_medium, ''),
     };
@@ -551,7 +623,7 @@ class _RoastFill extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.55),
             ),
           ),
-          if (label.isNotEmpty)
+          if (showLabel && label.isNotEmpty)
             Positioned(
               left: AppSpacing.s1,
               right: AppSpacing.s1,

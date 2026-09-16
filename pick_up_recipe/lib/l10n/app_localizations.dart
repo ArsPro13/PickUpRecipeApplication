@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_it.dart';
 import 'app_localizations_ru.dart';
 
 // ignore_for_file: type=lint
@@ -95,6 +96,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('it'),
     Locale('ru')
   ];
 
@@ -2234,12 +2236,6 @@ abstract class AppLocalizations {
   /// **'Прочие'**
   String get grinderKindOther;
 
-  /// Кнопка в строке выбранной кофемолки: отметить её основной. По основной пересчитывается помол в рецептах.
-  ///
-  /// In ru, this message translates to:
-  /// **'сделать основной'**
-  String get grinderMakePrimary;
-
   /// Кнопка внизу экрана кофемолки: применить набор и отметку основной.
   ///
   /// In ru, this message translates to:
@@ -2779,6 +2775,60 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Обычно это связь. Проверьте интернет и попробуйте ещё раз.'**
   String get svcLoadFailedNote;
+
+  /// Метка на карточке версии в списке рецептов: чашку заварили, а как получилось — не сказали. Рядом с меткой стоит кнопка оценки: без неё метка была бы упрёком без выхода.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не оценено'**
+  String get recipesNotRated;
+
+  /// Сколько приборов внутри свёрнутой группы на странице кофе. Нужно, чтобы решить, разворачивать ли её: без числа свёрнутая строка не говорит ничего. Склонение считает ICU — у русского три формы.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} прибор} few{{count} прибора} many{{count} приборов} other{{count} прибора}}'**
+  String methodsCount(int count);
+
+  /// Выбор рецепта: заголовок раздела с рецептами того же метода, но по другому зерну. Стоит после рецепта обжарщика, базового и своих версий по этой пачке — то есть последним из четырёх.
+  ///
+  /// In ru, this message translates to:
+  /// **'С прошлых пачек'**
+  String get chooseOtherPacks;
+
+  /// Выбор рецепта: пояснение к разделу рецептов с прошлых пачек. Объясняет, почему эти рецепты вообще здесь: прибор совпадает, зерно нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'тот же прибор, другое зерно'**
+  String get chooseOtherPacksNote;
+
+  /// Плашка на экране оценки. Отвечает на вопрос, который человек задаёт себе первым: зачем это вообще заполнять. Без неё экран читался как анкета, которую сдают обжарщику, и её пролистывали.
+  ///
+  /// In ru, this message translates to:
+  /// **'Это ваша заметка. По ней приложение поправит помол и время в следующий раз — обжарщик видит только обезличенную статистику.'**
+  String get rateForYou;
+
+  /// Пояснение под звёздами. Говорит прямо, что звёзды необязательны и в поправку рецепта не идут: до этого они стояли над разделителем «Необязательно» и выглядели обязательной частью.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ни на что не влияет — просто чтобы потом найти лучшую чашку'**
+  String get rateOverallNote;
+
+  /// Заголовок раздела профиля с настройками самого приложения — в отличие от разделов про кофе и про аккаунт.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приложение'**
+  String get profileAppTitle;
+
+  /// Строка профиля: язык интерфейса. Значением стоит название выбранного языка на нём самом — «Русский», «English», «Italiano».
+  ///
+  /// In ru, this message translates to:
+  /// **'Язык'**
+  String get profileLanguage;
+
+  /// Вариант выбора языка: брать язык из настроек телефона. Умолчание — так приложение вело себя до появления выбора.
+  ///
+  /// In ru, this message translates to:
+  /// **'Как в системе'**
+  String get profileLanguageSystem;
 }
 
 class _AppLocalizationsDelegate
@@ -2792,7 +2842,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'ru'].contains(locale.languageCode);
+      <String>['en', 'it', 'ru'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -2803,6 +2853,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'it':
+      return AppLocalizationsIt();
     case 'ru':
       return AppLocalizationsRu();
   }

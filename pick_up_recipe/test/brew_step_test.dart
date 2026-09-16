@@ -70,12 +70,14 @@ void main() {
       // «Пока воронка не опустеет» приложение не увидит: конец шага заметит
       // тот, кто на него смотрит.
       expect(StepEndsWith.none.endsByHuman, isTrue);
-      expect(_recipeStep(untilSign: 'пока воронка не опустеет').endsByHuman, isTrue);
+      expect(_recipeStep(untilSign: 'пока воронка не опустеет').endsByHuman,
+          isTrue);
     });
 
     test('свой тип шага отвечает тем же', () {
       for (final ending in StepEndsWith.values) {
-        final type = UserStepType(id: 1, brewMethodId: 2, label: 'Продуть', endsWith: ending);
+        final type = UserStepType(
+            id: 1, brewMethodId: 2, label: 'Продуть', endsWith: ending);
 
         expect(type.endsByHuman, ending.endsByHuman);
         expect(type.showsDuration, ending.showsDuration);
@@ -88,7 +90,9 @@ void main() {
         isFalse,
       );
       expect(
-        const UserStepType(id: 1, brewMethodId: 2, label: 'Долить', hasWater: true).showsWater,
+        const UserStepType(
+                id: 1, brewMethodId: 2, label: 'Долить', hasWater: true)
+            .showsWater,
         isTrue,
       );
     });
@@ -119,7 +123,8 @@ void main() {
 
         expect(played.endsByHuman, step.endsByHuman);
 
-        expect(step.endsByHuman, ending.untilUser || ending.untilSign.isNotEmpty);
+        expect(
+            step.endsByHuman, ending.untilUser || ending.untilSign.isNotEmpty);
       });
     }
   });
@@ -137,7 +142,9 @@ void main() {
       // показывается там, где ничего не решает.
       expect(_recipeStep(time: 0, untilUser: true).showsDuration, isFalse);
       expect(_recipeStep(time: 90, untilUser: true).showsDuration, isFalse);
-      expect(_recipeStep(time: 90, untilSign: 'пока не осядет пена').showsDuration, isFalse);
+      expect(
+          _recipeStep(time: 90, untilSign: 'пока не осядет пена').showsDuration,
+          isFalse);
     });
   });
 

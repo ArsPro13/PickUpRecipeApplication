@@ -22,7 +22,8 @@ import '../../packs/domain/models/pack_model.dart';
 import '../domain/models/recipe_data_model.dart';
 
 class CachedBrew {
-  const CachedBrew({required this.recipe, required this.pack, required this.savedAt});
+  const CachedBrew(
+      {required this.recipe, required this.pack, required this.savedAt});
 
   final RecipeData recipe;
   final PackData? pack;

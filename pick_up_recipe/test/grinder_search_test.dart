@@ -16,10 +16,16 @@ const List<Grinder> catalog = [
   Grinder(id: 6, name: 'Baratza Encore', kind: GrinderKind.electric),
   Grinder(id: 10, name: 'Comandante (Red clix)', kind: GrinderKind.manual),
   Grinder(id: 11, name: 'Comandante C40', kind: GrinderKind.manual),
-  Grinder(id: 17, name: 'Eureka Mignon  жернова 50mm Filtro Pro', kind: GrinderKind.electric),
+  Grinder(
+      id: 17,
+      name: 'Eureka Mignon  жернова 50mm Filtro Pro',
+      kind: GrinderKind.electric),
   Grinder(id: 31, name: 'Mahlkönig', kind: GrinderKind.electric),
   Grinder(id: 40, name: 'Timemore Chestnut C2', kind: GrinderKind.manual),
   Grinder(id: 48, name: 'Wilfa Svart Nymalt', kind: GrinderKind.electric),
+  // Кириллическое имя целиком: по алфавиту такие встают после латиницы,
+  // и без записи в справочнике это утверждение нечем проверить.
+  Grinder(id: 52, name: 'Мельница ручная Ручеёк', kind: GrinderKind.manual),
 ];
 
 List<String> names(String query) =>
@@ -42,7 +48,8 @@ void main() {
     });
 
     test('кириллица и латиница сходятся в одну строку', () {
-      expect(normalizeGrinderText('команданте'), normalizeGrinderText('Comandante'));
+      expect(normalizeGrinderText('команданте'),
+          normalizeGrinderText('Comandante'));
       expect(normalizeGrinderText('Честнут'), normalizeGrinderText('Chestnut'));
       expect(normalizeGrinderText('Вильфа'), normalizeGrinderText('Wilfa'));
     });
@@ -52,11 +59,13 @@ void main() {
     });
 
     test('умляут снимается — Mahlkönig набирают без точек', () {
-      expect(normalizeGrinderText('Mahlkonig'), normalizeGrinderText('Mahlkönig'));
+      expect(
+          normalizeGrinderText('Mahlkonig'), normalizeGrinderText('Mahlkönig'));
     });
 
     test('скобки и плюсы становятся границей слова, а не буквой', () {
-      expect(normalizeGrinderText('Comandante (Red clix)'), 'komandante red kliks');
+      expect(normalizeGrinderText('Comandante (Red clix)'),
+          'komandante red kliks');
       expect(normalizeGrinderText('Baratza Virtuoso+'), 'baratza virtuoso');
     });
   });
@@ -126,7 +135,12 @@ void main() {
     });
 
     test('те же четыре написания дают тот же ответ', () {
-      for (final query in ['commondante', 'komandante', 'команданте', 'COMANDANTE']) {
+      for (final query in [
+        'commondante',
+        'komandante',
+        'команданте',
+        'COMANDANTE'
+      ]) {
         final found = names(query);
         expect(found, isNotEmpty, reason: query);
         expect(found.first, startsWith('Comandante'), reason: query);
@@ -161,11 +175,13 @@ void main() {
     });
 
     test('точное совпадение обгоняет исправленную опечатку', () {
-      final found = searchGrinders(selectableGrinders(catalog), 'comandante c4');
+      final found =
+          searchGrinders(selectableGrinders(catalog), 'comandante c4');
 
       expect(found.first.grinder.name, 'Comandante C40');
       expect(found.first.rank, GrinderMatchRank.start);
-      expect(found.last.rank.index, greaterThanOrEqualTo(found.first.rank.index));
+      expect(
+          found.last.rank.index, greaterThanOrEqualTo(found.first.rank.index));
     });
 
     test('исправленные опечатки идут последними', () {
@@ -183,10 +199,12 @@ void main() {
       expect(found.first, '1Zpresso JX');
     });
 
-    test('техническая запись с нулевым идентификатором в выбор не попадает', () {
+    test('техническая запись с нулевым идентификатором в выбор не попадает',
+        () {
       // Из справочника она не убирается — на неё ссылаются рецепты.
       expect(catalog.any((g) => g.id == baseGrinderId), isTrue);
-      expect(selectableGrinders(catalog).any((g) => g.id == baseGrinderId), isFalse);
+      expect(selectableGrinders(catalog).any((g) => g.id == baseGrinderId),
+          isFalse);
       expect(names('base'), isEmpty);
     });
   });
@@ -226,7 +244,8 @@ void main() {
     });
 
     test('кириллический запрос подсвечивает латинское написание', () {
-      final hit = searchGrinders(selectableGrinders(catalog), 'команданте').first;
+      final hit =
+          searchGrinders(selectableGrinders(catalog), 'команданте').first;
 
       expect(hit.grinder.name.substring(hit.start, hit.end), 'Comandante');
     });
@@ -235,6 +254,44 @@ void main() {
       final hit = searchGrinders(selectableGrinders(catalog), 'жернова').first;
 
       expect(hit.grinder.name.substring(hit.start, hit.end), 'жернова');
+    });
+  });
+
+  group('порядок по алфавиту', () {
+    test('имена идут по алфавиту, а не в порядке справочника', () {
+      final sorted = grindersByName(selectableGrinders(catalog))
+          .map((grinder) => grinder.name)
+          .toList();
+
+      expect(sorted.first, '1Zpresso JX');
+      expect(sorted.last, 'Мельница ручная Ручеёк');
+      expect(
+        sorted.indexOf('Baratza Encore') < sorted.indexOf('Comandante C40'),
+        isTrue,
+      );
+    });
+
+    test('регистр на порядок не влияет', () {
+      // В справочнике имена вносили руками, и строчная буква в начале
+      // встречается. При сравнении по кодам символов такая запись уезжает
+      // за всю латиницу — то есть в самый конец списка, мимо своей буквы.
+      const mixed = [
+        Grinder(id: 1, name: 'Wilfa Svart'),
+        Grinder(id: 2, name: 'baratza Encore'),
+        Grinder(id: 3, name: 'Comandante C40'),
+      ];
+
+      expect(
+        grindersByName(mixed).map((grinder) => grinder.name),
+        ['baratza Encore', 'Comandante C40', 'Wilfa Svart'],
+      );
+    });
+
+    test('исходный список не меняется', () {
+      final before = [...catalog];
+      grindersByName(catalog);
+
+      expect(catalog, orderedEquals(before));
     });
   });
 }

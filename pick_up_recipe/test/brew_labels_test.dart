@@ -59,7 +59,8 @@ void main() {
       expect(brewSkipLabel(ru, step(type: BrewStepType.flip)), 'Сделал');
     });
 
-    test('шаг важнее шаблона: пролив в рецепте с отжимом остаётся пропуском', () {
+    test('шаг важнее шаблона: пролив в рецепте с отжимом остаётся пропуском',
+        () {
       // Рецепт аэропресса целиком — «усилие», но шаг пролива в нём
       // кончается секундомером, и «Сделал» на нём врало бы.
       expect(brewSkipLabel(ru, step(type: BrewStepType.pour)), 'Пропустить');
@@ -76,11 +77,13 @@ void main() {
 
     test('признак важнее кнопки: он и есть ответ «когда»', () {
       expect(
-        brewStepEndNote(ru, step(
-          untilUser: true,
-          untilSign: 'воронка опустела',
-          duration: Duration.zero,
-        )),
+        brewStepEndNote(
+            ru,
+            step(
+              untilUser: true,
+              untilSign: 'воронка опустела',
+              duration: Duration.zero,
+            )),
         'по признаку',
       );
     });

@@ -125,7 +125,8 @@ void main() {
       expect(restored.recipe.device, 'hario_v60');
     });
 
-    test('пустой черновик не пишется: открыть и закрыть экран — не оценка', () async {
+    test('пустой черновик не пишется: открыть и закрыть экран — не оценка',
+        () async {
       await RatingDrafts.save(
         draft(point: TastePoint.center, stars: 0, axes: const {}),
       );
@@ -144,10 +145,13 @@ void main() {
 
     test('протухший черновик не показывается и стирается', () async {
       await RatingDrafts.save(
-        draft(savedAt: DateTime.now().subtract(RatingDrafts.lifetime + const Duration(days: 1))),
+        draft(
+            savedAt: DateTime.now()
+                .subtract(RatingDrafts.lifetime + const Duration(days: 1))),
       );
 
-      expect(await RatingDrafts.load(), isNull, reason: 'неделю спустя чашку уже не вспомнить');
+      expect(await RatingDrafts.load(), isNull,
+          reason: 'неделю спустя чашку уже не вспомнить');
       expect(
         EncryptedSharedPreferences.getInstance().getString('rating_draft_v1'),
         anyOf(isNull, isEmpty),
@@ -157,7 +161,9 @@ void main() {
 
     test('черновик младше срока — живой', () async {
       await RatingDrafts.save(
-        draft(savedAt: DateTime.now().subtract(RatingDrafts.lifetime - const Duration(hours: 1))),
+        draft(
+            savedAt: DateTime.now()
+                .subtract(RatingDrafts.lifetime - const Duration(hours: 1))),
       );
 
       expect(await RatingDrafts.load(), isNotNull);
@@ -196,28 +202,38 @@ void main() {
 
     test('подпись плашки говорит, что именно осталось недосказанным', () async {
       expect(
-        draft(point: const TastePoint(0, -0.9), stars: 4, axes: const {'acidity': 7})
-            .summaryFor(ru),
+        draft(
+            point: const TastePoint(0, -0.9),
+            stars: 4,
+            axes: const {'acidity': 7}).summaryFor(ru),
         'сильно слабо · 4 из 5 · 1 ось',
       );
       expect(
-        draft(point: TastePoint.center, stars: 0, axes: const {'acidity': 7, 'aroma': 6})
-            .summaryFor(ru),
+        draft(
+            point: TastePoint.center,
+            stars: 0,
+            axes: const {'acidity': 7, 'aroma': 6}).summaryFor(ru),
         '2 оси',
       );
     });
 
-    test('на английском телефоне подпись плашки английская, со своим счётом осей', () async {
+    test(
+        'на английском телефоне подпись плашки английская, со своим счётом осей',
+        () async {
       // Счёт осей — ICU, а не рука: у русского три формы, у английского две,
       // и собранное вручную «1 axes» выдавало бы подделку под перевод.
       expect(
-        draft(point: const TastePoint(0, -0.9), stars: 4, axes: const {'acidity': 7})
-            .summaryFor(en),
+        draft(
+            point: const TastePoint(0, -0.9),
+            stars: 4,
+            axes: const {'acidity': 7}).summaryFor(en),
         'very weak · 4 of 5 · 1 axis',
       );
       expect(
-        draft(point: TastePoint.center, stars: 0, axes: const {'acidity': 7, 'aroma': 6})
-            .summaryFor(en),
+        draft(
+            point: TastePoint.center,
+            stars: 0,
+            axes: const {'acidity': 7, 'aroma': 6}).summaryFor(en),
         '2 axes',
       );
     });

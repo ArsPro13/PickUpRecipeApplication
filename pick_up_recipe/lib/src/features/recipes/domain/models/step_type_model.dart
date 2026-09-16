@@ -99,7 +99,8 @@ class StepType {
 
 /// Группа вместе с попавшими в неё типами — то, что рисует лист выбора.
 class GroupedStepTypes {
-  const GroupedStepTypes({required this.slug, required this.name, required this.types});
+  const GroupedStepTypes(
+      {required this.slug, required this.name, required this.types});
 
   /// Slug группы из справочника: по нему лист узнаёт «Паузу и текст»,
   /// которую опускает под «Ваши типы».
@@ -164,13 +165,15 @@ class StepTypeReference {
       list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     }
 
-    final ordered = [...groups]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final ordered = [...groups]
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
     final result = <GroupedStepTypes>[];
     for (final group in ordered) {
       final inGroup = byGroup.remove(group.id);
       if (inGroup != null && inGroup.isNotEmpty) {
-        result.add(GroupedStepTypes(slug: group.slug, name: group.name, types: inGroup));
+        result.add(GroupedStepTypes(
+            slug: group.slug, name: group.name, types: inGroup));
       }
     }
 
@@ -181,7 +184,8 @@ class StepTypeReference {
       orphans.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
       // Имени с сервера у этой группы нет: она собирается здесь. Слово для
       // заголовка подставляет экран по метке — домен языка не знает.
-      result.add(GroupedStepTypes(slug: otherGroupSlug, name: '', types: orphans));
+      result.add(
+          GroupedStepTypes(slug: otherGroupSlug, name: '', types: orphans));
     }
 
     return result;

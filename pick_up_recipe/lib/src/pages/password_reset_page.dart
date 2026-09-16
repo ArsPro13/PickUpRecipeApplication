@@ -46,7 +46,8 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
   /// Пауза между письмами. Совпадает с мидлваром OncePerMinute на ручке.
   static const Duration _resendCooldown = Duration(seconds: 60);
 
-  late final TextEditingController _email = TextEditingController(text: widget.email ?? '');
+  late final TextEditingController _email =
+      TextEditingController(text: widget.email ?? '');
   final TextEditingController _code = TextEditingController();
   final TextEditingController _password = TextEditingController();
 
@@ -83,7 +84,8 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
   Future<void> _requestCode() async {
     final texts = AppLocalizations.of(context);
 
-    setState(() => _emailError = AuthRules.emailProblem(_email.text)?.text(texts));
+    setState(
+        () => _emailError = AuthRules.emailProblem(_email.text)?.text(texts));
     if (_emailError != null) return;
 
     setState(() {
@@ -122,7 +124,9 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
     });
 
     try {
-      await ref.read(authenticationStateNotifierProvider.notifier).resetPassword(
+      await ref
+          .read(authenticationStateNotifierProvider.notifier)
+          .resetPassword(
             _email.text.trim(),
             _code.text.trim(),
             _password.text,
@@ -165,7 +169,9 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
             ),
           ],
         ResetStep.done => [
-            AppButton(label: texts.resetToLogin, onPressed: () => context.router.maybePop()),
+            AppButton(
+                label: texts.resetToLogin,
+                onPressed: () => context.router.maybePop()),
           ],
       },
     );
@@ -215,7 +221,11 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
 
     return [
       // Пройденный шаг сворачивается в строку: видно, что письмо ушло и куда.
-      _Step(number: 1, title: texts.resetStepSent, subtitle: _email.text.trim(), done: true),
+      _Step(
+          number: 1,
+          title: texts.resetStepSent,
+          subtitle: _email.text.trim(),
+          done: true),
       const SizedBox(height: AppSpacing.s3),
       _Step(number: 2, title: texts.resetStepNewPassword, current: true),
       const SizedBox(height: AppSpacing.s3),
@@ -245,7 +255,9 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
                 TextButton(
                   onPressed: canResend && !_busy ? _requestCode : null,
                   child: Text(
-                    canResend ? texts.resetResend : texts.resetResendIn(_formatLeft(_left)),
+                    canResend
+                        ? texts.resetResend
+                        : texts.resetResendIn(_formatLeft(_left)),
                   ),
                 ),
               ],
@@ -262,7 +274,9 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
               autofillHints: const [AutofillHints.newPassword],
               onSubmitted: (_) => _applyNewPassword(),
               onChanged: (_) {
-                if (_passwordError != null) setState(() => _passwordError = null);
+                if (_passwordError != null) {
+                  setState(() => _passwordError = null);
+                }
               },
             ),
           ],
@@ -332,7 +346,9 @@ class _Step extends StatelessWidget {
               : Text(
                   '$number',
                   style: context.texts.labelSmall?.copyWith(
-                    color: current ? context.colors.secondaryContainer : context.colors.secondary,
+                    color: current
+                        ? context.colors.secondaryContainer
+                        : context.colors.secondary,
                   ),
                 ),
         ),
@@ -365,12 +381,14 @@ class _ErrorLine extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppIcon(AppIcons.uiWarning, size: AppSizes.icon20, color: context.colors.error),
+        AppIcon(AppIcons.uiWarning,
+            size: AppSizes.icon20, color: context.colors.error),
         const SizedBox(width: AppSpacing.s2),
         Expanded(
           child: Text(
             text,
-            style: context.texts.bodySmall?.copyWith(color: context.colors.error),
+            style:
+                context.texts.bodySmall?.copyWith(color: context.colors.error),
           ),
         ),
       ],

@@ -28,7 +28,8 @@ abstract final class LocalRecipes {
     try {
       final list = jsonDecode(raw) as List<dynamic>;
       return [
-        for (final item in list) RecipeData.fromJson(item as Map<String, dynamic>),
+        for (final item in list)
+          RecipeData.fromJson(item as Map<String, dynamic>),
       ];
     } catch (_) {
       // Битый список — то же, что пустой: чинить его не из чего.

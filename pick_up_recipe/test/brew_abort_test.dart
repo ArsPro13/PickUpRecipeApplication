@@ -118,7 +118,8 @@ void main() {
     await EncryptedSharedPreferences.getInstance().clear();
 
     await GetIt.instance.reset();
-    GetIt.instance.registerSingleton<ApiClient>(ApiClient(onAuthError: () async {}));
+    GetIt.instance
+        .registerSingleton<ApiClient>(ApiClient(onAuthError: () async {}));
   });
 
   /// Поднимает заваривание поверх экрана «Откуда пришли» и оставляет отсчёт
@@ -141,7 +142,8 @@ void main() {
           // Справочники экран берёт с сервера. В тесте они пусты: проверяется
           // уход с экрана, а не то, что на нём написано.
           stepTypesProvider.overrideWith((ref) => const StepTypeReference()),
-          grindDescriptorsProvider.overrideWith((ref) => const <GrindDescriptor>[]),
+          grindDescriptorsProvider
+              .overrideWith((ref) => const <GrindDescriptor>[]),
         ],
         child: MaterialApp.router(
           theme: lightTheme,
@@ -156,7 +158,8 @@ void main() {
 
     // Без await: push отдаёт результат экрана и ждёт, пока тот закроется, —
     // то есть ровно того, что и проверяется ниже.
-    unawaited(router.push(BrewRoute(recipe: _recipe(), pack: null, autoStart: true)));
+    unawaited(
+        router.push(BrewRoute(recipe: _recipe(), pack: null, autoStart: true)));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 

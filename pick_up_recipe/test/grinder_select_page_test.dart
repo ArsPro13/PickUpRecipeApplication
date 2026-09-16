@@ -1,9 +1,8 @@
-// Экран кофемолки на английском телефоне.
+// Экран кофемолки: перевод и одиночный выбор.
 //
 // На записи владельца (кадры 260s–270s) нижняя панель уже английская —
 // «Packs / Recipes / Scan / Profile», — а над ней стоит «Кофемолка», «Найти
-// кофемолку», «Ручные», «сделать основной» и «Сохранить». Экран из перевода
-// выпал целиком.
+// кофемолку», «Ручные» и «Сохранить». Экран из перевода выпал целиком.
 //
 // Проверяется не список ключей, а результат: на собранном экране при
 // английской локали кириллицы не остаётся ни в одной строке, которую рисует
@@ -19,6 +18,7 @@ import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/grinders/application/grinder_state.dart';
 import 'package:pick_up_recipe/src/features/grinders/data_sources/remote/grinder_service.dart';
 import 'package:pick_up_recipe/src/features/grinders/domain/models/grinder_model.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:pick_up_recipe/src/pages/grinder_select_page.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:pick_up_recipe/src/themes/app_tokens.dart';
@@ -27,13 +27,23 @@ import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 const List<Grinder> catalog = [
   Grinder(id: 0, name: 'Base Grinder'),
   Grinder(id: 11, name: 'Comandante C40', kind: GrinderKind.manual),
-  Grinder(id: 17, name: 'Eureka Mignon  жернова 50mm Filtro Pro', kind: GrinderKind.electric),
+  Grinder(
+      id: 17,
+      name: 'Eureka Mignon  жернова 50mm Filtro Pro',
+      kind: GrinderKind.electric),
   Grinder(id: 40, name: 'Timemore Chestnut C2', kind: GrinderKind.manual),
 ];
 
 /// Справочник отвечает, набор пользователя пуст: так экран и открывают
 /// в первый раз.
-class _CatalogService implements GrinderService {
+///
+/// Сохранение запоминается: что именно экран отдал наружу — единственная
+/// проверяемая правда о выборе. Считать кружки на экране значило бы
+/// проверять оформление вместо поведения.
+class CatalogService implements GrinderService {
+  List<Grinder>? savedGrinders;
+  int? savedPrimaryId;
+
   @override
   Future<List<Grinder>> getAllGrinders() async => catalog;
 
@@ -44,8 +54,32 @@ class _CatalogService implements GrinderService {
   Future<List<UserGrinder>> setUserGrinders(
     List<Grinder> grinders, {
     int? primaryGrinderId,
-  }) async =>
-      const [];
+  }) async {
+    savedGrinders = grinders;
+    savedPrimaryId = primaryGrinderId;
+    return [
+      for (final grinder in grinders)
+        UserGrinder(
+            grinder: grinder, isPrimary: grinder.id == primaryGrinderId),
+    ];
+  }
+}
+
+/// Роутер-заглушка: экран после сохранения уходит назад, и без роутера
+/// этот уход падает. Тот же приём, что в recipes_page_test — поднимать ради
+/// одного `maybePop` настоящий AppRouter значило бы тянуть в тест половину
+/// приложения вместе с навигацией всех экранов.
+class _StubRouter extends RootStackRouter {
+  int popped = 0;
+
+  @override
+  List<AutoRoute> get routes => const [];
+
+  @override
+  Future<bool> maybePop<T extends Object?>([T? result]) async {
+    popped++;
+    return true;
+  }
 }
 
 final RegExp cyrillic = RegExp('[а-яёА-ЯЁ]');
@@ -79,26 +113,38 @@ List<String> screenTexts(WidgetTester tester) {
 
 /// Строки, за которые отвечает экран: всё, кроме имён из справочника.
 List<String> ownTexts(WidgetTester tester) {
-  return screenTexts(tester).where((text) => !catalogNames.contains(text)).toList();
+  return screenTexts(tester)
+      .where((text) => !catalogNames.contains(text))
+      .toList();
 }
 
-Future<void> pumpGrinders(WidgetTester tester, String language) async {
+Future<CatalogService> pumpGrinders(
+    WidgetTester tester, String language) async {
   tester.view.physicalSize = const Size(400, 900);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 
+  final service = CatalogService();
+  final router = _StubRouter();
+
   await tester.pumpWidget(ProviderScope(
-    overrides: [grinderServiceProvider.overrideWithValue(_CatalogService())],
+    overrides: [grinderServiceProvider.overrideWithValue(service)],
     child: MaterialApp(
       theme: lightTheme,
       locale: Locale(language),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const GrinderSelectPage(),
+      home: StackRouterScope(
+        controller: router,
+        stateHash: 0,
+        child: const GrinderSelectPage(),
+      ),
     ),
   ));
 
   await tester.pumpAndSettle();
+
+  return service;
 }
 
 /// Ввод в поле поиска вместе с паузой, которую экран держит намеренно:
@@ -141,7 +187,8 @@ void main() {
         expect(
           cyrillic.hasMatch(en.grinderCatalogSize(count)),
           isFalse,
-          reason: 'счётчик на $count остался русским: ${en.grinderCatalogSize(count)}',
+          reason:
+              'счётчик на $count остался русским: ${en.grinderCatalogSize(count)}',
         );
       }
     });
@@ -158,7 +205,8 @@ void main() {
       expect(find.text(en.grinderSave), findsOneWidget);
 
       for (final text in ownTexts(tester)) {
-        expect(cyrillic.hasMatch(text), isFalse, reason: 'русская строка на экране: $text');
+        expect(cyrillic.hasMatch(text), isFalse,
+            reason: 'русская строка на экране: $text');
       }
     });
 
@@ -168,29 +216,46 @@ void main() {
 
       // Двойной пробел внутри имени — тоже данные: по имени сходится
       // grinder_translator, и любая нормализация рвёт связь.
-      expect(find.text('Eureka Mignon  жернова 50mm Filtro Pro'), findsOneWidget);
+      expect(
+          find.text('Eureka Mignon  жернова 50mm Filtro Pro'), findsOneWidget);
     });
 
-    testWidgets('отметка основной подписана по-английски', (tester) async {
-      await pumpGrinders(tester, 'en');
+    testWidgets('выбор одним касанием, без отдельной «сделать основной»',
+        (tester) async {
+      final service = await pumpGrinders(tester, 'en');
 
-      // Первая выбранная становится основной сама: выбирать не из чего.
+      // Отдельной кнопки «сделать основной» на экране больше нет: выбор
+      // и назначение основной — одно действие, а не два. Проверяем по типу,
+      // а не по подписи: строки под неё в словаре тоже больше нет.
+      expect(find.byType(TextButton), findsNothing);
+
+      // Второе касание ПЕРЕНОСИТ выбор, а не добавляет вторую кофемолку.
       await tester.tap(find.text('Comandante C40'));
       await tester.pumpAndSettle();
-      expect(find.text(en.profileGrinderPrimary), findsOneWidget);
-
-      // У второй появляется предложение забрать отметку себе.
       await tester.tap(find.text('Timemore Chestnut C2'));
       await tester.pumpAndSettle();
-      expect(find.text(en.grinderMakePrimary), findsOneWidget);
 
-      await tester.tap(find.text(en.grinderMakePrimary));
+      await tester.tap(find.text(en.grinderSave));
       await tester.pumpAndSettle();
-      expect(find.text(en.profileGrinderPrimary), findsOneWidget);
+
+      expect(service.savedGrinders, isNotNull,
+          reason: 'сохранение не дошло до службы');
+      expect(service.savedGrinders!.map((g) => g.id), [40]);
+      expect(service.savedPrimaryId, 40);
 
       for (final text in ownTexts(tester)) {
-        expect(cyrillic.hasMatch(text), isFalse, reason: 'русская строка на экране: $text');
+        expect(cyrillic.hasMatch(text), isFalse,
+            reason: 'русская строка на экране: $text');
       }
+    });
+
+    testWidgets('до выбора сохранять нечего', (tester) async {
+      final service = await pumpGrinders(tester, 'en');
+
+      await tester.tap(find.text(en.grinderSave));
+      await tester.pumpAndSettle();
+
+      expect(service.savedGrinders, isNull, reason: 'сохранили пустой выбор');
     });
 
     testWidgets('пустой ответ поиска объясняется по-английски', (tester) async {
@@ -204,7 +269,8 @@ void main() {
       expect(find.text(en.grinderCatalogSize(3)), findsOneWidget);
 
       for (final text in ownTexts(tester)) {
-        expect(cyrillic.hasMatch(text), isFalse, reason: 'русская строка на экране: $text');
+        expect(cyrillic.hasMatch(text), isFalse,
+            reason: 'русская строка на экране: $text');
       }
     });
 
@@ -217,7 +283,8 @@ void main() {
       expect(find.text('Comandante C40'), findsOneWidget);
 
       for (final text in ownTexts(tester)) {
-        expect(cyrillic.hasMatch(text), isFalse, reason: 'русская строка на экране: $text');
+        expect(cyrillic.hasMatch(text), isFalse,
+            reason: 'русская строка на экране: $text');
       }
     });
   });

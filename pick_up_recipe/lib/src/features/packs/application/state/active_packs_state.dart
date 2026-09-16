@@ -7,12 +7,55 @@ class ActivePacksState {
   final List<PackData> activePacks;
   final bool isLoading;
 
-  const ActivePacksState({this.activePacks = const [], this.isLoading = false});
+  /// Догружается следующая страница.
+  ///
+  /// Отдельно от [isLoading] намеренно: первая загрузка имеет право занять
+  /// экран крутилкой, а догрузка — нет. Одним признаком полка на каждой
+  /// прокрутке подменялась бы пустым экраном, и человек терял бы место,
+  /// на котором смотрел.
+  final bool isLoadingMore;
 
-  ActivePacksState copyWith({List<PackData>? activePacks, bool? isLoading}) {
+  /// Возможно, есть ещё страница.
+  ///
+  /// Признак выводится из размера ответа: пришла полная страница — значит
+  /// может быть и следующая, пришла неполная — значит полка кончилась.
+  /// Общего числа пачек сервер не отдаёт, и заводить ради него отдельный
+  /// запрос незачем: число это нигде не показывается.
+  final bool hasMore;
+
+  /// Все пачки, которые приложение вообще видело, по идентификатору.
+  ///
+  /// ЗАЧЕМ ОТДЕЛЬНО ОТ [activePacks]. Полка читается страницами, то есть
+  /// список на экране — это первые сколько-то пачек, а не все. Но пачки
+  /// нужны не только полке: экран «Рецепты» берёт отсюда имя обжарщика и
+  /// фото для карточки заваривания, а заваривание могло быть по пачке,
+  /// которая лежит на третьей странице и ещё не читалась.
+  ///
+  /// Без этой памяти постраничная полка молча сломала бы соседний экран:
+  /// у половины карточек истории пропали бы и фото, и название кофе.
+  final Map<int, PackData> known;
+
+  const ActivePacksState({
+    this.activePacks = const [],
+    this.known = const {},
+    this.isLoading = false,
+    this.isLoadingMore = false,
+    this.hasMore = true,
+  });
+
+  ActivePacksState copyWith({
+    List<PackData>? activePacks,
+    Map<int, PackData>? known,
+    bool? isLoading,
+    bool? isLoadingMore,
+    bool? hasMore,
+  }) {
     return ActivePacksState(
       activePacks: activePacks ?? this.activePacks,
+      known: known ?? this.known,
       isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMore: hasMore ?? this.hasMore,
     );
   }
 

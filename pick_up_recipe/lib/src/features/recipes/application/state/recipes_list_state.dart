@@ -113,7 +113,8 @@ class RecipesListState {
 }
 
 class RecipesListNotifier extends StateNotifier<RecipesListState> {
-  RecipesListNotifier(this._service, this._methods) : super(const RecipesListState());
+  RecipesListNotifier(this._service, this._methods)
+      : super(const RecipesListState());
 
   final RecipeService _service;
   final BrewMethodService _methods;
@@ -178,7 +179,9 @@ List<RecipeGroup> groupRecipes(
   final byKey = <String, List<RecipeData>>{};
 
   for (final recipe in recipes) {
-    byKey.putIfAbsent('${recipe.packId}/${recipe.device}', () => []).add(recipe);
+    byKey
+        .putIfAbsent('${recipe.packId}/${recipe.device}', () => [])
+        .add(recipe);
   }
 
   final groups = <RecipeGroup>[];
@@ -191,7 +194,8 @@ List<RecipeGroup> groupRecipes(
     groups.add(
       RecipeGroup(
         key: entry.key,
-        title: versions.first.title.isNotEmpty ? versions.first.title : methodName,
+        title:
+            versions.first.title.isNotEmpty ? versions.first.title : methodName,
         packId: versions.first.packId,
         method: method,
         methodName: methodName,
@@ -231,7 +235,8 @@ List<RecipeGroup> groupRecipes(
 /// не требуют от схемы.
 /// Возвращает и название, и slug: по slug метка узнаёт семью прибора и
 /// красится в её цвет, а по названию подписывается.
-List<({String name, String slug})> methodsOfPack(List<RecipeGroup> groups, int packId) {
+List<({String name, String slug})> methodsOfPack(
+    List<RecipeGroup> groups, int packId) {
   final found = <({String name, String slug})>[];
   for (final group in groups) {
     if (group.packId != packId) continue;
@@ -257,7 +262,8 @@ String formatRecipeDate(AppLocalizations texts, String raw) {
 
 final recipeServiceProvider = Provider<RecipeService>((ref) => RecipeService());
 
-final recipesListProvider = StateNotifierProvider<RecipesListNotifier, RecipesListState>(
+final recipesListProvider =
+    StateNotifierProvider<RecipesListNotifier, RecipesListState>(
   (ref) {
     final notifier = RecipesListNotifier(
       ref.watch(recipeServiceProvider),

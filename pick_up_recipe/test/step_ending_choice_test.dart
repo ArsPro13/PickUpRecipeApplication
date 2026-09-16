@@ -115,14 +115,16 @@ void main() {
     await tester.pumpWidget(const _Host());
 
     final before = [
-      for (final option in StepEndsWith.values) tester.getTopLeft(find.text(option.label(ru))),
+      for (final option in StepEndsWith.values)
+        tester.getTopLeft(find.text(option.label(ru))),
     ];
 
     await tester.tap(find.text(ru.builderEndsSign));
     await tester.pumpAndSettle();
 
     final after = [
-      for (final option in StepEndsWith.values) tester.getTopLeft(find.text(option.label(ru))),
+      for (final option in StepEndsWith.values)
+        tester.getTopLeft(find.text(option.label(ru))),
     ];
 
     expect(after, before);
@@ -133,7 +135,8 @@ void main() {
 
     for (final option in StepEndsWith.values) {
       expect(option.hint(ru), isNotEmpty, reason: option.label(ru));
-      expect(find.text(option.hint(ru)), findsOneWidget, reason: option.label(ru));
+      expect(find.text(option.hint(ru)), findsOneWidget,
+          reason: option.label(ru));
     }
   });
 
@@ -143,7 +146,8 @@ void main() {
     await tester.tap(find.text(ru.builderEndsUser));
     await tester.pumpAndSettle();
 
-    expect(tester.state<_HostState>(find.byType(_Host)).value, StepEndsWith.user);
+    expect(
+        tester.state<_HostState>(find.byType(_Host)).value, StepEndsWith.user);
   });
 
   group('на английском телефоне', () {
@@ -164,11 +168,13 @@ void main() {
       }
     });
 
-    testWidgets('на каждый вариант — своя подпись и своё пояснение', (tester) async {
+    testWidgets('на каждый вариант — своя подпись и своё пояснение',
+        (tester) async {
       await tester.pumpWidget(const _Host(locale: Locale('en')));
 
       for (final option in StepEndsWith.values) {
-        expect(find.text(option.label(en)), findsOneWidget, reason: option.wire);
+        expect(find.text(option.label(en)), findsOneWidget,
+            reason: option.wire);
         expect(find.text(option.hint(en)), findsOneWidget, reason: option.wire);
         // Подписи трёх вариантов различны в обоих языках: одинаковые
         // читались бы как один и тот же выбор, повторённый трижды.

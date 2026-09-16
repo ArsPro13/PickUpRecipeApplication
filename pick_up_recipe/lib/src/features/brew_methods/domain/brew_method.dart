@@ -38,7 +38,8 @@ class BrewMethod {
       iconKey: json['icon_key'] as String? ?? '',
       groupId: (json['group_id'] as num?)?.toInt(),
       allowedStepTypes:
-          (json['allowed_step_types'] as List<dynamic>? ?? const []).cast<String>(),
+          (json['allowed_step_types'] as List<dynamic>? ?? const [])
+              .cast<String>(),
       waterMeaning: json['water_meaning'] as String? ?? 'poured',
       sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
     );
