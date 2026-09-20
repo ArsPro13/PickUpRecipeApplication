@@ -553,6 +553,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get profileLogoutConfirmTitle => 'Sign out?';
+
+  @override
+  String get profileLogoutConfirm =>
+      'Your shelf, recipes and history stay with the account. To come back you will need your email and password.';
+
+  @override
   String get profileStay => 'Stay';
 
   @override
@@ -1310,7 +1317,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get grinderKindOther => 'Other';
 
   @override
-  String get grinderSave => 'Save';
+  String get grinderCurrent => 'Selected now';
+
+  @override
+  String get grinderChangeTo => 'Switch to another';
+
+  @override
+  String get grinderPick => 'Pick yours';
+
+  @override
+  String grinderScale(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count steps',
+      one: '$count step',
+    );
+    return '$_temp0 on the scale';
+  }
+
+  @override
+  String grinderApplied(String name) {
+    return 'Grind is now shown in $name steps';
+  }
+
+  @override
+  String get undo => 'Undo';
 
   @override
   String get grinderNotFound => 'No such grinder';

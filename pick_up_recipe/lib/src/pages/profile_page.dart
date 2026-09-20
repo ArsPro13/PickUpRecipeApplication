@@ -153,13 +153,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               icon: AppIcons.uiUser,
               divider: false,
               onTap: () async {
-                // Выход стирает и очередь отправки. Если в ней что-то есть,
+                // Выход спрашивает ВСЕГДА, а не только когда в очереди что-то
+                // лежит. Строка стоит последней в списке настроек, под сменой
+                // языка, — то есть там, куда попадают, листая экран, и промах
+                // по ней стоит дороже всего остального на экране вместе
+                // взятого: возвращаться придётся через почту и пароль.
+                //
+                // Текст вопроса при этом разный. Если в очереди что-то есть,
                 // человек об этом узнаёт до, а не после: оценка, поставленная
                 // в лесу, иначе просто исчезнет вместе с аккаунтом.
-                if (Outbox.pending.value > 0 &&
-                    !await _confirmLogout(context)) {
-                  return;
-                }
+                if (!await _confirmLogout(context)) return;
 
                 await ref
                     .read(authenticationStateNotifierProvider.notifier)
@@ -363,7 +366,10 @@ class _Number extends StatelessWidget {
   }
 }
 
-/// Предупреждение о несделанной отправке перед выходом.
+/// Вопрос перед выходом. true — уходим.
+///
+/// Заголовок и текст зависят от очереди: «выйти, не отправив?» — это про
+/// потерю работы, и говорить так, когда терять нечего, значит пугать зря.
 Future<bool> _confirmLogout(BuildContext context) async {
   final waiting = Outbox.pending.value;
   final texts = AppLocalizations.of(context);
@@ -371,10 +377,14 @@ Future<bool> _confirmLogout(BuildContext context) async {
   final leave = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(texts.profileLogoutTitle),
+      title: Text(waiting > 0
+          ? texts.profileLogoutTitle
+          : texts.profileLogoutConfirmTitle),
       // Склонение «1 дело ждёт / 2 дела ждут / 5 дел ждут» считает ICU:
       // рука знала два варианта и на двух делах говорила «2 дел ждут».
-      content: Text(texts.profileLogoutPending(waiting)),
+      content: Text(waiting > 0
+          ? texts.profileLogoutPending(waiting)
+          : texts.profileLogoutConfirm),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),

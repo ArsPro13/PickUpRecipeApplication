@@ -572,6 +572,13 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get profileLogoutConfirmTitle => 'Выйти из аккаунта?';
+
+  @override
+  String get profileLogoutConfirm =>
+      'Полка, рецепты и история останутся в аккаунте. Чтобы вернуться, понадобятся почта и пароль.';
+
+  @override
   String get profileStay => 'Остаться';
 
   @override
@@ -1328,7 +1335,34 @@ class AppLocalizationsRu extends AppLocalizations {
   String get grinderKindOther => 'Прочие';
 
   @override
-  String get grinderSave => 'Сохранить';
+  String get grinderCurrent => 'Выбрана сейчас';
+
+  @override
+  String get grinderChangeTo => 'Сменить на другую';
+
+  @override
+  String get grinderPick => 'Выберите свою';
+
+  @override
+  String grinderScale(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count деления',
+      many: '$count делений',
+      few: '$count деления',
+      one: '$count деление',
+    );
+    return '$_temp0 на шкале';
+  }
+
+  @override
+  String grinderApplied(String name) {
+    return 'Помол теперь в делениях $name';
+  }
+
+  @override
+  String get undo => 'Отменить';
 
   @override
   String get grinderNotFound => 'Такой кофемолки нет';

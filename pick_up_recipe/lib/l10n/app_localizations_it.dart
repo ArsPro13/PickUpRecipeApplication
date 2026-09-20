@@ -556,6 +556,13 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String get profileLogoutConfirmTitle => 'Uscire dall\'account?';
+
+  @override
+  String get profileLogoutConfirm =>
+      'Scaffale, ricette e cronologia restano nell\'account. Per rientrare serviranno email e password.';
+
+  @override
   String get profileStay => 'Resta';
 
   @override
@@ -1314,7 +1321,32 @@ class AppLocalizationsIt extends AppLocalizations {
   String get grinderKindOther => 'Altri';
 
   @override
-  String get grinderSave => 'Salva';
+  String get grinderCurrent => 'Selezionato ora';
+
+  @override
+  String get grinderChangeTo => 'Passa a un altro';
+
+  @override
+  String get grinderPick => 'Scegli il tuo';
+
+  @override
+  String grinderScale(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tacche',
+      one: '$count tacca',
+    );
+    return '$_temp0 sulla scala';
+  }
+
+  @override
+  String grinderApplied(String name) {
+    return 'La macinatura ora è in tacche di $name';
+  }
+
+  @override
+  String get undo => 'Annulla';
 
   @override
   String get grinderNotFound => 'Nessun macinacaffè trovato';

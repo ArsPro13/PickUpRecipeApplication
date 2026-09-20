@@ -281,6 +281,10 @@
 
   "profileLogoutPending": "There was no connection, and {count, plural, one{{count} item is} other{{count} items are}} waiting to be sent — ratings and recipe edits. Signing out will erase them along with the account.",
 
+  "profileLogoutConfirmTitle": "Sign out?",
+
+  "profileLogoutConfirm": "Your shelf, recipes and history stay with the account. To come back you will need your email and password.",
+
   "profileStay": "Stay",
 
   "clear": "Clear",
@@ -714,7 +718,17 @@
   "grinderKindOther": "Other",
 
 
-  "grinderSave": "Save",
+  "grinderCurrent": "Selected now",
+
+  "grinderChangeTo": "Switch to another",
+
+  "grinderPick": "Pick yours",
+
+  "grinderScale": "{count, plural, one{{count} step} other{{count} steps}} on the scale",
+
+  "grinderApplied": "Grind is now shown in {name} steps",
+
+  "undo": "Undo",
 
   "grinderNotFound": "No such grinder",
 

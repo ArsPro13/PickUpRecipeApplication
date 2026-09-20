@@ -17,6 +17,7 @@ import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/rating_draft.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
+import '../general_widgets/grinder_button.dart';
 import '../general_widgets/app_kit.dart';
 import '../themes/app_icons.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
@@ -257,61 +258,6 @@ class UnfinishedRatingPlate extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-/// Кнопка кофемолки в шапке.
-///
-/// Показывает название основной кофемолки, а не значок с многоточием: человек
-/// должен видеть, в чьих делениях считаются щелчки, не нажимая ничего.
-class GrinderButton extends ConsumerWidget {
-  const GrinderButton({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final primary = ref.watch(grinderStateProvider).primary;
-
-    return Semantics(
-      button: true,
-      label: AppLocalizations.of(context).packsChangeGrinder,
-      child: InkWell(
-        onTap: () => context.router.push(const GrinderSelectRoute()),
-        borderRadius: AppRadius.rounded,
-        child: Container(
-          constraints: const BoxConstraints(
-              minHeight: AppSizes.tapTarget - AppSpacing.s2),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.s3,
-            vertical: AppSpacing.s2,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.rounded,
-            border: Border.all(color: context.palette.border),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppIcon(
-                AppIcons.metricGrind,
-                size: AppSizes.icon20,
-                color: context.metrics.grind,
-              ),
-              const SizedBox(width: AppSpacing.s2),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 140),
-                child: Text(
-                  primary?.name ??
-                      AppLocalizations.of(context).profileChooseGrinder,
-                  style: context.texts.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

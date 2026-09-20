@@ -45,6 +45,7 @@ import '../features/recipes/domain/brew_template.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../general_widgets/app_bottom_nav.dart';
 import '../general_widgets/app_icon.dart';
+import '../general_widgets/grinder_button.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
 import '../themes/app_icons.dart';
@@ -549,6 +550,11 @@ class _BrewPageState extends ConsumerState<BrewPage>
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
+          // Кофемолка стоит в шапке, а не только пунктиром под числом помола.
+          // Пунктир отвечает на вопрос «а это можно нажать» лишь тому, кто
+          // уже его задал; кнопка с названием отвечает на другой, который
+          // задают у чайника: «в чьих щелчках мне сейчас показывают».
+          const GrinderButton(compact: true),
           IconButton(
             onPressed: _edit,
             icon: const AppIcon(AppIcons.uiEdit, size: AppSizes.icon24),

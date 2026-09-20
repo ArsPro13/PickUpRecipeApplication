@@ -3,14 +3,24 @@
 // Список сгруппирован по виду — ручные и электрические (ответ E7): в
 // справочнике полсотни записей, и без группировки найти свою на глаз тяжело.
 //
-// Кофемолка выбирается ОДНА и одним касанием. До этого экран собирал набор
-// галочками, а из набора отдельной кнопкой «сделать основной» назначалась
-// главная: два действия ради одного решения, причём про второе легко было
-// забыть — и тогда щелчки в рецептах считались по чужой шкале.
+// КОФЕМОЛКА ВЫБИРАЕТСЯ ОДНА И ОДНИМ КАСАНИЕМ — так, как нарисовано в макете
+// design/mockups/selected/grinder-select.html: сверху та, что выбрана сейчас,
+// ниже «сменить на другую», и всё.
+//
+// Путь сюда был длинный. Сперва экран собирал НАБОР галочками, а из набора
+// отдельной кнопкой «сделать основной» назначалась главная: два действия ради
+// одного решения, причём про второе легко было забыть — и тогда щелчки в
+// рецептах считались по чужой шкале. Набор убрали, но осталась кнопка
+// «Сохранить» внизу: касание строки ничего не меняло, пока не нажмёшь ещё
+// раз. Тот же лишний щелчок, только переименованный.
+//
+// Теперь строка применяется сразу и экран закрывается. Случайное касание
+// лечится не подтверждением, а отменой: внизу появляется «Отменить», и
+// прежняя кофемолка возвращается одним нажатием. Подтверждение стоит на пути
+// у всех ради ошибки одного; отмена — только у того, кто ошибся.
 //
 // Приложению нужна ровно одна: её имя стоит кнопкой в шапке главного экрана,
-// её делениями подписан помол в каждом рецепте. Набор из нескольких нигде
-// не использовался — только как место, откуда берут основную.
+// экрана заваривания и конструктора, её делениями подписан помол в рецепте.
 //
 // Поиск нестрогий (пункт 16). Точное вхождение подстроки отвечало «такой
 // кофемолки нет» на «commondante», «команданте» и на имя с двойным пробелом,
@@ -30,6 +40,7 @@ import '../features/grinders/domain/grinder_search.dart';
 import '../features/grinders/domain/models/grinder_model.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
+import '../general_widgets/app_layout.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -53,11 +64,10 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
 
   static const Duration _pause = AppDuration.base;
 
-  /// Выбранная кофемолка. Правка применяется кнопкой, а не сразу: случайное
-  /// касание не должно менять пересчёт помола во всех рецептах разом.
-  int? _chosen;
-
-  bool _initialised = false;
+  /// Кофемолка, которую сейчас записывают. Пока запись идёт, второе касание
+  /// не проходит: два запроса подряд разойдутся в порядке ответов, и
+  /// основной окажется та, что ответила второй, а не та, что нажали второй.
+  int? _saving;
 
   @override
   void initState() {
@@ -73,13 +83,6 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     _debounce?.cancel();
     _search.dispose();
     super.dispose();
-  }
-
-  /// Переносит уже сохранённую кофемолку в локальный выбор ровно один раз.
-  void _seedFrom(GrinderState state) {
-    if (_initialised || state.userGrinders.isEmpty) return;
-    _initialised = true;
-    _chosen = state.primary?.id;
   }
 
   void _onQueryChanged(String value) {
@@ -103,7 +106,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
     final state = ref.watch(grinderStateProvider);
-    _seedFrom(state);
+    final current = state.primary;
 
     // Техническая запись справочника с нулевым идентификатором нужна базе, но
     // не человеку: «Base Grinder» стоял в списке наравне с настоящими.
@@ -118,6 +121,33 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.s4,
               AppSpacing.s2,
+              AppSpacing.s4,
+              AppSpacing.s2,
+            ),
+            child: _Current(grinder: current),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.s4,
+              AppSpacing.s3,
+              AppSpacing.s4,
+              AppSpacing.s2,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    current == null ? texts.grinderPick : texts.grinderChangeTo,
+                    style: context.texts.labelSmall,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.s4,
+              0,
               AppSpacing.s4,
               AppSpacing.s3,
             ),
@@ -157,35 +187,25 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
           Expanded(
             child: state.isLoading && state.catalog.isEmpty
                 ? const Center(child: CircularProgressIndicator())
-                : _results(catalog, hits),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.s4),
-              child: AppButton(
-                label: texts.grinderSave,
-                loading: state.isLoading && state.catalog.isNotEmpty,
-                onPressed: _chosen == null ? null : () => _save(state),
-              ),
-            ),
+                : _results(catalog, hits, current),
           ),
         ],
       ),
     );
   }
 
-  Widget _results(List<Grinder> catalog, List<GrinderHit> hits) {
+  Widget _results(List<Grinder> catalog, List<GrinderHit> hits, Grinder? now) {
     if (hits.isEmpty) return _nothingFound(catalog);
 
     // С запросом список идёт одной лентой по убыванию совпадения: заголовки
     // групп перемешали бы порядок, а в поиске важно, что первым стоит самое
     // похожее. Без запроса возвращается прежний вид, сгруппированный по виду.
-    if (_query.trim().isEmpty) return _byKind(catalog);
+    if (_query.trim().isEmpty) return _byKind(catalog, now);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
       children: [
-        for (final hit in hits) _tile(hit.grinder, hit),
+        for (final hit in hits) _tile(hit.grinder, hit, now),
         const SizedBox(height: AppSpacing.s4),
       ],
     );
@@ -204,7 +224,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     };
   }
 
-  Widget _byKind(List<Grinder> catalog) {
+  Widget _byKind(List<Grinder> catalog, Grinder? now) {
     final texts = AppLocalizations.of(context);
     final byKind = <GrinderKind, List<Grinder>>{};
     for (final grinder in catalog) {
@@ -222,7 +242,7 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
         for (final kind in GrinderKind.values)
           if (byKind[kind] != null) ...[
             SectionTitle(_kindTitle(texts, kind)),
-            for (final grinder in byKind[kind]!) _tile(grinder, null),
+            for (final grinder in byKind[kind]!) _tile(grinder, null, now),
           ],
         const SizedBox(height: AppSpacing.s4),
       ],
@@ -277,18 +297,21 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     );
   }
 
-  Widget _tile(Grinder grinder, GrinderHit? hit) {
-    final chosen = _chosen == grinder.id;
+  Widget _tile(Grinder grinder, GrinderHit? hit, Grinder? now) {
+    final chosen = now?.id == grinder.id;
 
     return AppRow(
       label: grinder.name,
       labelSpan: hit == null ? null : _highlight(grinder.name, hit),
       icon: AppIcons.metricGrind,
-      // Повторное касание выбор не снимает. «Кофемолки нет» — не то
-      // состояние, за которым сюда шли: уйти в него можно было бы случайно
-      // и не заметить, а помол в рецептах перестал бы показываться числом.
-      onTap: () => setState(() => _chosen = grinder.id),
-      trailing: _ChoiceMark(chosen: chosen),
+      onTap: _saving == null ? () => _apply(grinder, now) : null,
+      trailing: _saving == grinder.id
+          ? const SizedBox(
+              height: AppSizes.icon20,
+              width: AppSizes.icon20,
+              child: CircularProgressIndicator(strokeWidth: AppStroke.thick),
+            )
+          : _ChoiceMark(chosen: chosen),
     );
   }
 
@@ -312,34 +335,141 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     );
   }
 
-  Future<void> _save(GrinderState state) async {
-    final texts = AppLocalizations.of(context);
-    final chosen = state.catalog.where((g) => g.id == _chosen).toList();
+  /// Применяет выбор сразу и уходит обратно.
+  Future<void> _apply(Grinder grinder, Grinder? previous) async {
+    if (_saving != null) return;
 
-    await ref
-        .read(grinderStateProvider.notifier)
-        .save(chosen, primaryGrinderId: _chosen);
-
-    if (!mounted) return;
-
-    final error = ref.read(grinderStateProvider).error;
-    if (error != null) {
-      // Набор кофемолок живёт на сервере (ответ на вопрос 19), и в очередь
-      // он не встаёт: выбор делают дома, а не у чайника, и «сохраню потом»
-      // здесь означало бы, что человек ушёл, считая дело сделанным.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            NetworkStatus.online.value
-                ? texts.grinderSaveFailed
-                : texts.grinderSaveOffline,
-          ),
-        ),
-      );
+    // Ту же самую нажали — значит, пришли посмотреть, а не менять.
+    if (previous?.id == grinder.id) {
+      await context.router.maybePop();
       return;
     }
 
+    setState(() => _saving = grinder.id);
+    final ok = await _write(grinder);
+    if (!mounted) return;
+    setState(() => _saving = null);
+    if (!ok) return;
+
+    final texts = AppLocalizations.of(context);
+    // Сообщение берётся ДО ухода: messenger живёт над навигатором, и плашка
+    // переживает закрытие экрана — её увидят уже на том, откуда пришли.
+    final messenger = ScaffoldMessenger.of(context);
     await context.router.maybePop();
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(texts.grinderApplied(grinder.name)),
+        action: previous == null
+            ? null
+            : SnackBarAction(
+                label: texts.undo,
+                onPressed: () => _write(previous),
+              ),
+      ),
+    );
+  }
+
+  /// Запись набора на сервер. true — получилось.
+  Future<bool> _write(Grinder grinder) async {
+    final notifier = ref.read(grinderStateProvider.notifier);
+    await notifier.save([grinder], primaryGrinderId: grinder.id);
+
+    final error = ref.read(grinderStateProvider).error;
+    if (error == null) return true;
+    if (!mounted) return false;
+
+    // Набор кофемолок живёт на сервере (ответ на вопрос 19), и в очередь
+    // он не встаёт: выбор делают дома, а не у чайника, и «сохраню потом»
+    // здесь означало бы, что человек ушёл, считая дело сделанным.
+    final texts = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          NetworkStatus.online.value
+              ? texts.grinderSaveFailed
+              : texts.grinderSaveOffline,
+        ),
+      ),
+    );
+    return false;
+  }
+}
+
+/// Та кофемолка, что выбрана сейчас, — отдельным блоком над списком.
+///
+/// Это ответ на вопрос, с которым сюда приходят чаще всего: «а какая у меня
+/// стоит?» Искать её в списке из полусотни строк по одной залитой точке —
+/// работа, которой можно не делать.
+class _Current extends StatelessWidget {
+  const _Current({required this.grinder});
+
+  final Grinder? grinder;
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    if (grinder == null) {
+      return QuietSurface(
+        child: Row(
+          children: [
+            AppIcon(
+              AppIcons.metricGrind,
+              size: AppSizes.icon24,
+              color: context.colors.secondary,
+            ),
+            const SizedBox(width: AppSpacing.s3),
+            Expanded(
+              child: Text(texts.profileNoGrinder,
+                  style: context.texts.bodySmall),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final scale = grinder!.modes.length;
+
+    return HeroSurface(
+      padding: const EdgeInsets.all(AppSpacing.s4),
+      child: Row(
+        children: [
+          AppIcon(
+            AppIcons.metricGrind,
+            size: AppSizes.icon32,
+            color: context.metrics.grind,
+          ),
+          const SizedBox(width: AppSpacing.s4),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(texts.grinderCurrent, style: context.texts.labelSmall),
+                const SizedBox(height: AppSpacing.s1),
+                Text(
+                  grinder!.name,
+                  style: context.texts.titleMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (scale > 0) ...[
+                  const SizedBox(height: AppSpacing.s1),
+                  Text(texts.grinderScale(scale),
+                      style: context.texts.labelSmall),
+                ],
+              ],
+            ),
+          ),
+          AppIcon(
+            AppIcons.uiCheck,
+            size: AppSizes.icon20,
+            color: context.colors.primary,
+          ),
+        ],
+      ),
+    );
   }
 }
 

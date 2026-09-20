@@ -940,6 +940,18 @@ abstract class AppLocalizations {
   /// **'Связи не было, и {count, plural, one{{count} дело ждёт} few{{count} дела ждут} many{{count} дел ждут} other{{count} дел ждут}} отправки — оценки и правки рецептов. Выход сотрёт их вместе с аккаунтом.'**
   String profileLogoutPending(int count);
 
+  /// Заголовок вопроса перед выходом, когда очередь отправки пуста.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выйти из аккаунта?'**
+  String get profileLogoutConfirmTitle;
+
+  /// Текст вопроса перед выходом, когда терять нечего: объясняет, что пропадёт, а что нет.
+  ///
+  /// In ru, this message translates to:
+  /// **'Полка, рецепты и история останутся в аккаунте. Чтобы вернуться, понадобятся почта и пароль.'**
+  String get profileLogoutConfirm;
+
   /// Профиль: отказ от выхода в вопросе перед выходом.
   ///
   /// In ru, this message translates to:
@@ -2236,11 +2248,41 @@ abstract class AppLocalizations {
   /// **'Прочие'**
   String get grinderKindOther;
 
-  /// Кнопка внизу экрана кофемолки: применить набор и отметку основной.
+  /// Подпись над названием кофемолки в верхнем блоке экрана выбора: какая стоит прямо сейчас.
   ///
   /// In ru, this message translates to:
-  /// **'Сохранить'**
-  String get grinderSave;
+  /// **'Выбрана сейчас'**
+  String get grinderCurrent;
+
+  /// Заголовок над поиском и списком: ниже выбирают замену той, что стоит сейчас.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сменить на другую'**
+  String get grinderChangeTo;
+
+  /// То же место, когда кофемолка ещё не выбрана ни одна.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите свою'**
+  String get grinderPick;
+
+  /// Подпись под названием выбранной кофемолки: сколько делений у её шкалы. Число приходит из справочника, форма слова считается ICU.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} деление} few{{count} деления} many{{count} делений} other{{count} деления}} на шкале'**
+  String grinderScale(int count);
+
+  /// Всплывающее сообщение после смены кофемолки, с кнопкой отмены рядом.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помол теперь в делениях {name}'**
+  String grinderApplied(String name);
+
+  /// Кнопка отмены во всплывающем сообщении: вернуть как было.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменить'**
+  String get undo;
 
   /// Заголовок пустого состояния поиска: по запросу не нашлось ничего.
   ///

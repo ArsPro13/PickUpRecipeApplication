@@ -39,6 +39,7 @@ import '../features/recipes/domain/models/user_step_type_model.dart';
 import '../features/recipes/domain/step_ending.dart';
 import '../general_widgets/amount_stepper.dart';
 import '../general_widgets/app_icon.dart';
+import '../general_widgets/grinder_button.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
 import '../general_widgets/duration_wheel_sheet.dart';
@@ -165,6 +166,10 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     final screen = AppScreen(
       title: texts.builderTitle,
       onBack: _leave,
+      // Помол в конструкторе задают щелчками — то есть по шкале конкретной
+      // мельницы. Чьей именно, до этого экран не говорил нигде, и правка
+      // «поставлю 18» означала разное у владельца Comandante и Timemore.
+      actions: const [GrinderButton(), SizedBox(width: AppSpacing.s4)],
       body: [
         Text(_subtitle(), style: context.texts.labelSmall),
         const SizedBox(height: AppSpacing.s3),

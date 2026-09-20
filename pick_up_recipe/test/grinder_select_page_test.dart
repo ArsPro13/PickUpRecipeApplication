@@ -1,4 +1,4 @@
-// Экран кофемолки: перевод и одиночный выбор.
+// Экран кофемолки: перевод и выбор одним касанием.
 //
 // На записи владельца (кадры 260s–270s) нижняя панель уже английская —
 // «Packs / Recipes / Scan / Profile», — а над ней стоит «Кофемолка», «Найти
@@ -65,6 +65,17 @@ class CatalogService implements GrinderService {
   }
 }
 
+/// Справочник и УЖЕ выбранная кофемолка: так экран открывают во второй раз.
+class ChosenService extends CatalogService {
+  ChosenService(this.chosen);
+
+  final Grinder chosen;
+
+  @override
+  Future<List<UserGrinder>> getUserGrinders() async =>
+      [UserGrinder(grinder: chosen, isPrimary: true)];
+}
+
 /// Роутер-заглушка: экран после сохранения уходит назад, и без роутера
 /// этот уход падает. Тот же приём, что в recipes_page_test — поднимать ради
 /// одного `maybePop` настоящий AppRouter значило бы тянуть в тест половину
@@ -118,13 +129,15 @@ List<String> ownTexts(WidgetTester tester) {
       .toList();
 }
 
-Future<CatalogService> pumpGrinders(
-    WidgetTester tester, String language) async {
+typedef Pumped = ({CatalogService service, _StubRouter router});
+
+Future<Pumped> pumpGrinders(WidgetTester tester, String language,
+    {CatalogService? withService}) async {
   tester.view.physicalSize = const Size(400, 900);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 
-  final service = CatalogService();
+  final service = withService ?? CatalogService();
   final router = _StubRouter();
 
   await tester.pumpWidget(ProviderScope(
@@ -144,7 +157,7 @@ Future<CatalogService> pumpGrinders(
 
   await tester.pumpAndSettle();
 
-  return service;
+  return (service: service, router: router);
 }
 
 /// Ввод в поле поиска вместе с паузой, которую экран держит намеренно:
@@ -202,7 +215,8 @@ void main() {
       expect(find.text(en.grinderTitle), findsOneWidget);
       expect(find.text(en.grinderKindManual), findsOneWidget);
       expect(find.text(en.grinderKindElectric), findsOneWidget);
-      expect(find.text(en.grinderSave), findsOneWidget);
+      // Кофемолки нет ни одной — сверху приглашение выбрать, а не «выбрана».
+      expect(find.text(en.grinderPick), findsOneWidget);
 
       for (final text in ownTexts(tester)) {
         expect(cyrillic.hasMatch(text), isFalse,
@@ -220,28 +234,23 @@ void main() {
           find.text('Eureka Mignon  жернова 50mm Filtro Pro'), findsOneWidget);
     });
 
-    testWidgets('выбор одним касанием, без отдельной «сделать основной»',
+    testWidgets('касание строки применяется сразу и закрывает экран',
         (tester) async {
-      final service = await pumpGrinders(tester, 'en');
+      final pumped = await pumpGrinders(tester, 'en');
 
-      // Отдельной кнопки «сделать основной» на экране больше нет: выбор
-      // и назначение основной — одно действие, а не два. Проверяем по типу,
-      // а не по подписи: строки под неё в словаре тоже больше нет.
+      // Ни кнопки «Сохранить» внизу, ни «сделать основной» рядом со строкой:
+      // выбор, назначение основной и сохранение — одно действие, а не три.
       expect(find.byType(TextButton), findsNothing);
+      expect(find.widgetWithText(ElevatedButton, 'Save'), findsNothing);
 
-      // Второе касание ПЕРЕНОСИТ выбор, а не добавляет вторую кофемолку.
-      await tester.tap(find.text('Comandante C40'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Timemore Chestnut C2'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(en.grinderSave));
-      await tester.pumpAndSettle();
-
-      expect(service.savedGrinders, isNotNull,
-          reason: 'сохранение не дошло до службы');
-      expect(service.savedGrinders!.map((g) => g.id), [40]);
-      expect(service.savedPrimaryId, 40);
+      expect(pumped.service.savedGrinders, isNotNull,
+          reason: 'касание не дошло до службы: нужен ещё один щелчок?');
+      expect(pumped.service.savedGrinders!.map((g) => g.id), [40]);
+      expect(pumped.service.savedPrimaryId, 40);
+      expect(pumped.router.popped, 1, reason: 'экран не закрылся после выбора');
 
       for (final text in ownTexts(tester)) {
         expect(cyrillic.hasMatch(text), isFalse,
@@ -249,13 +258,23 @@ void main() {
       }
     });
 
-    testWidgets('до выбора сохранять нечего', (tester) async {
-      final service = await pumpGrinders(tester, 'en');
+    testWidgets('выбранную видно сверху, и повторное касание ничего не пишет',
+        (tester) async {
+      final chosen = catalog.firstWhere((g) => g.id == 11);
+      final pumped = await pumpGrinders(tester, 'en',
+          withService: ChosenService(chosen));
 
-      await tester.tap(find.text(en.grinderSave));
+      // Верхний блок отвечает на вопрос «а какая сейчас» до всякого поиска.
+      expect(find.text(en.grinderCurrent), findsOneWidget);
+      expect(find.text(en.grinderChangeTo), findsOneWidget);
+      expect(find.text('Comandante C40'), findsWidgets);
+
+      await tester.tap(find.text('Comandante C40').last);
       await tester.pumpAndSettle();
 
-      expect(service.savedGrinders, isNull, reason: 'сохранили пустой выбор');
+      expect(pumped.service.savedGrinders, isNull,
+          reason: 'ту же самую записали заново');
+      expect(pumped.router.popped, 1, reason: 'экран не закрылся');
     });
 
     testWidgets('пустой ответ поиска объясняется по-английски', (tester) async {
@@ -296,7 +315,7 @@ void main() {
       expect(find.text('Кофемолка'), findsOneWidget);
       expect(find.text('Ручные'), findsOneWidget);
       expect(find.text('Электрические'), findsOneWidget);
-      expect(find.text(ru.grinderSave), findsOneWidget);
+      expect(find.text(ru.grinderPick), findsOneWidget);
     });
 
     testWidgets('поиск набором латиницей находит кириллическое имя',
