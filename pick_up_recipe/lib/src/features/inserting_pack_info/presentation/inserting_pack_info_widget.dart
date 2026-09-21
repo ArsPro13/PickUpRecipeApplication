@@ -206,6 +206,7 @@ class _InsertingPackInfoWidgetState
     // обязана удаться: пустой список означает поле без подсказок, а не
     // сломанную форму, и в этом виде она работала до появления словарей.
     final locale = Localizations.localeOf(context);
+    final english = locale.languageCode != 'ru';
     List<String> hints(String kind) => termLabels(
           ref.watch(referenceTermsProvider(kind)).valueOrNull ?? const [],
           locale,
@@ -214,7 +215,7 @@ class _InsertingPackInfoWidgetState
     final possibleRegions = hints('region');
     final possibleVariety = hints('variety');
     final possibleProcessingMethods = hints('processing');
-    final possibleDescriptors = ref.watch(descriptorHintsProvider);
+    final possibleDescriptors = ref.watch(descriptorHintsProvider(english));
 
     // Поля заполняются, только когда значения пришли извне. Прежний код звал
     // это из каждой перерисовки и затирал то, что человек набирает.

@@ -92,23 +92,23 @@ class DescriptorChip extends ConsumerWidget {
         color: text,
         fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
       ),
-      textAlign: TextAlign.center,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );
 
+    // Ни alignment, ни constraints: Container с выравниванием растягивается
+    // на всю ширину, которую ему дают, и в Wrap три тега вставали тремя
+    // полосами через весь экран вместо ленты. Высоту держит отступ.
     final body = Container(
-      constraints: BoxConstraints(minHeight: dense ? 32 : AppSizes.tapTarget - AppSpacing.s4),
       padding: EdgeInsets.symmetric(
-        horizontal: dense ? AppSpacing.s2 : AppSpacing.s3,
-        vertical: AppSpacing.s2,
+        horizontal: dense ? AppSpacing.s3 : AppSpacing.s4,
+        vertical: dense ? AppSpacing.s2 : AppSpacing.s3,
       ),
       decoration: BoxDecoration(
         color: background,
         borderRadius: AppRadius.small,
         border: Border.all(color: border, width: AppStroke.thick),
       ),
-      alignment: Alignment.center,
       child: label,
     );
 

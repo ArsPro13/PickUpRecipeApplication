@@ -83,12 +83,18 @@ final referenceTermsProvider =
   }
 });
 
-/// Подсказки дескрипторов: те же слова, которыми красятся теги.
-final descriptorHintsProvider = Provider<List<String>>((ref) {
+/// Подсказки дескрипторов на языке экрана — те же слова, которыми красятся
+/// теги.
+///
+/// Язык параметром, а не из настройки: настройка бывает «как в системе», и
+/// тогда сама она языка не знает. На английском телефоне подсказка «ягода»
+/// бесполезна — человек набирает berry.
+final descriptorHintsProvider =
+    Provider.family<List<String>, bool>((ref, english) {
   final descriptors = ref.watch(flavorDescriptorsProvider).valueOrNull;
   final names = [
     for (final entry in descriptors ?? const <FlavorDescriptorEntry>[])
-      if (entry.name.isNotEmpty) entry.name,
+      if (entry.label(english).isNotEmpty) entry.label(english),
   ];
   names.sort();
   return names;

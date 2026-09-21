@@ -160,10 +160,37 @@ class FlavorPalette {
 
   /// Категория слова. Неизвестное — «прочее», и это честный ответ.
   FlavorCategory categoryOf(String word) {
-    final key = word.trim().toLowerCase();
-    final slug = wordIndex[key]?.category ??
-        (categories.containsKey(key) ? key : 'other');
+    final slug = _toneOf(word)?.category ??
+        (categories.containsKey(word.trim().toLowerCase())
+            ? word.trim().toLowerCase()
+            : 'other');
     return categories[slug] ?? _builtIn['other']!;
+  }
+
+  /// Слово в словаре — точно или по началу.
+  ///
+  /// На пачках пишут короче, чем в справочнике: «тростник» вместо
+  /// «тростникового сахара», «молочный шоколад» вместо «шоколада молочного».
+  /// Серый тег на таком слове — не честность, а промах: семья очевидна.
+  /// Поэтому при промахе ищется слово справочника, которое начинается с
+  /// набранного или с которого начинается оно само.
+  DescriptorTone? _toneOf(String word) {
+    final key = word.trim().toLowerCase();
+    if (key.isEmpty) return null;
+
+    final exact = wordIndex[key];
+    if (exact != null) return exact;
+    // Короче четырёх букв совпадение по началу — уже лотерея: «мёд» и
+    // «медовый» ещё родня, а «сок» и «сокращение» уже нет.
+    if (key.length < 4) return null;
+
+    for (final entry in wordIndex.entries) {
+      if (entry.key.length < 4) continue;
+      if (entry.key.startsWith(key) || key.startsWith(entry.key)) {
+        return entry.value;
+      }
+    }
+    return null;
   }
 
   FlavorCategory bySlug(String slug) =>
@@ -175,8 +202,7 @@ class FlavorPalette {
   /// контраст текста, тон держит смысл. Ступень меняет ТОЛЬКО цветность —
   /// «ягода» тише «ежевики», но рядом видно, что это одна семья.
   DescriptorColors colorsOf(String word, Brightness brightness) {
-    final key = word.trim().toLowerCase();
-    final tone = wordIndex[key];
+    final tone = _toneOf(word);
     final category = categoryOf(word);
     final intensity = tone?.intensity ?? 2;
     return DescriptorColors(
