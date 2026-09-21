@@ -50,6 +50,10 @@ import '../features/recipes/domain/models/correction_model.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../features/recipes/domain/taste_map.dart';
+import '../features/reference/application/reference_state.dart';
+import '../features/reference/domain/flavor_descriptor_entry.dart';
+import '../features/reference/domain/rating_words.dart';
+import '../general_widgets/descriptor_chip.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
@@ -92,6 +96,21 @@ class _RatingPageState extends ConsumerState<RatingPage> {
   double _acidity = 5;
   double _bitterness = 5;
   double _sweetness = 5;
+  double _body = 5;
+
+  /// Отмеченные слова — слаги общего справочника.
+  ///
+  /// Один набор на весь экран, а не по набору на план: слово описывает
+  /// чашку, а не место в анкете, и «ягода» в аромате и «ягода» во вкусе —
+  /// одна и та же ягода. В базе у оценки тоже один набор.
+  final Set<String> _words = {};
+
+  /// Выше этого значения у кислотности и сладости появляются слова.
+  ///
+  /// Шкала здесь 0…10, а «шесть» с макета — это шесть из девяти, то есть
+  /// две трети. Спрашивать «какая именно кислотность» у того, кто поставил
+  /// тройку, незачем: он уже сказал, что её нет.
+  static const double _wordsFrom = 6.5;
 
   /// Отложенная запись черновика.
   ///
@@ -149,8 +168,13 @@ class _RatingPageState extends ConsumerState<RatingPage> {
             _bitterness = axis.value;
           case 'sweetness':
             _sweetness = axis.value;
+          case 'body':
+            _body = axis.value;
         }
       }
+      _words
+        ..clear()
+        ..addAll(draft.words);
     });
   }
 
@@ -162,6 +186,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         axes: {
           for (final axis in _touched) axis: _axisValue(axis),
         },
+        words: _words.toList(),
         savedAt: DateTime.now(),
       );
 
@@ -171,6 +196,7 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         'aftertaste' => _aftertaste,
         'acidity' => _acidity,
         'bitterness' => _bitterness,
+        'body' => _body,
         _ => _sweetness,
       };
 
@@ -215,6 +241,14 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         bitterness: _touched.contains('bitterness') ? _bitterness : null,
         sweetness: _touched.contains('sweetness') ? _sweetness : null,
         overall: _overall,
+        // Слова уезжают слагами: подпись зависит от языка телефона, а
+        // сравнивать оценки надо между телефонами.
+        descriptors: _words.toList(),
+        // Тело живёт не колонкой оценки, а дополнительной осью справочника,
+        // и уезжает по своему слагу — вместе с остальными тронутыми.
+        axes: {
+          if (_touched.contains('body')) 'body': _body,
+        },
         // По-русски и на английском телефоне: комментарий читают люди в
         // кабинете обжарщика, и язык этого поля — не язык телефона.
         comment: _point.isCenter ? '' : _point.summaryRu,
@@ -306,9 +340,132 @@ class _RatingPageState extends ConsumerState<RatingPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  /// Уйти, ничего не сказав.
+  ///
+  /// Черновик при этом стирается: «пропустить» — это ответ, а не отложить.
+  /// Иначе плашка «продолжите оценку» встретила бы человека на вкладке пачек
+  /// сразу после того, как он отказался.
+  Future<void> _skip() async {
+    _draftWrite?.cancel();
+    await RatingDrafts.clear();
+    if (!mounted) return;
+    await context.router.maybePop();
+  }
+
+  void _toggleWord(String slug) {
+    setState(() {
+      if (!_words.remove(slug)) _words.add(slug);
+    });
+    _remember();
+  }
+
+  /// Всё колесо: слова, которых нет на экране.
+  Future<void> _openWheel(
+    List<FlavorDescriptorEntry> dictionary,
+    bool english,
+  ) async {
+    final texts = AppLocalizations.of(context);
+    final palette = ref.read(paletteNowProvider);
+
+    // Тактильность в колесе не показывается: её спрашивает свой план ниже,
+    // и одно и то же слово в двух местах экрана значило бы два разных
+    // вопроса про одно ощущение.
+    final byCategory = <String, List<FlavorDescriptorEntry>>{};
+    for (final entry in dictionary) {
+      if (entry.category == 'mouthfeel') continue;
+      byCategory.putIfAbsent(entry.category, () => []).add(entry);
+    }
+    final categories = byCategory.keys.toList()
+      ..sort((a, b) =>
+          palette.bySlug(a).sortOrder.compareTo(palette.bySlug(b).sortOrder));
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheet) => SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s5,
+                0,
+                AppSpacing.s5,
+                AppSpacing.s5,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(texts.rateWheelTitle, style: context.texts.titleMedium),
+                  const SizedBox(height: AppSpacing.s2),
+                  Text(texts.rateWheelHint, style: context.texts.labelSmall),
+                  const SizedBox(height: AppSpacing.s4),
+                  for (final category in categories) ...[
+                    Text(
+                      palette.bySlug(category).label(english),
+                      style: context.texts.labelSmall?.copyWith(
+                        color: palette
+                            .bySlug(category)
+                            .ink(Theme.of(context).brightness),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s2),
+                    Wrap(
+                      spacing: AppSpacing.s2,
+                      runSpacing: AppSpacing.s2,
+                      children: [
+                        for (final entry in byCategory[category]!)
+                          DescriptorChip(
+                            word: entry.label(english),
+                            lookup: entry.slug,
+                            dense: true,
+                            selected: _words.contains(entry.slug),
+                            onTap: () {
+                              _toggleWord(entry.slug);
+                              setSheet(() {});
+                            },
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s4),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
+    final english = Localizations.localeOf(context).languageCode != 'ru';
+    final brightness = Theme.of(context).brightness;
+    final palette = ref.watch(paletteNowProvider);
+
+    // Подписи слов берутся из справочника, если он приехал, и из встроенного
+    // набора, если нет: оценку ставят там же, где заваривали, а это чаще
+    // всего кухня без сети.
+    final dictionary =
+        ref.watch(flavorDescriptorsProvider).valueOrNull ?? const [];
+    final known = {for (final entry in dictionary) entry.slug: entry};
+    String labelOf(RatingWord word) =>
+        known[word.slug]?.label(english) ?? word.label(english);
+
+    // Обжарщик пишет дескрипторы словами, а хранятся они слагами. Слово с
+    // пачки ищется в словаре по имени; не нашлось — уедет как есть, и
+    // сервер его не запишет: строки справочника для него нет.
+    final slugOfName = <String, String>{
+      for (final entry in dictionary)
+        if (entry.name.isNotEmpty) entry.name.toLowerCase(): entry.slug,
+      for (final entry in dictionary)
+        if (entry.nameEn.isNotEmpty) entry.nameEn.toLowerCase(): entry.slug,
+    };
 
     final subtitle = [
       widget.pack?.packName,
@@ -317,18 +474,38 @@ class _RatingPageState extends ConsumerState<RatingPage> {
           : widget.recipe.device,
     ].whereType<String>().where((it) => it.isNotEmpty).join(' · ');
 
+    // Обещания обжарщика — только у пачки, которую завёл обжарщик. У пачки,
+    // заведённой руками, дескрипторы вписал сам человек, и спрашивать его,
+    // нашёл ли он собственные слова, незачем.
+    final promised = (widget.pack?.roasterName ?? '').isEmpty
+        ? const <String>[]
+        : (widget.pack?.packDescriptors ?? const <String>[]);
+
+    Widget words(List<RatingWord> set) => _WordRow(
+          words: set,
+          chosen: _words,
+          label: labelOf,
+          onToggle: _toggleWord,
+        );
+
     return AppScreen(
       title: texts.rateTitle,
+      actions: [
+        TextButton(
+          onPressed: _busy ? null : _skip,
+          child: Text(texts.rateSkip),
+        ),
+      ],
       body: [
         if (subtitle.isNotEmpty) ...[
           Text(subtitle, style: context.texts.bodySmall),
           const SizedBox(height: AppSpacing.s3),
         ],
 
-        // Первым делом — зачем это всё. Плашка стоит до карты, а не после:
-        // прочитанное после заполнения уже ничего не меняет.
-        const _ForYouPlate(),
-        const SizedBox(height: AppSpacing.s3),
+        // Что делать с картой — одной строкой над ней. Человек видит круг
+        // раньше, чем любое объяснение под ним.
+        Text(texts.rateHowTo, style: context.texts.labelSmall),
+        const SizedBox(height: AppSpacing.s2),
 
         HeroSurface(
           padding: const EdgeInsets.all(AppSpacing.s4),
@@ -371,11 +548,111 @@ class _RatingPageState extends ConsumerState<RatingPage> {
           ),
         ],
 
+        if (promised.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.s5),
+          _PromiseBlock(
+            promised: promised,
+            chosen: _words,
+            slugOf: (word) => slugOfName[word.trim().toLowerCase()] ?? word,
+            onToggle: _toggleWord,
+          ),
+        ],
+
         const _OptionalDivider(),
 
-        // Звёзды — первое в необязательной части: это самый привычный способ
-        // сказать «понравилось», и прятать его за шестью ползунками значило
-        // бы спрятать единственное, что человек и правда хочет отметить.
+        // ТРИ ПЛАНА, А НЕ ОДИН СПИСОК. Раньше шесть ползунков стояли подряд,
+        // и «кислотность» соседствовала с «телом»: первое — вкус, второе —
+        // ощущение, и вопрос был один на двоих. Теперь планы разведены и
+        // подписаны, а у каждого свой цвет.
+        _Plane(
+          title: texts.ratePlaneFlavour,
+          note: texts.ratePlaneFlavourNote,
+          color: palette.bySlug('fruit').ink(brightness),
+          children: [
+            _ScaleLine(
+              name: texts.rateAxisAroma,
+              value: _aroma,
+              onChanged: (v) => _axis('aroma', () => _aroma = v),
+            ),
+            _ScaleLine(
+              name: texts.rateAxisFlavor,
+              value: _flavor,
+              onChanged: (v) => _axis('flavor', () => _flavor = v),
+            ),
+            _ScaleLine(
+              name: texts.rateAxisAftertaste,
+              value: _aftertaste,
+              onChanged: (v) => _axis('aftertaste', () => _aftertaste = v),
+            ),
+            const SizedBox(height: AppSpacing.s2),
+            words(kFlavourWords),
+            const SizedBox(height: AppSpacing.s3),
+            AppButton(
+              label: texts.rateWholeWheel,
+              kind: AppButtonKind.secondary,
+              block: false,
+              onPressed: dictionary.isEmpty
+                  ? null
+                  : () => _openWheel(dictionary, english),
+            ),
+          ],
+        ),
+
+        _Plane(
+          title: texts.ratePlaneTastes,
+          note: texts.ratePlaneTastesNote,
+          color: context.colors.primary,
+          children: [
+            _ScaleLine(
+              name: texts.rateAxisAcidity,
+              value: _acidity,
+              color: palette.bySlug('citrus').ink(brightness),
+              ends: (texts.rateEndNone, texts.rateEndBright),
+              onChanged: (v) => _axis('acidity', () => _acidity = v),
+            ),
+            // Слова появляются только у сильного: у того, кто поставил
+            // двойку, спрашивать «какая именно кислотность» нечего.
+            if (_acidity >= _wordsFrom) ...[
+              const SizedBox(height: AppSpacing.s2),
+              words(kAcidityWords),
+              const SizedBox(height: AppSpacing.s3),
+            ],
+            _ScaleLine(
+              name: texts.rateAxisSweetness,
+              value: _sweetness,
+              color: palette.bySlug('sugars').ink(brightness),
+              ends: (texts.rateEndNone, texts.rateEndThick),
+              onChanged: (v) => _axis('sweetness', () => _sweetness = v),
+            ),
+            if (_sweetness >= _wordsFrom) ...[
+              const SizedBox(height: AppSpacing.s2),
+              words(kSweetnessWords),
+            ],
+          ],
+        ),
+
+        _Plane(
+          title: texts.ratePlaneMouth,
+          note: texts.ratePlaneMouthNote,
+          color: palette.bySlug('mouthfeel').ink(brightness),
+          children: [
+            _ScaleLine(
+              name: texts.rateAxisBody,
+              value: _body,
+              color: palette.bySlug('mouthfeel').ink(brightness),
+              ends: (texts.rateEndLight, texts.rateEndFull),
+              onChanged: (v) => _axis('body', () => _body = v),
+            ),
+            const SizedBox(height: AppSpacing.s2),
+            words(kBodyWords),
+          ],
+        ),
+
+        const SizedBox(height: AppSpacing.s5),
+
+        // Звёзды — единственное, что уходит обжарщику, и стоят они последними
+        // не по важности, а по порядку разговора: сперва про чашку, потом
+        // общее впечатление.
         _Stars(
           value: _stars,
           onChanged: (value) {
@@ -386,49 +663,9 @@ class _RatingPageState extends ConsumerState<RatingPage> {
             _remember();
           },
         ),
+
         const SizedBox(height: AppSpacing.s5),
-
-        Text(texts.rateAxesTitle, style: context.texts.bodyMedium),
-        const SizedBox(height: AppSpacing.s1),
-        Text(texts.rateAxesHint, style: context.texts.labelSmall),
-        const SizedBox(height: AppSpacing.s3),
-
-        QuietSurface(
-          child: Column(
-            children: [
-              _Axis(
-                label: texts.rateAxisAroma,
-                value: _aroma,
-                onChanged: (v) => _axis('aroma', () => _aroma = v),
-              ),
-              _Axis(
-                label: texts.rateAxisFlavor,
-                value: _flavor,
-                onChanged: (v) => _axis('flavor', () => _flavor = v),
-              ),
-              _Axis(
-                label: texts.rateAxisAftertaste,
-                value: _aftertaste,
-                onChanged: (v) => _axis('aftertaste', () => _aftertaste = v),
-              ),
-              _Axis(
-                label: texts.rateAxisAcidity,
-                value: _acidity,
-                onChanged: (v) => _axis('acidity', () => _acidity = v),
-              ),
-              _Axis(
-                label: texts.rateAxisBitterness,
-                value: _bitterness,
-                onChanged: (v) => _axis('bitterness', () => _bitterness = v),
-              ),
-              _Axis(
-                label: texts.rateAxisSweetness,
-                value: _sweetness,
-                onChanged: (v) => _axis('sweetness', () => _sweetness = v),
-              ),
-            ],
-          ),
-        ),
+        const _ForYouPlate(),
       ],
       bottom: [
         if (_point.complaints.isEmpty)
@@ -454,6 +691,10 @@ class _RatingPageState extends ConsumerState<RatingPage> {
             onPressed: _busy ? null : () => _submit(wantCorrection: false),
           ),
         ],
+        TextButton(
+          onPressed: _busy ? null : _skip,
+          child: Text(texts.rateSkipRating),
+        ),
       ],
     );
   }
@@ -504,9 +745,9 @@ class TasteMap extends StatelessWidget {
                     weak: texts.rateTasteWeak,
                   ),
                   frame: context.palette.border,
-                  ink: context.colors.secondary,
+                  ink: context.colors.onSurface,
                   accent: context.colors.primary,
-                  target: context.palette.success,
+                  zones: _TasteZones.of(Theme.of(context).brightness),
                 ),
               ),
             ),
@@ -517,6 +758,38 @@ class TasteMap extends StatelessWidget {
   }
 }
 
+/// Раскраска колец карты: чем дальше от центра, тем хуже.
+///
+/// Цвета зашиты числами, а не взяты из темы: это выбранные краски, а не
+/// производные от фона. В тёмной теме — мягкий светофор, в светлой —
+/// «Пряности»: олива, куркума, паприка. Одни и те же три круга в тёмной теме
+/// светофором выглядели правильно, а в светлой краснили — на белом та же
+/// заливка читается вдвое громче.
+///
+/// Непрозрачность у светлой темы выше: заливка ложится на белое и гаснет.
+class _TasteZones {
+  const _TasteZones(this.colors, this.alpha);
+
+  /// От центра наружу: «как задумано», «заметно», «сильно мимо».
+  final List<Color> colors;
+  final List<double> alpha;
+
+  static const _TasteZones _light = _TasteZones(
+    [Color(0xFFA9C24F), Color(0xFFF2B733), Color(0xFFD95F2E)],
+    [0.64, 0.58, 0.52],
+  );
+
+  static const _TasteZones _dark = _TasteZones(
+    [Color(0xFF3FBF63), Color(0xFFE5A93C), Color(0xFFE2594A)],
+    [0.46, 0.38, 0.32],
+  );
+
+  static _TasteZones of(Brightness brightness) =>
+      brightness == Brightness.dark ? _dark : _light;
+
+  Color band(int ring) => colors[ring].withValues(alpha: alpha[ring]);
+}
+
 class _TasteMapPainter extends CustomPainter {
   const _TasteMapPainter({
     required this.point,
@@ -524,7 +797,7 @@ class _TasteMapPainter extends CustomPainter {
     required this.frame,
     required this.ink,
     required this.accent,
-    required this.target,
+    required this.zones,
   });
 
   final TastePoint point;
@@ -536,7 +809,10 @@ class _TasteMapPainter extends CustomPainter {
   final Color frame;
   final Color ink;
   final Color accent;
-  final Color target;
+  final _TasteZones zones;
+
+  /// Доли поля, на которых стоят кольца. Внешнее кольцо и есть край поля.
+  static const List<double> _rings = [0.34, 0.67, 1.0];
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -544,23 +820,24 @@ class _TasteMapPainter extends CustomPainter {
     final half = size.width / 2;
 
     // Поле оставляет поля под подписи осей.
-    final field = half * 0.74;
+    final field = half * 0.76;
+
+    // Кольца заливаются снаружи внутрь: заливки полупрозрачные, и «зелёное
+    // поверх жёлтого поверх красного» — это и есть три ступени.
+    for (var ring = _rings.length - 1; ring >= 0; ring--) {
+      canvas.drawCircle(
+        center,
+        field * _rings[ring],
+        Paint()..color = zones.band(ring),
+      );
+    }
 
     final line = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = AppStroke.thin
       ..color = frame;
 
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: center, width: field * 2, height: field * 2),
-        const Radius.circular(AppRadius.l),
-      ),
-      line,
-    );
-
-    // Три кольца — три ступени силы: чуть, заметно, сильно.
-    for (final fraction in const [0.3, 0.6, 0.9]) {
+    for (final fraction in _rings) {
       canvas.drawCircle(center, field * fraction, line);
     }
 
@@ -575,30 +852,34 @@ class _TasteMapPainter extends CustomPainter {
       line,
     );
 
-    // Цель обжарщика — в центре: «получилось как задумано».
-    canvas.drawCircle(
+    // Цель обжарщика — в центре: «получилось как задумано». Пунктиром, а не
+    // сплошным: сплошной круг того же цвета читался как ещё одно кольцо.
+    _dashedCircle(
+      canvas,
       center,
       field * 0.14,
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = AppStroke.thick
-        ..color = target,
+        ..color = zones.colors[0],
     );
 
-    _label(canvas, ends.sour,
-        Offset(center.dx - field - AppSpacing.s2, center.dy), ink,
-        align: TextAlign.right, anchorRight: true);
-    _label(canvas, ends.bitter,
-        Offset(center.dx + field + AppSpacing.s2, center.dy), ink);
+    // Подписи крупнее прежних двенадцати пунктов: карта шириной с ладонь, и
+    // мелкая подпись у края круга не читается на ходу.
+    final labelSize = (field * 0.14).clamp(12.0, 18.0);
+
+    _label(canvas, ends.sour, Offset(0, center.dy), ink, labelSize);
+    _label(canvas, ends.bitter, Offset(size.width, center.dy), ink, labelSize,
+        anchorRight: true);
     // Все четыре подписи — наречия, одной частью речи. «Крепче» и «слабее»
     // рядом с «кисло» и «горько» читались как два разных вопроса на одном
     // круге: одна ось спрашивала «по сравнению с чем», вторая — «какое».
     // То же правило держит и английский: одна часть речи на все четыре конца.
     _label(canvas, ends.strong,
-        Offset(center.dx, center.dy - field - AppSpacing.s5), ink,
+        Offset(center.dx, center.dy - field - labelSize), ink, labelSize,
         centered: true);
     _label(canvas, ends.weak,
-        Offset(center.dx, center.dy + field + AppSpacing.s3), ink,
+        Offset(center.dx, center.dy + field + labelSize), ink, labelSize,
         centered: true);
 
     if (point.isCenter) return;
@@ -618,19 +899,35 @@ class _TasteMapPainter extends CustomPainter {
     canvas.drawCircle(you, AppSpacing.s2, Paint()..color = accent);
   }
 
+  /// Пунктирная окружность: Flutter рисует пунктир только дугами.
+  void _dashedCircle(Canvas canvas, Offset center, double radius, Paint paint) {
+    const dashes = 16;
+    const sweep = 6.283185307179586 / dashes;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    for (var i = 0; i < dashes; i++) {
+      canvas.drawArc(rect, i * sweep, sweep * 0.55, false, paint);
+    }
+  }
+
   void _label(
     Canvas canvas,
     String text,
     Offset at,
-    Color color, {
-    TextAlign align = TextAlign.left,
+    Color color,
+    double fontSize, {
     bool centered = false,
     bool anchorRight = false,
   }) {
     final painter = TextPainter(
-      text: TextSpan(text: text, style: TextStyle(color: color, fontSize: 12)),
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
       textDirection: TextDirection.ltr,
-      textAlign: align,
     )..layout();
 
     final dx = centered
@@ -641,10 +938,13 @@ class _TasteMapPainter extends CustomPainter {
   }
 
   // Не только точка: сменившийся язык оставляет точку на месте, а подписи
-  // осей меняет, и без сравнения они остались бы от прошлого языка.
+  // осей меняет, и без сравнения они остались бы от прошлого языка. Тема
+  // меняет раскраску колец — её тоже надо сравнивать.
   @override
   bool shouldRepaint(_TasteMapPainter oldDelegate) =>
-      oldDelegate.point != point || oldDelegate.ends != ends;
+      oldDelegate.point != point ||
+      oldDelegate.ends != ends ||
+      oldDelegate.zones != zones;
 }
 
 /// Что человек сказал картой — словами.
@@ -798,40 +1098,228 @@ class _OptionalDivider extends StatelessWidget {
   }
 }
 
-/// Одна ось развёрнутой оценки.
-class _Axis extends StatelessWidget {
-  const _Axis(
-      {required this.label, required this.value, required this.onChanged});
 
-  final String label;
-  final double value;
-  final ValueChanged<double> onChanged;
+/// План оценки: цветная полоска, название, пояснение и содержимое.
+///
+/// План — это не раздел формы, а вопрос одного рода: «на что похоже»,
+/// «какие основные вкусы», «какое во рту». Пока они стояли одним списком
+/// ползунков, «кислотность» и «тело» читались как однородные, хотя первое —
+/// вкус, а второе — ощущение.
+class _Plane extends StatelessWidget {
+  const _Plane({
+    required this.title,
+    required this.note,
+    required this.color,
+    required this.children,
+  });
+
+  final String title;
+  final String note;
+  final Color color;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: AppSpacing.s1,
+                height: AppSpacing.s5,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: AppRadius.small,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s3),
+              Text(title, style: context.texts.bodyMedium),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s1),
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.s4),
+            child: Text(note, style: context.texts.labelSmall),
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          QuietSurface(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Одна линия шкалы: название слева, значение справа, подписи концов внизу.
+///
+/// Подписи концов, а не только цифра: «кислотность 7» ничего не значит без
+/// того, где у шкалы «нет», а где «яркая». Цифра оставлена — по ней человек
+/// потом сравнивает две чашки.
+class _ScaleLine extends StatelessWidget {
+  const _ScaleLine({
+    required this.name,
+    required this.value,
+    required this.onChanged,
+    this.ends,
+    this.color,
+  });
+
+  final String name;
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  /// Что значат концы шкалы. Пусто — обычные «слабо» и «сильно».
+  final (String, String)? ends;
+
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+    final tint = color ?? context.colors.primary;
+    final (low, high) =
+        ends ?? (texts.rateScaleLow, texts.rateScaleHigh);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(name, style: context.texts.bodySmall)),
+              Text(
+                value.toStringAsFixed(value == value.roundToDouble() ? 0 : 2),
+                style: context.texts.bodySmall?.copyWith(color: tint),
+              ),
+            ],
+          ),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: tint,
+              thumbColor: tint,
+              overlayColor: tint.withValues(alpha: 0.12),
+            ),
+            child: Slider(
+              value: value,
+              max: 10,
+              divisions: 40,
+              label: value.toStringAsFixed(2),
+              onChanged: onChanged,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(low, style: context.texts.labelSmall),
+              Text(high, style: context.texts.labelSmall),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Ряд слов с выбором. Предела нет: отмечают столько, сколько почувствовали.
+class _WordRow extends StatelessWidget {
+  const _WordRow({
+    required this.words,
+    required this.chosen,
+    required this.label,
+    required this.onToggle,
+  });
+
+  final List<RatingWord> words;
+  final Set<String> chosen;
+  final String Function(RatingWord word) label;
+  final ValueChanged<String> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.s2,
+      runSpacing: AppSpacing.s2,
       children: [
-        SizedBox(
-            width: AppSpacing.s18 + AppSpacing.s5,
-            child: Text(label, style: context.texts.bodySmall)),
-        Expanded(
-          child: Slider(
-            value: value,
-            max: 10,
-            divisions: 40,
-            label: value.toStringAsFixed(2),
-            onChanged: onChanged,
+        for (final word in words)
+          DescriptorChip(
+            word: label(word),
+            lookup: word.slug,
+            categorySlug: word.category,
+            dense: true,
+            selected: chosen.contains(word.slug),
+            onTap: () => onToggle(word.slug),
           ),
-        ),
-        SizedBox(
-          width: AppSpacing.s12,
-          child: Text(
-            value.toStringAsFixed(value == value.roundToDouble() ? 0 : 2),
-            style: context.texts.bodySmall,
-            textAlign: TextAlign.right,
-          ),
-        ),
       ],
+    );
+  }
+}
+
+/// Что обещал обжарщик — и что из этого нашлось.
+///
+/// Не «да / нет» у каждого слова, а тот же набор меток, что и везде: нажал —
+/// значит нашёл. Две кнопки на слово превращали блок в анкету из шести
+/// вопросов там, где их три.
+///
+/// Слова здесь — свободный текст с пачки, а не слаги справочника: обжарщик
+/// пишет их сам. В набор они уезжают как есть, и цвет им подбирает палитра
+/// по имени — ровно так же, как на карточке пачки.
+class _PromiseBlock extends StatelessWidget {
+  const _PromiseBlock({
+    required this.promised,
+    required this.chosen,
+    required this.slugOf,
+    required this.onToggle,
+  });
+
+  final List<String> promised;
+  final Set<String> chosen;
+
+  /// Слово с пачки → слаг справочника, если он известен.
+  final String Function(String word) slugOf;
+
+  final ValueChanged<String> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+    final found = promised.where((w) => chosen.contains(slugOf(w))).length;
+
+    return QuietSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(texts.ratePromiseTitle, style: context.texts.bodySmall),
+          const SizedBox(height: AppSpacing.s3),
+          Wrap(
+            spacing: AppSpacing.s2,
+            runSpacing: AppSpacing.s2,
+            children: [
+              for (final word in promised)
+                DescriptorChip(
+                  word: word,
+                  dense: true,
+                  selected: chosen.contains(slugOf(word)),
+                  onTap: () => onToggle(slugOf(word)),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s2),
+          Text(
+            found == 0
+                ? texts.ratePromiseNone
+                : texts.ratePromiseFound(found, promised.length),
+            style: context.texts.labelSmall,
+          ),
+        ],
+      ),
     );
   }
 }

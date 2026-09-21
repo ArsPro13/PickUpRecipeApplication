@@ -849,7 +849,7 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get rateTitle => 'Com\'è venuto';
+  String get rateTitle => 'La tua tazza';
 
   @override
   String get rateOnTarget => 'Venuto proprio come previsto';
@@ -928,6 +928,90 @@ class AppLocalizationsIt extends AppLocalizations {
       locale: localeName,
       other: '$count assi',
       one: '$count asse',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rateHowTo => 'Trascina il punto — dov\'è finita la tazza';
+
+  @override
+  String get rateSkip => 'Salta';
+
+  @override
+  String get rateSkipRating => 'Salta la valutazione';
+
+  @override
+  String get rateWholeWheel => 'Ruota completa';
+
+  @override
+  String get rateWheelTitle => 'Ruota dei sapori';
+
+  @override
+  String get rateWheelHint =>
+      'Le parole sono raccolte per famiglia — ogni famiglia ha il suo colore';
+
+  @override
+  String get ratePlaneFlavour => 'A cosa somiglia';
+
+  @override
+  String get ratePlaneFlavourNote => 'Parole della ruota dei sapori';
+
+  @override
+  String get ratePlaneTastes => 'Gusti principali';
+
+  @override
+  String get ratePlaneTastesNote => 'Le parole compaiono per i gusti forti';
+
+  @override
+  String get ratePlaneMouth => 'Come si sente';
+
+  @override
+  String get ratePlaneMouthNote => 'Una linea e le parole';
+
+  @override
+  String get rateAxisBody => 'Corpo';
+
+  @override
+  String get rateScaleLow => 'appena';
+
+  @override
+  String get rateScaleHigh => 'intenso';
+
+  @override
+  String get rateEndNone => 'assente';
+
+  @override
+  String get rateEndBright => 'brillante';
+
+  @override
+  String get rateEndThick => 'densa';
+
+  @override
+  String get rateEndLight => 'leggero';
+
+  @override
+  String get rateEndFull => 'pieno';
+
+  @override
+  String get ratePromiseTitle =>
+      'Il torrefattore ha promesso — segna cosa hai trovato';
+
+  @override
+  String get ratePromiseNone => 'Ancora niente di segnato';
+
+  @override
+  String ratePromiseFound(int found, int total) {
+    return 'Trovati $found su $total';
+  }
+
+  @override
+  String rateWordsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count parole',
+      one: '$count parola',
     );
     return '$_temp0';
   }

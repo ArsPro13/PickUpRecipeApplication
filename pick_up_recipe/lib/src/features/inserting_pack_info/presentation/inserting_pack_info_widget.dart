@@ -12,10 +12,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:pick_up_recipe/core/logger.dart';
 import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
-import 'package:pick_up_recipe/src/features/inserting_pack_info/data_sources/remote/possible_values_service.dart';
+import 'package:pick_up_recipe/src/features/reference/application/reference_state.dart';
+import 'package:pick_up_recipe/src/features/reference/domain/reference_term.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/info_inserting_camera_widget.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/info_inserting_date_widget.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/info_inserting_line_widget.dart';
@@ -46,13 +46,6 @@ class _InsertingPackInfoWidgetState
   final TextEditingController _varietyController = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final PossibleValuesService _possibleValuesService = PossibleValuesService();
-
-  List<String> possibleCountries = [];
-  List<String> possibleRegions = [];
-  List<String> possibleDescriptors = [];
-  List<String> possibleVariety = [];
-  List<String> possibleProcessingMethods = [];
 
   /// Снимок значений, которыми поля уже заполнены. Пока он не изменился,
   /// поля трогать нельзя: в них печатает человек.
@@ -64,34 +57,8 @@ class _InsertingPackInfoWidgetState
     _descriptorControllers.add(TextEditingController());
     _processingMethodControllers.add(TextEditingController());
     _seedFields(ref.read(formNotifierProvider));
-    getPossibleValues();
   }
 
-  void getPossibleValues() async {
-    try {
-      possibleCountries =
-          await _possibleValuesService.getByEndpoint('pack_country') ?? [];
-      // Справочник регионов на сервере есть — три сотни значений, — но по
-      // имени pack_region он пока не отдаётся: в text_interpreter нет такой
-      // пары имён. Запрос стоит здесь заранее: подсказки включатся сами,
-      // как только пару добавят, а до тех пор поле работает как обычное.
-      possibleRegions =
-          await _possibleValuesService.getByEndpoint('pack_region') ?? [];
-      possibleDescriptors =
-          await _possibleValuesService.getByEndpoint('pack_descriptors') ?? [];
-      possibleVariety =
-          await _possibleValuesService.getByEndpoint('pack_variety') ?? [];
-      possibleProcessingMethods = await _possibleValuesService
-              .getByEndpoint('pack_processing_method') ??
-          [];
-    } catch (e) {
-      // Справочник подсказок — удобство, а не условие работы формы: без сети
-      // подсказок не будет, а заполнить поля руками по-прежнему можно.
-      logger.e('Подсказки не загрузились', error: e);
-    }
-    if (!mounted) return;
-    setState(() {});
-  }
 
   /// Заполнить поля тем, что пришло в состояние извне, — например, разобранным
   /// с фотографии пачки, когда распознавание вернут.
@@ -235,6 +202,20 @@ class _InsertingPackInfoWidgetState
     final state = ref.watch(formNotifierProvider);
     final texts = AppLocalizations.of(context);
 
+    // Подсказки — из справочников кабинета. Ни одна из пяти загрузок не
+    // обязана удаться: пустой список означает поле без подсказок, а не
+    // сломанную форму, и в этом виде она работала до появления словарей.
+    final locale = Localizations.localeOf(context);
+    List<String> hints(String kind) => termLabels(
+          ref.watch(referenceTermsProvider(kind)).valueOrNull ?? const [],
+          locale,
+        );
+    final possibleCountries = hints('country');
+    final possibleRegions = hints('region');
+    final possibleVariety = hints('variety');
+    final possibleProcessingMethods = hints('processing');
+    final possibleDescriptors = ref.watch(descriptorHintsProvider);
+
     // Поля заполняются, только когда значения пришли извне. Прежний код звал
     // это из каждой перерисовки и затирал то, что человек набирает.
     ref.listen<PackInfoFormState>(
@@ -312,6 +293,7 @@ class _InsertingPackInfoWidgetState
             fieldLabel: texts.packFormDescriptorNumbered,
             hintText: texts.packFormDescriptorHint,
             addLabel: texts.packFormAddDescriptor,
+            colored: true,
           ),
           _listSection(
             title: texts.packFormProcessing,
@@ -350,6 +332,7 @@ class _InsertingPackInfoWidgetState
     required String Function(int number) fieldLabel,
     required String hintText,
     required String addLabel,
+    bool colored = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -366,6 +349,7 @@ class _InsertingPackInfoWidgetState
                 child: TextInputWithHints(
                   key: ValueKey('$keyPrefix-$index'),
                   hintsArray: hints,
+                  colored: colored,
                   labelText: fieldLabel(index + 1),
                   hintText: hintText,
                   controller: controllers[index],

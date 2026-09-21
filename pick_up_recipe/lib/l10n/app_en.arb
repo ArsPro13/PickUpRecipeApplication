@@ -451,7 +451,7 @@
 
   "dateDayMonthYear": "{month} {day}, {year}",
 
-  "rateTitle": "How did it turn out",
+  "rateTitle": "Your cup",
 
   "rateOnTarget": "Turned out just as intended",
 
@@ -496,6 +496,78 @@
   "rateAxisSweetness": "Sweetness",
 
   "rateAxesCount": "{count, plural, one{{count} axis} other{{count} axes}}",
+
+  "rateHowTo": "Drag the dot — where the cup landed",
+  "@rateHowTo": {},
+
+  "rateSkip": "Skip",
+  "@rateSkip": {},
+
+  "rateSkipRating": "Skip the rating",
+  "@rateSkipRating": {},
+
+  "rateWholeWheel": "Whole wheel",
+  "@rateWholeWheel": {},
+
+  "rateWheelTitle": "Flavour wheel",
+  "@rateWheelTitle": {},
+
+  "rateWheelHint": "Words are grouped by flavour family — each family has its colour",
+  "@rateWheelHint": {},
+
+  "ratePlaneFlavour": "What it tastes like",
+  "@ratePlaneFlavour": {},
+
+  "ratePlaneFlavourNote": "Words from the flavour wheel",
+  "@ratePlaneFlavourNote": {},
+
+  "ratePlaneTastes": "Basic tastes",
+  "@ratePlaneTastes": {},
+
+  "ratePlaneTastesNote": "Words appear for the strong ones",
+  "@ratePlaneTastesNote": {},
+
+  "ratePlaneMouth": "How it feels",
+  "@ratePlaneMouth": {},
+
+  "ratePlaneMouthNote": "A line and words",
+  "@ratePlaneMouthNote": {},
+
+  "rateAxisBody": "Body",
+  "@rateAxisBody": {},
+
+  "rateScaleLow": "faint",
+  "@rateScaleLow": {},
+
+  "rateScaleHigh": "intense",
+  "@rateScaleHigh": {},
+
+  "rateEndNone": "none",
+  "@rateEndNone": {},
+
+  "rateEndBright": "bright",
+  "@rateEndBright": {},
+
+  "rateEndThick": "thick",
+  "@rateEndThick": {},
+
+  "rateEndLight": "light",
+  "@rateEndLight": {},
+
+  "rateEndFull": "full",
+  "@rateEndFull": {},
+
+  "ratePromiseTitle": "The roaster promised — mark what you found",
+  "@ratePromiseTitle": {},
+
+  "ratePromiseNone": "Nothing marked yet",
+  "@ratePromiseNone": {},
+
+  "ratePromiseFound": "Found {found} of {total}",
+  "@ratePromiseFound": {},
+
+  "rateWordsCount": "{count, plural, one{{count} word} other{{count} words}}",
+  "@rateWordsCount": {},
 
   "rateSave": "Save",
 

@@ -862,7 +862,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get rateTitle => 'Как получилось';
+  String get rateTitle => 'Ваша чашка';
 
   @override
   String get rateOnTarget => 'Получилось как задумано';
@@ -943,6 +943,91 @@ class AppLocalizationsRu extends AppLocalizations {
       many: '$count осей',
       few: '$count оси',
       one: '$count ось',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rateHowTo => 'Тяните точку — где оказалась чашка';
+
+  @override
+  String get rateSkip => 'Пропустить';
+
+  @override
+  String get rateSkipRating => 'Пропустить оценку';
+
+  @override
+  String get rateWholeWheel => 'Всё колесо';
+
+  @override
+  String get rateWheelTitle => 'Колесо вкусов';
+
+  @override
+  String get rateWheelHint =>
+      'Слова собраны по семьям вкуса — цвет у семьи свой';
+
+  @override
+  String get ratePlaneFlavour => 'На что похоже';
+
+  @override
+  String get ratePlaneFlavourNote => 'Слова колеса вкусов';
+
+  @override
+  String get ratePlaneTastes => 'Основные вкусы';
+
+  @override
+  String get ratePlaneTastesNote => 'Слова появляются у сильного';
+
+  @override
+  String get ratePlaneMouth => 'Какое во рту';
+
+  @override
+  String get ratePlaneMouthNote => 'Линия и слова';
+
+  @override
+  String get rateAxisBody => 'Тело';
+
+  @override
+  String get rateScaleLow => 'едва';
+
+  @override
+  String get rateScaleHigh => 'насыщенно';
+
+  @override
+  String get rateEndNone => 'нет';
+
+  @override
+  String get rateEndBright => 'яркая';
+
+  @override
+  String get rateEndThick => 'густая';
+
+  @override
+  String get rateEndLight => 'лёгкое';
+
+  @override
+  String get rateEndFull => 'плотное';
+
+  @override
+  String get ratePromiseTitle => 'Обжарщик обещал — отметьте, что нашли';
+
+  @override
+  String get ratePromiseNone => 'Пока ничего не отмечено';
+
+  @override
+  String ratePromiseFound(int found, int total) {
+    return 'Нашли $found из $total';
+  }
+
+  @override
+  String rateWordsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count слова',
+      many: '$count слов',
+      few: '$count слова',
+      one: '$count слово',
     );
     return '$_temp0';
   }

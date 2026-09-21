@@ -1310,7 +1310,7 @@
     }
   },
 
-  "rateTitle": "Как получилось",
+  "rateTitle": "Ваша чашка",
   "@rateTitle": {
     "description": "Шапка экрана оценки чашки: спрашивает, что получилось в чашке."
   },
@@ -1446,6 +1446,139 @@
         "type": "int"
       }
     }
+  },
+
+  "rateHowTo": "Тяните точку — где оказалась чашка",
+  "@rateHowTo": {
+      "description": "Подсказка над картой вкуса: что с ней делать. Стоит над картой, а не под ней: человек видит круг раньше любого объяснения."
+  },
+
+  "rateSkip": "Пропустить",
+  "@rateSkip": {
+      "description": "Кнопка в шапке экрана оценки: уйти, ничего не сказав."
+  },
+
+  "rateSkipRating": "Пропустить оценку",
+  "@rateSkipRating": {
+      "description": "Нижняя кнопка того же отказа — для того, кто дочитал экран до конца."
+  },
+
+  "rateWholeWheel": "Всё колесо",
+  "@rateWholeWheel": {
+      "description": "Кнопка под словами вкуса: открыть весь справочник дескрипторов, а не двенадцать частых."
+  },
+
+  "rateWheelTitle": "Колесо вкусов",
+  "@rateWheelTitle": {
+      "description": "Заголовок листа со всем справочником дескрипторов."
+  },
+
+  "rateWheelHint": "Слова собраны по семьям вкуса — цвет у семьи свой",
+  "@rateWheelHint": {
+      "description": "Пояснение в листе колеса: почему метки разного цвета."
+  },
+
+  "ratePlaneFlavour": "На что похоже",
+  "@ratePlaneFlavour": {
+      "description": "Заголовок первого плана оценки: чем пахнет и на что похож вкус."
+  },
+
+  "ratePlaneFlavourNote": "Слова колеса вкусов",
+  "@ratePlaneFlavourNote": {
+      "description": "Пояснение к первому плану."
+  },
+
+  "ratePlaneTastes": "Основные вкусы",
+  "@ratePlaneTastes": {
+      "description": "Заголовок второго плана: кислотность и сладость — то, что язык различает вкусом, а не запахом."
+  },
+
+  "ratePlaneTastesNote": "Слова появляются у сильного",
+  "@ratePlaneTastesNote": {
+      "description": "Пояснение ко второму плану: у слабой кислотности не спрашивают, какая она."
+  },
+
+  "ratePlaneMouth": "Какое во рту",
+  "@ratePlaneMouth": {
+      "description": "Заголовок третьего плана: тело и ощущения, а не вкус."
+  },
+
+  "ratePlaneMouthNote": "Линия и слова",
+  "@ratePlaneMouthNote": {
+      "description": "Пояснение к третьему плану."
+  },
+
+  "rateAxisBody": "Тело",
+  "@rateAxisBody": {
+      "description": "Название шкалы тела напитка."
+  },
+
+  "rateScaleLow": "едва",
+  "@rateScaleLow": {
+      "description": "Левый конец обычной шкалы оценки."
+  },
+
+  "rateScaleHigh": "насыщенно",
+  "@rateScaleHigh": {
+      "description": "Правый конец обычной шкалы оценки."
+  },
+
+  "rateEndNone": "нет",
+  "@rateEndNone": {
+      "description": "Левый конец шкалы кислотности и сладости: признака нет вовсе."
+  },
+
+  "rateEndBright": "яркая",
+  "@rateEndBright": {
+      "description": "Правый конец шкалы кислотности."
+  },
+
+  "rateEndThick": "густая",
+  "@rateEndThick": {
+      "description": "Правый конец шкалы сладости."
+  },
+
+  "rateEndLight": "лёгкое",
+  "@rateEndLight": {
+      "description": "Левый конец шкалы тела."
+  },
+
+  "rateEndFull": "плотное",
+  "@rateEndFull": {
+      "description": "Правый конец шкалы тела."
+  },
+
+  "ratePromiseTitle": "Обжарщик обещал — отметьте, что нашли",
+  "@ratePromiseTitle": {
+      "description": "Заголовок блока с дескрипторами пачки на экране оценки."
+  },
+
+  "ratePromiseNone": "Пока ничего не отмечено",
+  "@ratePromiseNone": {
+      "description": "Подпись под обещанными словами, когда не отмечено ни одного."
+  },
+
+  "ratePromiseFound": "Нашли {found} из {total}",
+  "@ratePromiseFound": {
+      "description": "Счёт под обещанными словами: сколько из обещанного нашлось в чашке.",
+      "placeholders": {
+          "found": {
+              "type": "int"
+          },
+          "total": {
+              "type": "int"
+          }
+      }
+  },
+
+  "rateWordsCount": "{count, plural, one{{count} слово} few{{count} слова} many{{count} слов} other{{count} слова}}",
+  "@rateWordsCount": {
+      "description": "Сколько слов отмечено — в подписи недописанного черновика. Склонение делает ICU, а не рука.",
+      "placeholders": {
+          "count": {
+              "type": "int"
+          }
+      }
   },
 
   "rateSave": "Сохранить",

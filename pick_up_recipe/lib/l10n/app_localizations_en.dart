@@ -846,7 +846,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get rateTitle => 'How did it turn out';
+  String get rateTitle => 'Your cup';
 
   @override
   String get rateOnTarget => 'Turned out just as intended';
@@ -925,6 +925,89 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other: '$count axes',
       one: '$count axis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rateHowTo => 'Drag the dot — where the cup landed';
+
+  @override
+  String get rateSkip => 'Skip';
+
+  @override
+  String get rateSkipRating => 'Skip the rating';
+
+  @override
+  String get rateWholeWheel => 'Whole wheel';
+
+  @override
+  String get rateWheelTitle => 'Flavour wheel';
+
+  @override
+  String get rateWheelHint =>
+      'Words are grouped by flavour family — each family has its colour';
+
+  @override
+  String get ratePlaneFlavour => 'What it tastes like';
+
+  @override
+  String get ratePlaneFlavourNote => 'Words from the flavour wheel';
+
+  @override
+  String get ratePlaneTastes => 'Basic tastes';
+
+  @override
+  String get ratePlaneTastesNote => 'Words appear for the strong ones';
+
+  @override
+  String get ratePlaneMouth => 'How it feels';
+
+  @override
+  String get ratePlaneMouthNote => 'A line and words';
+
+  @override
+  String get rateAxisBody => 'Body';
+
+  @override
+  String get rateScaleLow => 'faint';
+
+  @override
+  String get rateScaleHigh => 'intense';
+
+  @override
+  String get rateEndNone => 'none';
+
+  @override
+  String get rateEndBright => 'bright';
+
+  @override
+  String get rateEndThick => 'thick';
+
+  @override
+  String get rateEndLight => 'light';
+
+  @override
+  String get rateEndFull => 'full';
+
+  @override
+  String get ratePromiseTitle => 'The roaster promised — mark what you found';
+
+  @override
+  String get ratePromiseNone => 'Nothing marked yet';
+
+  @override
+  String ratePromiseFound(int found, int total) {
+    return 'Found $found of $total';
+  }
+
+  @override
+  String rateWordsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count words',
+      one: '$count word',
     );
     return '$_temp0';
   }

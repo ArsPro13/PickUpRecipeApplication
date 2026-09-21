@@ -160,6 +160,8 @@ class RecipeService {
     double? sweetness,
     double? overall,
     String comment = '',
+    List<String> descriptors = const [],
+    Map<String, double> axes = const {},
   }) async {
     final payload = {
       'recipe_id': recipeId,
@@ -170,6 +172,11 @@ class RecipeService {
       if (bitterness != null) 'bitterness': bitterness,
       if (sweetness != null) 'sweetness': sweetness,
       if (overall != null) 'overall': overall,
+      // Слова и дополнительные оси — слагами справочника, а не подписями с
+      // экрана: подпись зависит от языка телефона, а сравнивать оценки надо
+      // между телефонами.
+      if (descriptors.isNotEmpty) 'descriptors': descriptors,
+      if (axes.isNotEmpty) 'axes': axes,
       'comment': comment,
       'date': DateTime.now().toUtc().toIso8601String(),
     };

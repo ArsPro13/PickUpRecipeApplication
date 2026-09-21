@@ -178,13 +178,27 @@ void main() {
       }
 
       // Кириллицы нет и у пустого экрана, поэтому отдельно — что слова на
-      // месте: шапка, фраза под картой, обе части необязательного разбора
-      // и главная кнопка внизу.
-      expect(find.text('How did it turn out'), findsOneWidget);
+      // месте: шапка, фраза под картой, заголовки планов, слово вкуса из
+      // встроенного набора и главная кнопка внизу.
+      expect(find.text('Your cup'), findsOneWidget);
       expect(find.text('Noticeably bitter, slightly weak'), findsOneWidget);
-      expect(find.text('Break it down by axis'), findsOneWidget);
-      expect(find.text('Aroma'), findsOneWidget);
+      expect(find.text('What it tastes like'), findsOneWidget);
       expect(find.text('Adjust the recipe'), findsOneWidget);
+
+      // Нижние планы список строит только когда до них доходит прокрутка,
+      // поэтому проверяются они отдельно — и по-русски там тоже быть нечему.
+      await tester.drag(find.byType(ListView), const Offset(0, -900));
+      await tester.pumpAndSettle();
+
+      for (final line in _shownText(tester)) {
+        expect(
+          cyrillic.hasMatch(line),
+          isFalse,
+          reason: 'по-русски посреди английского экрана: «$line»',
+        );
+      }
+
+      expect(find.text('Blackcurrant'), findsOneWidget);
     });
 
     testWidgets('карта вкуса читается голосовым помощником на языке экрана',
@@ -218,10 +232,14 @@ void main() {
     testWidgets('на русском телефоне экран остался русским', (tester) async {
       await pumpRating(tester, const Locale('ru'));
 
-      expect(find.text('Как получилось'), findsOneWidget);
+      expect(find.text('Ваша чашка'), findsOneWidget);
       expect(find.text('Заметно горько, чуть слабо'), findsOneWidget);
-      expect(find.text('Разобрать по осям'), findsOneWidget);
+      expect(find.text('На что похоже'), findsOneWidget);
       expect(find.text('Поправить рецепт'), findsOneWidget);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -900));
+      await tester.pumpAndSettle();
+      expect(find.text('чёрная смородина'), findsOneWidget);
     });
   });
 }

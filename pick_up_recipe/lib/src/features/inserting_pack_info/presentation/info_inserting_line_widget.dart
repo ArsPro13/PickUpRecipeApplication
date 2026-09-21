@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:pick_up_recipe/src/general_widgets/app_kit.dart';
+import 'package:pick_up_recipe/src/general_widgets/descriptor_chip.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 
@@ -25,6 +26,7 @@ class TextInputWithHints extends StatefulWidget {
     this.onEditingFinished,
     this.validator,
     this.keyboardType,
+    this.colored = false,
   });
 
   /// Справочник значений с сервера. Пустой — поле работает как обычное.
@@ -47,6 +49,12 @@ class TextInputWithHints extends StatefulWidget {
 
   final FormFieldValidator<String>? validator;
   final TextInputType? keyboardType;
+
+  /// Красить подсказки по категории вкуса. Для дескрипторов — да: цвет метки
+  /// в поле тот же, каким слово встанет на карточку, и это видно до нажатия.
+  /// Для страны — нет: у страны нет категории вкуса, и серая метка честнее
+  /// случайного цвета.
+  final bool colored;
 
   @override
   State<TextInputWithHints> createState() => _TextInputWithHintsState();
@@ -97,14 +105,24 @@ class _TextInputWithHintsState extends State<TextInputWithHints> {
     if (!mounted) return;
 
     final query = widget.controller.text.trim().toLowerCase();
-    final matches = query.isEmpty || !_focusNode.hasFocus
-        ? const <String>[]
-        : [
-            for (final hint in widget.hintsArray)
-              if (hint.toLowerCase().contains(query) &&
-                  hint.toLowerCase() != query)
-                hint,
-          ].take(_maxHints).toList();
+    // Сначала те, что начинаются с набранного, потом те, где оно внутри.
+    // На «ко» справочник страны отвечает «Колумбия» и «Коста-Рика», а не
+    // «Никарагуа»: начало слова — то, что человек и набирал.
+    final starts = <String>[];
+    final inside = <String>[];
+    if (query.isNotEmpty && _focusNode.hasFocus) {
+      for (final hint in widget.hintsArray) {
+        final lower = hint.toLowerCase();
+        if (lower == query) continue;
+        if (lower.startsWith(query)) {
+          starts.add(hint);
+        } else if (lower.contains(query)) {
+          inside.add(hint);
+        }
+        if (starts.length >= _maxHints) break;
+      }
+    }
+    final matches = [...starts, ...inside].take(_maxHints).toList();
 
     if (listEquals(matches, _matches)) return;
     setState(() => _matches = matches);
@@ -145,7 +163,10 @@ class _TextInputWithHintsState extends State<TextInputWithHints> {
             runSpacing: AppSpacing.s2,
             children: [
               for (final hint in _matches)
-                AppChip(label: hint, onTap: () => _pick(hint)),
+                if (widget.colored)
+                  DescriptorChip(word: hint, dense: true, onTap: () => _pick(hint))
+                else
+                  AppChip(label: hint, onTap: () => _pick(hint)),
             ],
           ),
         ],

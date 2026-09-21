@@ -1453,7 +1453,7 @@ abstract class AppLocalizations {
   /// Шапка экрана оценки чашки: спрашивает, что получилось в чашке.
   ///
   /// In ru, this message translates to:
-  /// **'Как получилось'**
+  /// **'Ваша чашка'**
   String get rateTitle;
 
   /// Плашка под картой вкуса, когда точка стоит в центре: жалоб нет.
@@ -1587,6 +1587,150 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'{count, plural, one{{count} ось} few{{count} оси} many{{count} осей} other{{count} оси}}'**
   String rateAxesCount(int count);
+
+  /// Подсказка над картой вкуса: что с ней делать. Стоит над картой, а не под ней: человек видит круг раньше любого объяснения.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тяните точку — где оказалась чашка'**
+  String get rateHowTo;
+
+  /// Кнопка в шапке экрана оценки: уйти, ничего не сказав.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пропустить'**
+  String get rateSkip;
+
+  /// Нижняя кнопка того же отказа — для того, кто дочитал экран до конца.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пропустить оценку'**
+  String get rateSkipRating;
+
+  /// Кнопка под словами вкуса: открыть весь справочник дескрипторов, а не двенадцать частых.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё колесо'**
+  String get rateWholeWheel;
+
+  /// Заголовок листа со всем справочником дескрипторов.
+  ///
+  /// In ru, this message translates to:
+  /// **'Колесо вкусов'**
+  String get rateWheelTitle;
+
+  /// Пояснение в листе колеса: почему метки разного цвета.
+  ///
+  /// In ru, this message translates to:
+  /// **'Слова собраны по семьям вкуса — цвет у семьи свой'**
+  String get rateWheelHint;
+
+  /// Заголовок первого плана оценки: чем пахнет и на что похож вкус.
+  ///
+  /// In ru, this message translates to:
+  /// **'На что похоже'**
+  String get ratePlaneFlavour;
+
+  /// Пояснение к первому плану.
+  ///
+  /// In ru, this message translates to:
+  /// **'Слова колеса вкусов'**
+  String get ratePlaneFlavourNote;
+
+  /// Заголовок второго плана: кислотность и сладость — то, что язык различает вкусом, а не запахом.
+  ///
+  /// In ru, this message translates to:
+  /// **'Основные вкусы'**
+  String get ratePlaneTastes;
+
+  /// Пояснение ко второму плану: у слабой кислотности не спрашивают, какая она.
+  ///
+  /// In ru, this message translates to:
+  /// **'Слова появляются у сильного'**
+  String get ratePlaneTastesNote;
+
+  /// Заголовок третьего плана: тело и ощущения, а не вкус.
+  ///
+  /// In ru, this message translates to:
+  /// **'Какое во рту'**
+  String get ratePlaneMouth;
+
+  /// Пояснение к третьему плану.
+  ///
+  /// In ru, this message translates to:
+  /// **'Линия и слова'**
+  String get ratePlaneMouthNote;
+
+  /// Название шкалы тела напитка.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тело'**
+  String get rateAxisBody;
+
+  /// Левый конец обычной шкалы оценки.
+  ///
+  /// In ru, this message translates to:
+  /// **'едва'**
+  String get rateScaleLow;
+
+  /// Правый конец обычной шкалы оценки.
+  ///
+  /// In ru, this message translates to:
+  /// **'насыщенно'**
+  String get rateScaleHigh;
+
+  /// Левый конец шкалы кислотности и сладости: признака нет вовсе.
+  ///
+  /// In ru, this message translates to:
+  /// **'нет'**
+  String get rateEndNone;
+
+  /// Правый конец шкалы кислотности.
+  ///
+  /// In ru, this message translates to:
+  /// **'яркая'**
+  String get rateEndBright;
+
+  /// Правый конец шкалы сладости.
+  ///
+  /// In ru, this message translates to:
+  /// **'густая'**
+  String get rateEndThick;
+
+  /// Левый конец шкалы тела.
+  ///
+  /// In ru, this message translates to:
+  /// **'лёгкое'**
+  String get rateEndLight;
+
+  /// Правый конец шкалы тела.
+  ///
+  /// In ru, this message translates to:
+  /// **'плотное'**
+  String get rateEndFull;
+
+  /// Заголовок блока с дескрипторами пачки на экране оценки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обжарщик обещал — отметьте, что нашли'**
+  String get ratePromiseTitle;
+
+  /// Подпись под обещанными словами, когда не отмечено ни одного.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока ничего не отмечено'**
+  String get ratePromiseNone;
+
+  /// Счёт под обещанными словами: сколько из обещанного нашлось в чашке.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нашли {found} из {total}'**
+  String ratePromiseFound(int found, int total);
+
+  /// Сколько слов отмечено — в подписи недописанного черновика. Склонение делает ICU, а не рука.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} слово} few{{count} слова} many{{count} слов} other{{count} слова}}'**
+  String rateWordsCount(int count);
 
   /// Кнопка экрана оценки, когда жалоб нет: отправить оценку и уйти.
   ///

@@ -210,21 +210,4 @@ class ApiClient {
       return response;
     });
   }
-
-  Future<http.Response> getPossibleValues(
-      String endpoint, Map<String, String> queryParams) async {
-    return await _handleRequest(() async {
-      final headers = await _getAuthHeaders();
-
-      final uri = Uri.parse('${Config.packImageBaseUrl}$endpoint')
-          .replace(queryParameters: queryParams);
-
-      final response = await http.get(
-        uri,
-        headers: headers,
-      );
-
-      return response;
-    });
-  }
 }

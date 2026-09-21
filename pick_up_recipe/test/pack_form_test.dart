@@ -57,14 +57,6 @@ class _FakeApiClient extends ApiClient {
   };
 
   @override
-  Future<http.Response> getPossibleValues(
-    String endpoint,
-    Map<String, String> queryParams,
-  ) async {
-    return http.Response('[]', 200);
-  }
-
-  @override
   Future<http.Response> getCached(
     String endpoint,
     Map<String, String> queryParams, {

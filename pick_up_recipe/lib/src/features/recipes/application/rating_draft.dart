@@ -34,6 +34,7 @@ class RatingDraft {
     required this.stars,
     required this.axes,
     required this.savedAt,
+    this.words = const [],
   });
 
   /// Рецепт и пачка целиком, а не их идентификаторы: с плашки надо открыть тот
@@ -49,10 +50,14 @@ class RatingDraft {
   /// Только тронутые оси: нетронутая середина шкалы — это не оценка.
   final Map<String, double> axes;
 
+  /// Отмеченные слова — слаги справочника дескрипторов.
+  final List<String> words;
+
   final DateTime savedAt;
 
   /// Пустой черновик хранить незачем — это просто открытый и закрытый экран.
-  bool get isEmpty => point.isCenter && stars == 0 && axes.isEmpty;
+  bool get isEmpty =>
+      point.isCenter && stars == 0 && axes.isEmpty && words.isEmpty;
 
   /// Подпись для плашки: что именно осталось недосказанным.
   ///
@@ -63,6 +68,7 @@ class RatingDraft {
       if (!point.isCenter) point.summaryFor(texts).toLowerCase(),
       if (stars > 0) texts.rateStarsOf(stars),
       if (axes.isNotEmpty) texts.rateAxesCount(axes.length),
+      if (words.isNotEmpty) texts.rateWordsCount(words.length),
     ];
     return parts.join(' · ');
   }
@@ -75,6 +81,7 @@ class RatingDraft {
         'y': point.y,
         'stars': stars,
         'axes': axes,
+        if (words.isNotEmpty) 'words': words,
       };
 
   static RatingDraft fromJson(Map<String, dynamic> json) => RatingDraft(
@@ -91,6 +98,10 @@ class RatingDraft {
           for (final entry in (json['axes'] as Map? ?? const {}).entries)
             entry.key as String: (entry.value as num).toDouble(),
         },
+        words: [
+          for (final word in (json['words'] as List? ?? const []))
+            if (word is String) word,
+        ],
         savedAt:
             DateTime.tryParse(json['saved_at'] as String? ?? '') ?? DateTime(0),
       );

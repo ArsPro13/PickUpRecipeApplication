@@ -31,6 +31,7 @@ import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import '../general_widgets/descriptor_chip.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -209,13 +210,10 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
             style: context.texts.bodySmall,
           ),
           const SizedBox(height: AppSpacing.s2),
-          Wrap(
-            spacing: AppSpacing.s2,
-            runSpacing: AppSpacing.s2,
-            children: [
-              for (final descriptor in descriptors) AppChip(label: descriptor)
-            ],
-          ),
+          // Теги красит палитра по категории слова — те же цвета, что на
+          // экране оценки. Обещанное и почувствованное сравнивают глазами, и
+          // сравнивать их можно, только если «ягода» там и тут одного цвета.
+          DescriptorTags(words: descriptors),
         ],
         if (state.lastBrewed != null) ...[
           const SizedBox(height: AppSpacing.s5),

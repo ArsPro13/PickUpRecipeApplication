@@ -225,7 +225,7 @@
   "dateMonth12": "dicembre",
   "dateDayMonth": "{day} {month}",
   "dateDayMonthYear": "{day} {month} {year}",
-  "rateTitle": "Com'è venuto",
+  "rateTitle": "La tua tazza",
   "rateOnTarget": "Venuto proprio come previsto",
   "rateSaid": "{strength} {taste}",
   "rateDegreeSlight": "un po'",
@@ -248,6 +248,78 @@
   "rateAxisBitterness": "Amarezza",
   "rateAxisSweetness": "Dolcezza",
   "rateAxesCount": "{count, plural, one{{count} asse} other{{count} assi}}",
+  "rateHowTo": "Trascina il punto — dov'è finita la tazza",
+  "@rateHowTo": {},
+
+  "rateSkip": "Salta",
+  "@rateSkip": {},
+
+  "rateSkipRating": "Salta la valutazione",
+  "@rateSkipRating": {},
+
+  "rateWholeWheel": "Ruota completa",
+  "@rateWholeWheel": {},
+
+  "rateWheelTitle": "Ruota dei sapori",
+  "@rateWheelTitle": {},
+
+  "rateWheelHint": "Le parole sono raccolte per famiglia — ogni famiglia ha il suo colore",
+  "@rateWheelHint": {},
+
+  "ratePlaneFlavour": "A cosa somiglia",
+  "@ratePlaneFlavour": {},
+
+  "ratePlaneFlavourNote": "Parole della ruota dei sapori",
+  "@ratePlaneFlavourNote": {},
+
+  "ratePlaneTastes": "Gusti principali",
+  "@ratePlaneTastes": {},
+
+  "ratePlaneTastesNote": "Le parole compaiono per i gusti forti",
+  "@ratePlaneTastesNote": {},
+
+  "ratePlaneMouth": "Come si sente",
+  "@ratePlaneMouth": {},
+
+  "ratePlaneMouthNote": "Una linea e le parole",
+  "@ratePlaneMouthNote": {},
+
+  "rateAxisBody": "Corpo",
+  "@rateAxisBody": {},
+
+  "rateScaleLow": "appena",
+  "@rateScaleLow": {},
+
+  "rateScaleHigh": "intenso",
+  "@rateScaleHigh": {},
+
+  "rateEndNone": "assente",
+  "@rateEndNone": {},
+
+  "rateEndBright": "brillante",
+  "@rateEndBright": {},
+
+  "rateEndThick": "densa",
+  "@rateEndThick": {},
+
+  "rateEndLight": "leggero",
+  "@rateEndLight": {},
+
+  "rateEndFull": "pieno",
+  "@rateEndFull": {},
+
+  "ratePromiseTitle": "Il torrefattore ha promesso — segna cosa hai trovato",
+  "@ratePromiseTitle": {},
+
+  "ratePromiseNone": "Ancora niente di segnato",
+  "@ratePromiseNone": {},
+
+  "ratePromiseFound": "Trovati {found} su {total}",
+  "@ratePromiseFound": {},
+
+  "rateWordsCount": "{count, plural, one{{count} parola} other{{count} parole}}",
+  "@rateWordsCount": {},
+
   "rateSave": "Salva",
   "rateFixRecipe": "Correggi la ricetta",
   "rateJustSave": "Salva solo la valutazione",
