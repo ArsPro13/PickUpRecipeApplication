@@ -768,20 +768,26 @@ class TasteMap extends StatelessWidget {
 ///
 /// Непрозрачность у светлой темы выше: заливка ложится на белое и гаснет.
 class _TasteZones {
-  const _TasteZones(this.colors, this.alpha);
+  const _TasteZones(this.colors, this.alpha, this.aim);
 
   /// От центра наружу: «как задумано», «заметно», «сильно мимо».
   final List<Color> colors;
   final List<double> alpha;
 
+  /// Пунктир цели обжарщика. Не цвет ближнего кольца: пунктир лежит ПОВЕРХ
+  /// этого кольца, и тем же цветом его не видно — проверено на экране.
+  final Color aim;
+
   static const _TasteZones _light = _TasteZones(
     [Color(0xFFA9C24F), Color(0xFFF2B733), Color(0xFFD95F2E)],
     [0.64, 0.58, 0.52],
+    Color(0xFF5F7320),
   );
 
   static const _TasteZones _dark = _TasteZones(
     [Color(0xFF3FBF63), Color(0xFFE5A93C), Color(0xFFE2594A)],
     [0.46, 0.38, 0.32],
+    Color(0xFF7BE29A),
   );
 
   static _TasteZones of(Brightness brightness) =>
@@ -861,7 +867,7 @@ class _TasteMapPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = AppStroke.thick
-        ..color = zones.colors[0],
+        ..color = zones.aim,
     );
 
     // Подписи крупнее прежних двенадцати пунктов: карта шириной с ладонь, и
