@@ -87,9 +87,30 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 packs.activePacks.isEmpty &&
                 (recipes.isLoading || packs.isLoading),
           ),
-          SectionTitle(texts.profileGrindersTitle),
+          // Правка кофемолки — значком у заголовка, как правка рецепта в шапке
+          // заваривания, а не отдельной кнопкой «Изменить набор» под списком:
+          // кнопка во всю ширину спорила с самой кофемолкой за внимание, а
+          // набора давно нет — кофемолка выбирается одна.
+          SectionTitle(
+            texts.profileGrindersTitle,
+            trailing: IconButton(
+              onPressed: () => context.router.push(const GrinderSelectRoute()),
+              icon: AppIcon(
+                AppIcons.uiEdit,
+                size: AppSizes.icon20,
+                color: context.colors.secondary,
+              ),
+              tooltip: grinders.userGrinders.isEmpty
+                  ? texts.profileChooseGrinder
+                  : texts.packsChangeGrinder,
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
           AppCard(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
+            onTap: grinders.userGrinders.isEmpty
+                ? () => context.router.push(const GrinderSelectRoute())
+                : null,
             child: Column(
               children: [
                 if (grinders.userGrinders.isEmpty)
@@ -117,14 +138,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
               ],
             ),
-          ),
-          const SizedBox(height: AppSpacing.s3),
-          AppButton(
-            label: grinders.userGrinders.isEmpty
-                ? texts.profileChooseGrinder
-                : texts.profileChangeGrinders,
-            kind: AppButtonKind.secondary,
-            onPressed: () => context.router.push(const GrinderSelectRoute()),
           ),
           SectionTitle(texts.profileAppTitle),
           AppCard(

@@ -16,6 +16,12 @@
 // Карточки-радио вместо сегментов лечат всё разом: каждой достаётся вся
 // ширина, поэтому переносить нечего, под названием помещается строка
 // пояснения, а метка стоит в колонке постоянной ширины — текст не двигается.
+//
+// Вариантов на выбор два, а не три: «по признаку» владелец попросил убрать.
+// Это была та же кнопка «дальше», только с подсказкой, когда её жать, — и
+// выбирать между двумя одинаковыми концами шага человеку было не из чего.
+// Сам признак в перечислении остался: его носят шаги старых рецептов, и
+// подписывать их надо по-прежнему.
 
 import 'package:flutter/material.dart';
 
@@ -51,6 +57,12 @@ extension StepEndsWithText on StepEndsWith {
       };
 }
 
+/// Чем может кончаться свой шаг: по времени или по кнопке.
+const List<StepEndsWith> stepEndingOptions = [
+  StepEndsWith.timer,
+  StepEndsWith.user,
+];
+
 /// Список карточек «чем шаг заканчивается»: по одной на вариант.
 class StepEndingChoice extends StatelessWidget {
   const StepEndingChoice({
@@ -67,7 +79,7 @@ class StepEndingChoice extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final option in StepEndsWith.values)
+        for (final option in stepEndingOptions)
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.s2),
             child: _EndingCard(

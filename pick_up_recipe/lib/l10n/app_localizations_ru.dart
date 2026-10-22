@@ -429,6 +429,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get stepTypesOwnGroupOnly => 'Ваши типы · только для этого прибора';
 
   @override
+  String get stepTypesForThisDevice => 'Для этого прибора';
+
+  @override
+  String get stepTypesAll => 'Все шаги';
+
+  @override
   String stepTypesStateful(String name) {
     return '$name · меняет состояние прибора';
   }
@@ -541,13 +547,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Кофемолка не выбрана. Без неё рецепт показывает крупность словами, а не щелчками вашей кофемолки.';
 
   @override
-  String get profileGrinderPrimary => 'основная';
+  String get profileGrinderPrimary => 'текущая';
 
   @override
   String get profileChooseGrinder => 'Выбрать кофемолку';
-
-  @override
-  String get profileChangeGrinders => 'Изменить набор';
 
   @override
   String get profileAccountTitle => 'Аккаунт';
@@ -595,12 +598,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get scanCodeIsSmall => 'Код мелкий — ищите его в углу пачки';
-
-  @override
-  String get scanManualTitle => 'Ввести код руками';
-
-  @override
-  String get scanOpenRecipe => 'Открыть рецепт';
 
   @override
   String get scanNoCode => 'На пачке нет кода';
@@ -714,10 +711,10 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get recipesNow => 'сейчас';
+  String get recipesNow => 'текущая версия';
 
   @override
-  String get recipesNowSwipe => 'сейчас · листается вбок';
+  String get recipesNowSwipe => 'текущая версия · листается вбок';
 
   @override
   String recipesVersionOf(int number, int count) {
@@ -728,10 +725,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get recipesDraft => 'не сохранён';
 
   @override
-  String get recipesCurrent => 'так завариваю';
+  String get recipesCurrent => 'текущая';
 
   @override
-  String get recipesPastVersion => 'прошлая версия';
+  String get recipesPastVersion => 'прошлая';
 
   @override
   String get recipesBrewAgain => 'Заварить снова';
@@ -816,6 +813,25 @@ class AppLocalizationsRu extends AppLocalizations {
   String get coffeeMethodsFailed => 'Способы заваривания не загрузились';
 
   @override
+  String get coffeeMethodSearchHint => 'Найти прибор';
+
+  @override
+  String get coffeeMethodNotFound => 'Такого прибора нет';
+
+  @override
+  String coffeeMethodCatalogSize(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count прибора',
+      many: '$count приборов',
+      few: '$count прибора',
+      one: '$count прибор',
+    );
+    return 'Проверьте написание — в справочнике $_temp0';
+  }
+
+  @override
   String get dateMonth1 => 'января';
 
   @override
@@ -852,6 +868,42 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dateMonth12 => 'декабря';
 
   @override
+  String get dateMonthShort1 => 'янв';
+
+  @override
+  String get dateMonthShort2 => 'фев';
+
+  @override
+  String get dateMonthShort3 => 'мар';
+
+  @override
+  String get dateMonthShort4 => 'апр';
+
+  @override
+  String get dateMonthShort5 => 'мая';
+
+  @override
+  String get dateMonthShort6 => 'июн';
+
+  @override
+  String get dateMonthShort7 => 'июл';
+
+  @override
+  String get dateMonthShort8 => 'авг';
+
+  @override
+  String get dateMonthShort9 => 'сен';
+
+  @override
+  String get dateMonthShort10 => 'окт';
+
+  @override
+  String get dateMonthShort11 => 'ноя';
+
+  @override
+  String get dateMonthShort12 => 'дек';
+
+  @override
   String dateDayMonth(String day, String month) {
     return '$day $month';
   }
@@ -859,6 +911,16 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String dateDayMonthYear(String day, String month, String year) {
     return '$day $month $year';
+  }
+
+  @override
+  String dateStamp(String day, String month, String time) {
+    return '$day $month, $time';
+  }
+
+  @override
+  String dateStampYear(String day, String month, String year, String time) {
+    return '$day $month $year, $time';
   }
 
   @override
@@ -1040,14 +1102,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get rateJustSave => 'Просто сохранить отзыв';
-
-  @override
-  String get rateSavedOffline =>
-      'Оценка сохранена и уедет, когда появится связь';
-
-  @override
-  String get rateSavedCorrectionLater =>
-      'Оценка сохранена. Поправку посчитает сервер — она будет, когда появится связь';
 
   @override
   String get rateNothingToChange =>
@@ -1442,14 +1496,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String grinderApplied(String name) {
-    return 'Помол теперь в делениях $name';
-  }
-
-  @override
-  String get undo => 'Отменить';
-
-  @override
   String get grinderNotFound => 'Такой кофемолки нет';
 
   @override
@@ -1482,24 +1528,35 @@ class AppLocalizationsRu extends AppLocalizations {
       'Без сети кофемолку не сохранить — она хранится в аккаунте';
 
   @override
-  String grinderApproximately(String value) {
-    return 'примерно $value';
-  }
-
-  @override
   String get grinderPickPrompt => 'выберите кофемолку';
 
   @override
   String get grinderPickPromptHint => 'выберите кофемолку — покажем деление';
 
   @override
-  String grinderScaleOf(String name) {
-    return 'делений $name';
+  String grinderClicks(num count, String label) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$label клика',
+      many: '$label кликов',
+      few: '$label клика',
+      one: '$label клик',
+    );
+    return '$_temp0';
   }
 
   @override
-  String grinderClicks(String value) {
-    return '$value щ.';
+  String grinderClicksUnit(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'клика',
+      many: 'кликов',
+      few: 'клика',
+      one: 'клик',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1624,16 +1681,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get builderLeave => 'Уйти';
 
   @override
-  String get builderSavedOffline =>
-      'Сохранено на телефоне — уедет, когда появится связь';
-
-  @override
-  String get builderSavedVersion => 'Сохранено новой версией';
-
-  @override
   String builderSaveFailed(String error) {
     return 'Не сохранилось: $error';
   }
+
+  @override
+  String get builderSaved => 'Сохранено';
 
   @override
   String get builderEndsTimer => 'по времени';
@@ -1699,27 +1752,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get svcAuthFailedVerifyEmail => 'Не удалось подтвердить почту';
-
-  @override
-  String svcSyncSent(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Отправлено, что ждало связи: $count',
-      one: 'Отправлено то, что ждало связи',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String svcSyncDropped(int count) {
-    return 'Сервер не принял отложенное ($count) — оно устарело';
-  }
-
-  @override
-  String svcSyncMixed(int sent, int dropped) {
-    return 'Отправлено: $sent. Не принято сервером: $dropped';
-  }
 
   @override
   String get svcLegalClose => 'Закрыть';
@@ -1792,9 +1824,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get chooseOtherPacks => 'С прошлых пачек';
-
-  @override
-  String get chooseOtherPacksNote => 'тот же прибор, другое зерно';
 
   @override
   String get rateForYou =>

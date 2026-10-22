@@ -5,21 +5,13 @@
 // там, где нужно выбрать одно из шестидесяти чисел. Барабан крутится так же,
 // как в таймере телефона, и промахнуться в нём нечем.
 //
-// Открывается шторкой, а не диалогом: тип шага в этой же карточке выбирается
-// шторкой, и два разных способа спросить читались бы как два разных экрана.
-// Ручку-полоску и скругление шторке даёт тема.
+// Сам барабан — общий, из app_wheel.dart: минуты и секунды стоят рядом и
+// крутятся по кругу, как на айфоне, — после 59 снова 00.
 
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../themes/app_theme.dart';
-import '../themes/app_tokens.dart';
-import 'app_kit.dart';
-import 'app_surface.dart';
-
-/// Сколько строк барабана видно разом. Пять: одна выбранная и по две
-/// соседние сверху и снизу — меньше, и барабан перестаёт читаться барабаном.
-const int _visibleRows = 5;
+import 'app_wheel.dart';
 
 /// Потолок минут. Часовые шаги колд брю живут отдельным экраном ожидания,
 /// а не строкой рецепта, и шестьдесят минут здесь — заведомо больше нужного.
@@ -37,25 +29,8 @@ Future<int?> showDurationSheet(
   required int seconds,
   String? title,
 }) {
-  return showModalBottomSheet<int>(
-    context: context,
-    // Высота по содержимому: барабан на весь экран выглядел бы как отдельная
-    // страница, с которой ещё надо понять, как вернуться.
-    isScrollControlled: true,
-    // Палец на барабане крутит барабан, а не тащит шторку вниз.
-    //
-    // Шторка по умолчанию тянется за пальцем всей своей площадью, и её
-    // распознаватель вертикального перетаскивания забирал жест у барабана:
-    // тот не проворачивался вовсе, а шторка уезжала вниз — вместе с
-    // выбранным. Барабан здесь и есть всё содержимое шторки, поэтому
-    // перетаскивание за тело ей нечем оправдать.
-    //
-    // Ручка-полоска при этом остаётся и остаётся рабочей: при выключенном
-    // enableDrag Flutter вешает перетаскивание на неё одну, а тема, которая
-    // рисует ручку всем шторкам, при выключенном перетаскивании её бы
-    // спрятала — поэтому showDragHandle просим явно.
-    enableDrag: false,
-    showDragHandle: true,
+  return showWheelSheet<int>(
+    context,
     builder: (context) => _DurationSheet(seconds: seconds, title: title),
   );
 }
@@ -79,48 +54,19 @@ class _DurationSheetState extends State<_DurationSheet> {
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.s5,
-          0,
-          AppSpacing.s5,
-          AppSpacing.s5,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.title ?? texts.builderDuration,
-                    style: context.texts.bodyMedium,
-                  ),
-                ),
-                Text(texts.builderMinutesSeconds,
-                    style: context.texts.labelSmall),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s4),
-            DurationWheels(
-              seconds: widget.seconds,
-              onChanged: (value) => setState(() => _picked = value),
-            ),
-            const SizedBox(height: AppSpacing.s5),
-            AppButton(
-              label: texts.builderDone,
-              onPressed: () => Navigator.of(context).pop(_picked),
-            ),
-          ],
-        ),
+    return WheelSheetBody(
+      title: widget.title ?? texts.builderDuration,
+      caption: texts.builderMinutesSeconds,
+      wheels: DurationWheels(
+        seconds: widget.seconds,
+        onChanged: (value) => setState(() => _picked = value),
       ),
+      onDone: () => Navigator.of(context).pop(_picked),
     );
   }
 }
 
-/// Два барабана — минуты и секунды — и подсвеченная строка выбора между ними.
+/// Два барабана — минуты и секунды — на общей полосе выбора.
 ///
 /// Отдельным виджетом, а не куском шторки: так его можно поставить и на
 /// экран, где шторка лишняя, и проверить тестом без открытия шторки.
@@ -144,101 +90,45 @@ class _DurationWheelsState extends State<DurationWheels> {
   late int _minutes = (widget.seconds ~/ 60).clamp(0, _minutesCount - 1);
   late int _seconds = widget.seconds % 60;
 
-  late final FixedExtentScrollController _minuteWheel =
-      FixedExtentScrollController(initialItem: _minutes);
-  late final FixedExtentScrollController _secondWheel =
-      FixedExtentScrollController(initialItem: _seconds);
-
-  @override
-  void dispose() {
-    _minuteWheel.dispose();
-    _secondWheel.dispose();
-    super.dispose();
-  }
-
   void _report() => widget.onChanged(_minutes * 60 + _seconds);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: AppSizes.tapTarget * _visibleRows,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Дорожка под выбранной строкой: без неё непонятно, какое из пяти
-          // чисел сейчас выбрано, — крайние читаются наравне со средним.
-          IgnorePointer(
-            child: Container(
-              height: AppSizes.tapTarget,
-              decoration:
-                  sunkenDecoration(context, borderRadius: AppRadius.medium),
-            ),
+    // Каждая колонка — половина полосы, числа прижаты к двоеточию
+    // посередине: так их видно одним числом «3:00», а крутить можно,
+    // поставив палец куда угодно на свою половину.
+    return AppWheelRow(
+      marks: const [WheelMark.center(':')],
+      children: [
+        Expanded(
+          child: AppWheel(
+            itemCount: _minutesCount,
+            initialItem: _minutes,
+            looping: true,
+            alignment: Alignment.centerRight,
+            // Минуты одним знаком, секунды двумя: так же, как длительность
+            // подписана в самом рецепте.
+            labelOf: (index) => '$index',
+            onChanged: (value) {
+              _minutes = value;
+              _report();
+            },
           ),
-          Row(
-            children: [
-              _wheel(
-                controller: _minuteWheel,
-                count: _minutesCount,
-                selected: _minutes,
-                onChanged: (value) {
-                  setState(() => _minutes = value);
-                  _report();
-                },
-              ),
-              Text(':', style: context.texts.titleMedium),
-              _wheel(
-                controller: _secondWheel,
-                count: _secondsCount,
-                selected: _seconds,
-                pad: true,
-                onChanged: (value) {
-                  setState(() => _seconds = value);
-                  _report();
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _wheel({
-    required FixedExtentScrollController controller,
-    required int count,
-    required int selected,
-    required ValueChanged<int> onChanged,
-    bool pad = false,
-  }) {
-    return Expanded(
-      child: ListWheelScrollView.useDelegate(
-        controller: controller,
-        itemExtent: AppSizes.tapTarget,
-        physics: const FixedExtentScrollPhysics(),
-        onSelectedItemChanged: onChanged,
-        childDelegate: ListWheelChildBuilderDelegate(
-          childCount: count,
-          builder: (context, index) {
-            final chosen = index == selected;
-            return Center(
-              child: Text(
-                // Секунды двумя знаками, минуты — одним: так же, как
-                // длительность подписана в самом рецепте.
-                pad ? index.toString().padLeft(2, '0') : '$index',
-                style: (chosen
-                        ? context.texts.bodyLarge
-                        : context.texts.bodyMedium)
-                    ?.copyWith(
-                  color: chosen
-                      ? context.colors.primary
-                      : context.colors.secondary,
-                  fontWeight: chosen ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-            );
-          },
         ),
-      ),
+        Expanded(
+          child: AppWheel(
+            itemCount: _secondsCount,
+            initialItem: _seconds,
+            looping: true,
+            alignment: Alignment.centerLeft,
+            labelOf: (index) => index.toString().padLeft(2, '0'),
+            onChanged: (value) {
+              _seconds = value;
+              _report();
+            },
+          ),
+        ),
+      ],
     );
   }
 }

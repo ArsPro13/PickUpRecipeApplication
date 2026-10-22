@@ -73,5 +73,16 @@ void main() {
       expect(find.textContaining('контрольн'), findsNothing);
       expect(find.textContaining('к серверу'), findsNothing);
     });
+
+    testWidgets('кода руками не вводят: поля и кнопки под него нет',
+        (tester) async {
+      // Владелец: код будет маленьким QR в углу пачки, «не надо никакой код
+      // вводить руками, убери этот блок».
+      await pumpScan(tester);
+
+      expect(find.byType(TextField), findsNothing);
+      expect(find.textContaining('руками'), findsNothing);
+      expect(find.text('Открыть рецепт'), findsNothing);
+    });
   });
 }

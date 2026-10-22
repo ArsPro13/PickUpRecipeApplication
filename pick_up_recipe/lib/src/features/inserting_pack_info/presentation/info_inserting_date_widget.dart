@@ -1,26 +1,28 @@
-// Дата обжарки: набирается цифрами по маске дд.мм.гггг.
+// Дата обжарки: барабаном — число, месяц и год, как дата на айфоне.
 //
-// Владелец назвал прежнее поле «покореженным», и по делу: в initState в него
+// Владелец назвал первое поле «покореженным», и по делу: в initState в него
 // подставлялась сама подпись, поэтому в значении поля стояло английское слово
 // вместо даты и оно же уезжало на сервер, где не разбиралось и подменялось
 // сегодняшним числом. Вдобавок нажатие ловили сразу два обработчика — свой у
 // поля и свой у обёртки, — и календарь открывался и тут же закрывался.
 //
-// Календаря здесь больше нет намеренно: цифры с маской короче и на телефоне
-// набираются быстрее, чем календарь листается на три года назад.
+// Потом поле стало маской дд.мм.гггг: цифры набирались быстрее, чем календарь
+// листался на три года назад. Но клавиатура закрывала пол-экрана, а «31.04»
+// маска пропускала до самой проверки. Теперь — барабан: владелец попросил
+// «как айфоновский», и на нём недопустимой даты не набрать вовсе.
 //
-// Маска — единственное на этом экране, что не переводится. Подпись поля,
-// пример внутри него и пояснение снизу берутся из словаря, а порядок частей
-// и точки остаются те же на любом языке: ровно их читают parsePackDate и
-// pack_request_model, и «переведённый» формат молча подменил бы дату обжарки
-// сегодняшней. Другой порядок для английского — решение владельца, не наше.
+// Значение в поле прежнее, дд.мм.гггг, и не переводится: ровно его читают
+// parsePackDate и pack_request_model, и другой порядок частей молча подменил
+// бы дату обжарки сегодняшней. Барабан — только способ это значение задать.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'package:pick_up_recipe/l10n/app_localizations.dart';
+import 'package:pick_up_recipe/src/general_widgets/app_icon.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_kit.dart';
+import 'package:pick_up_recipe/src/general_widgets/date_wheel_sheet.dart';
+import 'package:pick_up_recipe/src/themes/app_icons.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 
@@ -55,32 +57,26 @@ class DateInputField extends StatefulWidget {
 }
 
 class _DateInputFieldState extends State<DateInputField> {
-  late final FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode()..addListener(_onFocusChanged);
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _onFocusChanged() {
-    if (!mounted || _focusNode.hasFocus) return;
-    widget.onEditingFinished?.call();
-  }
-
-  void _setToday() {
-    final today = packDateFormat.format(DateTime.now());
+  void _set(String text) {
     widget.controller.value = TextEditingValue(
-      text: today,
-      selection: TextSelection.collapsed(offset: today.length),
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
     widget.onEditingFinished?.call();
+  }
+
+  Future<void> _pick() async {
+    // Клавиатура соседнего поля ушла бы под шторку и закрывала барабан.
+    FocusScope.of(context).unfocus();
+
+    final picked = await showDateSheet(
+      context,
+      title: widget.labelText,
+      latest: DateTime.now(),
+      initial: parsePackDate(widget.controller.text),
+    );
+    if (picked == null || !mounted) return;
+    _set(packDateFormat.format(picked));
   }
 
   @override
@@ -94,20 +90,45 @@ class _DateInputFieldState extends State<DateInputField> {
         const SizedBox(height: AppSpacing.s1),
         TextFormField(
           controller: widget.controller,
-          focusNode: _focusNode,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.next,
-          inputFormatters: [_DateMaskFormatter()],
-          onFieldSubmitted: (_) => widget.onEditingFinished?.call(),
+          // Поле только показывает дату: набирают её барабаном. Клавиатуры
+          // здесь нет — нажатие на поле открывает шторку.
+          readOnly: true,
+          showCursor: false,
+          enableInteractiveSelection: false,
+          onTap: _pick,
           style: context.texts.bodyMedium,
-          // Пример внутри поля переводится, а маска — нет: разбор даты и
-          // запрос к серверу читают ровно дд.ММ.гггг, и другой порядок частей
-          // молча превратил бы дату обжарки в сегодняшнюю.
-          decoration: InputDecoration(hintText: texts.packFormDateHint),
+          decoration: InputDecoration(
+            hintText: texts.packFormDateHint,
+            // Пустое поле — тоже ответ: тогда сервер поставит сегодняшнюю.
+            // Крестик возвращает к нему, не открывая барабан.
+            suffixIcon: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: widget.controller,
+              builder: (context, value, _) => value.text.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(AppSpacing.s3),
+                      child: AppIcon(
+                        AppIcons.uiChevronDown,
+                        size: AppSizes.icon20,
+                        color: context.colors.secondary,
+                      ),
+                    )
+                  : IconButton(
+                      onPressed: () => _set(''),
+                      tooltip: texts.clear,
+                      icon: AppIcon(
+                        AppIcons.uiClose,
+                        size: AppSizes.icon20,
+                        color: context.colors.secondary,
+                      ),
+                    ),
+            ),
+          ),
           validator: (value) {
             final text = value?.trim() ?? '';
             // Пустое поле — не ошибка: дату обжарки печатают не на всякой
-            // пачке. Тогда сервер поставит сегодняшнее число.
+            // пачке. Тогда сервер поставит сегодняшнее число. Барабан
+            // неверной даты не даст, но поле заполняют и снаружи — разбором
+            // снимка пачки.
             if (text.isEmpty) return null;
             return parsePackDate(text) == null
                 ? texts.packFormDateInvalid
@@ -124,34 +145,13 @@ class _DateInputFieldState extends State<DateInputField> {
               ),
             ),
             const SizedBox(width: AppSpacing.s2),
-            AppChip(label: texts.packFormToday, onTap: _setToday),
+            AppChip(
+              label: texts.packFormToday,
+              onTap: () => _set(packDateFormat.format(DateTime.now())),
+            ),
           ],
         ),
       ],
-    );
-  }
-}
-
-/// Точки расставляются сами: человек набирает восемь цифр подряд.
-class _DateMaskFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final digits = newValue.text.replaceAll(RegExp('[^0-9]'), '');
-    final capped = digits.length > 8 ? digits.substring(0, 8) : digits;
-
-    final masked = StringBuffer();
-    for (var i = 0; i < capped.length; ++i) {
-      if (i == 2 || i == 4) masked.write('.');
-      masked.write(capped[i]);
-    }
-
-    final text = masked.toString();
-    return TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }

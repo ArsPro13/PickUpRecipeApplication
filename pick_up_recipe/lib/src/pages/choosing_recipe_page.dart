@@ -35,6 +35,7 @@ import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import 'recipe_builder_page.dart' show formatDecimal;
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -79,6 +80,10 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
   /// Базовый рецепт грузится по тапу: отдельного экрана под него больше нет,
   /// и пока он едет, строка показывает, что нажатие услышано.
   bool _openingBase = false;
+
+  /// Почему базовый рецепт не открылся. Строкой под ним, а не сообщением
+  /// внизу экрана: такие владелец попросил убрать отовсюду.
+  String? _baseProblem;
 
   @override
   void initState() {
@@ -154,29 +159,30 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
   /// числа, шаги и подготовку, — и стоил лишнего нажатия на каждой чашке.
   Future<void> _openBase() async {
     if (_openingBase) return;
-    setState(() => _openingBase = true);
+    setState(() {
+      _openingBase = true;
+      _baseProblem = null;
+    });
 
     try {
       final recipe = await _service.getBaseRecipe(widget.method ?? '');
       if (!mounted) return;
 
       if (recipe == null) {
-        _say(AppLocalizations.of(context).chooseNoBase);
+        setState(
+            () => _baseProblem = AppLocalizations.of(context).chooseNoBase);
         return;
       }
 
       await context.router.push(BrewRoute(recipe: recipe, pack: widget.pack));
     } catch (error) {
       if (mounted) {
-        _say(AppLocalizations.of(context).chooseBaseFailed('$error'));
+        setState(() => _baseProblem =
+            AppLocalizations.of(context).chooseBaseFailed('$error'));
       }
     } finally {
       if (mounted) setState(() => _openingBase = false);
     }
-  }
-
-  void _say(String text) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override
@@ -219,6 +225,21 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       grinder: ref.watch(grinderStateProvider).primary,
       texts: AppLocalizations.of(context),
     );
+  }
+
+  /// Короткая строка рецепта в списке: клики на кофемолке человека и время —
+  /// «18 кликов · 2:15».
+  ///
+  /// Температуры здесь больше нет: у одного прибора она почти всегда одна и
+  /// та же, и по ней свои рецепты не различить. Различает их помол — и
+  /// показан он щелчками той кофемолки, что стоит сейчас, а не той, на
+  /// которой рецепт когда-то вели.
+  String _summary(RecipeData recipe) {
+    final grind = _grind(recipe);
+    return [
+      if (!grind.isEmpty) grind.label,
+      _formatTime(recipe.time),
+    ].join(' · ');
   }
 
   List<Widget> _content() {
@@ -296,6 +317,13 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
           ),
         ),
       ),
+      if (_baseProblem != null) ...[
+        const SizedBox(height: AppSpacing.s2),
+        Text(
+          _baseProblem!,
+          style: context.texts.bodySmall?.copyWith(color: context.colors.error),
+        ),
+      ],
 
       if (mine.isNotEmpty) ...[
         _Section(
@@ -304,17 +332,20 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
           note: texts.chooseMineNote,
         ),
         for (final recipe in mine)
-          _VersionRow(recipe: recipe, pack: widget.pack),
+          _VersionRow(
+              recipe: recipe, pack: widget.pack, summary: _summary(recipe)),
       ],
 
+      // Без пояснения «тот же прибор, другое зерно»: прибор и так в шапке
+      // экрана, а другое зерно — в названии каждой строки.
       if (_otherPacks.isNotEmpty) ...[
-        _Section(
-          icon: AppIcons.uiPack,
-          title: texts.chooseOtherPacks,
-          note: texts.chooseOtherPacksNote,
-        ),
+        _Section(icon: AppIcons.uiPack, title: texts.chooseOtherPacks),
         for (final recipe in _otherPacks)
-          _OtherPackRow(recipe: recipe, pack: known[recipe.packId]),
+          _OtherPackRow(
+            recipe: recipe,
+            pack: known[recipe.packId],
+            summary: _summary(recipe),
+          ),
       ],
 
       const SizedBox(height: AppSpacing.s6),
@@ -322,13 +353,13 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
   }
 }
 
-/// Заголовок раздела: иконка, название и пояснение мелким.
+/// Заголовок раздела: иконка, название и, если нужно, пояснение мелким.
 class _Section extends StatelessWidget {
-  const _Section({required this.icon, required this.title, required this.note});
+  const _Section({required this.icon, required this.title, this.note});
 
   final String icon;
   final String title;
-  final String note;
+  final String? note;
 
   @override
   Widget build(BuildContext context) {
@@ -340,7 +371,7 @@ class _Section extends StatelessWidget {
           const SizedBox(width: AppSpacing.s2),
           Text(title, style: context.texts.bodyMedium),
           const SizedBox(width: AppSpacing.s2),
-          Expanded(child: Text(note, style: context.texts.bodySmall)),
+          Expanded(child: Text(note ?? '', style: context.texts.bodySmall)),
         ],
       ),
     );
@@ -368,16 +399,20 @@ class _RoasterRecipe extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Числа без хвоста «.0»: «30 г», «94 °C» — так же, как в
+              // конструкторе и на заваривании.
               MetricTile(
                   kind: MetricKind.dose,
-                  value: texts.unitGrams('${recipe.load}')),
+                  value: texts.unitGrams(formatDecimal(recipe.load))),
               MetricTile(
                 kind: MetricKind.water,
                 value: texts.unitMillilitres('${recipe.water}'),
               ),
               MetricTile(
                   kind: MetricKind.temperature,
-                  value: '${recipe.temperature} °C'),
+                  value: recipe.temperature == null
+                      ? '—'
+                      : '${formatDecimal(recipe.temperature!)} °C'),
               MetricTile(
                 kind: MetricKind.grind,
                 value: grind.isEmpty ? '—' : grind.label,
@@ -414,9 +449,10 @@ class _RoasterRecipe extends StatelessWidget {
                 child: AppButton(
                   label: texts.chooseBrewWithTime(_formatTime(recipe.time)),
                   icon: AppIcons.uiPlay,
-                  // Числа рецепта уже над кнопкой — таймер идёт сразу.
+                  // Числа рецепта над кнопкой, но таймер всё равно ждёт:
+                  // сначала смолоть, потом «Смолол, начинаем».
                   onPressed: () => context.router.push(
-                    BrewRoute(recipe: recipe, pack: pack, autoStart: true),
+                    BrewRoute(recipe: recipe, pack: pack),
                   ),
                 ),
               ),
@@ -452,9 +488,16 @@ List<RecipeData> latestPerPack(List<RecipeData> recipes,
 
 /// Рецепт с другой пачки: то же зерно спрашивать не надо — надо назвать его.
 class _OtherPackRow extends StatelessWidget {
-  const _OtherPackRow({required this.recipe, required this.pack});
+  const _OtherPackRow({
+    required this.recipe,
+    required this.pack,
+    required this.summary,
+  });
 
   final RecipeData recipe;
+
+  /// Клики и время: «18 кликов · 2:15».
+  final String summary;
 
   /// Пачка, по которой вели рецепт. null — ещё не дочиталась: строка тогда
   /// показывает дату, а не пустое место на месте названия.
@@ -467,7 +510,7 @@ class _OtherPackRow extends StatelessWidget {
 
     return AppRow(
       label: pack?.packName ?? date,
-      value: '${recipe.temperature} °C · ${_formatTime(recipe.time)}',
+      value: summary,
       icon: AppIcons.uiPack,
       onTap: () => context.router.push(BrewRoute(recipe: recipe, pack: pack)),
     );
@@ -476,16 +519,19 @@ class _OtherPackRow extends StatelessWidget {
 
 /// Прошлая версия рецепта строкой.
 class _VersionRow extends StatelessWidget {
-  const _VersionRow({required this.recipe, this.pack});
+  const _VersionRow({required this.recipe, required this.summary, this.pack});
 
   final RecipeData recipe;
   final PackData? pack;
+
+  /// Клики и время — так же, как у строк с прошлых пачек.
+  final String summary;
 
   @override
   Widget build(BuildContext context) {
     return AppRow(
       label: _formatDate(AppLocalizations.of(context), recipe.date),
-      value: '${recipe.temperature} °C · ${_formatTime(recipe.time)}',
+      value: summary,
       icon: AppIcons.uiHistory,
       onTap: () => context.router.push(BrewRoute(recipe: recipe, pack: pack)),
     );

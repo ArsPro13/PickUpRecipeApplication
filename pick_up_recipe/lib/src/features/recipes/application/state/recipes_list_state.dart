@@ -260,6 +260,18 @@ String formatRecipeDate(AppLocalizations texts, String raw) {
       : formatDayMonthYear(texts, local);
 }
 
+/// Когда заварили — датой и временем, коротко: «22 окт, 16:55».
+///
+/// Стоит на снимке пачки в карточке версии: владелец попросил кроме даты
+/// писать и время — за один день одно и то же зерно заваривают и утром, и
+/// вечером, и по одной дате две версии не различить.
+String formatRecipeStamp(AppLocalizations texts, String raw) {
+  final parsed = DateTime.tryParse(raw);
+  if (parsed == null) return raw;
+
+  return formatDayMonthTime(texts, parsed.toLocal());
+}
+
 final recipeServiceProvider = Provider<RecipeService>((ref) => RecipeService());
 
 final recipesListProvider =

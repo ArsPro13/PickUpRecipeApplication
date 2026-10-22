@@ -8,8 +8,9 @@
 
 import '../l10n/app_localizations.dart';
 
-/// Названия месяцев текущего языка по порядку, с января.
-List<String> _months(AppLocalizations texts) => [
+/// Названия месяцев текущего языка по порядку, с января — в той форме, в
+/// какой они стоят после числа: «22 октября». Ими же подписан барабан даты.
+List<String> monthNames(AppLocalizations texts) => [
       texts.dateMonth1,
       texts.dateMonth2,
       texts.dateMonth3,
@@ -28,7 +29,7 @@ List<String> _months(AppLocalizations texts) => [
 String formatDayMonth(AppLocalizations texts, DateTime date) {
   return texts.dateDayMonth(
     date.day.toString(),
-    _months(texts)[date.month - 1],
+    monthNames(texts)[date.month - 1],
   );
 }
 
@@ -36,7 +37,41 @@ String formatDayMonth(AppLocalizations texts, DateTime date) {
 String formatDayMonthYear(AppLocalizations texts, DateTime date) {
   return texts.dateDayMonthYear(
     date.day.toString(),
-    _months(texts)[date.month - 1],
+    monthNames(texts)[date.month - 1],
     date.year.toString(),
   );
+}
+
+/// Короткие названия месяцев: «окт», «Oct». Для подписей, где рядом с датой
+/// стоит ещё и время и места на полное название нет.
+List<String> shortMonthNames(AppLocalizations texts) => [
+      texts.dateMonthShort1,
+      texts.dateMonthShort2,
+      texts.dateMonthShort3,
+      texts.dateMonthShort4,
+      texts.dateMonthShort5,
+      texts.dateMonthShort6,
+      texts.dateMonthShort7,
+      texts.dateMonthShort8,
+      texts.dateMonthShort9,
+      texts.dateMonthShort10,
+      texts.dateMonthShort11,
+      texts.dateMonthShort12,
+    ];
+
+/// Дата со временем коротко: «22 окт, 16:55», «Oct 22, 16:55».
+///
+/// Год — только не нынешний, как и у полной даты: «22 окт 2025, 16:55».
+/// Время всегда двадцатичетырёхчасовое: у подписи на снимке нет места под
+/// «PM», а сутки по часам читаются одинаково на любом языке.
+String formatDayMonthTime(AppLocalizations texts, DateTime date,
+    {DateTime? now}) {
+  final month = shortMonthNames(texts)[date.month - 1];
+  final time = '${date.hour.toString().padLeft(2, '0')}:'
+      '${date.minute.toString().padLeft(2, '0')}';
+
+  return date.year == (now ?? DateTime.now()).year
+      ? texts.dateStamp(date.day.toString(), month, time)
+      : texts.dateStampYear(
+          date.day.toString(), month, date.year.toString(), time);
 }

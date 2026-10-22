@@ -235,6 +235,10 @@
 
   "stepTypesOwnGroupOnly": "Your types · only for this device",
 
+  "stepTypesForThisDevice": "For this device",
+
+  "stepTypesAll": "All steps",
+
   "stepTypesStateful": "{name} · changes the state of the device",
 
   "stepTypeNew": "new",
@@ -267,11 +271,9 @@
 
   "profileNoGrinder": "No grinder selected. Without one a recipe shows grind size in words instead of the clicks of your grinder.",
 
-  "profileGrinderPrimary": "primary",
+  "profileGrinderPrimary": "current",
 
   "profileChooseGrinder": "Choose a grinder",
-
-  "profileChangeGrinders": "Change the set",
 
   "profileAccountTitle": "Account",
 
@@ -296,10 +298,6 @@
   "scanTapToAim": "tap to aim",
 
   "scanCodeIsSmall": "The code is small — look for it in the corner of the pack",
-
-  "scanManualTitle": "Enter the code by hand",
-
-  "scanOpenRecipe": "Open the recipe",
 
   "scanNoCode": "There is no code on the pack",
 
@@ -363,17 +361,17 @@
 
   "recipesVersionsCount": "{count, plural, one{{count} version} other{{count} versions}}",
 
-  "recipesNow": "now",
+  "recipesNow": "current version",
 
-  "recipesNowSwipe": "now · swipe sideways",
+  "recipesNowSwipe": "current version · swipe sideways",
 
   "recipesVersionOf": "version {number} of {count}",
 
   "recipesDraft": "not saved",
 
-  "recipesCurrent": "this is how I brew it",
+  "recipesCurrent": "current",
 
-  "recipesPastVersion": "an earlier version",
+  "recipesPastVersion": "earlier",
 
   "recipesBrewAgain": "Brew it again",
 
@@ -423,6 +421,12 @@
 
   "coffeeMethodsFailed": "The brewing methods did not load",
 
+  "coffeeMethodSearchHint": "Find a device",
+
+  "coffeeMethodNotFound": "No such device",
+
+  "coffeeMethodCatalogSize": "Check the spelling — the catalog holds {count, plural, one{{count} device} other{{count} devices}}",
+
   "dateMonth1": "January",
 
   "dateMonth2": "February",
@@ -447,9 +451,37 @@
 
   "dateMonth12": "December",
 
+  "dateMonthShort1": "Jan",
+
+  "dateMonthShort2": "Feb",
+
+  "dateMonthShort3": "Mar",
+
+  "dateMonthShort4": "Apr",
+
+  "dateMonthShort5": "May",
+
+  "dateMonthShort6": "Jun",
+
+  "dateMonthShort7": "Jul",
+
+  "dateMonthShort8": "Aug",
+
+  "dateMonthShort9": "Sep",
+
+  "dateMonthShort10": "Oct",
+
+  "dateMonthShort11": "Nov",
+
+  "dateMonthShort12": "Dec",
+
   "dateDayMonth": "{month} {day}",
 
   "dateDayMonthYear": "{month} {day}, {year}",
+
+  "dateStamp": "{month} {day}, {time}",
+
+  "dateStampYear": "{month} {day} {year}, {time}",
 
   "rateTitle": "Your cup",
 
@@ -574,10 +606,6 @@
   "rateFixRecipe": "Adjust the recipe",
 
   "rateJustSave": "Just save the rating",
-
-  "rateSavedOffline": "Rating saved — it will be sent once the connection is back",
-
-  "rateSavedCorrectionLater": "Rating saved. The fix is worked out on the server — it will be there once the connection is back",
 
   "rateNothingToChange": "Nothing to change: the recipe is already at the edge of its range",
 
@@ -798,10 +826,6 @@
 
   "grinderScale": "{count, plural, one{{count} step} other{{count} steps}} on the scale",
 
-  "grinderApplied": "Grind is now shown in {name} steps",
-
-  "undo": "Undo",
-
   "grinderNotFound": "No such grinder",
 
   "grinderCatalogEmpty": "The catalog is empty — check the connection",
@@ -816,15 +840,13 @@
 
   "grinderSaveOffline": "A grinder cannot be saved without a connection — it lives in your account",
 
-  "grinderApproximately": "about {value}",
-
   "grinderPickPrompt": "pick a grinder",
 
   "grinderPickPromptHint": "pick a grinder and we will show the setting",
 
-  "grinderScaleOf": "{name} scale",
+  "grinderClicks": "{count, plural, one{{label} click} other{{label} clicks}}",
 
-  "grinderClicks": "{value} clicks",
+  "grinderClicksUnit": "{count, plural, one{click} other{clicks}}",
 
   "builderTitle": "Your recipe",
 
@@ -902,11 +924,9 @@
 
   "builderLeave": "Leave",
 
-  "builderSavedOffline": "Saved on the phone — it will be sent once the connection is back",
-
-  "builderSavedVersion": "Saved as a new version",
-
   "builderSaveFailed": "Not saved: {error}",
+
+  "builderSaved": "Saved",
 
   "builderEndsTimer": "by time",
 
@@ -950,12 +970,6 @@
 
   "svcAuthFailedVerifyEmail": "Could not confirm the email",
 
-  "svcSyncSent": "{count, plural, =1{Sent what was waiting for a connection} other{Sent what was waiting for a connection: {count}}}",
-
-  "svcSyncDropped": "The server rejected what was waiting ({count}) — it is out of date",
-
-  "svcSyncMixed": "Sent: {sent}. Rejected by the server: {dropped}",
-
   "svcLegalClose": "Close",
 
   "svcLegalUnavailable": "The document is not available right now. It is published on the site — open it there: {link}",
@@ -985,8 +999,6 @@
   "methodsCount": "{count, plural, one{{count} device} other{{count} devices}}",
 
   "chooseOtherPacks": "From earlier bags",
-
-  "chooseOtherPacksNote": "same brewer, different beans",
 
   "rateForYou": "This is your own note. The app will adjust grind and time next time — the roaster only sees anonymised statistics.",
 

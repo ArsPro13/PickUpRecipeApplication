@@ -1,0 +1,895 @@
+// Стопка версий одного рецепта — пара «кофе + метод».
+//
+// Живёт отдельно от вкладки «Рецепты», потому что показывается в двух
+// местах: на самой вкладке и на странице зерна. Владелец попросил, выбрав
+// зерно, видеть прошлые рецепты «так же, как на вкладке с рецептами, в том
+// же виде» — значит, это один и тот же виджет, а не похожая копия.
+//
+// Версии лежат барабаном: стопка карточек, верхнюю уводят свайпом вбок, она
+// улетает с наклоном, а следующая поднимается на её место — по кругу.
+//
+// Две прошлые попытки и чем они не подошли:
+//   * стопка с торчащими краями — толщина читалась как число правок, но
+//     попасть в узкую полоску прошлой версии пальцем почти невозможно;
+//   * лента с прокруткой — попасть легко, но пропадает сама стопка: версии
+//     выглядели соседними карточками, а не историей одного рецепта.
+// Барабан оставляет стопку и делает её листаемой жестом, который знают все.
+//
+// Оценка на карточке есть, но не числом: показывается только ОТСУТСТВИЕ
+// оценки. Сама оценка лежит в `/recipe/estimations` по одному запросу на
+// рецепт, и платить двадцатью запросами за двадцать звёзд в списке не за что.
+// А вот «эту чашку вы не оценили» приезжает вместе со списком одним полем
+// (has_estimation) и стоит ноль запросов.
+//
+// Кружка со звездой на карточке больше нет: владелец читал её как «добавить
+// в избранное» и попросил убрать. Оценить чашку по-прежнему можно — нажатием
+// на саму метку «Не оценено»: метка говорит, чего не хватает, и она же ведёт
+// это исправить.
+//
+// Про жест не написано, он показан: верхняя карточка первой стопки один раз
+// за сессию уходит вбок и возвращается. Когда движение в системе выключено,
+// смысл держит подпись рядом с точками — движение не может быть единственным
+// носителем смысла.
+
+import 'dart:typed_data';
+
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/utils.dart';
+import '../../l10n/app_localizations.dart';
+import '../../routing/app_router.dart';
+import '../features/brew_methods/application/brew_methods_state.dart';
+import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/state/recipes_list_state.dart';
+import '../pages/packs_page.dart';
+import '../themes/app_icons.dart';
+import '../themes/app_theme.dart';
+import '../themes/app_tokens.dart';
+import '../themes/method_family.dart';
+import 'app_icon.dart';
+import 'app_kit.dart';
+
+/// Высота карточки версии. Одна шкала на весь экран — от неё считается
+/// остальное, поэтому список не разъезжается.
+const double _cardHeight = 170;
+
+/// Сколько карточек видно под верхней. Больше двух не помогает: третий край
+/// уже не читается как «ещё есть», а выглядит мусором под карточкой.
+const int _deckDepth = 2;
+
+/// На сколько сдвинута и ужата каждая следующая карточка стопки.
+const double _deckStep = 10;
+const double _deckScale = 0.045;
+
+/// Насколько далеко нужно увести карточку, чтобы она улетела, а не вернулась.
+const double _flyThreshold = 90;
+
+/// На сколько карточка отходит вбок, показывая, что её можно смахнуть.
+///
+/// Втрое меньше порога улёта — и это не запас, а условие: подсказка, дошедшая
+/// до порога, сама пролистала бы версию, и человек увидел бы не приглашение к
+/// жесту, а самопроизвольную перемотку.
+const double _hintShift = 30;
+
+/// Показывать ли жест движением.
+///
+/// Отдельной функцией, чтобы четыре условия проверялись тестом, а не на глаз:
+/// каждое из них — отдельный способ сделать список неприятным.
+///   • не первая группа — дёргались бы все стопки разом;
+///   • одна версия — жеста нет вовсе, и намекать на него значит соврать;
+///   • движение выключено в системе — тогда про жест говорит подпись у точек;
+///   • уже показали — подсказка при каждом взгляде это уже нервный тик.
+bool shouldHintSwipe({
+  required bool first,
+  required int versions,
+  required bool animationsDisabled,
+  required bool alreadyShown,
+}) {
+  if (alreadyShown || animationsDisabled) return false;
+  return first && versions > 1;
+}
+
+/// Цвет подписи поверх снимка по яркости того, что под ней.
+///
+/// Владелец попросил обязательно проверять фон, «чтобы не писать белым по
+/// белому»: снимки пачек бывают и почти белые, а заливка светлой обжарки —
+/// песочная. Из белого и почти чёрного берётся тот, что контрастнее с фоном
+/// по формуле WCAG, — тот же расчёт, которым проверяют доступность цветов.
+Color captionInk(double backgroundLuminance) {
+  final onWhite = 1.05 / (backgroundLuminance + 0.05);
+  final onBlack = (backgroundLuminance + 0.05) / 0.05;
+  return onWhite >= onBlack ? Colors.white : _darkInk;
+}
+
+/// Тёмная подпись — не чистый чёрный: на тёплых снимках он режет глаз.
+const Color _darkInk = Color(0xFF1B1714);
+
+/// Яркость заливки обжарки в нижнем левом углу — там, где стоит подпись.
+/// Заливка идёт по диагонали, и в этом углу её цвет — середина градиента.
+double roastFillLuminance(String roastLevel) {
+  final colors = roastFillColors(roastLevel);
+  return Color.lerp(colors.first, colors.last, 0.5)!.computeLuminance();
+}
+
+/// Стопка версий: шапка «кофе · метод» и барабан карточек под ней.
+class RecipeDeck extends StatefulWidget {
+  const RecipeDeck({
+    super.key,
+    required this.group,
+    required this.pack,
+    required this.hero,
+    required this.first,
+  });
+
+  final RecipeGroup group;
+  final PackData? pack;
+
+  /// Главная карточка экрана: тень глубже, «заварить» залит цветом.
+  final bool hero;
+
+  /// Первая стопка списка: без черты сверху, и только она показывает жест.
+  final bool first;
+
+  @override
+  State<RecipeDeck> createState() => _RecipeDeckState();
+}
+
+class _RecipeDeckState extends State<RecipeDeck>
+    with SingleTickerProviderStateMixin {
+  /// Подсказку показываем один раз за сессию, а не на каждом возврате к
+  /// списку: дёргающаяся при каждом взгляде карточка — это уже не подсказка,
+  /// а нервный тик.
+  static bool _hintShown = false;
+
+  /// Полёт улетающей карточки и её же возврат на место. Один контроллер на
+  /// оба движения: одновременно они случиться не могут.
+  ///
+  /// Заводится в `initState`, а не лениво при первом обращении: стопку, которую
+  /// не листали и которой не показывали подсказку, ленивый `late final` создавал
+  /// бы прямо в `dispose` — на уже отсоединённом элементе, а тому неоткуда взять
+  /// `TickerMode`. Уход с экрана падал бы в отладке на ровном месте.
+  late final AnimationController _fly;
+
+  /// Верхняя карточка барабана. Барабан кольцевой: после последней версии
+  /// снова первая — иначе после третьего свайпа человек упирается в пустоту
+  /// и не понимает, сломалось или закончилось.
+  int _top = 0;
+
+  /// Насколько карточку увели пальцем прямо сейчас.
+  ///
+  /// Отдельным слушаемым значением, а не полем состояния, — и это не
+  /// стилистика, а причина, по которой фото пачки мигало. `setState` на
+  /// каждом движении пальца перестраивал ВСЮ стопку: три карточки, в каждой
+  /// фото, метки и две кнопки. Полсотни таких перестроек в секунду — это и
+  /// есть «фотка каждый раз как бы рендерится».
+  ///
+  /// Теперь на смещение подписана только обёртка с двумя Transform: за кадр
+  /// пересчитываются две матрицы, а карточка остаётся тем же экземпляром.
+  final ValueNotifier<Offset> _drag = ValueNotifier<Offset>(Offset.zero);
+
+  /// Идёт полёт — жесты в это время не принимаем.
+  bool _flying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fly = AnimationController(vsync: this, duration: AppDuration.base);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _hint());
+  }
+
+  @override
+  void dispose() {
+    _fly.dispose();
+    _drag.dispose();
+    super.dispose();
+  }
+
+  /// Показывает жест движением: карточка отходит вбок и возвращается.
+  ///
+  /// Тем же механизмом, что и палец, — иначе подсказка и настоящий свайп
+  /// разошлись бы в мелочах, и подсказка обещала бы не то движение.
+  void _hint() {
+    if (!mounted) return;
+    if (!shouldHintSwipe(
+      first: widget.first,
+      versions: widget.group.versions.length,
+      animationsDisabled: MediaQuery.disableAnimationsOf(context),
+      alreadyShown: _hintShown,
+    )) {
+      return;
+    }
+
+    _hintShown = true;
+    setState(() => _flying = true);
+
+    _animateDrag(
+      const Offset(-_hintShift, 0),
+      then: () {
+        if (!mounted) return;
+        _animateDrag(
+          Offset.zero,
+          then: () {
+            if (mounted) setState(() => _flying = false);
+          },
+        );
+      },
+    );
+  }
+
+  int _at(int offset) {
+    final count = widget.group.versions.length;
+    return (_top + offset) % count;
+  }
+
+  void _animateDrag(Offset target, {VoidCallback? then}) {
+    final tween = Tween<Offset>(begin: _drag.value, end: target)
+        .animate(CurvedAnimation(parent: _fly, curve: AppCurves.out));
+
+    void tick() => _drag.value = tween.value;
+
+    _fly
+      ..reset()
+      ..addListener(tick);
+
+    _fly.forward().whenComplete(() {
+      _fly.removeListener(tick);
+      then?.call();
+    });
+  }
+
+  void _release(double width) {
+    if (_drag.value.dx.abs() < _flyThreshold) {
+      // Не дотянули — карточка возвращается на место, а не остаётся косой.
+      _animateDrag(Offset.zero, then: () => setState(() => _flying = false));
+      return;
+    }
+
+    final direction = _drag.value.dx.isNegative ? -1 : 1;
+    setState(() => _flying = true);
+
+    _animateDrag(
+      Offset(direction * width * 1.4, _drag.value.dy),
+      then: () {
+        // Обнуление и смена верхней карточки идут подряд в одном такте:
+        // слушатель смещения и setState оба помечают дерево грязным, и до
+        // отрисовки дело доходит один раз — промежуточного кадра, в котором
+        // старая карточка уже вернулась на место, человек не увидит.
+        _drag.value = Offset.zero;
+        setState(() {
+          // Влево — к следующей версии, вправо — к предыдущей: барабан
+          // крутится в обе стороны, как его ни толкни.
+          _top = direction < 0 ? _at(1) : _at(widget.group.versions.length - 1);
+          _flying = false;
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final versions = widget.group.versions;
+    final single = versions.length == 1;
+
+    return Container(
+      padding: EdgeInsets.only(top: widget.first ? 0 : AppSpacing.s4),
+      decoration: widget.first
+          ? null
+          : BoxDecoration(
+              border: Border(top: BorderSide(color: context.palette.border)),
+            ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _Header(group: widget.group, pack: widget.pack),
+          const SizedBox(height: AppSpacing.s2),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+
+              return SizedBox(
+                // Место под стопку: карточка плюс сдвиг задних краёв.
+                height: _cardHeight + _deckStep * _deckDepth,
+                child: Stack(
+                  children: [
+                    // Задние карточки рисуются с дальней: ближняя ложится
+                    // поверх неё, как в настоящей стопке.
+                    for (var depth = _deckDepth; depth >= 1; depth--)
+                      if (versions.length > depth)
+                        Positioned(
+                          top: _deckStep * depth,
+                          left: 0,
+                          right: 0,
+                          height: _cardHeight,
+                          child: Transform.scale(
+                            scale: 1 - _deckScale * depth,
+                            child: IgnorePointer(
+                              child: Opacity(
+                                opacity: 1 - 0.18 * depth,
+                                child: _VersionCard(
+                                  version: versions[_at(depth)],
+                                  pack: widget.pack,
+                                  hero: false,
+                                  latest: _at(depth) == 0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                    // Верхняя карточка: её и таскают.
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: _cardHeight,
+                      child: ValueListenableBuilder<Offset>(
+                        valueListenable: _drag,
+                        // Карточка собирается ОДИН раз на построение экрана и
+                        // приезжает в builder готовой: перетаскивание её не
+                        // трогает вовсе.
+                        child: GestureDetector(
+                          onHorizontalDragUpdate: single || _flying
+                              ? null
+                              : (details) => _drag.value += details.delta,
+                          onHorizontalDragEnd:
+                              single || _flying ? null : (_) => _release(width),
+                          child: _VersionCard(
+                            version: versions[_top],
+                            pack: widget.pack,
+                            hero: widget.hero && _top == 0,
+                            latest: _top == 0,
+                          ),
+                        ),
+                        builder: (context, drag, card) => Transform.translate(
+                          offset: drag,
+                          child: Transform.rotate(
+                            // Наклон от того, насколько увели: движение
+                            // читается как «карточку отбрасывают», а не как
+                            // «она едет по рельсам».
+                            angle: drag.dx / width * 0.22,
+                            child: card,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          if (!single) ...[
+            const SizedBox(height: AppSpacing.s2),
+            _Pager(count: versions.length, index: _top),
+          ],
+          const SizedBox(height: AppSpacing.s4),
+        ],
+      ),
+    );
+  }
+}
+
+/// Шапка группы: значок прибора в кружке, «кофе · метод» и число версий.
+class _Header extends ConsumerWidget {
+  const _Header({required this.group, required this.pack});
+
+  final RecipeGroup group;
+  final PackData? pack;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Кружок значка красится в цвет семьи прибора: воронка, пресс и холодные
+    // методы перестают выглядеть одинаково при беглом просмотре списка.
+    final family = methodFamilyColor(
+      ref.watch(brewMethodsProvider).groupSlugBySlug[group.method],
+    );
+    final accent = family ?? context.colors.primary;
+
+    return Row(
+      children: [
+        Container(
+          height: AppSpacing.s8,
+          width: AppSpacing.s8,
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: 0.14),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: AppIcon(
+              AppIcons.method(group.methodIconKey),
+              size: AppSizes.icon20,
+              color: accent,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.s3),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Название не обрезается: длинное переносится на две строки.
+              Text(
+                _title(),
+                style: context.texts.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              Text(
+                _subtitle(AppLocalizations.of(context)),
+                style: context.texts.labelSmall,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _title() {
+    final coffee = pack?.packName ?? '';
+    return coffee.isEmpty ? group.methodName : '$coffee · ${group.methodName}';
+  }
+
+  String _subtitle(AppLocalizations texts) {
+    final parts = [
+      if (pack != null && pack!.roasterName.isNotEmpty) pack!.roasterName,
+      formatRecipeDate(texts, group.latest.date),
+      // Склонение «1 версия / 2 версии / 5 версий» считает ICU: таблица форм
+      // у каждого языка своя, и написанная руками была верной для одного.
+      if (group.versions.length > 1)
+        texts.recipesVersionsCount(group.versions.length),
+    ];
+    return parts.join(' · ');
+  }
+}
+
+/// Где мы в ленте версий: точки и подпись словами.
+///
+/// Точки без подписи читаются как украшение, подпись без точек — как текст,
+/// который не к чему привязать. Вместе они говорят «здесь есть что листать».
+class _Pager extends StatelessWidget {
+  const _Pager({required this.count, required this.index});
+
+  final int count;
+  final int index;
+
+  /// Подпись верхней версии.
+  ///
+  /// Обычно — «текущая версия»: про жест рассказывает сама карточка, отходя
+  /// вбок. С выключенными в системе анимациями она этого не делает — и тогда
+  /// про жест говорится словами, иначе смысл потерялся бы вместе с движением.
+  String _now(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    return MediaQuery.disableAnimationsOf(context)
+        ? texts.recipesNowSwipe
+        : texts.recipesNow;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        for (var i = 0; i < count; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpacing.s1),
+          Container(
+            height: AppSpacing.s1 + 2,
+            width: i == index ? AppSpacing.s4 : AppSpacing.s1 + 2,
+            decoration: BoxDecoration(
+              color:
+                  i == index ? context.colors.primary : context.palette.border,
+              borderRadius: AppRadius.rounded,
+            ),
+          ),
+        ],
+        const SizedBox(width: AppSpacing.s3),
+        Text(
+          index == 0
+              ? _now(context)
+              : AppLocalizations.of(context).recipesVersionOf(index + 1, count),
+          style: context.texts.labelSmall,
+        ),
+      ],
+    );
+  }
+}
+
+/// Карточка версии: фото слева, показатели метками справа.
+///
+/// Тап в любом месте открывает рецепт — на экране заваривания он и живёт,
+/// вместе с шагами и числами. Кружок «заварить» на карточке ведёт туда же,
+/// но сразу к подготовке: сначала смолоть, потом таймер.
+///
+/// Рядом с ним кружок правки: до него конструктор открывался только через
+/// экран заваривания, то есть чтобы поправить помол, надо было сделать вид,
+/// что собираешься варить.
+class _VersionCard extends StatelessWidget {
+  const _VersionCard({
+    required this.version,
+    required this.pack,
+    required this.hero,
+    required this.latest,
+  });
+
+  final RecipeVersion version;
+  final PackData? pack;
+  final bool hero;
+  final bool latest;
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+    // Черновик не «неоценён»: его ещё не заваривали, оценивать нечего.
+    final rated = version.recipe.hasEstimation || version.draft;
+
+    return Material(
+      color: context.colors.secondaryContainer,
+      borderRadius: hero ? AppRadius.large : AppRadius.medium,
+      clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      child: InkWell(
+        onTap: () => context.router.push(
+          BrewRoute(recipe: version.recipe, pack: pack),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: hero ? AppRadius.large : AppRadius.medium,
+            boxShadow: hero ? context.shadows.level2 : context.shadows.level1,
+            // Обводка, а не заливка: заливка спорила бы с фотографией пачки,
+            // которая занимает левые четыре десятых карточки.
+            border: rated
+                ? null
+                : Border.all(
+                    color: context.colors.primary, width: AppStroke.thick),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: _Photo(
+                  pack: pack,
+                  caption: formatRecipeStamp(texts, version.date),
+                ),
+              ),
+              Expanded(
+                flex: 6,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.s3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          // Версия подписана тем, чем она приходится той,
+                          // по которой заваривают: «текущая» или «прошлая».
+                          Flexible(
+                            child: Text(
+                              version.draft
+                                  ? texts.recipesDraft
+                                  : (latest
+                                      ? texts.recipesCurrent
+                                      : texts.recipesPastVersion),
+                              style: context.texts.labelSmall?.copyWith(
+                                color: version.draft
+                                    ? context.colors.primary
+                                    : null,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (!rated) ...[
+                            const SizedBox(width: AppSpacing.s2),
+                            Flexible(
+                              child: _NotRated(version: version, pack: pack),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.s2),
+                      // Показатели метками, а не строкой текста: цвет метки
+                      // и есть её подпись — дозу от воды отличают, не читая.
+                      Wrap(
+                        spacing: AppSpacing.s2,
+                        runSpacing: AppSpacing.s2,
+                        children: [
+                          MetricTag(
+                            kind: MetricKind.dose,
+                            label: texts.unitGrams(_formatDose(version.doseG)),
+                          ),
+                          MetricTag(
+                            kind: MetricKind.water,
+                            label: texts.unitMillilitres('${version.waterG}'),
+                          ),
+                          if (version.temperatureC != null)
+                            MetricTag(
+                              kind: MetricKind.temperature,
+                              label:
+                                  '${version.temperatureC!.toStringAsFixed(0)} °C',
+                            ),
+                          MetricTag(
+                            kind: MetricKind.time,
+                            label: _formatTime(version.timeSec),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          const Spacer(),
+                          _EditButton(version: version, pack: pack),
+                          const SizedBox(width: AppSpacing.s2),
+                          _PlayButton(
+                              version: version, pack: pack, filled: hero),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// «Не оценено» — и вход в оценку.
+///
+/// Раньше рядом стоял залитый кружок со звездой. Его читали как «добавить в
+/// избранное», и владелец попросил его убрать. Метка без выхода была бы
+/// упрёком, поэтому выходом стала она сама: нажатие ведёт на оценку именно
+/// этой версии. Цель для пальца — во всю высоту строки, а не по буквам.
+class _NotRated extends StatelessWidget {
+  const _NotRated({required this.version, required this.pack});
+
+  final RecipeVersion version;
+  final PackData? pack;
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    return Semantics(
+      button: true,
+      label: texts.brewRate,
+      child: InkWell(
+        onTap: () => context.router.push(
+          RatingRoute(recipe: version.recipe, pack: pack),
+        ),
+        borderRadius: AppRadius.small,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.s1),
+          child: Text(
+            texts.recipesNotRated,
+            style: context.texts.labelSmall?.copyWith(
+              color: context.colors.primary,
+              fontWeight: FontWeight.w600,
+              decoration: TextDecoration.underline,
+              decorationColor: context.colors.primary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Фото пачки с датой и временем заваривания поверх него.
+///
+/// Цвет подписи выбирается по фону, а не стоит белым всегда: белая дата на
+/// почти белом снимке или на песочной заливке светлой обжарки читалась с
+/// трудом. Яркость заливки известна заранее, яркость снимка замеряется по
+/// его нижней полосе — пока замера нет, подпись светлая на тёмной подложке,
+/// как раньше.
+class _Photo extends StatefulWidget {
+  const _Photo({required this.pack, required this.caption});
+
+  final PackData? pack;
+  final String caption;
+
+  @override
+  State<_Photo> createState() => _PhotoState();
+}
+
+class _PhotoState extends State<_Photo> {
+  Uint8List? _bytes;
+  double? _photoLuminance;
+
+  @override
+  void initState() {
+    super.initState();
+    _measure();
+  }
+
+  @override
+  void didUpdateWidget(covariant _Photo old) {
+    super.didUpdateWidget(old);
+    if (old.pack?.packImage != widget.pack?.packImage) _measure();
+  }
+
+  void _measure() {
+    final bytes = decodePackImage(widget.pack?.packImage);
+    _bytes = bytes;
+    _photoLuminance = bytes == null ? null : cachedPackPhotoLuminance(bytes);
+    if (bytes == null || _photoLuminance != null) return;
+
+    measurePackPhotoLuminance(bytes).then((luminance) {
+      if (!mounted || !identical(_bytes, bytes) || luminance == null) return;
+      setState(() => _photoLuminance = luminance);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final roast = widget.pack?.roastLevel ?? '';
+    final luminance = _bytes == null
+        ? roastFillLuminance(roast)
+        // До замера — тёмный фон: белая подпись на тёмной подложке читается
+        // на большинстве снимков, а замер приезжает через кадр-другой.
+        : (_photoLuminance ?? 0);
+    final ink = captionInk(luminance);
+    final light = ink == Colors.white;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ColoredBox(
+          color: context.palette.border,
+          child: PackImage(
+            base64Image: widget.pack?.packImage ?? '',
+            roastLevel: roast,
+            // По низу этой картинки идёт дата заваривания, и слово обжарки
+            // вставало ровно под ней: на снимке это читалось как
+            // «12 сентябряяя». Цвет заливки остаётся — он и различает пачки.
+            showRoastLabel: false,
+          ),
+        ),
+        // Подложка того же знака, что и фон под подписью: тёмная под белой
+        // подписью, светлая под тёмной. Она добирает контраст там, где снимок
+        // пёстрый и средняя яркость обманывает.
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s3,
+              vertical: AppSpacing.s1,
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  (light ? Colors.black : Colors.white).withValues(alpha: 0),
+                  (light ? Colors.black : Colors.white)
+                      .withValues(alpha: light ? 0.55 : 0.45),
+                ],
+              ),
+            ),
+            child: Text(
+              widget.caption,
+              style: context.texts.labelSmall?.copyWith(
+                color: ink,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Круглая кнопка «заварить снова».
+///
+/// Своего размера, а не `AppButton`: тот держит высоту 50 и разрезал бы
+/// карточку пополам. У неглавных версий повтор тише — контур вместо заливки.
+///
+/// Ведёт на подготовку, а не сразу в таймер: сначала смолоть.
+class _PlayButton extends StatelessWidget {
+  const _PlayButton(
+      {required this.version, required this.pack, required this.filled});
+
+  final RecipeVersion version;
+  final PackData? pack;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.colors.primary;
+
+    return Semantics(
+      button: true,
+      label: AppLocalizations.of(context).recipesBrewAgain,
+      child: InkWell(
+        onTap: () => context.router.push(
+          BrewRoute(recipe: version.recipe, pack: pack),
+        ),
+        customBorder: const CircleBorder(),
+        child: Container(
+          height: AppSpacing.s8,
+          width: AppSpacing.s8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: filled ? accent : Colors.transparent,
+            border: filled ? null : Border.all(color: context.palette.border),
+          ),
+          child: Center(
+            child: AppIcon(
+              AppIcons.uiPlay,
+              size: AppSizes.icon16,
+              color: filled
+                  ? context.colors.secondaryContainer
+                  : context.colors.secondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Круглая кнопка «править рецепт».
+///
+/// Слева от повтора и всегда контуром, даже на главной карточке: два залитых
+/// кружка рядом читались бы как два равных действия, а главное на этом экране
+/// одно — заварить снова. Правка тише по весу, но не по размеру: цель того же
+/// диаметра, что и у соседа, иначе палец мазал бы по ней и попадал в повтор.
+///
+/// Тап отсюда ведёт в конструктор, а не на экран заваривания: до этой кнопки
+/// в конструктор с экрана рецептов было не попасть вовсе.
+class _EditButton extends StatelessWidget {
+  const _EditButton({required this.version, required this.pack});
+
+  final RecipeVersion version;
+  final PackData? pack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: AppLocalizations.of(context).recipesEditRecipe,
+      child: InkWell(
+        onTap: () => context.router.push(
+          RecipeBuilderRoute(recipe: version.recipe, pack: pack),
+        ),
+        customBorder: const CircleBorder(),
+        child: Container(
+          height: AppSpacing.s8,
+          width: AppSpacing.s8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: context.palette.border),
+          ),
+          child: Center(
+            child: AppIcon(
+              AppIcons.uiEdit,
+              size: AppSizes.icon16,
+              color: context.colors.secondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// м:сс — тот же формат, что на экране заваривания.
+String _formatTime(int seconds) {
+  final rest = (seconds % 60).toString().padLeft(2, '0');
+  return '${seconds ~/ 60}:$rest';
+}
+
+/// Доза без лишнего хвоста: 15 вместо 15.0.
+String _formatDose(double value) {
+  final rounded = (value * 10).round() / 10;
+  if (rounded == rounded.roundToDouble()) return rounded.round().toString();
+  return rounded.toStringAsFixed(1).replaceAll('.', ',');
+}

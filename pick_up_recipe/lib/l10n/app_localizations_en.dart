@@ -424,6 +424,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stepTypesOwnGroupOnly => 'Your types · only for this device';
 
   @override
+  String get stepTypesForThisDevice => 'For this device';
+
+  @override
+  String get stepTypesAll => 'All steps';
+
+  @override
   String stepTypesStateful(String name) {
     return '$name · changes the state of the device';
   }
@@ -524,13 +530,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'No grinder selected. Without one a recipe shows grind size in words instead of the clicks of your grinder.';
 
   @override
-  String get profileGrinderPrimary => 'primary';
+  String get profileGrinderPrimary => 'current';
 
   @override
   String get profileChooseGrinder => 'Choose a grinder';
-
-  @override
-  String get profileChangeGrinders => 'Change the set';
 
   @override
   String get profileAccountTitle => 'Account';
@@ -577,12 +580,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get scanCodeIsSmall =>
       'The code is small — look for it in the corner of the pack';
-
-  @override
-  String get scanManualTitle => 'Enter the code by hand';
-
-  @override
-  String get scanOpenRecipe => 'Open the recipe';
 
   @override
   String get scanNoCode => 'There is no code on the pack';
@@ -696,10 +693,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get recipesNow => 'now';
+  String get recipesNow => 'current version';
 
   @override
-  String get recipesNowSwipe => 'now · swipe sideways';
+  String get recipesNowSwipe => 'current version · swipe sideways';
 
   @override
   String recipesVersionOf(int number, int count) {
@@ -710,10 +707,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipesDraft => 'not saved';
 
   @override
-  String get recipesCurrent => 'this is how I brew it';
+  String get recipesCurrent => 'current';
 
   @override
-  String get recipesPastVersion => 'an earlier version';
+  String get recipesPastVersion => 'earlier';
 
   @override
   String get recipesBrewAgain => 'Brew it again';
@@ -800,6 +797,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coffeeMethodsFailed => 'The brewing methods did not load';
 
   @override
+  String get coffeeMethodSearchHint => 'Find a device';
+
+  @override
+  String get coffeeMethodNotFound => 'No such device';
+
+  @override
+  String coffeeMethodCatalogSize(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count devices',
+      one: '$count device',
+    );
+    return 'Check the spelling — the catalog holds $_temp0';
+  }
+
+  @override
   String get dateMonth1 => 'January';
 
   @override
@@ -836,6 +850,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dateMonth12 => 'December';
 
   @override
+  String get dateMonthShort1 => 'Jan';
+
+  @override
+  String get dateMonthShort2 => 'Feb';
+
+  @override
+  String get dateMonthShort3 => 'Mar';
+
+  @override
+  String get dateMonthShort4 => 'Apr';
+
+  @override
+  String get dateMonthShort5 => 'May';
+
+  @override
+  String get dateMonthShort6 => 'Jun';
+
+  @override
+  String get dateMonthShort7 => 'Jul';
+
+  @override
+  String get dateMonthShort8 => 'Aug';
+
+  @override
+  String get dateMonthShort9 => 'Sep';
+
+  @override
+  String get dateMonthShort10 => 'Oct';
+
+  @override
+  String get dateMonthShort11 => 'Nov';
+
+  @override
+  String get dateMonthShort12 => 'Dec';
+
+  @override
   String dateDayMonth(String day, String month) {
     return '$month $day';
   }
@@ -843,6 +893,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String dateDayMonthYear(String day, String month, String year) {
     return '$month $day, $year';
+  }
+
+  @override
+  String dateStamp(String day, String month, String time) {
+    return '$month $day, $time';
+  }
+
+  @override
+  String dateStampYear(String day, String month, String year, String time) {
+    return '$month $day $year, $time';
   }
 
   @override
@@ -1020,14 +1080,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rateJustSave => 'Just save the rating';
-
-  @override
-  String get rateSavedOffline =>
-      'Rating saved — it will be sent once the connection is back';
-
-  @override
-  String get rateSavedCorrectionLater =>
-      'Rating saved. The fix is worked out on the server — it will be there once the connection is back';
 
   @override
   String get rateNothingToChange =>
@@ -1420,14 +1472,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String grinderApplied(String name) {
-    return 'Grind is now shown in $name steps';
-  }
-
-  @override
-  String get undo => 'Undo';
-
-  @override
   String get grinderNotFound => 'No such grinder';
 
   @override
@@ -1459,11 +1503,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'A grinder cannot be saved without a connection — it lives in your account';
 
   @override
-  String grinderApproximately(String value) {
-    return 'about $value';
-  }
-
-  @override
   String get grinderPickPrompt => 'pick a grinder';
 
   @override
@@ -1471,13 +1510,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'pick a grinder and we will show the setting';
 
   @override
-  String grinderScaleOf(String name) {
-    return '$name scale';
+  String grinderClicks(num count, String label) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$label clicks',
+      one: '$label click',
+    );
+    return '$_temp0';
   }
 
   @override
-  String grinderClicks(String value) {
-    return '$value clicks';
+  String grinderClicksUnit(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'clicks',
+      one: 'click',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1602,16 +1653,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get builderLeave => 'Leave';
 
   @override
-  String get builderSavedOffline =>
-      'Saved on the phone — it will be sent once the connection is back';
-
-  @override
-  String get builderSavedVersion => 'Saved as a new version';
-
-  @override
   String builderSaveFailed(String error) {
     return 'Not saved: $error';
   }
+
+  @override
+  String get builderSaved => 'Saved';
 
   @override
   String get builderEndsTimer => 'by time';
@@ -1677,27 +1724,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get svcAuthFailedVerifyEmail => 'Could not confirm the email';
-
-  @override
-  String svcSyncSent(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Sent what was waiting for a connection: $count',
-      one: 'Sent what was waiting for a connection',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String svcSyncDropped(int count) {
-    return 'The server rejected what was waiting ($count) — it is out of date';
-  }
-
-  @override
-  String svcSyncMixed(int sent, int dropped) {
-    return 'Sent: $sent. Rejected by the server: $dropped';
-  }
 
   @override
   String get svcLegalClose => 'Close';
@@ -1767,9 +1793,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseOtherPacks => 'From earlier bags';
-
-  @override
-  String get chooseOtherPacksNote => 'same brewer, different beans';
 
   @override
   String get rateForYou =>

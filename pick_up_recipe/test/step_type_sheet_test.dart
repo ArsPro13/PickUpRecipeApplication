@@ -67,6 +67,8 @@ Future<_Outcome> _openSheet(
   WidgetTester tester, {
   Locale locale = const Locale('ru'),
   StepTypeReference? reference,
+  List<String> allowed = const [],
+  String? methodName,
 }) async {
   final outcome = _Outcome();
 
@@ -85,8 +87,11 @@ Future<_Outcome> _openSheet(
           body: Builder(
             builder: (context) => TextButton(
               onPressed: () async {
-                outcome.pick = await showStepTypeSheet(context,
-                    allowedStepTypes: const []);
+                outcome.pick = await showStepTypeSheet(
+                  context,
+                  allowedStepTypes: allowed,
+                  methodName: methodName,
+                );
                 outcome.closed = true;
               },
               child: const Text('открыть'),
@@ -104,6 +109,67 @@ Future<_Outcome> _openSheet(
 }
 
 void main() {
+  group('шаги метода сверху, все шаги ниже', () {
+    // Владелец: «шаги для этого метода в начале, просто единым блоком, а
+    // потом все возможные шаги по категориям».
+    testWidgets('блок метода — одной сеткой и первым', (tester) async {
+      await _openSheet(
+        tester,
+        allowed: const ['type7', 'type2'],
+        methodName: 'Trinity One',
+      );
+      final ru = lookupAppLocalizations(const Locale('ru'));
+
+      // Имя метода не склоняется, поэтому блок подписан «Для этого прибора»,
+      // а сам метод назван в шапке листа.
+      final methodTitle = find.text(ru.stepTypesForThisDevice);
+      expect(find.textContaining('Trinity One'), findsOneWidget);
+      final allTitle = find.text(ru.stepTypesAll);
+      expect(methodTitle, findsOneWidget);
+      expect(allTitle, findsOneWidget);
+
+      // Разрешённые методу типы стоят над «Все шаги», без заголовков групп
+      // между ними. Ниже, в своих группах, они повторены — это проверяет
+      // соседний тест прокруткой: список строит только то, что на виду.
+      final above = tester.getTopLeft(allTitle).dy;
+      for (final name in ['Тип 2', 'Тип 7']) {
+        final cells = find.text(name);
+        expect(cells, findsWidgets, reason: name);
+        expect(tester.getTopLeft(cells.first).dy, lessThan(above),
+            reason: '$name — в блоке метода');
+      }
+      expect(tester.getTopLeft(find.text('Группа 0')).dy, greaterThan(above),
+          reason: 'группы начинаются только под «Все шаги»');
+
+      // «Новый» живёт в блоке метода: заготовка привязана к прибору.
+      expect(tester.getTopLeft(find.text(ru.stepTypeNew)).dy, lessThan(above));
+    });
+
+    testWidgets('в блоке «все шаги» есть и те, которых у метода нет',
+        (tester) async {
+      final outcome = await _openSheet(tester, allowed: const ['type0']);
+
+      // type1 методу не разрешён, но лежит в группе ниже — и выбирается.
+      await tester.dragUntilVisible(
+          find.text('Тип 1'), find.byType(ListView), const Offset(0, -100));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Тип 1'));
+      await tester.pumpAndSettle();
+
+      expect((outcome.pick! as BuiltInStepPick).type.slug, 'type1');
+    });
+
+    testWidgets('метод неизвестен — блока метода нет, только группы',
+        (tester) async {
+      await _openSheet(tester);
+      final ru = lookupAppLocalizations(const Locale('ru'));
+
+      expect(find.text(ru.stepTypesAll), findsNothing);
+      expect(find.text(ru.stepTypesForThisDevice), findsNothing);
+      expect(find.text('Тип 0'), findsOneWidget);
+    });
+  });
+
   group('лист выбора типа шага', () {
     testWidgets('палец по списку листает список, а не тащит шторку',
         (tester) async {

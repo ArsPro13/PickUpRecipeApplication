@@ -14,6 +14,16 @@
 // открывается та, которую попросили. Свёрнутая строка при этом не немая —
 // она говорит, сколько внутри приборов и есть ли среди них готовый рецепт
 // обжарщика: иначе выбирать, какую открыть, пришлось бы наугад.
+//
+// Над группами — поиск прибора, тот же нестрогий, что у кофемолок: свой
+// прибор человек знает по имени, и открывать группы наугад, чтобы его найти,
+// незачем.
+//
+// Ещё выше — прошлые рецепты этого зерна. Ровно теми же стопками версий, что
+// на вкладке «Рецепты»: владелец попросил, выбрав зерно, видеть прошлые
+// рецепты «так же, как на вкладке с рецептами, в том же виде».
+
+import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +34,7 @@ import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/codes/application/coffee_state.dart';
 import '../features/codes/domain/pack_code.dart';
+import '../features/grinders/domain/grinder_search.dart';
 import '../features/recipes/domain/models/step_type_model.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/last_brew_cache.dart';
@@ -32,6 +43,7 @@ import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
 import '../general_widgets/descriptor_chip.dart';
+import '../general_widgets/recipe_deck.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -54,6 +66,16 @@ class CoffeePage extends ConsumerStatefulWidget {
 }
 
 class _CoffeePageState extends ConsumerState<CoffeePage> {
+  final TextEditingController _search = TextEditingController();
+
+  /// Запрос, по которому построен список приборов. Отстаёт от поля на
+  /// [_pause] — так же, как у кофемолок: список, прыгающий под пальцем на
+  /// каждой букве, читать невозможно.
+  String _query = '';
+  Timer? _debounce;
+
+  static const Duration _pause = AppDuration.base;
+
   @override
   void initState() {
     super.initState();
@@ -61,7 +83,37 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
       ref
           .read(coffeeStateProvider.notifier)
           .open(code: widget.code, packId: widget.packId);
+      // Прошлые рецепты — из того же списка, что у вкладки «Рецепты».
+      // Сюда приходят и мимо неё — с полки или по коду, — и тогда список
+      // ещё никто не загрузил.
+      final recipes = ref.read(recipesListProvider);
+      if (recipes.groups.isEmpty && !recipes.isLoading) {
+        ref.read(recipesListProvider.notifier).load();
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _search.dispose();
+    super.dispose();
+  }
+
+  void _onQueryChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(_pause, () {
+      if (!mounted) return;
+      setState(() => _query = value);
+    });
+  }
+
+  /// «Показать все» и «Вы имели в виду» ставят запрос сразу, без паузы.
+  void _setQuery(String value) {
+    _debounce?.cancel();
+    _search.text = value;
+    _search.selection = TextSelection.collapsed(offset: value.length);
+    setState(() => _query = value);
   }
 
   void _openMethod(CoffeeMethod method, PackData pack) {
@@ -215,14 +267,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           // сравнивать их можно, только если «ягода» там и тут одного цвета.
           DescriptorTags(words: descriptors),
         ],
-        if (state.lastBrewed != null) ...[
-          const SizedBox(height: AppSpacing.s5),
-          _QuickStart(
-            method: state.lastBrewed!.method,
-            date: state.lastBrewed!.date,
-            onStart: () => _openMethod(state.lastBrewed!.method, pack),
-          ),
-        ],
+        ..._pastRecipes(state, pack),
         if (state.groups.isEmpty)
           const _MethodsUnavailable()
         else ...[
@@ -232,14 +277,165 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
           // с рецептом поднятая и белая, без рецепта прозрачная.
           Text(AppLocalizations.of(context).methodsTitle,
               style: context.texts.titleMedium),
-          const SizedBox(height: AppSpacing.s2),
-          for (final group in state.groups)
-            _MethodGroup(
-              group: group,
-              onPick: (method) => _openMethod(method, pack),
-            ),
+          const SizedBox(height: AppSpacing.s3),
+          _searchField(),
+          const SizedBox(height: AppSpacing.s3),
+          ..._methods(state, pack),
         ],
       ],
+    );
+  }
+
+  /// Прошлые рецепты этого зерна — стопками версий, как на вкладке «Рецепты».
+  ///
+  /// Список ещё не приехал или пуст — остаётся прежний быстрый старт «чем
+  /// заваривали в прошлый раз»: его страница знает сама, без списка.
+  List<Widget> _pastRecipes(CoffeeState state, PackData pack) {
+    final decks = ref
+        .watch(recipesListProvider)
+        .groups
+        .where((group) => group.packId == pack.packId)
+        .toList();
+
+    if (decks.isEmpty) {
+      final last = state.lastBrewed;
+      if (last == null) return const [];
+      return [
+        const SizedBox(height: AppSpacing.s5),
+        _QuickStart(
+          method: last.method,
+          date: last.date,
+          onStart: () => _openMethod(last.method, pack),
+        ),
+      ];
+    }
+
+    return [
+      const SizedBox(height: AppSpacing.s6),
+      Text(AppLocalizations.of(context).chooseMine,
+          style: context.texts.titleMedium),
+      const SizedBox(height: AppSpacing.s3),
+      for (var index = 0; index < decks.length; index++)
+        RecipeDeck(
+          group: decks[index],
+          pack: pack,
+          hero: index == 0,
+          first: index == 0,
+        ),
+    ];
+  }
+
+  Widget _searchField() {
+    final texts = AppLocalizations.of(context);
+
+    return TextField(
+      controller: _search,
+      onChanged: _onQueryChanged,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: texts.coffeeMethodSearchHint,
+        prefixIcon: Padding(
+          padding: const EdgeInsets.all(AppSpacing.s3),
+          child: AppIcon(
+            AppIcons.uiSearch,
+            size: AppSizes.icon20,
+            color: context.colors.secondary,
+          ),
+        ),
+        // Крестик слушает поле напрямую, а не через _query: список ждёт
+        // паузу, а кнопка очистки обязана появиться сразу.
+        suffixIcon: ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _search,
+          builder: (context, value, _) => value.text.isEmpty
+              ? const SizedBox.shrink()
+              : IconButton(
+                  onPressed: () => _setQuery(''),
+                  tooltip: texts.clear,
+                  icon: AppIcon(
+                    AppIcons.uiClose,
+                    size: AppSizes.icon20,
+                    color: context.colors.secondary,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+
+  /// Приборы: группами без запроса, одной лентой по совпадению — с ним.
+  ///
+  /// С запросом заголовки групп только перемешали бы порядок: в поиске
+  /// важно, что первым стоит самое похожее, — как и у кофемолок.
+  List<Widget> _methods(CoffeeState state, PackData pack) {
+    if (_query.trim().isEmpty) {
+      return [
+        for (final group in state.groups)
+          _MethodGroup(
+            group: group,
+            onPick: (method) => _openMethod(method, pack),
+          ),
+      ];
+    }
+
+    final all = [
+      for (final group in state.groups) ...group.methods,
+    ];
+    final hits = searchByName(all, (method) => method.name, _query);
+
+    if (hits.isEmpty) return [_nothingFound(all)];
+
+    return [
+      for (final hit in hits)
+        _MethodRow(
+          method: hit.item,
+          hit: hit,
+          onTap: () => _openMethod(hit.item, pack),
+        ),
+    ];
+  }
+
+  /// Пустой ответ поиска — с выходом: «Показать все» и близкие по написанию.
+  Widget _nothingFound(List<CoffeeMethod> all) {
+    final texts = AppLocalizations.of(context);
+    final near = didYouMeanByName(all, (method) => method.name, _query);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.s4),
+      child: AppState(
+        icon: AppIcons.stateEmpty,
+        title: texts.coffeeMethodNotFound,
+        description: texts.coffeeMethodCatalogSize(all.length),
+        primaryAction: AppButton(
+          label: texts.grinderShowAll,
+          kind: AppButtonKind.secondary,
+          onPressed: () => _setQuery(''),
+        ),
+        secondaryAction: near.isEmpty
+            ? null
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    texts.grinderDidYouMean,
+                    style: context.texts.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.s3),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: AppSpacing.s2,
+                    runSpacing: AppSpacing.s2,
+                    children: [
+                      for (final method in near)
+                        AppChip(
+                          label: method.name,
+                          onTap: () => _setQuery(method.name),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }
@@ -631,10 +827,36 @@ class _MethodGroupState extends State<_MethodGroup> {
 /// одеяло, поэтому разницу несёт сама строка: с рецептом — поднятая и белая,
 /// без рецепта — прозрачная и приглушённая.
 class _MethodRow extends StatelessWidget {
-  const _MethodRow({required this.method, required this.onTap});
+  const _MethodRow({required this.method, required this.onTap, this.hit});
 
   final CoffeeMethod method;
   final VoidCallback onTap;
+
+  /// Найден поиском: совпавший кусок имени подсвечен — так видно, почему
+  /// строка попала в список, особенно когда её нашли через опечатку.
+  final NameHit<CoffeeMethod>? hit;
+
+  InlineSpan _name(BuildContext context) {
+    final name = method.name;
+    final found = hit;
+    if (found == null || !found.hasHighlight || found.end > name.length) {
+      return TextSpan(text: name);
+    }
+
+    return TextSpan(
+      children: [
+        TextSpan(text: name.substring(0, found.start)),
+        TextSpan(
+          text: name.substring(found.start, found.end),
+          style: TextStyle(
+            color: context.colors.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        TextSpan(text: name.substring(found.end)),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -673,8 +895,8 @@ class _MethodRow extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.s3),
                   Expanded(
-                    child: Text(
-                      method.name,
+                    child: Text.rich(
+                      _name(context),
                       style: method.hasRecipe
                           ? context.texts.bodyMedium
                           : context.texts.bodyMedium

@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
+import 'package:pick_up_recipe/src/general_widgets/app_wheel.dart';
 import 'package:pick_up_recipe/src/general_widgets/duration_wheel_sheet.dart';
 import 'package:pick_up_recipe/src/pages/recipe_builder_page.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
@@ -31,13 +32,17 @@ Widget _wheels(int seconds, void Function(int) onChanged) {
 
 /// Крутит барабан на [items] позиций вперёд.
 ///
-/// Тащим ровно на высоту строки и без «броска»: одно движение пальца не даёт
-/// скорости, и барабан встаёт на соседнее число, а не улетает по инерции.
+/// Палец ведётся с обычным порогом: сперва сдвиг на порог, потом остаток —
+/// как на телефоне. Рывок одним движением без порога у живого пальца не
+/// бывает, а у строк барабана есть касание «встать на эту строку», и такой
+/// рывок доставался ему, а не прокрутке. Порог прокрутка не засчитывает,
+/// поэтому к пути он добавлен: барабан встаёт ровно на [items] строк, без
+/// броска по инерции.
 Future<void> _spin(WidgetTester tester, int wheel, int items) async {
+  final distance = kWheelItemExtent * items;
   await tester.drag(
     find.byType(ListWheelScrollView).at(wheel),
-    Offset(0, -AppSizes.tapTarget * items),
-    touchSlopY: 0,
+    Offset(0, -(distance + distance.sign * kDragSlopDefault)),
   );
   await tester.pumpAndSettle();
 }

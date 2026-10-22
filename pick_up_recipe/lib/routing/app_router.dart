@@ -7,6 +7,10 @@ import '../src/features/brew_methods/domain/brew_method.dart';
 import '../src/features/packs/domain/models/pack_model.dart';
 import '../src/features/recipes/domain/models/correction_model.dart';
 import '../src/features/recipes/domain/models/recipe_data_model.dart';
+// Тип результата формы своего шага: сгенерированный маршрут собирает её
+// страницей AutoRoutePage<UserStepType>, и тип нужен здесь, в библиотеке
+// маршрутов, частью которой генерат и является.
+import '../src/features/recipes/domain/models/user_step_type_model.dart';
 import '../src/pages/auth_login_page.dart';
 import '../src/pages/auth_register_page.dart';
 import '../src/pages/auth_verify_page.dart';

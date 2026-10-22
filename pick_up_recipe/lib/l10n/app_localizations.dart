@@ -802,6 +802,18 @@ abstract class AppLocalizations {
   /// **'Ваши типы · только для этого прибора'**
   String get stepTypesOwnGroupOnly;
 
+  /// То же, когда имя метода неизвестно.
+  ///
+  /// In ru, this message translates to:
+  /// **'Для этого прибора'**
+  String get stepTypesForThisDevice;
+
+  /// Лист типа шага: заголовок второго блока — весь справочник шагов по группам.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все шаги'**
+  String get stepTypesAll;
+
   /// Лист выбора типа: подзаголовок у группы, чьи типы ставят строку состояния в шапку заваривания — иначе непонятно, чем «открыть клапан» отличается от ремарки.
   ///
   /// In ru, this message translates to:
@@ -898,10 +910,10 @@ abstract class AppLocalizations {
   /// **'Кофемолка не выбрана. Без неё рецепт показывает крупность словами, а не щелчками вашей кофемолки.'**
   String get profileNoGrinder;
 
-  /// Профиль: метка у той кофемолки, в щелчках которой пересчитываются рецепты.
+  /// Профиль: метка у той кофемолки, в щелчках которой сейчас показываются рецепты.
   ///
   /// In ru, this message translates to:
-  /// **'основная'**
+  /// **'текущая'**
   String get profileGrinderPrimary;
 
   /// Профиль: кнопка под списком, когда кофемолок нет.
@@ -909,12 +921,6 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Выбрать кофемолку'**
   String get profileChooseGrinder;
-
-  /// Профиль: та же кнопка, когда кофемолки уже выбраны.
-  ///
-  /// In ru, this message translates to:
-  /// **'Изменить набор'**
-  String get profileChangeGrinders;
 
   /// Профиль: заголовок раздела с выходом из аккаунта.
   ///
@@ -987,18 +993,6 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Код мелкий — ищите его в углу пачки'**
   String get scanCodeIsSmall;
-
-  /// Код с пачки: заголовок половины экрана с ручным вводом. Не запасной выход, а равноправный путь.
-  ///
-  /// In ru, this message translates to:
-  /// **'Ввести код руками'**
-  String get scanManualTitle;
-
-  /// Код с пачки: кнопка под введённым кодом.
-  ///
-  /// In ru, this message translates to:
-  /// **'Открыть рецепт'**
-  String get scanOpenRecipe;
 
   /// Код с пачки: третий путь — распознать пачку по фотографии. Сейчас он самый частый, поэтому это кнопка, а не ссылка.
   ///
@@ -1186,16 +1180,16 @@ abstract class AppLocalizations {
   /// **'{count, plural, one{{count} версия} few{{count} версии} many{{count} версий} other{{count} версий}}'**
   String recipesVersionsCount(int count);
 
-  /// Вкладка «Рецепты»: подпись верхней карточки стопки.
+  /// Вкладка «Рецепты»: подпись у точек под стопкой, когда сверху текущая версия.
   ///
   /// In ru, this message translates to:
-  /// **'сейчас'**
+  /// **'текущая версия'**
   String get recipesNow;
 
   /// То же, когда в системе выключены анимации: про жест рассказывала сама карточка, отходя вбок, и без движения о нём надо сказать словами.
   ///
   /// In ru, this message translates to:
-  /// **'сейчас · листается вбок'**
+  /// **'текущая версия · листается вбок'**
   String get recipesNowSwipe;
 
   /// Вкладка «Рецепты»: какую по счёту версию стопки листает человек.
@@ -1210,16 +1204,16 @@ abstract class AppLocalizations {
   /// **'не сохранён'**
   String get recipesDraft;
 
-  /// Вкладка «Рецепты»: верхняя версия стопки — та, по которой человек заваривает сейчас.
+  /// Вкладка «Рецепты»: метка верхней версии стопки — той, по которой человек заваривает сейчас. Коротко: рядом с ней на карточке стоит «Не оценено».
   ///
   /// In ru, this message translates to:
-  /// **'так завариваю'**
+  /// **'текущая'**
   String get recipesCurrent;
 
-  /// Вкладка «Рецепты»: версия из глубины стопки.
+  /// Вкладка «Рецепты»: метка версии из глубины стопки. Пара к «текущая».
   ///
   /// In ru, this message translates to:
-  /// **'прошлая версия'**
+  /// **'прошлая'**
   String get recipesPastVersion;
 
   /// Вкладка «Рецепты»: кружок на карточке версии, пускающий таймер сразу. Подпись для голосового помощника.
@@ -1366,6 +1360,24 @@ abstract class AppLocalizations {
   /// **'Способы заваривания не загрузились'**
   String get coffeeMethodsFailed;
 
+  /// Страница кофе: подсказка в поле поиска по способам заваривания.
+  ///
+  /// In ru, this message translates to:
+  /// **'Найти прибор'**
+  String get coffeeMethodSearchHint;
+
+  /// Страница кофе: по запросу не нашлось ни одного способа заваривания.
+  ///
+  /// In ru, this message translates to:
+  /// **'Такого прибора нет'**
+  String get coffeeMethodNotFound;
+
+  /// Пустой ответ поиска приборов: сколько их всего в справочнике. Форма слова считается ICU.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверьте написание — в справочнике {count, plural, one{{count} прибор} few{{count} прибора} many{{count} приборов} other{{count} прибора}}'**
+  String coffeeMethodCatalogSize(int count);
+
   /// Название месяца в дате рецепта или пачки. По-русски родительный падеж («9 сентября»), по-английски именительный («September 9»).
   ///
   /// In ru, this message translates to:
@@ -1438,6 +1450,78 @@ abstract class AppLocalizations {
   /// **'декабря'**
   String get dateMonth12;
 
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'янв'**
+  String get dateMonthShort1;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'фев'**
+  String get dateMonthShort2;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'мар'**
+  String get dateMonthShort3;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'апр'**
+  String get dateMonthShort4;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'мая'**
+  String get dateMonthShort5;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'июн'**
+  String get dateMonthShort6;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'июл'**
+  String get dateMonthShort7;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'авг'**
+  String get dateMonthShort8;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'сен'**
+  String get dateMonthShort9;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'окт'**
+  String get dateMonthShort10;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'ноя'**
+  String get dateMonthShort11;
+
+  /// Месяц коротко — для подписи на снимке пачки, где рядом стоит ещё и время: «22 окт, 16:55». По-русски в родительном падеже, как и полное название.
+  ///
+  /// In ru, this message translates to:
+  /// **'дек'**
+  String get dateMonthShort12;
+
   /// День и месяц без года. Порядок слов у языков разный, поэтому он живёт в переводе, а не в коде.
   ///
   /// In ru, this message translates to:
@@ -1449,6 +1533,18 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'{day} {month} {year}'**
   String dateDayMonthYear(String day, String month, String year);
+
+  /// Дата со временем коротко: «22 окт, 16:55». Стоит на снимке пачки в карточке рецепта.
+  ///
+  /// In ru, this message translates to:
+  /// **'{day} {month}, {time}'**
+  String dateStamp(String day, String month, String time);
+
+  /// То же с годом: год добавляется, только когда он не нынешний.
+  ///
+  /// In ru, this message translates to:
+  /// **'{day} {month} {year}, {time}'**
+  String dateStampYear(String day, String month, String year, String time);
 
   /// Шапка экрана оценки чашки: спрашивает, что получилось в чашке.
   ///
@@ -1749,18 +1845,6 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Просто сохранить отзыв'**
   String get rateJustSave;
-
-  /// Сообщение после отправки оценки без сети: она встала в очередь.
-  ///
-  /// In ru, this message translates to:
-  /// **'Оценка сохранена и уедет, когда появится связь'**
-  String get rateSavedOffline;
-
-  /// Сообщение, когда без сети попросили поправку: оценка в очереди, а поправку считает сервер, и повторять его правила на телефоне нечем.
-  ///
-  /// In ru, this message translates to:
-  /// **'Оценка сохранена. Поправку посчитает сервер — она будет, когда появится связь'**
-  String get rateSavedCorrectionLater;
 
   /// Сообщение, когда правила не нашли, что подвинуть: параметры рецепта упёрлись в свои пределы.
   ///
@@ -2416,18 +2500,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, one{{count} деление} few{{count} деления} many{{count} делений} other{{count} деления}} на шкале'**
   String grinderScale(int count);
 
-  /// Всплывающее сообщение после смены кофемолки, с кнопкой отмены рядом.
-  ///
-  /// In ru, this message translates to:
-  /// **'Помол теперь в делениях {name}'**
-  String grinderApplied(String name);
-
-  /// Кнопка отмены во всплывающем сообщении: вернуть как было.
-  ///
-  /// In ru, this message translates to:
-  /// **'Отменить'**
-  String get undo;
-
   /// Заголовок пустого состояния поиска: по запросу не нашлось ничего.
   ///
   /// In ru, this message translates to:
@@ -2470,12 +2542,6 @@ abstract class AppLocalizations {
   /// **'Без сети кофемолку не сохранить — она хранится в аккаунте'**
   String get grinderSaveOffline;
 
-  /// Помол, полученный пересчётом из крупности рецепта: шкалы кофемолок сходятся только по средней крупности, и число нельзя выдавать за точное.
-  ///
-  /// In ru, this message translates to:
-  /// **'примерно {value}'**
-  String grinderApproximately(String value);
-
   /// Короткая подпись под помолом в плитке показателей: кофемолка не выбрана, и помол показан словом.
   ///
   /// In ru, this message translates to:
@@ -2488,17 +2554,17 @@ abstract class AppLocalizations {
   /// **'выберите кофемолку — покажем деление'**
   String get grinderPickPromptHint;
 
-  /// Подпись под помолом: чьей кофемолки это деления. Имя кофемолки приходит из справочника и не переводится.
+  /// Помол щелчками кофемолки: «5 кликов», «7,5 клика». Деление приходит строкой и ставится как есть, с запятой, а форма слова считается по самому числу — у дробного она «клика».
   ///
   /// In ru, this message translates to:
-  /// **'делений {name}'**
-  String grinderScaleOf(String name);
+  /// **'{count, plural, one{{label} клик} few{{label} клика} many{{label} кликов} other{{label} клика}}'**
+  String grinderClicks(num count, String label);
 
-  /// Помол числом у старого рецепта, где шкала неизвестна: щелчки без имени кофемолки.
+  /// Слово рядом с барабаном помола — без числа: число крутится на барабане, а слово стоит на месте и меняет форму вместе с ним.
   ///
   /// In ru, this message translates to:
-  /// **'{value} щ.'**
-  String grinderClicks(String value);
+  /// **'{count, plural, one{клик} few{клика} many{кликов} other{клика}}'**
+  String grinderClicksUnit(num count);
 
   /// Конструктор рецепта: заголовок экрана.
   ///
@@ -2728,23 +2794,17 @@ abstract class AppLocalizations {
   /// **'Уйти'**
   String get builderLeave;
 
-  /// Конструктор: рецепт сохранён без сети и ждёт отправки.
-  ///
-  /// In ru, this message translates to:
-  /// **'Сохранено на телефоне — уедет, когда появится связь'**
-  String get builderSavedOffline;
-
-  /// Конструктор: рецепт уехал на сервер и стал новой версией.
-  ///
-  /// In ru, this message translates to:
-  /// **'Сохранено новой версией'**
-  String get builderSavedVersion;
-
   /// Конструктор: сохранить не удалось; {error} — ответ сервера как есть.
   ///
   /// In ru, this message translates to:
   /// **'Не сохранилось: {error}'**
   String builderSaveFailed(String error);
+
+  /// Конструктор: подпись кнопки сохранения, пока после сохранения ничего не правили. Вместо всплывающего сообщения внизу.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранено'**
+  String get builderSaved;
 
   /// Чем заканчивается шаг: сам, по таймеру. Подпись варианта в форме своего типа и в строке шага.
   ///
@@ -2872,24 +2932,6 @@ abstract class AppLocalizations {
   /// **'Не удалось подтвердить почту'**
   String get svcAuthFailedVerifyEmail;
 
-  /// Всплывающая подсказка после досыла очереди: всё уехало. Одно дело называть числом незачем, поэтому у единицы своя ветка.
-  ///
-  /// In ru, this message translates to:
-  /// **'{count, plural, =1{Отправлено то, что ждало связи} other{Отправлено, что ждало связи: {count}}}'**
-  String svcSyncSent(int count);
-
-  /// Всплывающая подсказка после досыла: не уехало ничего, сервер отверг всё насовсем.
-  ///
-  /// In ru, this message translates to:
-  /// **'Сервер не принял отложенное ({count}) — оно устарело'**
-  String svcSyncDropped(int count);
-
-  /// Всплывающая подсказка после досыла: часть уехала, часть сервер отверг.
-  ///
-  /// In ru, this message translates to:
-  /// **'Отправлено: {sent}. Не принято сервером: {dropped}'**
-  String svcSyncMixed(int sent, int dropped);
-
   /// Всплывающая подсказка крестика в шапке листа с правовым документом.
   ///
   /// In ru, this message translates to:
@@ -2979,12 +3021,6 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'С прошлых пачек'**
   String get chooseOtherPacks;
-
-  /// Выбор рецепта: пояснение к разделу рецептов с прошлых пачек. Объясняет, почему эти рецепты вообще здесь: прибор совпадает, зерно нет.
-  ///
-  /// In ru, this message translates to:
-  /// **'тот же прибор, другое зерно'**
-  String get chooseOtherPacksNote;
 
   /// Плашка на экране оценки. Отвечает на вопрос, который человек задаёт себе первым: зачем это вообще заполнять. Без неё экран читался как анкета, которую сдают обжарщику, и её пролистывали.
   ///

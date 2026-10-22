@@ -3,12 +3,22 @@
 // Заливка здесь не украшение: «86» ничего не говорит человеку, который держит
 // пачку впервые, а полоса, дошедшая до двух третей, говорит. Числа шкалы
 // приходят снаружи — у SCA осмысленный диапазон начинается с 70.
+//
+// Число крутится барабаном, а не печатается: тот же барабан, что у дозы и
+// воды в рецепте. Тридцать возможных значений — ровно тот случай, когда
+// выбрать быстрее, чем набрать, и набрать «8» вместо «86» на нём нельзя.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
+import 'package:pick_up_recipe/l10n/app_localizations.dart';
+import 'package:pick_up_recipe/src/general_widgets/app_icon.dart';
+import 'package:pick_up_recipe/src/general_widgets/number_wheel_sheet.dart';
+import 'package:pick_up_recipe/src/themes/app_icons.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:pick_up_recipe/src/themes/app_tokens.dart';
+
+/// Верх шкалы SCA.
+const int _scaMax = 100;
 
 class NumberInput extends StatefulWidget {
   const NumberInput({
@@ -22,6 +32,8 @@ class NumberInput extends StatefulWidget {
 
   final TextEditingController controller;
   final String labelText;
+
+  /// Пример в пустом поле. С него же открывается барабан, пока числа нет.
   final String? hintText;
   final int minimalPercentageNumber;
   final VoidCallback? onEditingFinished;
@@ -31,13 +43,11 @@ class NumberInput extends StatefulWidget {
 }
 
 class _NumberInputState extends State<NumberInput> {
-  late final FocusNode _focusNode;
   double _fill = 0;
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode()..addListener(_onFocusChanged);
     widget.controller.addListener(_updateFill);
     _fill = _fillFor(widget.controller.text);
   }
@@ -45,13 +55,7 @@ class _NumberInputState extends State<NumberInput> {
   @override
   void dispose() {
     widget.controller.removeListener(_updateFill);
-    _focusNode.dispose();
     super.dispose();
-  }
-
-  void _onFocusChanged() {
-    if (!mounted || _focusNode.hasFocus) return;
-    widget.onEditingFinished?.call();
   }
 
   void _updateFill() {
@@ -64,15 +68,46 @@ class _NumberInputState extends State<NumberInput> {
   double _fillFor(String value) {
     final number = int.tryParse(value.trim());
     if (number == null) return 0;
-    if (number >= 100) return 1;
+    if (number >= _scaMax) return 1;
     if (number <= widget.minimalPercentageNumber) return 0;
 
     return (number - widget.minimalPercentageNumber) /
-        (100 - widget.minimalPercentageNumber);
+        (_scaMax - widget.minimalPercentageNumber);
+  }
+
+  void _set(String text) {
+    widget.controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+    widget.onEditingFinished?.call();
+  }
+
+  Future<void> _pick() async {
+    // Клавиатура соседнего поля ушла бы под шторку и закрывала барабан.
+    FocusScope.of(context).unfocus();
+
+    final current = int.tryParse(widget.controller.text.trim()) ??
+        int.tryParse(widget.hintText ?? '') ??
+        widget.minimalPercentageNumber;
+    final picked = await showNumberSheet(
+      context,
+      title: widget.labelText,
+      value: current.toDouble(),
+      min: widget.minimalPercentageNumber,
+      max: _scaMax,
+      // «Готово» без поворота у пустого поля — согласие с числом, на котором
+      // барабан открылся: человек его видел и нажал «Готово».
+      acceptShown: true,
+    );
+    if (picked == null || !mounted) return;
+    _set('${picked.round()}');
   }
 
   @override
   Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -102,17 +137,40 @@ class _NumberInputState extends State<NumberInput> {
             ),
             TextFormField(
               controller: widget.controller,
-              focusNode: _focusNode,
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.next,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              onFieldSubmitted: (_) => widget.onEditingFinished?.call(),
+              // Поле только показывает число: крутят его барабаном.
+              readOnly: true,
+              showCursor: false,
+              enableInteractiveSelection: false,
+              onTap: _pick,
               style: context.texts.bodyMedium,
               decoration: InputDecoration(
                 hintText: widget.hintText,
                 // Заливка лежит под полем, поэтому само поле прозрачное:
                 // иначе она была бы не видна.
                 filled: false,
+                // Оценки на пачке может и не быть — крестик возвращает поле
+                // к пустому, не открывая барабан.
+                suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: widget.controller,
+                  builder: (context, value, _) => value.text.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(AppSpacing.s3),
+                          child: AppIcon(
+                            AppIcons.uiChevronDown,
+                            size: AppSizes.icon20,
+                            color: context.colors.secondary,
+                          ),
+                        )
+                      : IconButton(
+                          onPressed: () => _set(''),
+                          tooltip: texts.clear,
+                          icon: AppIcon(
+                            AppIcons.uiClose,
+                            size: AppSizes.icon20,
+                            color: context.colors.secondary,
+                          ),
+                        ),
+                ),
               ),
             ),
           ],

@@ -13,7 +13,7 @@ import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_li
 import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
-import 'package:pick_up_recipe/src/pages/recipes_page.dart';
+import 'package:pick_up_recipe/src/general_widgets/recipe_deck.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 RecipeStep step(

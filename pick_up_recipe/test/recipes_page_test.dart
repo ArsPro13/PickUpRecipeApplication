@@ -25,6 +25,7 @@ import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_li
 import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_icon.dart';
+import 'package:pick_up_recipe/src/general_widgets/recipe_deck.dart';
 import 'package:pick_up_recipe/src/pages/recipes_page.dart';
 import 'package:pick_up_recipe/src/themes/app_icons.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
@@ -143,8 +144,9 @@ final _playButtons = find.byWidgetPredicate(
   (widget) => widget is AppIcon && widget.asset == AppIcons.uiPlay,
 );
 
-/// Кружок оценки: стоит только у версии без оценки.
-final _rateButtons = find.byWidgetPredicate(
+/// Кружок со звездой. Его на карточке быть не должно: владелец читал его
+/// как «добавить в избранное» и попросил убрать.
+final _starButtons = find.byWidgetPredicate(
   (widget) => widget is AppIcon && widget.asset == AppIcons.uiStar,
 );
 
@@ -321,15 +323,14 @@ void main() {
   });
 
   group('неоценённая чашка', () {
-    testWidgets('оценённая версия не помечена и кнопки оценки не несёт',
-        (tester) async {
+    testWidgets('оценённая версия не помечена', (tester) async {
       await pumpRecipes(tester);
 
       expect(find.text(ru.recipesNotRated), findsNothing);
-      expect(_rateButtons, findsNothing);
+      expect(_starButtons, findsNothing);
     });
 
-    testWidgets('неоценённая помечена словом и даёт кнопку оценить',
+    testWidgets('неоценённая помечена словом, а кружка со звездой нет',
         (tester) async {
       // Верхняя карточка стопки — самая свежая версия: её и не оценили.
       await pumpRecipes(tester, versions: [
@@ -339,21 +340,77 @@ void main() {
       ]);
 
       expect(find.text(ru.recipesNotRated), findsOneWidget);
-      expect(_rateButtons, findsOneWidget);
+      expect(_starButtons, findsNothing,
+          reason: 'звезду читали как «в избранное» — её убрали');
     });
 
-    testWidgets('кнопка ведёт на оценку именно этой версии', (tester) async {
+    testWidgets('нажатие на «Не оценено» ведёт на оценку именно этой версии',
+        (tester) async {
       final router = await pumpRecipes(tester, versions: [
         _recipe(id: 301, date: '2026-09-09T10:00:00Z', load: 15, rated: false),
         _recipe(id: 302, date: '2026-09-08T10:00:00Z', load: 16),
       ]);
 
-      await tester.tap(_rateButtons);
+      await tester.tap(find.text(ru.recipesNotRated));
       await tester.pumpAndSettle();
 
       final route = router.pushed.last;
       expect(route.routeName, RatingRoute.name);
       expect((route.args as RatingRouteArgs).recipe.id, 301);
+    });
+  });
+
+  group('подписи карточки', () {
+    testWidgets('версия подписана «текущая» и «прошлая»', (tester) async {
+      await pumpRecipes(tester);
+
+      // Сверху — текущая, под ней край прошлой.
+      expect(find.text(ru.recipesCurrent), findsOneWidget);
+      expect(find.text(ru.recipesPastVersion), findsWidgets);
+      expect(ru.recipesCurrent, 'текущая');
+      expect(ru.recipesPastVersion, 'прошлая');
+    });
+
+    testWidgets('на снимке кроме даты стоит и время', (tester) async {
+      await pumpRecipes(tester);
+
+      // Время местное: сервер отдаёт UTC, а на карточке — часы телефона.
+      final local = DateTime.parse('2026-09-09T10:00:00Z').toLocal();
+      final time = '${local.hour.toString().padLeft(2, '0')}:'
+          '${local.minute.toString().padLeft(2, '0')}';
+
+      expect(find.textContaining(time), findsWidgets);
+    });
+  });
+
+  group('заварить снова', () {
+    testWidgets('кружок повтора ведёт к помолу, а не сразу в таймер',
+        (tester) async {
+      final router = await pumpRecipes(tester);
+
+      await tester.tap(_playButtons.last);
+      await tester.pumpAndSettle();
+
+      final route = router.pushed.single;
+      expect(route.routeName, BrewRoute.name);
+      expect((route.args as BrewRouteArgs).autoStart, isFalse,
+          reason: 'сначала смолоть, потом «Смолол, начинаем»');
+    });
+  });
+
+  group('чем подписан фон', () {
+    test('на светлом — тёмная подпись, на тёмном — белая', () {
+      expect(captionInk(1), isNot(Colors.white));
+      expect(captionInk(0.6), isNot(Colors.white));
+      expect(captionInk(0), Colors.white);
+      expect(captionInk(0.05), Colors.white);
+    });
+
+    test('заливка светлой обжарки — светлая, тёмной — тёмная', () {
+      // Песочная заливка светлой обжарки и есть «белое», на котором белая
+      // дата не читалась.
+      expect(captionInk(roastFillLuminance('light')), isNot(Colors.white));
+      expect(captionInk(roastFillLuminance('dark')), Colors.white);
     });
   });
 }

@@ -110,7 +110,6 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: _router.config(),
-      scaffoldMessengerKey: messengerKey,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       // Выбор человека сильнее системы. Пусто — язык берётся из системного:

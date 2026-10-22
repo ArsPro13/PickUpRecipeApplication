@@ -40,7 +40,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/offline/network_status.dart';
 import '../../core/offline/offline_exception.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
@@ -260,10 +259,9 @@ class _RatingPageState extends ConsumerState<RatingPage> {
 
       if (!mounted) return;
 
+      // Без сети оценка встала в очередь — об этом говорит полоска связи
+      // сверху, сообщение внизу экрана владелец попросил убрать.
       if (!wantCorrection || _point.complaints.isEmpty) {
-        if (!NetworkStatus.online.value) {
-          _say(texts.rateSavedOffline);
-        }
         await context.router.maybePop();
         return;
       }
@@ -281,7 +279,6 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         // телефоне значит завести вторые правила, которые разойдутся с
         // первыми. Оценка уже в очереди; рецепт можно поправить руками.
         if (!mounted) return;
-        _say(texts.rateSavedCorrectionLater);
         await context.router.maybePop();
         return;
       }
@@ -301,8 +298,12 @@ class _RatingPageState extends ConsumerState<RatingPage> {
         return;
       }
 
+      // Поправку просили — и молча вернуть человека в список значило бы
+      // оставить его гадать, услышана ли просьба. Сообщения внизу больше нет,
+      // поэтому ответ — вопросом в окне: оно ждёт, пока его прочтут.
       if (correction.isEmpty || correction.recipe == null) {
-        _say(texts.rateNothingToChange);
+        await _tell(texts.rateNothingToChange);
+        if (!mounted) return;
         await context.router.maybePop();
         return;
       }
@@ -336,8 +337,20 @@ class _RatingPageState extends ConsumerState<RatingPage> {
     _remember();
   }
 
-  void _say(String text) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  /// Ответ, который нельзя пропустить: окно с одной кнопкой.
+  Future<void> _tell(String text) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(text),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(AppLocalizations.of(context).builderDone),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Уйти, ничего не сказав.
@@ -884,8 +897,8 @@ class _TasteMapPainter extends CustomPainter {
     _label(canvas, ends.strong,
         Offset(center.dx, center.dy - field - labelSize), ink, labelSize,
         centered: true);
-    _label(canvas, ends.weak,
-        Offset(center.dx, center.dy + field + labelSize), ink, labelSize,
+    _label(canvas, ends.weak, Offset(center.dx, center.dy + field + labelSize),
+        ink, labelSize,
         centered: true);
 
     if (point.isCenter) return;
@@ -1104,7 +1117,6 @@ class _OptionalDivider extends StatelessWidget {
   }
 }
 
-
 /// План оценки: цветная полоска, название, пояснение и содержимое.
 ///
 /// План — это не раздел формы, а вопрос одного рода: «на что похоже»,
@@ -1190,8 +1202,7 @@ class _ScaleLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
     final tint = color ?? context.colors.primary;
-    final (low, high) =
-        ends ?? (texts.rateScaleLow, texts.rateScaleHigh);
+    final (low, high) = ends ?? (texts.rateScaleLow, texts.rateScaleHigh);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.s2),

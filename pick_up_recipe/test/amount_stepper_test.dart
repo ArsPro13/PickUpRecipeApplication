@@ -10,6 +10,7 @@ import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/general_widgets/amount_stepper.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_icon.dart';
+import 'package:pick_up_recipe/src/general_widgets/app_wheel.dart';
 import 'package:pick_up_recipe/src/themes/app_icons.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:pick_up_recipe/src/themes/app_tokens.dart';
@@ -70,6 +71,17 @@ Finder _button(String icon) => find.ancestor(
 
 int _value(WidgetTester tester) =>
     tester.state<_HostState>(find.byType(_Host)).value;
+
+/// Крутит барабан шторки на [items] строк вперёд. Порог пальца к пути
+/// добавлен: прокрутка его не засчитывает — см. duration_wheel_test.dart.
+Future<void> _spin(WidgetTester tester, int items) async {
+  final distance = kWheelItemExtent * items;
+  await tester.drag(
+    find.byType(ListWheelScrollView),
+    Offset(0, -(distance + distance.sign * kDragSlopDefault)),
+  );
+  await tester.pumpAndSettle();
+}
 
 void main() {
   group('множитель зажатия', () {
@@ -165,19 +177,23 @@ void main() {
       expect(_value(tester), stopped);
     });
 
-    testWidgets('число вводится руками: двести пятьдесят не набирают кнопками',
+    testWidgets('крупный сдвиг — барабаном, а не сотней нажатий',
         (tester) async {
       await tester.pumpWidget(const _Host(initial: 100));
 
       await tester.tap(find.text('100 г'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), '250');
-      await tester.testTextInput.receiveAction(TextInputAction.done);
-      await tester.pump();
+      // Барабан открылся на том, что стоит в шаге, а не на нуле.
+      expect(find.byType(ListWheelScrollView), findsOneWidget);
+      expect(find.text('100'), findsOneWidget);
 
-      expect(_value(tester), 250);
-      expect(find.text('250 г'), findsOneWidget);
+      await _spin(tester, 25);
+      await tester.tap(find.text('Готово'));
+      await tester.pumpAndSettle();
+
+      expect(_value(tester), 125);
+      expect(find.text('125 г'), findsOneWidget);
     });
 
     testWidgets('набранное доезжает до шага рецепта', (tester) async {
@@ -250,17 +266,25 @@ void main() {
       }
     });
 
-    testWidgets('пустое поле не превращается в ноль граммов', (tester) async {
-      // Очистить поле легко случайно, а ноль воды в проливе — потерянный
-      // рецепт: прежнее значение должно остаться.
+    testWidgets('шторка, закрытая без поворота, ничего не меняет',
+        (tester) async {
+      // Клавиатуры больше нет, и пустоты на барабане не набрать. Но и
+      // открыть-посмотреть-закрыть не должно трогать воду шага.
       await tester.pumpWidget(const _Host(initial: 100));
 
       await tester.tap(find.text('100 г'));
-      await tester.pump();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Готово'));
+      await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), '');
-      await tester.testTextInput.receiveAction(TextInputAction.done);
-      await tester.pump();
+      expect(_value(tester), 100);
+
+      await tester.tap(find.text('100 г'));
+      await tester.pumpAndSettle();
+      await _spin(tester, 3);
+      // Мимо шторки — передумал: выбранное на барабане в шаг не попадает.
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
 
       expect(_value(tester), 100);
     });

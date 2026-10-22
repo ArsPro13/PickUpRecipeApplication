@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:image/image.dart' as img;
 
 // do not use
@@ -89,3 +91,61 @@ Uint8List? decodePackImage(String? base64Image) {
 /// Забывает разобранные фото. Нужна тестам и выходу из аккаунта: чужие пачки
 /// не должны лежать в памяти после смены пользователя.
 void clearPackImageCache() => _packImageCache.clear();
+
+/// Замеренная яркость фото: по экземпляру байтов, а не по строке. Байты
+/// `decodePackImage` отдаёт одним и тем же экземпляром, и замер, раз
+/// сделанный, переживает перестройку карточки и уходит вместе с фото.
+final Expando<double> _photoLuminance = Expando<double>();
+
+/// Яркость, уже замеренная у этих байтов. null — ещё не мерили.
+double? cachedPackPhotoLuminance(Uint8List bytes) => _photoLuminance[bytes];
+
+/// Средняя яркость нижней полосы фото пачки — той, на которую на карточке
+/// рецепта ложится подпись с датой. От 0 (чёрное) до 1 (белое), в тех же
+/// единицах, что [ui.Color.computeLuminance]. null — фото не разобрать.
+///
+/// Фото уменьшается до горстки точек: средней яркости полосы этого хватает,
+/// а разбор полного снимка на каждую карточку стоил бы памяти и времени.
+Future<double?> measurePackPhotoLuminance(Uint8List bytes) async {
+  final cached = _photoLuminance[bytes];
+  if (cached != null) return cached;
+
+  try {
+    final codec = await ui.instantiateImageCodec(bytes, targetWidth: 24);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final width = image.width;
+    final height = image.height;
+    image.dispose();
+    codec.dispose();
+    if (data == null || width == 0 || height == 0) return null;
+
+    // Нижняя четверть кадра без самого края: снимок на карточке обрезан под
+    // её пропорцию, и крайние строки туда почти никогда не попадают.
+    final from = (height * 0.68).floor();
+    final to = (height * 0.94).ceil().clamp(from + 1, height);
+    var sum = 0.0;
+    var count = 0;
+    for (var y = from; y < to; y++) {
+      for (var x = 0; x < width; x++) {
+        final at = (y * width + x) * 4;
+        sum += ui.Color.fromARGB(
+          255,
+          data.getUint8(at),
+          data.getUint8(at + 1),
+          data.getUint8(at + 2),
+        ).computeLuminance();
+        count++;
+      }
+    }
+    if (count == 0) return null;
+
+    final luminance = sum / count;
+    _photoLuminance[bytes] = luminance;
+    return luminance;
+  } catch (_) {
+    // Битое фото карточка и так покажет заливкой цвета обжарки.
+    return null;
+  }
+}

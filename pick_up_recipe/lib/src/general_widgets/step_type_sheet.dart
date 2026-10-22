@@ -1,23 +1,22 @@
 // Лист выбора типа шага.
 //
-// Показываются только те типы, что метод поддерживает: у V60 их восемь из
-// семнадцати. Остальные девять не показываются вовсе — ни приглушёнными, ни
-// под «показать все». Довод «список один и тот же у всех приборов» не выдержал
-// чисел: у медианного метода живых семь клеток из семнадцати, то есть больше
-// половины таблицы — мёртвые клетки, которые просматривают заново каждый раз.
+// Два блока. Сверху — шаги этого метода одной сеткой, без групп: у V60 их
+// восемь из семнадцати, и в девяти случаях из десяти шаг берут отсюда. Там же
+// свои заготовки под этот прибор и «новый». Ниже — все семнадцать по группам.
 //
-// Постоянство при этом не теряется: пять типов есть у всех методов
-// (пролив, пауза, подать, ремарка, своё), ещё три — больше чем у трети.
-// Верх таблицы у любого прибора одинаковый, меняется хвост.
+// Раньше лист показывал только типы метода, разложенные по группам, а
+// остальные не показывал вовсе. Владелец попросил иначе: «шаги для этого
+// метода в начале, просто единым блоком, а потом все возможные шаги по
+// категориям». Группы над четырьмя клетками дробили короткий список на
+// заголовки, а нужного прибору шага, которого нет в его списке, было не
+// взять никак — сервер такой шаг не запрещает, запрещал только лист.
 //
 // По макетам ночи 4 (S03–S06, S08):
 //   * в шапке — метод и счёт «восемь типов из семнадцати»;
 //   * у «Обслуживания» подзаголовок «меняет состояние прибора» — иначе
 //     непонятно, чем «открыть клапан» отличается от «ремарки»;
 //   * тип с предупреждением помечен жёлтым уже в листе, а не выскакивает
-//     потом: человек должен видеть, что кладёт в рецепт опасный шаг;
-//   * свои заготовки стоят четвёртой группой, а не последней: человек их
-//     только что завёл и ищет наверху. «Пауза и текст» уходит вниз.
+//     потом: человек должен видеть, что кладёт в рецепт опасный шаг.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -162,7 +161,10 @@ class _StepTypeSheet extends ConsumerWidget {
                   ),
                 ),
                 data: (data) => _Types(
-                  groups: data.allowedFor(allowedStepTypes),
+                  method: allowedStepTypes.isEmpty
+                      ? const []
+                      : data.allowedFor(allowedStepTypes),
+                  all: data.allowedFor(const []),
                   own: own,
                   currentSlug: currentSlug,
                 ),
@@ -242,54 +244,105 @@ class _GrabHandle extends StatelessWidget {
 }
 
 class _Types extends StatelessWidget {
-  const _Types({required this.groups, required this.own, this.currentSlug});
+  const _Types({
+    required this.method,
+    required this.all,
+    required this.own,
+    this.currentSlug,
+  });
 
-  final List<GroupedStepTypes> groups;
+  /// Типы метода по группам. Пусто — метод неизвестен, и первого блока нет.
+  final List<GroupedStepTypes> method;
+
+  /// Весь справочник по группам.
+  final List<GroupedStepTypes> all;
+
   final List<UserStepType> own;
   final String? currentSlug;
 
   @override
   Widget build(BuildContext context) {
-    // «Ваши типы» встают четвёртой группой, перед «Паузой и текстом»:
-    // человек их только что завёл и ищет наверху, а пауза с ремаркой — самая
-    // редкая группа, ей место внизу (макет S08).
-    final tail = groups.where(_isPauseText).toList();
-    final head = groups.where((group) => !_isPauseText(group)).toList();
+    final texts = AppLocalizations.of(context);
+
+    // Метод неизвестен — показать «шаги этого метода» не из чего. Тогда лист
+    // остаётся прежним: справочник по группам, и свои заготовки с «новым»
+    // перед «Паузой и текстом» — самой редкой группой, ей место внизу.
+    if (method.isEmpty) {
+      final tail = all.where(_isPauseText).toList();
+      final head = all.where((group) => !_isPauseText(group)).toList();
+
+      return ListView(
+        shrinkWrap: true,
+        children: [
+          for (final group in head) ..._group(context, group),
+          _GroupHeader(
+            own.isEmpty ? texts.stepTypesOwnGroup : texts.stepTypesOwnGroupOnly,
+          ),
+          _Grid(children: _ownCells(context)),
+          for (final group in tail) ..._group(context, group),
+        ],
+      );
+    }
 
     return ListView(
       shrinkWrap: true,
       children: [
-        for (final group in head) ..._group(context, group),
-        _GroupHeader(
-          own.isEmpty
-              ? AppLocalizations.of(context).stepTypesOwnGroup
-              : AppLocalizations.of(context).stepTypesOwnGroupOnly,
-        ),
+        // «Для этого прибора», а не «Для Аэропресс»: имя метода приходит с
+        // сервера и не склоняется, а сам метод назван строкой выше, в шапке.
+        _GroupHeader(texts.stepTypesForThisDevice),
+        // Одной сеткой, без групп: у метода клеток немного, и заголовки
+        // групп над каждой парой дробили их на куски. Порядок — тот же, что
+        // в справочнике: сначала вода, потом обслуживание, пауза в конце.
         _Grid(
           children: [
-            for (final type in own)
-              _TypeCell(
-                icon: AppIcons.step(type.icon),
-                label: type.label,
-                warn: type.warning.isNotEmpty,
-                own: true,
-                onTap: () => Navigator.of(context).pop(UserStepPick(type)),
-              ),
-            _TypeCell(
-              icon: AppIcons.uiPlus,
-              label: AppLocalizations.of(context).stepTypeNew,
-              dashed: true,
-              onTap: () => Navigator.of(context).pop(const CustomStepPick()),
-            ),
+            for (final group in method)
+              for (final type in group.types) _builtIn(context, type),
+            ..._ownCells(context),
           ],
         ),
-        for (final group in tail) ..._group(context, group),
+        Padding(
+          padding:
+              const EdgeInsets.only(top: AppSpacing.s2, bottom: AppSpacing.s3),
+          child: Text(texts.stepTypesAll, style: context.texts.bodyMedium),
+        ),
+        for (final group in all) ..._group(context, group),
       ],
     );
   }
 
   static bool _isPauseText(GroupedStepTypes group) =>
       group.slug == 'pause_text';
+
+  /// Свои заготовки и «новый». Заготовка привязана к прибору, поэтому живёт
+  /// в блоке метода, а не среди всех шагов.
+  List<Widget> _ownCells(BuildContext context) {
+    return [
+      for (final type in own)
+        _TypeCell(
+          icon: AppIcons.step(type.icon),
+          label: type.label,
+          warn: type.warning.isNotEmpty,
+          own: true,
+          onTap: () => Navigator.of(context).pop(UserStepPick(type)),
+        ),
+      _TypeCell(
+        icon: AppIcons.uiPlus,
+        label: AppLocalizations.of(context).stepTypeNew,
+        dashed: true,
+        onTap: () => Navigator.of(context).pop(const CustomStepPick()),
+      ),
+    ];
+  }
+
+  Widget _builtIn(BuildContext context, StepType type) {
+    return _TypeCell(
+      icon: AppIcons.step(type.iconKey),
+      label: type.label,
+      selected: type.slug == currentSlug,
+      warn: type.warning.isNotEmpty,
+      onTap: () => Navigator.of(context).pop(BuiltInStepPick(type)),
+    );
+  }
 
   List<Widget> _group(BuildContext context, GroupedStepTypes group) {
     // Подзаголовок «меняет состояние прибора» — у группы, чьи типы ставят
@@ -308,14 +361,7 @@ class _Types extends StatelessWidget {
       ),
       _Grid(
         children: [
-          for (final type in group.types)
-            _TypeCell(
-              icon: AppIcons.step(type.iconKey),
-              label: type.label,
-              selected: type.slug == currentSlug,
-              warn: type.warning.isNotEmpty,
-              onTap: () => Navigator.of(context).pop(BuiltInStepPick(type)),
-            ),
+          for (final type in group.types) _builtIn(context, type),
         ],
       ),
     ];

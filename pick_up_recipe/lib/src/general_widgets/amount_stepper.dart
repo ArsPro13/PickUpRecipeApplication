@@ -5,8 +5,9 @@
 // стирал три цифры, набирал три другие и жал «Готово». Кнопками это два
 // нажатия, и рецепт при этом остаётся на экране.
 //
-// Ввод руками никуда не делся: набрать 250 с нуля — двести пятьдесят нажатий,
-// и зажатие спасает не всегда. Тап по самому числу открывает поле.
+// Крупный сдвиг кнопками не делается: набрать 250 с нуля — двести пятьдесят
+// нажатий, и зажатие спасает не всегда. Тап по самому числу открывает барабан
+// — тот же, что у дозы и воды рецепта: клавиатуры в конструкторе больше нет.
 //
 // Счётчик ставится не у каждого числа подряд, а там, где значение двигают
 // маленькими шагами. Четыре пары стрелок в столбик превращают экран
@@ -15,13 +16,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
 import 'app_icon.dart';
+import 'number_wheel_sheet.dart';
 
 /// Во сколько раз крупнее шаг, когда кнопку держат [held].
 ///
@@ -51,6 +52,7 @@ class AmountStepper extends StatefulWidget {
     this.max = _defaultMax,
     this.step = 1,
     this.suffix = '',
+    this.title = '',
   });
 
   final int value;
@@ -65,6 +67,9 @@ class AmountStepper extends StatefulWidget {
   /// Единица рядом с числом: «г», «мл». Пусто — только число.
   final String suffix;
 
+  /// Заголовок шторки с барабаном, который открывается тапом по числу.
+  final String title;
+
   @override
   State<AmountStepper> createState() => _AmountStepperState();
 }
@@ -77,22 +82,8 @@ class _AmountStepperState extends State<AmountStepper> {
   /// что и первая: кнопку держат, а счётчик стоит на месте.
   late int _value = widget.value;
 
-  final TextEditingController _typed = TextEditingController();
-  final FocusNode _focus = FocusNode();
-
   Timer? _repeat;
   Duration _held = Duration.zero;
-  bool _editing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Уход из поля равносилен «Готово»: человек тапнул мимо, потому что уже
-    // набрал нужное, а не потому, что передумал.
-    _focus.addListener(() {
-      if (!_focus.hasFocus) _commit();
-    });
-  }
 
   @override
   void didUpdateWidget(covariant AmountStepper old) {
@@ -106,8 +97,6 @@ class _AmountStepperState extends State<AmountStepper> {
   @override
   void dispose() {
     _repeat?.cancel();
-    _typed.dispose();
-    _focus.dispose();
     super.dispose();
   }
 
@@ -137,22 +126,19 @@ class _AmountStepperState extends State<AmountStepper> {
     _repeat = null;
   }
 
-  void _startTyping() {
-    setState(() {
-      _editing = true;
-      _typed.text = '$_value';
-      _typed.selection =
-          TextSelection(baseOffset: 0, extentOffset: _typed.text.length);
-    });
-  }
-
-  void _commit() {
-    if (!_editing) return;
-    final typed = int.tryParse(_typed.text.trim());
-    setState(() => _editing = false);
-    // Пустое и мусор оставляют прежнее значение: очистить поле легко
-    // случайно, и превращать это в ноль граммов — потеря рецепта.
-    if (typed != null) _set(typed);
+  /// Барабан вместо поля: на нём не набрать ни пустоты, ни мусора, а закрытая
+  /// без поворота шторка оставляет значение прежним.
+  Future<void> _pick() async {
+    final picked = await showNumberSheet(
+      context,
+      title: widget.title,
+      value: _value.toDouble(),
+      min: widget.min,
+      max: widget.max,
+      unit: widget.suffix,
+    );
+    if (picked == null || !mounted) return;
+    _set(picked.round());
   }
 
   @override
@@ -172,7 +158,7 @@ class _AmountStepperState extends State<AmountStepper> {
         const SizedBox(width: AppSpacing.s1),
         SizedBox(
           width: AppSpacing.s18,
-          child: _editing ? _field(context) : _number(context),
+          child: _number(context),
         ),
         const SizedBox(width: AppSpacing.s1),
         _StepperButton(
@@ -188,7 +174,7 @@ class _AmountStepperState extends State<AmountStepper> {
 
   Widget _number(BuildContext context) {
     return InkWell(
-      onTap: _startTyping,
+      onTap: _pick,
       borderRadius: AppRadius.small,
       child: Container(
         constraints: const BoxConstraints(minHeight: AppSizes.tapTarget),
@@ -204,27 +190,6 @@ class _AmountStepperState extends State<AmountStepper> {
           style: context.texts.bodyMedium,
           maxLines: 1,
         ),
-      ),
-    );
-  }
-
-  Widget _field(BuildContext context) {
-    return SizedBox(
-      height: AppSizes.tapTarget,
-      child: TextField(
-        controller: _typed,
-        focusNode: _focus,
-        autofocus: true,
-        textAlign: TextAlign.center,
-        style: context.texts.bodyMedium,
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(
-          isDense: true,
-          suffixText: widget.suffix.isEmpty ? null : widget.suffix,
-          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s2),
-        ),
-        onSubmitted: (_) => _commit(),
       ),
     );
   }

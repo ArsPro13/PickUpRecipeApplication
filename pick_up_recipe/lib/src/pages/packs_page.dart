@@ -524,6 +524,16 @@ class PackImage extends StatelessWidget {
   }
 }
 
+/// Цвета заливки на месте фото — от левого верхнего угла к правому нижнему.
+///
+/// Наружу, а не внутри виджета: подпись поверх заливки выбирает цвет по её
+/// яркости, и знать цвета ей приходится заранее, до отрисовки.
+List<Color> roastFillColors(String roastLevel) => switch (roastLevel) {
+      'light' => const [Color(0xFFDCB68A), Color(0xFFB07E4F)],
+      'dark' => const [Color(0xFF6B4A34), Color(0xFF322115)],
+      _ => const [Color(0xFFB98A5F), Color(0xFF6D4426)],
+    };
+
 /// Заливка на месте фото: тёплый песок у светлой обжарки, тёмный кофе у
 /// тёмной. Подпись словом — чтобы цвет не пришлось расшифровывать.
 class _RoastFill extends StatelessWidget {
@@ -534,21 +544,15 @@ class _RoastFill extends StatelessWidget {
   /// Подписывать ли заливку словом. См. PackImage.showRoastLabel.
   final bool showLabel;
 
-  static const _light = [Color(0xFFDCB68A), Color(0xFFB07E4F)];
-  static const _medium = [Color(0xFFB98A5F), Color(0xFF6D4426)];
-  static const _dark = [Color(0xFF6B4A34), Color(0xFF322115)];
-
   @override
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
-    final (colors, label) = switch (roastLevel) {
-      'light' => (_light, texts.roastLight),
-      'medium' || 'medium_light' || 'medium_dark' => (
-          _medium,
-          texts.roastMedium
-        ),
-      'dark' => (_dark, texts.roastDark),
-      _ => (_medium, ''),
+    final colors = roastFillColors(roastLevel);
+    final label = switch (roastLevel) {
+      'light' => texts.roastLight,
+      'medium' || 'medium_light' || 'medium_dark' => texts.roastMedium,
+      'dark' => texts.roastDark,
+      _ => '',
     };
 
     return DecoratedBox(

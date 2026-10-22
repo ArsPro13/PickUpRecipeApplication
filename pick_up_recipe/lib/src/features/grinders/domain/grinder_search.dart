@@ -13,6 +13,11 @@
 // Файл без импортов Flutter намеренно: это единственная нетривиальная логика
 // экрана выбора, и она обязана проверяться обычным тестом — тем же приёмом,
 // что и группировка списка рецептов.
+//
+// Сам поиск — по любому списку с именами ([searchByName]): тем же способом
+// на странице зерна ищут прибор. Владелец попросил там «поиск как в
+// кофемолках», и второй, похожий поиск разошёлся бы с первым в мелочах —
+// «аэропресс» нашёлся бы здесь и не нашёлся там.
 
 import 'models/grinder_model.dart';
 
@@ -96,13 +101,68 @@ int grinderTypoBudget(int length) => (length ~/ 4).clamp(0, 2);
 /// соседних букв стоят по единице.
 int grinderEditDistance(String a, String b) => _distance(a, b).full;
 
+/// Совпадение в любом списке, который ищут по имени.
+class NameHit<T> {
+  const NameHit({
+    required this.item,
+    required this.rank,
+    this.start = 0,
+    this.end = 0,
+  });
+
+  final T item;
+  final GrinderMatchRank rank;
+
+  /// Границы совпавшего куска в ИСХОДНОМ имени — как у [GrinderHit].
+  final int start;
+  final int end;
+
+  bool get hasHighlight => end > start;
+}
+
+/// Нестрогий поиск по любому списку: регистр, раскладка, кириллица против
+/// латиницы и опечатки прощаются так же, как в справочнике кофемолок.
+///
+/// Пустой запрос отдаёт список целиком в исходном порядке.
+List<NameHit<T>> searchByName<T>(
+  List<T> items,
+  String Function(T item) nameOf,
+  String query,
+) {
+  return _search(items, nameOf, query, 0);
+}
+
+/// Ближайшие по написанию — для «Вы имели в виду …» в любом списке.
+List<T> didYouMeanByName<T>(
+  List<T> items,
+  String Function(T item) nameOf,
+  String query, {
+  int limit = 3,
+}) {
+  if (normalizeGrinderText(query).isEmpty) return const [];
+  return _search(items, nameOf, query, 1)
+      .take(limit)
+      .map((hit) => hit.item)
+      .toList();
+}
+
 /// Поиск по справочнику.
 ///
 /// Пустой запрос отдаёт справочник целиком в исходном порядке: экран в этом
 /// случае показывает прежний вид со всеми моделями.
 List<GrinderHit> searchGrinders(List<Grinder> catalog, String query) {
-  return _search(catalog, query, 0);
+  return [
+    for (final hit in _search(catalog, _grinderName, query, 0))
+      GrinderHit(
+        grinder: hit.item,
+        rank: hit.rank,
+        start: hit.start,
+        end: hit.end,
+      ),
+  ];
 }
+
+String _grinderName(Grinder grinder) => grinder.name;
 
 /// Ближайшие по написанию — для строки «Вы имели в виду …».
 ///
@@ -111,30 +171,31 @@ List<GrinderHit> searchGrinders(List<Grinder> catalog, String query) {
 /// оставить человека в пустом экране.
 List<Grinder> grinderDidYouMean(List<Grinder> catalog, String query,
     {int limit = 3}) {
-  if (normalizeGrinderText(query).isEmpty) return const [];
-  return _search(catalog, query, 1)
-      .take(limit)
-      .map((hit) => hit.grinder)
-      .toList();
+  return didYouMeanByName(catalog, _grinderName, query, limit: limit);
 }
 
 // ── Внутреннее ──────────────────────────────────────────────────────────────
 
-List<GrinderHit> _search(List<Grinder> catalog, String query, int bonus) {
+List<NameHit<T>> _search<T>(
+  List<T> catalog,
+  String Function(T item) nameOf,
+  String query,
+  int bonus,
+) {
   final needle = normalizeGrinderText(query);
   if (needle.isEmpty) {
     return [
-      for (final grinder in catalog)
-        GrinderHit(grinder: grinder, rank: GrinderMatchRank.start),
+      for (final item in catalog)
+        NameHit<T>(item: item, rank: GrinderMatchRank.start),
     ];
   }
 
   final budget = grinderTypoBudget(needle.length) + bonus;
-  final found = <_Scored>[];
+  final found = <_Scored<T>>[];
 
   for (var order = 0; order < catalog.length; order++) {
     final grinder = catalog[order];
-    final folded = _fold(grinder.name);
+    final folded = _fold(nameOf(grinder));
     final name = folded.text;
     if (name.isEmpty) continue;
 
@@ -144,7 +205,7 @@ List<GrinderHit> _search(List<Grinder> catalog, String query, int bonus) {
     var matched = false;
     for (var i = 0; i < starts.length; i++) {
       if (!name.startsWith(needle, starts[i])) continue;
-      found.add(_Scored(
+      found.add(_Scored<T>(
         _hit(grinder, GrinderMatchRank.start, folded, starts[i],
             starts[i] + needle.length),
         i,
@@ -157,7 +218,7 @@ List<GrinderHit> _search(List<Grinder> catalog, String query, int bonus) {
 
     final inside = name.indexOf(needle);
     if (inside >= 0) {
-      found.add(_Scored(
+      found.add(_Scored<T>(
         _hit(grinder, GrinderMatchRank.inside, folded, inside,
             inside + needle.length),
         inside,
@@ -186,7 +247,7 @@ List<GrinderHit> _search(List<Grinder> catalog, String query, int bonus) {
       }
     }
     if (best <= budget) {
-      found.add(_Scored(
+      found.add(_Scored<T>(
         _hit(grinder, GrinderMatchRank.typo, folded, bestAt,
             bestAt + bestLength),
         best,
@@ -206,10 +267,10 @@ List<GrinderHit> _search(List<Grinder> catalog, String query, int bonus) {
   return found.map((scored) => scored.hit).toList();
 }
 
-class _Scored {
+class _Scored<T> {
   const _Scored(this.hit, this.score, this.order);
 
-  final GrinderHit hit;
+  final NameHit<T> hit;
 
   /// Чем меньше, тем выше внутри своей ступени: номер слова для начала,
   /// место вхождения для середины, число опечаток для исправленных.
@@ -220,15 +281,15 @@ class _Scored {
 }
 
 /// Переносит границы совпадения из нормализованной строки в исходную.
-GrinderHit _hit(
-    Grinder grinder, GrinderMatchRank rank, _Folded folded, int from, int to) {
+NameHit<T> _hit<T>(
+    T grinder, GrinderMatchRank rank, _Folded folded, int from, int to) {
   final limit = folded.source.length;
   if (to <= from || from >= limit) {
-    return GrinderHit(grinder: grinder, rank: rank);
+    return NameHit<T>(item: grinder, rank: rank);
   }
   final last = (to > limit ? limit : to) - 1;
-  return GrinderHit(
-    grinder: grinder,
+  return NameHit<T>(
+    item: grinder,
     rank: rank,
     start: folded.source[from],
     end: folded.source[last] + 1,

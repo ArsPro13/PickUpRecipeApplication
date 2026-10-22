@@ -13,11 +13,15 @@
 // Три теста внизу — про перевод. Форма целиком выпала из словаря, и на
 // английском телефоне владелец видел английскую шапку приложения и русскую
 // форму под ней. Последний из трёх сторожит разбор даты: подпись поля и пример
-// в нём переводятся, а маска дд.ММ.гггг — нет, потому что ровно её читают
+// в нём переводятся, а формат дд.ММ.гггг — нет, потому что ровно его читают
 // parsePackDate и pack_request_model, и другой порядок частей молча подменил
 // бы дату обжарки сегодняшней.
+//
+// Дату обжарки и оценку SCA больше не печатают — их крутят барабаном. Группа
+// «барабаны формы» проверяет, что выбранное на барабане доезжает до сервера.
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +32,7 @@ import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/application/inserting_pack_info_state.dart';
 import 'package:pick_up_recipe/src/features/inserting_pack_info/presentation/inserting_pack_info_widget.dart';
+import 'package:pick_up_recipe/src/general_widgets/app_wheel.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 
 /// Клиент, который не ходит в сеть и запоминает, что у него просили отправить.
@@ -171,6 +176,40 @@ void main() {
     await tester.pump();
   }
 
+  /// Дата, пришедшая в форму снаружи — так её кладёт разбор снимка пачки.
+  Future<void> seedDate(
+      ProviderContainer container, WidgetTester tester, String date) async {
+    final form = container.read(formNotifierProvider);
+    await container.read(formNotifierProvider.notifier).updateForm(
+          country: form.country,
+          region: form.region,
+          scaScore: form.scaScore,
+          variety: form.variety,
+          processingMethod: form.processingMethod,
+          roastDate: date,
+          descriptors: form.descriptors,
+          image: form.image,
+        );
+    await tester.pump();
+  }
+
+  /// Шторка доехала, барабан встал. Не pumpAndSettle: рамка над фото дышит
+  /// без остановки и не успокоится никогда.
+  Future<void> settle(WidgetTester tester) async {
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
+
+  /// Крутит колонку барабана на [items] строк вперёд — с порогом пальца,
+  /// как в тестах самого барабана.
+  Future<void> spin(WidgetTester tester, Finder wheel, int items) async {
+    final distance = kWheelItemExtent * items;
+    await tester.drag(
+        wheel, Offset(0, -(distance + distance.sign * kDragSlopDefault)));
+    await settle(tester);
+  }
+
   Future<Map<String, dynamic>> submit(WidgetTester tester) async {
     final label = textsOf(tester).packFormSubmit;
     await tester.ensureVisible(find.text(label));
@@ -274,11 +313,12 @@ void main() {
     });
 
     testWidgets('дата обжарки доезжает до сервера', (tester) async {
-      await pumpForm(tester);
+      final container = await pumpForm(tester);
 
       await fill(tester, 'country', 'Бразилия');
-      // Точки расставляются сами: человек набирает восемь цифр подряд.
-      await fill(tester, 'roast-date', '01092026');
+      // Дата приходит в поле и снаружи — разбором снимка пачки, — и тогда
+      // стоит в том же формате, в каком её читает запрос.
+      await seedDate(container, tester, '01.09.2026');
       expect(textOf(tester, 'roast-date'), '01.09.2026');
 
       expect((await submit(tester))['pack_date'], '2026-09-01T00:00:00Z');
@@ -385,22 +425,23 @@ void main() {
       // 31.12.2025 отвечает на второй: день от месяца отличим, и переставленные
       // местами части не пройдут ни маску, ни разбор.
       const cases = [
-        ('09092026', '09.09.2026', '2026-09-09T00:00:00Z'),
-        ('31122025', '31.12.2025', '2025-12-31T00:00:00Z'),
+        ('09.09.2026', '2026-09-09T00:00:00Z'),
+        ('31.12.2025', '2025-12-31T00:00:00Z'),
       ];
 
       for (final locale in [const Locale('ru'), const Locale('en')]) {
-        for (final (typed, shown, sent) in cases) {
+        for (final (shown, sent) in cases) {
           api.posts.clear();
           await pumpForm(tester, locale: locale);
 
+          final container = ProviderScope.containerOf(
+              tester.element(find.byType(InsertingPackInfoWidget)));
           await fill(tester, 'country', 'Бразилия');
-          // Человек набирает восемь цифр подряд, точки расставляются сами.
-          await fill(tester, 'roast-date', typed);
+          await seedDate(container, tester, shown);
           expect(
             textOf(tester, 'roast-date'),
             shown,
-            reason: 'маска даты разъехалась на локали ${locale.languageCode}',
+            reason: 'формат даты разъехался на локали ${locale.languageCode}',
           );
 
           expect(
@@ -411,6 +452,89 @@ void main() {
           );
         }
       }
+    });
+  });
+
+  group('барабаны формы', () {
+    testWidgets('дата обжарки выбирается барабаном и доезжает до сервера',
+        (tester) async {
+      await pumpForm(tester);
+      await fill(tester, 'country', 'Бразилия');
+
+      await tester.ensureVisible(fieldByKey('roast-date'));
+      await tester.tap(fieldByKey('roast-date'));
+      await settle(tester);
+
+      // Пустое поле открывает барабан на сегодняшнем дне. Год назад — один
+      // поворот колонки лет: по-русски она третья — число, месяц, год.
+      expect(find.byType(ListWheelScrollView), findsNWidgets(3));
+      await spin(tester, find.byType(ListWheelScrollView).at(2), -1);
+      await tester.tap(find.text('Готово'));
+      await settle(tester);
+
+      final now = DateTime.now();
+      final day =
+          math.min(now.day, DateUtils.getDaysInMonth(now.year - 1, now.month));
+      String two(int value) => value.toString().padLeft(2, '0');
+
+      expect(textOf(tester, 'roast-date'),
+          '${two(day)}.${two(now.month)}.${now.year - 1}');
+      expect((await submit(tester))['pack_date'],
+          '${now.year - 1}-${two(now.month)}-${two(day)}T00:00:00Z');
+    });
+
+    testWidgets('у даты есть «Сегодня» и крестик, возвращающий пустоту',
+        (tester) async {
+      await pumpForm(tester);
+      final texts = textsOf(tester);
+
+      await tester.ensureVisible(find.text(texts.packFormToday));
+      await tester.tap(find.text(texts.packFormToday));
+      await tester.pump();
+
+      final now = DateTime.now();
+      String two(int value) => value.toString().padLeft(2, '0');
+      expect(textOf(tester, 'roast-date'),
+          '${two(now.day)}.${two(now.month)}.${now.year}');
+
+      // Пустое поле — тоже ответ: тогда дату поставит сервер.
+      await tester.tap(find.descendant(
+        of: find.byKey(const ValueKey('roast-date')),
+        matching: find.byTooltip(texts.clear),
+      ));
+      await tester.pump();
+      expect(textOf(tester, 'roast-date'), '');
+    });
+
+    testWidgets('клавиатура у даты и оценки не открывается', (tester) async {
+      await pumpForm(tester);
+
+      for (final key in ['roast-date', 'sca']) {
+        final field = tester.widget<EditableText>(find.descendant(
+          of: find.byKey(ValueKey(key)),
+          matching: find.byType(EditableText),
+        ));
+        expect(field.readOnly, isTrue, reason: key);
+      }
+    });
+
+    testWidgets('оценка SCA: «Готово» у пустого поля ставит показанное число',
+        (tester) async {
+      await pumpForm(tester);
+      await fill(tester, 'country', 'Бразилия');
+
+      await tester.ensureVisible(fieldByKey('sca'));
+      await tester.tap(fieldByKey('sca'));
+      await settle(tester);
+
+      // Открылся на примере из пустого поля — 86 — и на одну строку выше
+      // стал 87.
+      await spin(tester, find.byType(ListWheelScrollView), 1);
+      await tester.tap(find.text('Готово'));
+      await settle(tester);
+
+      expect(textOf(tester, 'sca'), '87');
+      expect((await submit(tester))['pack_sca_score'], 87);
     });
   });
 }

@@ -14,10 +14,11 @@
 // «Сохранить» внизу: касание строки ничего не меняло, пока не нажмёшь ещё
 // раз. Тот же лишний щелчок, только переименованный.
 //
-// Теперь строка применяется сразу и экран закрывается. Случайное касание
-// лечится не подтверждением, а отменой: внизу появляется «Отменить», и
-// прежняя кофемолка возвращается одним нажатием. Подтверждение стоит на пути
-// у всех ради ошибки одного; отмена — только у того, кто ошибся.
+// Теперь строка применяется сразу и экран закрывается. Подтверждения нет:
+// оно стоит на пути у всех ради ошибки одного. Сообщения внизу с «Отменить»
+// тоже больше нет — владелец попросил убрать такие уведомления отовсюду, — и
+// случайное касание лечится тем же касанием: имя кофемолки стоит кнопкой в
+// шапке, и прежняя возвращается из того же списка.
 //
 // Приложению нужна ровно одна: её имя стоит кнопкой в шапке главного экрана,
 // экрана заваривания и конструктора, её делениями подписан помол в рецепте.
@@ -68,6 +69,10 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
   /// не проходит: два запроса подряд разойдутся в порядке ответов, и
   /// основной окажется та, что ответила второй, а не та, что нажали второй.
   int? _saving;
+
+  /// Почему выбор не записался. Плашкой над списком, а не сообщением внизу:
+  /// при неудаче экран остаётся открытым, и сказать об этом есть где.
+  String? _failure;
 
   @override
   void initState() {
@@ -126,6 +131,16 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
             ),
             child: _Current(grinder: current),
           ),
+          if (_failure != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s4,
+                AppSpacing.s1,
+                AppSpacing.s4,
+                0,
+              ),
+              child: _Failure(text: _failure!),
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.s4,
@@ -345,29 +360,18 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
       return;
     }
 
-    setState(() => _saving = grinder.id);
+    setState(() {
+      _saving = grinder.id;
+      _failure = null;
+    });
     final ok = await _write(grinder);
     if (!mounted) return;
     setState(() => _saving = null);
     if (!ok) return;
 
-    final texts = AppLocalizations.of(context);
-    // Сообщение берётся ДО ухода: messenger живёт над навигатором, и плашка
-    // переживает закрытие экрана — её увидят уже на том, откуда пришли.
-    final messenger = ScaffoldMessenger.of(context);
+    // Уходим молча: имя новой кофемолки уже стоит в шапке того экрана, откуда
+    // пришли, и клики в рецепте пересчитаны под неё.
     await context.router.maybePop();
-
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(texts.grinderApplied(grinder.name)),
-        action: previous == null
-            ? null
-            : SnackBarAction(
-                label: texts.undo,
-                onPressed: () => _write(previous),
-              ),
-      ),
-    );
   }
 
   /// Запись набора на сервер. true — получилось.
@@ -383,16 +387,38 @@ class _GrinderSelectPageState extends ConsumerState<GrinderSelectPage> {
     // он не встаёт: выбор делают дома, а не у чайника, и «сохраню потом»
     // здесь означало бы, что человек ушёл, считая дело сделанным.
     final texts = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          NetworkStatus.online.value
-              ? texts.grinderSaveFailed
-              : texts.grinderSaveOffline,
-        ),
+    setState(() {
+      _failure = NetworkStatus.online.value
+          ? texts.grinderSaveFailed
+          : texts.grinderSaveOffline;
+    });
+    return false;
+  }
+}
+
+/// Выбор не записался: сеть или сервер. Экран остаётся открытым, и выбрать
+/// можно снова тем же касанием.
+class _Failure extends StatelessWidget {
+  const _Failure({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return QuietSurface(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppIcon(
+            AppIcons.uiWarning,
+            size: AppSizes.icon20,
+            color: context.colors.error,
+          ),
+          const SizedBox(width: AppSpacing.s3),
+          Expanded(child: Text(text, style: context.texts.bodySmall)),
+        ],
       ),
     );
-    return false;
   }
 }
 
@@ -421,8 +447,8 @@ class _Current extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.s3),
             Expanded(
-              child: Text(texts.profileNoGrinder,
-                  style: context.texts.bodySmall),
+              child:
+                  Text(texts.profileNoGrinder, style: context.texts.bodySmall),
             ),
           ],
         ),

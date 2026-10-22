@@ -73,9 +73,9 @@ void main() {
       expect(grind.grinderName, 'Comandante C40');
     });
 
-    test('пересчитанное помечается словом «примерно»', () {
-      // Шкалы кофемолок сходятся только по средней крупности, и считать
-      // переведённое число точным нельзя.
+    test('пересчитанное пишется кликами, без «примерно»', () {
+      // Шкалы кофемолок сходятся только по средней крупности, и модель это
+      // помнит. Но на экране владелец попросил «5 кликов», а не «примерно 5».
       final grind = grindReading(
         descriptorSlug: 'medium_fine',
         reference: reference,
@@ -83,7 +83,7 @@ void main() {
       );
 
       expect(grind.isApproximate, isTrue);
-      expect(grind.label, 'примерно 14');
+      expect(grind.label, '14 кликов');
     });
 
     test('своё деление точнее любого перевода', () {
@@ -98,7 +98,7 @@ void main() {
 
       expect(grind.value, '17');
       expect(grind.isApproximate, isFalse);
-      expect(grind.label, '17');
+      expect(grind.label, '17 кликов');
     });
 
     test('деления чужой кофемолки пересчитываются, а не показываются как есть',
@@ -164,7 +164,8 @@ void main() {
     test('нет ни слова, ни шкалы — остаётся число рецепта со щелчками', () {
       final grind = grindReading(descriptorSlug: '', recipeGrindStep: '26');
 
-      expect(grind.value, '26 щ.');
+      expect(grind.value, '26 кликов');
+      expect(grind.label, '26 кликов');
       expect(grind.needsGrinder, isTrue);
     });
 
@@ -185,7 +186,8 @@ void main() {
       );
 
       expect(grind.value, '2 круг + 3');
-      expect(grind.label, 'примерно 2 круг + 3');
+      // Не число — щелчков в нём не сосчитать, и «кликов» не приписывается.
+      expect(grind.label, '2 круг + 3');
       expect(grind.isDivision, isTrue);
     });
 
@@ -204,9 +206,9 @@ void main() {
   });
 
   group('подписи вокруг числа', () {
-    // Число — данные, а слова рядом с ним — интерфейс: «примерно», «делений»
-    // и «щ.» обязаны говорить на языке экрана. Имя кофемолки и слово
-    // справочника крупности при этом не переводятся ни на каком языке.
+    // Число — данные, а слово рядом с ним — интерфейс: «кликов» обязано
+    // говорить на языке экрана. Имя кофемолки и слово справочника крупности
+    // при этом не переводятся ни на каком языке.
     late AppLocalizations ru;
     late AppLocalizations en;
 
@@ -229,8 +231,8 @@ void main() {
         texts: en,
       );
 
-      expect(russian.label, 'примерно 14');
-      expect(english.label, 'about 14');
+      expect(russian.label, '14 кликов');
+      expect(english.label, '14 clicks');
     });
 
     test('приглашение выбрать кофемолку переведено', () {
@@ -267,7 +269,7 @@ void main() {
       );
 
       expect(english.grinderName, 'Comandante C40');
-      expect(english.hint, 'Comandante C40 scale · Средне-тонкий');
+      expect(english.hint, 'Comandante C40 · Средне-тонкий');
     });
 
     test('без словаря экрана подписи берутся с языка шаблона', () {
@@ -279,7 +281,70 @@ void main() {
         grinder: comandante,
       );
 
-      expect(plain.label, ru.grinderApproximately('14'));
+      expect(plain.label, ru.grinderClicks(14, '14'));
+    });
+  });
+
+  group('клики словами', () {
+    test('форма слова считается по числу', () {
+      final ru = lookupAppLocalizations(const Locale('ru'));
+
+      expect(grindClicksLabel('1', ru), '1 клик');
+      expect(grindClicksLabel('2', ru), '2 клика');
+      expect(grindClicksLabel('5', ru), '5 кликов');
+      expect(grindClicksLabel('21', ru), '21 клик');
+      expect(grindClicksLabel('14', ru), '14 кликов');
+    });
+
+    test('дробное деление — «клика», как у любого дробного числа', () {
+      // Varia VS3 размечена десятыми: «7,5 клика», а не «7,5 кликов».
+      final ru = lookupAppLocalizations(const Locale('ru'));
+
+      expect(grindClicksLabel('7,5', ru), '7,5 клика');
+      expect(grindClicksCount('7,5'), 7.5);
+      // Целое со шкалы сервиса приезжает как «5.0» — и склоняется как целое.
+      expect(grindClicksCount('5.0'), 5);
+    });
+
+    test('деление словами остаётся как есть', () {
+      final ru = lookupAppLocalizations(const Locale('ru'));
+
+      expect(grindClicksLabel('2 круг + 3', ru), '2 круг + 3');
+      expect(grindClicksLabel('2A', ru), '2A');
+    });
+  });
+
+  group('шкала для барабана', () {
+    test('числовая шкала идёт по числу, а не по строке', () {
+      // С сервера деления приходят в порядке строк: «10.0» раньше «9.0».
+      const timemore = Grinder(id: 3, name: 'Timemore', modes: [
+        GrinderMode(mode: '10.0', microns: 700),
+        GrinderMode(mode: '5.0', microns: 450),
+        GrinderMode(mode: '9.0', microns: 650),
+        GrinderMode(mode: '19.0', microns: 1150),
+      ]);
+
+      expect(
+        [for (final mode in grinderScale(timemore)) mode.mode],
+        ['5.0', '9.0', '10.0', '19.0'],
+      );
+    });
+
+    test('словесная шкала идёт по крупности', () {
+      expect(
+        [for (final mode in grinderScale(feld)) mode.mode],
+        ['2 круг + 1', '2 круг + 3', '3 круг + 0'],
+      );
+    });
+
+    test('барабан открывается на своём делении или на ближайшем', () {
+      const labels = ['5', '6', '7', '8'];
+
+      expect(nearestLabel(labels, '7'), 2);
+      expect(nearestLabel(labels, '6,4'), 1);
+      expect(nearestLabel(labels, '100'), 3);
+      // Не число вовсе — середина шкалы.
+      expect(nearestLabel(labels, 'Средний'), 2);
     });
   });
 

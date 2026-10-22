@@ -13,12 +13,15 @@
 //
 // Сумма воды по шагам и общее время считаются на месте: рецепт, где шаги не
 // сходятся с общей водой, нельзя ни заварить, ни сохранить молча.
+//
+// Числа не печатаются, а крутятся барабаном — как длительность шага: доза с
+// десятыми, вода, температура и помол по шкале кофемолки человека. Поле с
+// клавиатурой прощало «16,,5» и пустоту, а барабан набрать неверно не даёт.
 
 import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -43,6 +46,7 @@ import '../general_widgets/grinder_button.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
 import '../general_widgets/duration_wheel_sheet.dart';
+import '../general_widgets/number_wheel_sheet.dart';
 import '../general_widgets/step_ending_choice.dart';
 import '../general_widgets/step_type_sheet.dart';
 import '../themes/app_icons.dart';
@@ -93,6 +97,15 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   int? _openStep;
   bool _saving = false;
 
+  /// Ключ раскрытой строки шага: по нему экран подводит к ней прокрутку,
+  /// когда шаг только что добавлен, — иначе новый шаг раскрывался где-то
+  /// под краем экрана, и казалось, что он не добавился вовсе.
+  final GlobalKey _openStepKey = GlobalKey();
+
+  /// Почему не сохранилось. Строкой над кнопками, а не всплывающим
+  /// сообщением внизу: те владелец попросил убрать отовсюду.
+  String? _saveError;
+
   /// Идентификатор сохранённой версии. Пока null — рецепт не сохранён, и
   /// уходить с экрана не с чем.
   int? _savedId;
@@ -105,6 +118,9 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   late String _saved = jsonEncode(_recipe.toJson());
 
   bool get _dirty => jsonEncode(_recipe.toJson()) != _saved;
+
+  /// Только что сохранили, и с тех пор ничего не трогали.
+  bool get _justSaved => _savedId != null && !_dirty;
 
   @override
   void initState() {
@@ -212,16 +228,26 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         _totals(texts),
       ],
       bottom: [
+        if (_saveError != null)
+          Text(
+            _saveError!,
+            style:
+                context.texts.bodySmall?.copyWith(color: context.colors.error),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         Row(
           children: [
             Expanded(
-              // Кнопка не гаснет после сохранения: правку можно продолжить
-              // и сохранить ещё раз — цепочка версий это и есть.
+              // Сохранение отвечает самой кнопкой: «Сохранено» с галочкой,
+              // пока рецепт не тронули снова. Тронули — кнопка вернулась, и
+              // сохранить можно ещё раз: цепочка версий это и есть.
               child: AppButton(
-                label: texts.builderSave,
+                label: _justSaved ? texts.builderSaved : texts.builderSave,
+                icon: _justSaved ? AppIcons.uiCheck : null,
                 kind: AppButtonKind.secondary,
                 loading: _saving,
-                onPressed: _save,
+                onPressed: _justSaved ? null : _save,
               ),
             ),
             const SizedBox(width: AppSpacing.s3),
@@ -235,8 +261,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           ],
         ),
         // Сохранение — конец дела, и после него нужен выход, а не молчание:
-        // «Сохранено» в снекбаре гасло, а человек оставался в редакторе,
-        // не понимая, закончил он или нет.
+        // человек оставался в редакторе, не понимая, закончил он или нет.
         if (_savedId != null)
           AppButton(
             label: texts.builderToHome,
@@ -296,10 +321,13 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             name: texts.builderDose,
             value: texts.unitGrams(formatDecimal(_recipe.load)),
             changed: _changed('load'),
-            onTap: () => _editDecimal(
+            onTap: () => _editNumber(
               title: texts.builderDose,
-              suffix: texts.builderGram,
+              unit: texts.builderGram,
               value: _recipe.load,
+              max: _maxDose,
+              // Дозу двигают на десятые: 8,6 г — обычная доза турки.
+              tenths: true,
               apply: (value) => _recipe.load = value,
             ),
           ),
@@ -308,11 +336,12 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             name: texts.builderWater,
             value: texts.unitMillilitres('${_recipe.water}'),
             changed: _changed('water'),
-            onTap: () => _editInt(
+            onTap: () => _editNumber(
               title: texts.builderWater,
-              suffix: texts.builderMillilitre,
-              value: _recipe.water,
-              apply: (value) => _recipe.water = value,
+              unit: texts.builderMillilitre,
+              value: _recipe.water.toDouble(),
+              max: _maxWater,
+              apply: (value) => _recipe.water = value.round(),
             ),
           ),
           _ParamRow(
@@ -322,10 +351,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
                 ? '—'
                 : '${formatDecimal(_recipe.temperature!)} °C',
             changed: _changed('temperature'),
-            onTap: () => _editDecimal(
+            onTap: () => _editNumber(
               title: texts.builderTemperature,
-              suffix: '°C',
+              unit: '°C',
               value: _recipe.temperature ?? 93,
+              max: _maxTemperature,
               apply: (value) => _recipe.temperature = value,
             ),
           ),
@@ -335,17 +365,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             caption: grind.caption,
             value: grind.isEmpty ? '—' : grind.label,
             changed: _changed('grind_step'),
-            onTap: () => _editText(
-              title: texts.builderGrind,
-              value: _recipe.grindStep,
-              // Человек правит помол в делениях своей кофемолки, поэтому
-              // вместе со значением запоминается и она: иначе следующая
-              // отрисовка снова показала бы пересчитанное «примерно».
-              apply: (value) {
-                _recipe.grindStep = value;
-                if (grinder != null) _recipe.grinderId = grinder.id;
-              },
-            ),
+            onTap: () => _editGrind(grinder, grind),
           ),
           // Соотношение не правится: оно производное от дозы и воды, и дать
           // его подвинуть значило бы завести второй способ задать одно и то же.
@@ -379,6 +399,20 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       onReorderItem: _reorder,
       itemBuilder: (context, index) {
         final step = _recipe.steps[index];
+        final row = _StepRow(
+          index: index,
+          step: step,
+          type: reference?.bySlug(step.stepType),
+          open: _openStep == index,
+          changed: _stepChanged(index),
+          onToggle: () =>
+              setState(() => _openStep = _openStep == index ? null : index),
+          onPickType: () => _pickType(index),
+          onWaterChanged: (value) => setState(() => step.water = value),
+          onEditTime: () => _editDuration(step),
+          onEditText: () => _editStepText(step),
+          onRemove: () => _removeStep(index),
+        );
         return Padding(
           // Ключ по самому объекту шага, а не по индексу и не по названию:
           // при перестановке индексы меняются местами, а список опознаёт
@@ -386,20 +420,9 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           // не то, что тащат.
           key: ObjectKey(step),
           padding: const EdgeInsets.only(bottom: AppSpacing.s2),
-          child: _StepRow(
-            index: index,
-            step: step,
-            type: reference?.bySlug(step.stepType),
-            open: _openStep == index,
-            changed: _stepChanged(index),
-            onToggle: () =>
-                setState(() => _openStep = _openStep == index ? null : index),
-            onPickType: () => _pickType(index),
-            onWaterChanged: (value) => setState(() => step.water = value),
-            onEditTime: () => _editDuration(step),
-            onEditText: () => _editStepText(step),
-            onRemove: () => _removeStep(index),
-          ),
+          child: _openStep == index
+              ? KeyedSubtree(key: _openStepKey, child: row)
+              : row,
         );
       },
     );
@@ -442,12 +465,27 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       _recipe.steps.add(blank);
       _openStep = _recipe.steps.length - 1;
     });
+
+    // Новый шаг встаёт в конец списка — часто ниже края экрана. Подводим к
+    // нему прокрутку: шаг, добавленный за краем, выглядел недобавленным, и
+    // особенно после формы своего типа, откуда человек возвращается сюда.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final row = _openStepKey.currentContext;
+      if (!mounted || row == null) return;
+      Scrollable.ensureVisible(
+        row,
+        alignment: 0.5,
+        duration: AppDuration.base,
+        curve: AppCurves.out,
+      );
+    });
   }
 
   /// Заготовка шага из того, что выбрали в листе.
   ///
-  /// «Новый» сначала уводит в форму своего типа: шаг появится, только если
-  /// заготовку сохранили. null — человек передумал.
+  /// «Новый» сначала уводит в форму своего типа, и сохранённая там заготовка
+  /// сразу становится шагом рецепта — второй раз выбирать её в листе не
+  /// нужно. null — человек передумал и ушёл из формы, не сохранив.
   Future<RecipeStep?> _stepFromPick(
       StepTypePick pick, BrewMethod? method) async {
     switch (pick) {
@@ -640,111 +678,87 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
 
   // ── Правка значений ──────────────────────────────────────────────────────
 
-  Future<void> _editInt({
-    required String title,
-    required String suffix,
-    required int value,
-    required void Function(int) apply,
-  }) async {
-    final result =
-        await _askNumber(title: title, suffix: suffix, initial: '$value');
-    if (result == null) return;
-    setState(() => apply(result.round()));
-  }
+  /// Потолки барабанов. С запасом против любого рецепта: колд брю на литр
+  /// берёт сотню граммов, а кипятка горячее ста градусов не бывает.
+  static const int _maxDose = 200;
+  static const int _maxWater = 3000;
+  static const int _maxTemperature = 100;
 
-  Future<void> _editDecimal({
+  Future<void> _editNumber({
     required String title,
-    required String suffix,
+    required String unit,
     required double value,
+    required int max,
     required void Function(double) apply,
+    bool tenths = false,
   }) async {
-    final result = await _askNumber(
+    final picked = await showNumberSheet(
+      context,
       title: title,
-      suffix: suffix,
-      initial: formatDecimal(value),
-      decimal: true,
+      unit: unit,
+      value: value,
+      min: 0,
+      max: max,
+      tenths: tenths,
     );
-    if (result == null) return;
-    setState(() => apply(result));
+    if (picked == null || !mounted) return;
+    setState(() => apply(picked));
   }
 
-  Future<double?> _askNumber({
-    required String title,
-    required String suffix,
-    required String initial,
-    bool decimal = false,
-  }) {
-    final controller = TextEditingController(text: initial);
+  /// Помол крутится по шкале кофемолки человека.
+  ///
+  /// Строки барабана — деления самой кофемолки из справочника: чисел, которых
+  /// на её шкале нет, на барабане нет тоже. Записывается деление вместе с
+  /// кофемолкой — иначе следующая отрисовка снова показала бы пересчёт из
+  /// крупности, а не выбранное.
+  ///
+  /// Без кофемолки крутить нечего — клики чьи? — поэтому касание ведёт её
+  /// выбирать, и, вернувшись, человек видит помол уже щелчками.
+  Future<void> _editGrind(Grinder? grinder, GrindReading reading) async {
+    if (grinder == null) {
+      await context.router.push(const GrinderSelectRoute());
+      return;
+    }
+
     final texts = AppLocalizations.of(context);
+    final scale = grinderScale(grinder);
+    // Шкалу сервис пересчёта отдаёт не у всех кофемолок. Тогда барабан —
+    // просто щелчки по порядку: число всё равно лучше клавиатуры.
+    final modes = scale.isNotEmpty
+        ? [for (final mode in scale) mode.mode]
+        : [for (var click = 0; click <= _maxClicks; click++) '$click'];
+    final labels = [for (final mode in modes) grinderDivisionLabel(mode)];
 
-    return showDialog<double>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(
-                decimal ? RegExp(r'[0-9.,]') : RegExp(r'[0-9]')),
-          ],
-          decoration: InputDecoration(suffixText: suffix),
-          onSubmitted: (text) => Navigator.of(context).pop(parseNumber(text)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(texts.builderCancel),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(context).pop(parseNumber(controller.text)),
-            child: Text(texts.builderDone),
-          ),
-        ],
-      ),
+    final current = reading.isDivision
+        ? reading.value
+        : grinderDivisionLabel(_recipe.grindStep);
+
+    final picked = await showChoiceSheet(
+      context,
+      title: texts.builderGrind,
+      caption: grinder.name,
+      labels: labels,
+      initial: nearestLabel(labels, current),
+      unitOf: (index) {
+        final count = grindClicksCount(labels[index]);
+        return count == null ? '' : texts.grinderClicksUnit(count);
+      },
     );
+    if (picked == null || !mounted) return;
+
+    setState(() {
+      _recipe.grindStep = modes[picked];
+      _recipe.grinderId = grinder.id;
+    });
   }
+
+  /// Щелчков на барабане кофемолки без шкалы.
+  static const int _maxClicks = 60;
 
   Future<void> _editDuration(RecipeStep step) async {
     final seconds = await showDurationSheet(context, seconds: step.time);
     if (seconds == null || !mounted) return;
     setState(() => step.time = seconds);
-  }
-
-  Future<void> _editText({
-    required String title,
-    required String value,
-    required void Function(String) apply,
-  }) async {
-    final controller = TextEditingController(text: value);
-    final texts = AppLocalizations.of(context);
-
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          onSubmitted: (text) => Navigator.of(context).pop(text.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(texts.builderCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: Text(texts.builderDone),
-          ),
-        ],
-      ),
-    );
-
-    if (result == null) return;
-    setState(() => apply(result));
   }
 
   Future<void> _editStepText(RecipeStep step) async {
@@ -833,7 +847,10 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   Future<void> _save() async {
     if (_saving) return;
     final texts = AppLocalizations.of(context);
-    setState(() => _saving = true);
+    setState(() {
+      _saving = true;
+      _saveError = null;
+    });
 
     try {
       final savedId = await _service.evolveRecipe(_recipe);
@@ -848,23 +865,25 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
         _corrected = false;
         _saved = jsonEncode(_recipe.toJson());
       });
-      _say(savedId < 0 ? texts.builderSavedOffline : texts.builderSavedVersion);
+      // Без сети версия ложится в очередь (отрицательный id) — об этом
+      // говорит полоска связи сверху, второе сообщение здесь не нужно.
     } catch (error) {
       if (!mounted) return;
-      setState(() => _saving = false);
-      _say(texts.builderSaveFailed('$error'));
+      setState(() {
+        _saving = false;
+        _saveError = texts.builderSaveFailed('$error');
+      });
     }
   }
 
+  /// «Заварить» ведёт на подготовку, а не сразу в таймер.
+  ///
+  /// Раньше таймер шёл сразу: рецепт, мол, только что был перед глазами. Но
+  /// правят рецепт до помола, и пошедший отсчёт заставал человека с
+  /// немолотым зерном. Подготовка — та же рамка «Смелите кофе» с дозой и
+  /// кликами, и старт по «Смолол, начинаем».
   void _brew() {
-    // Рецепт целиком перед глазами — «Заварить» начинает сразу, без
-    // повторного экрана подготовки.
-    context.router
-        .push(BrewRoute(recipe: _recipe, pack: widget.pack, autoStart: true));
-  }
-
-  void _say(String text) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+    context.router.push(BrewRoute(recipe: _recipe, pack: widget.pack));
   }
 }
 
@@ -1137,6 +1156,7 @@ class _StepRow extends StatelessWidget {
                 control: AmountStepper(
                   value: step.water,
                   suffix: texts.builderGram,
+                  title: texts.builderWater,
                   onChanged: onWaterChanged,
                 ),
               ),
@@ -1252,7 +1272,7 @@ String stepSummary(RecipeStep step, AppLocalizations texts) {
   return parts.join(' · ');
 }
 
-// ── Разбор и показ чисел ───────────────────────────────────────────────────
+// ── Показ чисел ────────────────────────────────────────────────────────────
 //
 // Вынесено из виджетов: это единственная часть экрана, которую можно проверить
 // тестом без запуска приложения, и единственная, где ошибка стоит рецепта.
@@ -1270,29 +1290,4 @@ String formatDuration(int seconds) {
   final minutes = seconds ~/ 60;
   final rest = (seconds % 60).toString().padLeft(2, '0');
   return '$minutes:$rest';
-}
-
-/// Число из того, что напечатали. Запятая и точка равноправны: клавиатура
-/// на разных прошивках даёт разный разделитель, и это не повод отказать.
-double? parseNumber(String text) {
-  final normalized = text.trim().replaceAll(',', '.');
-  if (normalized.isEmpty) return null;
-  return double.tryParse(normalized);
-}
-
-/// «м:сс» или просто секунды. Пустое и мусор дают null — значение не меняется.
-int? parseDuration(String text) {
-  final value = text.trim();
-  if (value.isEmpty) return null;
-
-  if (!value.contains(':')) return int.tryParse(value);
-
-  final parts = value.split(':');
-  if (parts.length != 2) return null;
-
-  final minutes = int.tryParse(parts[0].isEmpty ? '0' : parts[0]);
-  final seconds = int.tryParse(parts[1].isEmpty ? '0' : parts[1]);
-  if (minutes == null || seconds == null) return null;
-
-  return minutes * 60 + seconds;
 }

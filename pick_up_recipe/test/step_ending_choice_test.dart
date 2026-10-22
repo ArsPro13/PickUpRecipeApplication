@@ -8,6 +8,9 @@
 // Четвёртая беда — язык. Подписи вариантов и пояснения к ним были вшиты в код
 // по-русски, и на английском телефоне форма выходила наполовину русской:
 // «A step type of your own» и тут же «по времени». Про это — последняя группа.
+//
+// Вариантов на выбор теперь два: «по признаку» владелец попросил убрать. Это
+// проверяет отдельная группа — вернуть третью карточку незаметно не выйдет.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -82,7 +85,7 @@ void main() {
     // строка, и она видна по тому, что подпись стала выше соседней.
     final short = tester.getSize(find.text(ru.builderEndsUser)).height;
 
-    for (final option in StepEndsWith.values) {
+    for (final option in stepEndingOptions) {
       expect(
         tester.getSize(find.text(option.label(ru))).height,
         short,
@@ -95,35 +98,35 @@ void main() {
     await tester.pumpWidget(const _Host());
 
     final fills = _fills(tester);
-    expect(fills, hasLength(StepEndsWith.values.length));
+    expect(fills, hasLength(stepEndingOptions.length));
 
-    // Выбрано первое: его заливка своя, остальные две — одинаковые.
+    // Выбрано первое: его заливка своя, у второго — другая.
     expect(fills[0], isNot(fills[1]));
-    expect(fills[1], fills[2]);
 
-    await tester.tap(find.text(ru.builderEndsSign));
+    await tester.tap(find.text(ru.builderEndsUser));
     await tester.pumpAndSettle();
 
     final after = _fills(tester);
-    expect(after[2], isNot(after[1]));
-    expect(after[0], after[1]);
-    // И заливка выбранного — та же самая, просто переехала на третью карточку.
-    expect(after[2], fills[0]);
+    expect(after[1], isNot(after[0]));
+    // И заливка выбранного — та же самая, просто переехала на вторую карточку,
+    // а первая стала такой, какой была вторая.
+    expect(after[1], fills[0]);
+    expect(after[0], fills[1]);
   });
 
   testWidgets('текст не прыгает при выборе', (tester) async {
     await tester.pumpWidget(const _Host());
 
     final before = [
-      for (final option in StepEndsWith.values)
+      for (final option in stepEndingOptions)
         tester.getTopLeft(find.text(option.label(ru))),
     ];
 
-    await tester.tap(find.text(ru.builderEndsSign));
+    await tester.tap(find.text(ru.builderEndsUser));
     await tester.pumpAndSettle();
 
     final after = [
-      for (final option in StepEndsWith.values)
+      for (final option in stepEndingOptions)
         tester.getTopLeft(find.text(option.label(ru))),
     ];
 
@@ -133,7 +136,7 @@ void main() {
   testWidgets('у каждого варианта есть строка пояснения', (tester) async {
     await tester.pumpWidget(const _Host());
 
-    for (final option in StepEndsWith.values) {
+    for (final option in stepEndingOptions) {
       expect(option.hint(ru), isNotEmpty, reason: option.label(ru));
       expect(find.text(option.hint(ru)), findsOneWidget,
           reason: option.label(ru));
@@ -172,14 +175,32 @@ void main() {
         (tester) async {
       await tester.pumpWidget(const _Host(locale: Locale('en')));
 
-      for (final option in StepEndsWith.values) {
+      for (final option in stepEndingOptions) {
         expect(find.text(option.label(en)), findsOneWidget,
             reason: option.wire);
         expect(find.text(option.hint(en)), findsOneWidget, reason: option.wire);
-        // Подписи трёх вариантов различны в обоих языках: одинаковые
-        // читались бы как один и тот же выбор, повторённый трижды.
+        // Подписи вариантов различны в обоих языках: одинаковые читались бы
+        // как один и тот же выбор, повторённый дважды.
         expect(option.label(en), isNot(option.label(ru)), reason: option.wire);
       }
+    });
+  });
+
+  group('без «по признаку»', () {
+    testWidgets('на выбор два конца шага: по времени и по кнопке',
+        (tester) async {
+      await tester.pumpWidget(const _Host());
+
+      expect(find.text(ru.builderEndsTimer), findsOneWidget);
+      expect(find.text(ru.builderEndsUser), findsOneWidget);
+      expect(find.text(ru.builderEndsSign), findsNothing);
+      expect(find.text(ru.builderEndsSignHint), findsNothing);
+    });
+
+    test('старый шаг с признаком по-прежнему подписан', () {
+      // Признак носят шаги рецептов, заведённых до этой правки: выбрать его
+      // нельзя, но и подпись у таких шагов пропасть не должна.
+      expect(StepEndsWith.none.label(ru), ru.builderEndsSign);
     });
   });
 }
