@@ -7,15 +7,18 @@
 //
 // Четвёртый раздел появился потому, что новую пачку заваривают не с нуля: у
 // человека уже есть выверенный рецепт под свою воронку и свою кофемолку, и
-// начинать с базового рецепта справочника, имея его, — шаг назад. Рецепты
-// показываются с именем зерна, по которому их вели: без него две записи
-// «22 щелчка, 2:30» неразличимы.
+// начинать с базового рецепта справочника, имея его, — шаг назад.
+//
+// Стоит он теми же стопками версий, что и вкладка «Рецепты», а не строками:
+// прошлые рецепты здесь листают вбок точно так же, как там, — значит, это тот
+// же виджет, а не похожая копия. Строка «зерно — 22 щелчка, 2:30» называла
+// пачку, но не показывала ни её, ни дозы с водой, а прошлые версии рецепта
+// той пачки прятала совсем. Щелчков на карточке нет, как и на вкладке: их
+// показывает экран заваривания, куда карточка и ведёт.
 //
 // Раньше здесь был выпадающий список из одного реального метода и кнопка
 // Generate: метод выбирается на предыдущем экране, а генерация — это способ
 // собрать базовый рецепт, а не отдельная функция продукта.
-
-import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -29,12 +32,14 @@ import '../features/grinders/application/grinder_state.dart';
 import '../features/grinders/domain/grind_translation.dart';
 import '../features/packs/application/state/active_packs_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/state/recipes_list_state.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/data_sources/remote/recipe_service.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import '../general_widgets/recipe_deck.dart';
 import 'recipe_builder_page.dart' show formatDecimal;
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
@@ -65,14 +70,11 @@ class ChoosingRecipePage extends ConsumerStatefulWidget {
 }
 
 class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
-  final RecipeService _service = RecipeService();
+  /// Тот же сервис, что у списка рецептов: стопки с прошлых пачек приходят
+  /// оттуда, и подменять в тесте приходится одно место, а не два.
+  late final RecipeService _service = ref.read(recipeServiceProvider);
 
   List<RecipeData> _recipes = const [];
-
-  /// Рецепты того же прибора по ДРУГИМ пачкам, свежие сверху, по одной
-  /// записи на пачку: показывать все версии чужой пачки здесь незачем —
-  /// человек выбирает, с чего начать, а не листает историю.
-  List<RecipeData> _otherPacks = const [];
 
   bool _loading = true;
   String? _error;
@@ -101,6 +103,13 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       if (!ref.read(grinderStateProvider).hasGrinder) {
         ref.read(grinderStateProvider.notifier).loadUserGrinders();
       }
+      // Рецепты с прошлых пачек — стопками из того же списка, что у вкладки
+      // «Рецепты». Обычно он уже загружен полкой; по диплинку сюда приходят
+      // мимо неё, и тогда загрузить его больше некому.
+      final history = ref.read(recipesListProvider);
+      if (history.groups.isEmpty && !history.isLoading) {
+        ref.read(recipesListProvider.notifier).load();
+      }
     });
   }
 
@@ -116,33 +125,12 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
         device: widget.method,
       );
 
-      // Второй запрос — тем же прибором, но без пачки. Отдельным, а не
-      // вычитанием из общего списка: общий пришлось бы тянуть целиком,
-      // со всеми приборами, ради одного.
-      final byMethod = widget.method == null || widget.method!.isEmpty
-          ? const <RecipeData>[]
-          : await _service.getByParams(device: widget.method) ??
-              const <RecipeData>[];
-
       if (!mounted) return;
-
-      final others = latestPerPack(byMethod, exceptPack: widget.packId);
 
       setState(() {
         _recipes = [...?recipes]..sort((a, b) => b.date.compareTo(a.date));
-        _otherPacks = others;
         _loading = false;
       });
-
-      // Имена зёрен: рецепт знает только идентификатор пачки, а строка без
-      // названия кофе ничего не сообщает.
-      if (others.isNotEmpty) {
-        unawaited(
-          ref
-              .read(activePacksNotifierProvider.notifier)
-              .ensurePacks(others.map((recipe) => recipe.packId)),
-        );
-      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -248,6 +236,27 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
     final mine =
         _recipes.length > 1 ? _recipes.sublist(1) : const <RecipeData>[];
     final known = ref.watch(activePacksNotifierProvider).known;
+    final others = widget.method == null || widget.method!.isEmpty
+        ? const <RecipeGroup>[]
+        : otherPackGroups(
+            ref.watch(recipesListProvider).groups,
+            method: widget.method!,
+            exceptPack: widget.packId,
+          );
+
+    // Имена и снимки зёрен: история знает только идентификатор пачки, а
+    // стопка без названия кофе ничего не сообщает. Недостающие просим после
+    // кадра — ensurePacks сам отсеет известные, а запрос на пачку кэширован.
+    final missing = {
+      for (final group in others)
+        if (!known.containsKey(group.packId)) group.packId,
+    };
+    if (missing.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(activePacksNotifierProvider.notifier).ensurePacks(missing);
+      });
+    }
 
     return [
       if (widget.pack != null)
@@ -337,14 +346,22 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       ],
 
       // Без пояснения «тот же прибор, другое зерно»: прибор и так в шапке
-      // экрана, а другое зерно — в названии каждой строки.
-      if (_otherPacks.isNotEmpty) ...[
+      // экрана, а другое зерно — в шапке каждой стопки.
+      if (others.isNotEmpty) ...[
         _Section(icon: AppIcons.uiPack, title: texts.chooseOtherPacks),
-        for (final recipe in _otherPacks)
-          _OtherPackRow(
-            recipe: recipe,
-            pack: known[recipe.packId],
-            summary: _summary(recipe),
+        for (var index = 0; index < others.length; index++)
+          RecipeDeck(
+            // Ключ — пара «кофе + метод». Список перечитывается после каждого
+            // сохранения, и свежая стопка встаёт первой: без ключа её место
+            // в барабане досталось бы соседней группе.
+            key: ValueKey(others[index].key),
+            group: others[index],
+            pack: known[others[index].packId],
+            // Главная карточка на экране одна. Есть рецепт под это зерно —
+            // главный он; нет — свежий рецепт с прошлой пачки: с него новую
+            // пачку и начинают, а не со справочника.
+            hero: roaster == null && index == 0,
+            first: index == 0,
           ),
       ],
 
@@ -464,57 +481,26 @@ class _RoasterRecipe extends StatelessWidget {
   }
 }
 
-/// Свежий рецепт по каждой из прошлых пачек, по одному на пачку.
+/// Стопки того же прибора по ДРУГИМ пачкам — группы вкладки «Рецепты» как
+/// есть: свежие сверху, каждая со всеми своими версиями, которые и листают.
 ///
-/// Вынесено функцией ради теста: правило «одна запись на пачку, свежая» —
-/// единственное, что здесь можно сделать неправильно и не заметить.
-List<RecipeData> latestPerPack(List<RecipeData> recipes,
-    {required int exceptPack}) {
-  final freshest = <int, RecipeData>{};
-
-  for (final recipe in recipes) {
-    // Пачка 0 — справочный рецепт метода: он уже стоит отдельной строкой
-    // выше, и повторять его здесь значило бы предложить одно и то же дважды.
-    if (recipe.packId == exceptPack || recipe.packId == 0) continue;
-
-    final kept = freshest[recipe.packId];
-    if (kept == null || recipe.date.compareTo(kept.date) > 0) {
-      freshest[recipe.packId] = recipe;
-    }
-  }
-
-  return freshest.values.toList()..sort((a, b) => b.date.compareTo(a.date));
-}
-
-/// Рецепт с другой пачки: то же зерно спрашивать не надо — надо назвать его.
-class _OtherPackRow extends StatelessWidget {
-  const _OtherPackRow({
-    required this.recipe,
-    required this.pack,
-    required this.summary,
-  });
-
-  final RecipeData recipe;
-
-  /// Клики и время: «18 кликов · 2:15».
-  final String summary;
-
-  /// Пачка, по которой вели рецепт. null — ещё не дочиталась: строка тогда
-  /// показывает дату, а не пустое место на месте названия.
-  final PackData? pack;
-
-  @override
-  Widget build(BuildContext context) {
-    final texts = AppLocalizations.of(context);
-    final date = _formatDate(texts, recipe.date);
-
-    return AppRow(
-      label: pack?.packName ?? date,
-      value: summary,
-      icon: AppIcons.uiPack,
-      onTap: () => context.router.push(BrewRoute(recipe: recipe, pack: pack)),
-    );
-  }
+/// Вынесено функцией ради теста: какие стопки сюда попадают — единственное,
+/// что здесь можно сделать неправильно и не заметить.
+List<RecipeGroup> otherPackGroups(
+  List<RecipeGroup> groups, {
+  required String method,
+  required int exceptPack,
+}) {
+  return [
+    for (final group in groups)
+      // Своя пачка уже стоит разделами выше. Пачка 0 — справочный рецепт
+      // метода: он стоит отдельной строкой «Базовый», и повторять его здесь
+      // значило бы предложить одно и то же дважды.
+      if (group.method == method &&
+          group.packId != exceptPack &&
+          group.packId != 0)
+        group,
+  ];
 }
 
 /// Прошлая версия рецепта строкой.
@@ -524,7 +510,7 @@ class _VersionRow extends StatelessWidget {
   final RecipeData recipe;
   final PackData? pack;
 
-  /// Клики и время — так же, как у строк с прошлых пачек.
+  /// Клики и время: «18 кликов · 2:15».
   final String summary;
 
   @override

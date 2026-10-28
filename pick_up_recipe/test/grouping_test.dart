@@ -297,9 +297,10 @@ void main() {
   });
 
   group('рецепты с прошлых пачек', () {
-    RecipeData byPack(int packId, String date) => RecipeData(
-          id: packId * 100 + date.hashCode % 90,
-          device: 'hario_v60',
+    RecipeData byPack(int packId, String date, {String device = 'hario_v60'}) =>
+        RecipeData(
+          id: '$packId$device$date'.hashCode,
+          device: device,
           date: date,
           packId: packId,
           grinderId: 1,
@@ -316,52 +317,81 @@ void main() {
           steps: const [],
         );
 
-    test('по одной записи на пачку, свежая', () {
-      final result = latestPerPack(
-        [
+    List<int> packsOf(List<RecipeGroup> groups) =>
+        groups.map((group) => group.packId).toList();
+
+    test('стопка пачки несёт все её версии — их и листают', () {
+      // Раньше отсюда бралась одна свежая запись на пачку. Стопке нужны все:
+      // смахивая верхнюю карточку, человек идёт к прошлым версиям рецепта.
+      final result = otherPackGroups(
+        groupRecipes([
           byPack(7, '2026-09-01T10:00:00Z'),
           byPack(7, '2026-09-05T10:00:00Z'),
           byPack(9, '2026-09-03T10:00:00Z'),
-        ],
+        ]),
+        method: 'hario_v60',
         exceptPack: 0,
       );
 
-      expect(result.map((recipe) => recipe.packId).toList(), [7, 9]);
-      expect(result.first.date, '2026-09-05T10:00:00Z');
+      expect(packsOf(result), [7, 9]);
+      expect(result.first.versions, hasLength(2));
+      expect(result.first.latest.date, '2026-09-05T10:00:00Z');
+    });
+
+    test('только этот прибор: стопки других методов не попадают', () {
+      final result = otherPackGroups(
+        groupRecipes([
+          byPack(7, '2026-09-05T10:00:00Z', device: 'chemex'),
+          byPack(9, '2026-09-03T10:00:00Z'),
+        ]),
+        method: 'hario_v60',
+        exceptPack: 0,
+      );
+
+      expect(packsOf(result), [9]);
     });
 
     test('нынешняя пачка не повторяется', () {
       // Её версии уже стоят разделом выше: предложить их ещё раз значило бы
       // показать один и тот же рецепт дважды под разными заголовками.
-      final result = latestPerPack(
-        [byPack(7, '2026-09-05T10:00:00Z'), byPack(9, '2026-09-03T10:00:00Z')],
+      final result = otherPackGroups(
+        groupRecipes([
+          byPack(7, '2026-09-05T10:00:00Z'),
+          byPack(9, '2026-09-03T10:00:00Z'),
+        ]),
+        method: 'hario_v60',
         exceptPack: 7,
       );
 
-      expect(result.map((recipe) => recipe.packId).toList(), [9]);
+      expect(packsOf(result), [9]);
     });
 
     test('справочный рецепт метода в список не идёт', () {
       // У него pack_id нулевой, и он уже стоит отдельной строкой «базовый».
-      final result = latestPerPack(
-        [byPack(0, '2026-09-05T10:00:00Z'), byPack(9, '2026-09-03T10:00:00Z')],
+      final result = otherPackGroups(
+        groupRecipes([
+          byPack(0, '2026-09-05T10:00:00Z'),
+          byPack(9, '2026-09-03T10:00:00Z'),
+        ]),
+        method: 'hario_v60',
         exceptPack: 7,
       );
 
-      expect(result.map((recipe) => recipe.packId).toList(), [9]);
+      expect(packsOf(result), [9]);
     });
 
     test('пачки идут от свежей к старой', () {
-      final result = latestPerPack(
-        [
+      final result = otherPackGroups(
+        groupRecipes([
           byPack(1, '2026-08-01T10:00:00Z'),
           byPack(2, '2026-09-10T10:00:00Z'),
           byPack(3, '2026-09-05T10:00:00Z'),
-        ],
+        ]),
+        method: 'hario_v60',
         exceptPack: 0,
       );
 
-      expect(result.map((recipe) => recipe.packId).toList(), [2, 3, 1]);
+      expect(packsOf(result), [2, 3, 1]);
     });
   });
 }
