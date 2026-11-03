@@ -144,20 +144,33 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           SectionTitle(texts.profileAppTitle),
           AppCard(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
-            child: AppRow(
-              label: texts.profileLanguage,
-              icon: AppIcons.uiSettings,
-              // Название выбранного языка — на нём самом. «Итальянский»
-              // по-русски не поможет тому, кто ищет Italiano, а именно он
-              // сюда и приходит.
-              value: chosen == null
-                  ? texts.profileLanguageSystem
-                  : appLocales
-                      .firstWhere((item) =>
-                          item.locale.languageCode == chosen.languageCode)
-                      .label,
-              divider: false,
-              onTap: () => _chooseLanguage(context, ref, chosen),
+            child: Column(
+              children: [
+                AppRow(
+                  label: texts.profileLanguage,
+                  icon: AppIcons.uiSettings,
+                  // Название выбранного языка — на нём самом. «Итальянский»
+                  // по-русски не поможет тому, кто ищет Italiano, а именно он
+                  // сюда и приходит.
+                  value: chosen == null
+                      ? texts.profileLanguageSystem
+                      : appLocales
+                          .firstWhere((item) =>
+                              item.locale.languageCode == chosen.languageCode)
+                          .label,
+                  onTap: () => _chooseLanguage(context, ref, chosen),
+                ),
+                // Письмо владельцу — здесь, в «Приложении», а не в «Аккаунте»:
+                // пишут о приложении, и строка не должна стоять рядом с
+                // «Удалить аккаунт».
+                AppRow(
+                  key: const ValueKey('profile-feedback'),
+                  label: texts.profileFeedback,
+                  icon: AppIcons.uiMail,
+                  divider: false,
+                  onTap: () => context.router.push(const FeedbackRoute()),
+                ),
+              ],
             ),
           ),
           SectionTitle(texts.profileAccountTitle),

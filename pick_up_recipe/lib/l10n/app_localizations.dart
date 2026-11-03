@@ -3291,6 +3291,54 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Столько воды в прибор может не войти — лучше в два захода.'**
   String get brewScaleWarnOverCapacity;
+
+  /// Профиль, раздел «Приложение»: строка, которая открывает форму обратной связи.
+  ///
+  /// In ru, this message translates to:
+  /// **'Написать нам'**
+  String get profileFeedback;
+
+  /// Экран обратной связи: заголовок.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обратная связь'**
+  String get feedbackTitle;
+
+  /// Экран обратной связи: подпись над полем — о чём писать и куда придёт ответ.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что не так, чего не хватает, что понравилось — пишите как есть. Читаем всё и отвечаем на почту, с которой вы вошли.'**
+  String get feedbackIntro;
+
+  /// Экран обратной связи: пример в пустом поле.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например: после скана QR открылся не тот кофе'**
+  String get feedbackHint;
+
+  /// Экран обратной связи: кнопка отправки письма.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправить'**
+  String get feedbackSend;
+
+  /// Экран обратной связи: сервер не принял письмо (сеть есть). Текст в поле сохраняется.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не получилось отправить. Попробуйте ещё раз — текст на месте.'**
+  String get feedbackFailed;
+
+  /// Экран обратной связи: заголовок после отправки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Спасибо!'**
+  String get feedbackThanksTitle;
+
+  /// Экран обратной связи: текст после отправки — куда придёт ответ.
+  ///
+  /// In ru, this message translates to:
+  /// **'Письмо у нас. Ответим на почту, с которой вы вошли.'**
+  String get feedbackThanksText;
 }
 
 class _AppLocalizationsDelegate

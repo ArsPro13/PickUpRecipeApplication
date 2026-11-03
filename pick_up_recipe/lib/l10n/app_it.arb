@@ -579,5 +579,13 @@
   "brewScaleWarnEdgeTemp": "{grinder}: la scala finisce a {click}, quindi l'acqua è più fredda di {drop} °C.",
   "brewScaleWarnEdgePauses": "{grinder}: la scala finisce a {click}, il tempo si recupera con le pause.",
   "brewScaleWarnTooThin": "Sotto i {grams} g il letto è troppo sottile e il gusto varierà.",
-  "brewScaleWarnOverCapacity": "Tanta acqua potrebbe non starci — meglio in due volte."
+  "brewScaleWarnOverCapacity": "Tanta acqua potrebbe non starci — meglio in due volte.",
+  "profileFeedback": "Scrivici",
+  "feedbackTitle": "Feedback",
+  "feedbackIntro": "Cosa non va, cosa manca, cosa ti piace: scrivilo come viene. Leggiamo tutto e rispondiamo all'email con cui hai effettuato l'accesso.",
+  "feedbackHint": "Per esempio: dopo la scansione del QR si è aperto il caffè sbagliato",
+  "feedbackSend": "Invia",
+  "feedbackFailed": "Invio non riuscito. Riprova: il testo è ancora qui.",
+  "feedbackThanksTitle": "Grazie!",
+  "feedbackThanksText": "Abbiamo ricevuto il tuo messaggio. Risponderemo all'email con cui hai effettuato l'accesso."
 }

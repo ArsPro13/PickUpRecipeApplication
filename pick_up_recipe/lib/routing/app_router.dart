@@ -18,6 +18,7 @@ import '../src/pages/auth_welcome_page.dart';
 import '../src/pages/brew_page.dart';
 import '../src/pages/choosing_recipe_page.dart';
 import '../src/pages/code_scanner_page.dart';
+import '../src/pages/feedback_page.dart';
 import '../src/pages/coffee_page.dart';
 import '../src/pages/rating_conflict_page.dart';
 import '../src/pages/grinder_select_page.dart';
@@ -121,6 +122,11 @@ class AppRouter extends _$AppRouter {
         AutoRoute(
             page: CodeScannerRoute.page,
             path: '/scan/camera',
+            guards: [AuthGuard(ref)]),
+        // Обратная связь — из профиля, строкой «Написать нам».
+        AutoRoute(
+            page: FeedbackRoute.page,
+            path: '/feedback',
             guards: [AuthGuard(ref)]),
 
         // Вход разбит на отдельные экраны, а не на режимы одной страницы:

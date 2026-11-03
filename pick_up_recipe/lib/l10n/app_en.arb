@@ -1088,5 +1088,21 @@
 
   "brewScaleWarnTooThin": "Under {grams} g the bed is too thin and the taste will drift.",
 
-  "brewScaleWarnOverCapacity": "This much water may not fit the brewer — better brew twice."
+  "brewScaleWarnOverCapacity": "This much water may not fit the brewer — better brew twice.",
+
+  "profileFeedback": "Write to us",
+
+  "feedbackTitle": "Feedback",
+
+  "feedbackIntro": "What's broken, what's missing, what you like — write it as it is. We read everything and reply to the email you signed in with.",
+
+  "feedbackHint": "For example: the QR scan opened the wrong coffee",
+
+  "feedbackSend": "Send",
+
+  "feedbackFailed": "Couldn't send. Try again — your text is still here.",
+
+  "feedbackThanksTitle": "Thank you!",
+
+  "feedbackThanksText": "We've got your message. We'll reply to the email you signed in with."
 }

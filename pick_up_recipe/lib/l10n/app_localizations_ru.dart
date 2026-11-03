@@ -2010,4 +2010,31 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get brewScaleWarnOverCapacity =>
       'Столько воды в прибор может не войти — лучше в два захода.';
+
+  @override
+  String get profileFeedback => 'Написать нам';
+
+  @override
+  String get feedbackTitle => 'Обратная связь';
+
+  @override
+  String get feedbackIntro =>
+      'Что не так, чего не хватает, что понравилось — пишите как есть. Читаем всё и отвечаем на почту, с которой вы вошли.';
+
+  @override
+  String get feedbackHint => 'Например: после скана QR открылся не тот кофе';
+
+  @override
+  String get feedbackSend => 'Отправить';
+
+  @override
+  String get feedbackFailed =>
+      'Не получилось отправить. Попробуйте ещё раз — текст на месте.';
+
+  @override
+  String get feedbackThanksTitle => 'Спасибо!';
+
+  @override
+  String get feedbackThanksText =>
+      'Письмо у нас. Ответим на почту, с которой вы вошли.';
 }

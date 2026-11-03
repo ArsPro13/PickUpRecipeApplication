@@ -1982,4 +1982,32 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get brewScaleWarnOverCapacity =>
       'Tanta acqua potrebbe non starci — meglio in due volte.';
+
+  @override
+  String get profileFeedback => 'Scrivici';
+
+  @override
+  String get feedbackTitle => 'Feedback';
+
+  @override
+  String get feedbackIntro =>
+      'Cosa non va, cosa manca, cosa ti piace: scrivilo come viene. Leggiamo tutto e rispondiamo all\'email con cui hai effettuato l\'accesso.';
+
+  @override
+  String get feedbackHint =>
+      'Per esempio: dopo la scansione del QR si è aperto il caffè sbagliato';
+
+  @override
+  String get feedbackSend => 'Invia';
+
+  @override
+  String get feedbackFailed =>
+      'Invio non riuscito. Riprova: il testo è ancora qui.';
+
+  @override
+  String get feedbackThanksTitle => 'Grazie!';
+
+  @override
+  String get feedbackThanksText =>
+      'Abbiamo ricevuto il tuo messaggio. Risponderemo all\'email con cui hai effettuato l\'accesso.';
 }
