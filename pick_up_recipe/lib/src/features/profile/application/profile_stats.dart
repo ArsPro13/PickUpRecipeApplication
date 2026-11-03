@@ -57,9 +57,13 @@ class ProfileStats {
 }
 
 /// Складывает статистику из того, что уже показано на других вкладках.
-ProfileStats buildProfileStats(List<RecipeGroup> groups, List<PackData> packs) {
+///
+/// [language] — язык экрана: любимый прибор называется на нём.
+ProfileStats buildProfileStats(List<RecipeGroup> groups, List<PackData> packs,
+    {String language = 'ru'}) {
   var versions = 0;
   final byDevice = <String, int>{};
+  final deviceNames = <String, String>{};
   String? earliest;
 
   for (final group in groups) {
@@ -67,7 +71,8 @@ ProfileStats buildProfileStats(List<RecipeGroup> groups, List<PackData> packs) {
 
     // По рецептам, а не по версиям: пять правок одного рецепта — это про
     // упрямство, а не про любимый прибор.
-    byDevice[group.methodName] = (byDevice[group.methodName] ?? 0) + 1;
+    byDevice[group.method] = (byDevice[group.method] ?? 0) + 1;
+    deviceNames[group.method] = group.methodNameFor(language);
 
     for (final version in group.versions) {
       if (version.date.isEmpty) continue;
@@ -82,7 +87,8 @@ ProfileStats buildProfileStats(List<RecipeGroup> groups, List<PackData> packs) {
     // Строго больше: при ничьей любимого нет. Назвать одного из двух равных
     // значило бы выдумать предпочтение, которого человек не высказывал.
     if (favourite == null || entry.value > favourite.recipes) {
-      favourite = (name: entry.key, recipes: entry.value);
+      favourite =
+          (name: deviceNames[entry.key] ?? entry.key, recipes: entry.value);
     }
   }
   if (favourite != null &&

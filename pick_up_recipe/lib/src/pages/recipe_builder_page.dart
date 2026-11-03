@@ -154,6 +154,9 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     return null;
   }
 
+  /// Язык экрана — для названия прибора.
+  String get _language => Localizations.localeOf(context).languageCode;
+
   bool get _showsCorrection =>
       widget.correctionLabel != null && widget.original != null && _corrected;
 
@@ -288,7 +291,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     final parts = [
       if (widget.pack?.packName.isNotEmpty ?? false) widget.pack!.packName,
       if (method != null)
-        method.name
+        method.nameFor(_language)
       else if (_recipe.device.isNotEmpty)
         _recipe.device,
     ];
@@ -453,7 +456,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       context,
       allowedStepTypes: method?.allowedStepTypes ?? const [],
       brewMethodId: method?.id ?? 0,
-      methodName: method?.name,
+      methodName: method?.nameFor(_language),
     );
     if (pick == null || !mounted) return;
 
@@ -524,7 +527,8 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       case CustomStepPick():
         final created = await context.router.push<UserStepType>(
           CustomStepRoute(
-              brewMethodId: method?.id ?? 0, methodName: method?.name),
+              brewMethodId: method?.id ?? 0,
+              methodName: method?.nameFor(_language)),
         );
         if (created == null) return null;
         return RecipeStep(
@@ -551,7 +555,7 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       allowedStepTypes: _method?.allowedStepTypes ?? const [],
       currentSlug: step.stepType,
       brewMethodId: _method?.id ?? 0,
-      methodName: _method?.name,
+      methodName: _method?.nameFor(_language),
     );
     if (pick == null || !mounted) return;
 

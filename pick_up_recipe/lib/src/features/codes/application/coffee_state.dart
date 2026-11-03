@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../brew_methods/application/brew_methods_state.dart';
 import '../../brew_methods/data_sources/remote/brew_method_service.dart';
+import '../../brew_methods/domain/method_names.dart';
 import '../../packs/data_sources/remote/pack_service.dart';
 import '../../packs/domain/models/pack_model.dart';
 import '../../recipes/data_sources/remote/recipe_service.dart';
@@ -18,11 +19,20 @@ class CoffeeMethod {
     required this.name,
     required this.iconKey,
     required this.hasRecipe,
+    this.nameEn = '',
+    this.nameIt = '',
   });
 
   final String slug;
+
+  /// Русское название; на языке экрана — [nameFor].
   final String name;
+  final String nameEn;
+  final String nameIt;
   final String iconKey;
+
+  String nameFor(String language) =>
+      localizedMethodName(language, name: name, en: nameEn, it: nameIt);
 
   /// Есть ли под этот прибор рецепт для этого зерна. Метод без рецепта не
   /// прячется и не блокируется — он просто тише: рецепт можно собрать самому.
@@ -34,9 +44,22 @@ class CoffeeMethodGroup {
     required this.name,
     required this.methods,
     this.slug = '',
+    this.nameEn = '',
+    this.nameIt = '',
   });
 
+  /// Русское название группы; на языке экрана — [nameFor].
   final String name;
+  final String nameEn;
+  final String nameIt;
+
+  String nameFor(String language) =>
+      localizedMethodName(language, name: name, en: nameEn, it: nameIt);
+
+  /// Методы в порядке показа на языке экрана: с рецептом обжарщика — сверху,
+  /// внутри половин — по алфавиту (см. [_withRecipesFirst]).
+  List<CoffeeMethod> methodsFor(String language) =>
+      _withRecipesFirst(methods, language);
 
   /// Метка группы из справочника. Нужна ровно затем, чтобы экран узнал
   /// собранную на телефоне группу «Прочие»: имени с сервера у неё нет.
@@ -198,9 +221,10 @@ class CoffeeStateNotifier extends StateNotifier<CoffeeState> {
 /// группе, он случаен. Разделение на «с рецептом» и «без» при этом остаётся:
 /// оно отвечает на другой вопрос, чем алфавит, — не «где искать», а «что
 /// здесь уже готово».
-List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods) {
+List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods,
+    [String language = 'ru']) {
   int byName(CoffeeMethod a, CoffeeMethod b) =>
-      a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      compareMethodNames(a.nameFor(language), b.nameFor(language));
 
   return [
     ...methods.where((method) => method.hasRecipe).toList()..sort(byName),
@@ -223,12 +247,16 @@ List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods) {
     for (final group in grouped)
       CoffeeMethodGroup(
         name: group.name,
+        nameEn: group.nameEn,
+        nameIt: group.nameIt,
         slug: group.slug,
         methods: _withRecipesFirst([
           for (final method in group.methods)
             CoffeeMethod(
               slug: method.slug,
               name: method.name,
+              nameEn: method.nameEn,
+              nameIt: method.nameIt,
               iconKey: method.iconKey,
               hasRecipe: withRecipe.contains(method.slug),
             ),
@@ -243,7 +271,7 @@ List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods) {
   groups.sort((a, b) {
     if (a.slug == otherGroupSlug) return 1;
     if (b.slug == otherGroupSlug) return -1;
-    return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    return compareMethodNames(a.name, b.name);
   });
 
   if (recipes.isEmpty) return (groups, null);

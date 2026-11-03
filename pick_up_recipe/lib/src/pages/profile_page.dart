@@ -62,7 +62,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final grinders = ref.watch(grinderStateProvider);
     final recipes = ref.watch(recipesListProvider);
     final packs = ref.watch(activePacksNotifierProvider);
-    final stats = buildProfileStats(recipes.groups, packs.activePacks);
+    final stats = buildProfileStats(recipes.groups, packs.activePacks,
+        language: Localizations.localeOf(context).languageCode);
     final texts = AppLocalizations.of(context);
     final chosen = ref.watch(localeProvider);
 

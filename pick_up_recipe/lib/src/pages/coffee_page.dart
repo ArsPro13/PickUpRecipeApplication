@@ -134,7 +134,8 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
       ChoosingRecipeRoute(
         packId: pack.packId,
         method: method.slug,
-        methodName: method.name,
+        methodName:
+            method.nameFor(Localizations.localeOf(context).languageCode),
         // Пачка едет объектом: ниже по пути она нужна и шапке выбора, и
         // экрану базового рецепта — без неё правка базового не знает,
         // с какого зерна началась (C7).
@@ -393,7 +394,11 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
     final all = [
       for (final group in state.groups) ...group.methods,
     ];
-    final hits = searchByName(all, (method) => method.name, _query);
+    // Ищем по названию на языке экрана — тому же, что подсвечивается в
+    // строке: по-русски у брендов в нём есть и английское имя в скобках.
+    final language = Localizations.localeOf(context).languageCode;
+    final hits =
+        searchByName(all, (method) => method.nameFor(language), _query);
 
     if (hits.isEmpty) return [_nothingFound(all)];
 
@@ -410,7 +415,9 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
   /// Пустой ответ поиска — с выходом: «Показать все» и близкие по написанию.
   Widget _nothingFound(List<CoffeeMethod> all) {
     final texts = AppLocalizations.of(context);
-    final near = didYouMeanByName(all, (method) => method.name, _query);
+    final language = Localizations.localeOf(context).languageCode;
+    final near =
+        didYouMeanByName(all, (method) => method.nameFor(language), _query);
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.s4),
@@ -441,8 +448,8 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
                     children: [
                       for (final method in near)
                         AppChip(
-                          label: method.name,
-                          onTap: () => _setQuery(method.name),
+                          label: method.nameFor(language),
+                          onTap: () => _setQuery(method.nameFor(language)),
                         ),
                     ],
                   ),
@@ -666,6 +673,7 @@ class _QuickStart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
+    final name = method.nameFor(Localizations.localeOf(context).languageCode);
 
     return HeroSurface(
       child: Row(
@@ -681,7 +689,7 @@ class _QuickStart extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  method.name,
+                  name,
                   style: context.texts.bodyLarge
                       ?.copyWith(fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
@@ -694,7 +702,7 @@ class _QuickStart extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.s3),
-          _PlayButton(onTap: onStart, label: texts.coffeeBrewOn(method.name)),
+          _PlayButton(onTap: onStart, label: texts.coffeeBrewOn(name)),
         ],
       ),
     );
@@ -757,9 +765,11 @@ class _MethodGroupState extends State<_MethodGroup> {
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
     final group = widget.group;
+    final language = Localizations.localeOf(context).languageCode;
 
-    final name =
-        group.slug == otherGroupSlug ? texts.svcGroupOther : group.name;
+    final name = group.slug == otherGroupSlug
+        ? texts.svcGroupOther
+        : group.nameFor(language);
     final ready = group.methods.any((method) => method.hasRecipe);
 
     return Padding(
@@ -825,7 +835,7 @@ class _MethodGroupState extends State<_MethodGroup> {
           ),
           if (_open) ...[
             const SizedBox(height: AppSpacing.s2),
-            for (final method in group.methods)
+            for (final method in group.methodsFor(language))
               _MethodRow(method: method, onTap: () => widget.onPick(method)),
           ],
         ],
@@ -850,7 +860,7 @@ class _MethodRow extends StatelessWidget {
   final NameHit<CoffeeMethod>? hit;
 
   InlineSpan _name(BuildContext context) {
-    final name = method.name;
+    final name = method.nameFor(Localizations.localeOf(context).languageCode);
     final found = hit;
     if (found == null || !found.hasHighlight || found.end > name.length) {
       return TextSpan(text: name);

@@ -65,23 +65,28 @@ class _RecipesForCoffeePageState extends ConsumerState<RecipesForCoffeePage> {
 
   Widget _list(BrewMethodsState state) {
     final texts = AppLocalizations.of(context);
+    // Названия и порядок — на языке экрана: по-русски «Кемекс (Chemex)»,
+    // по-английски «Chemex», и в каждой группе по алфавиту.
+    final language = Localizations.localeOf(context).languageCode;
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
       children: [
         for (final group in state.grouped) ...[
           SectionTitle(
-            group.slug == otherGroupSlug ? texts.svcGroupOther : group.name,
+            group.slug == otherGroupSlug
+                ? texts.svcGroupOther
+                : group.nameFor(language),
           ),
-          for (final method in group.methods)
+          for (final method in group.methodsByName(language))
             AppRow(
-              label: method.name,
+              label: method.nameFor(language),
               icon: AppIcons.method(method.iconKey),
               onTap: () => context.router.push(
                 ChoosingRecipeRoute(
                   packId: widget.packId ?? 0,
                   method: method.slug,
-                  methodName: method.name,
+                  methodName: method.nameFor(language),
                 ),
               ),
             ),

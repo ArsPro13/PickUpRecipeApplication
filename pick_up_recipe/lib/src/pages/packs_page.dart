@@ -165,7 +165,8 @@ class _PacksPageState extends ConsumerState<PacksPage> {
 
         return PackCard(
           pack: pack,
-          methods: methodsOfPack(groups, pack.packId),
+          methods: methodsOfPack(groups, pack.packId,
+              language: Localizations.localeOf(context).languageCode),
           // Открытая — та, которой заваривали последней. Отдельного признака
           // в схеме нет, а «с ней и заваривают» — ровно это и значит.
           highlighted: groups.isNotEmpty && groups.first.packId == pack.packId,

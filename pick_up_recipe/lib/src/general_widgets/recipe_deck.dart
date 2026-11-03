@@ -410,7 +410,7 @@ class _Header extends ConsumerWidget {
             children: [
               // Название не обрезается: длинное переносится на две строки.
               Text(
-                _title(),
+                _title(Localizations.localeOf(context).languageCode),
                 style: context.texts.bodyMedium
                     ?.copyWith(fontWeight: FontWeight.w600),
               ),
@@ -425,9 +425,11 @@ class _Header extends ConsumerWidget {
     );
   }
 
-  String _title() {
+  /// «Бразилия Можиана · Харио V60 (Hario V60)» — прибор на языке экрана.
+  String _title(String language) {
     final coffee = pack?.packName ?? '';
-    return coffee.isEmpty ? group.methodName : '$coffee · ${group.methodName}';
+    final method = group.methodNameFor(language);
+    return coffee.isEmpty ? method : '$coffee · $method';
   }
 
   String _subtitle(AppLocalizations texts) {

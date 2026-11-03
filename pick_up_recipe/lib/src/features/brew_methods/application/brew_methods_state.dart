@@ -3,15 +3,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data_sources/remote/brew_method_service.dart';
 import '../../recipes/domain/models/step_type_model.dart';
 import '../domain/brew_method.dart';
+import '../domain/method_names.dart';
 
 enum BrewMethodsStatus { loading, ready, failed }
 
 /// Группа вместе с попавшими в неё методами — то, что рисует экран.
 class GroupedMethods {
-  const GroupedMethods(
-      {required this.name, required this.methods, this.slug = ''});
+  const GroupedMethods({
+    required this.name,
+    required this.methods,
+    this.slug = '',
+    this.nameEn = '',
+    this.nameIt = '',
+  });
 
+  /// Русское название группы; на других языках — [nameFor].
   final String name;
+  final String nameEn;
+  final String nameIt;
+
+  /// Название группы на языке экрана.
+  String nameFor(String language) =>
+      localizedMethodName(language, name: name, en: nameEn, it: nameIt);
+
+  /// Методы группы по алфавиту на языке экрана.
+  ///
+  /// Владелец попросил сортировку по названию: порядок справочника — это
+  /// порядок строк в миграции, и для человека, который ищет свой прибор
+  /// глазами, он случаен.
+  List<BrewMethod> methodsByName(String language) => [...methods]..sort(
+      (a, b) => compareMethodNames(a.nameFor(language), b.nameFor(language)));
 
   /// Slug группы из справочника: по нему выбирается шаблон заваривания
   /// («давление» заканчивает шаги по признаку, а не по секундомеру).
@@ -96,8 +117,13 @@ List<GroupedMethods> groupMethods(
   for (final group in ordered) {
     final inGroup = byGroup.remove(group.id);
     if (inGroup != null && inGroup.isNotEmpty) {
-      result.add(
-          GroupedMethods(name: group.name, slug: group.slug, methods: inGroup));
+      result.add(GroupedMethods(
+        name: group.name,
+        nameEn: group.nameEn,
+        nameIt: group.nameIt,
+        slug: group.slug,
+        methods: inGroup,
+      ));
     }
   }
 

@@ -27,7 +27,7 @@ class _FakeFeedback extends FeedbackService {
   }
 }
 
-Future<void> pumpFeedback(WidgetTester tester, _FakeFeedback service,
+Future<void> _pumpFeedback(WidgetTester tester, _FakeFeedback service,
     {Locale locale = const Locale('ru')}) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -49,7 +49,7 @@ Finder sendButton() => find.widgetWithText(ElevatedButton, 'Отправить')
 void main() {
   testWidgets('пустое письмо не отправить', (tester) async {
     final service = _FakeFeedback();
-    await pumpFeedback(tester, service);
+    await _pumpFeedback(tester, service);
 
     expect(find.text('Обратная связь'), findsOneWidget);
     expect(tester.widget<ElevatedButton>(sendButton()).onPressed, isNull);
@@ -63,7 +63,7 @@ void main() {
   testWidgets('письмо уходит с языком экрана, вместо формы — «Спасибо»',
       (tester) async {
     final service = _FakeFeedback();
-    await pumpFeedback(tester, service);
+    await _pumpFeedback(tester, service);
 
     await tester.enterText(find.byKey(const ValueKey('feedback-text')),
         'После скана открылся не тот кофе');
@@ -81,7 +81,7 @@ void main() {
   testWidgets('сервер не принял — строка под полем, текст на месте',
       (tester) async {
     final service = _FakeFeedback(error: const FeedbackFailure(500));
-    await pumpFeedback(tester, service);
+    await _pumpFeedback(tester, service);
 
     await tester.enterText(
         find.byKey(const ValueKey('feedback-text')), 'Хочу тёмную тему');
@@ -100,7 +100,7 @@ void main() {
 
   testWidgets('без сети — про сеть, а не «не получилось»', (tester) async {
     final service = _FakeFeedback(error: const OfflineException());
-    await pumpFeedback(tester, service, locale: const Locale('en'));
+    await _pumpFeedback(tester, service, locale: const Locale('en'));
 
     await tester.enterText(
         find.byKey(const ValueKey('feedback-text')), 'Dark theme please');

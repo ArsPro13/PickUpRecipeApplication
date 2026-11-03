@@ -6,6 +6,7 @@ import '../../../../../core/offline/recipe_drafts.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../../../brew_methods/application/brew_methods_state.dart';
 import '../../../brew_methods/data_sources/remote/brew_method_service.dart';
+import '../../../brew_methods/domain/method_names.dart';
 import '../../data_sources/remote/recipe_service.dart';
 import '../../domain/models/recipe_data_model.dart';
 
@@ -66,6 +67,8 @@ class RecipeGroup {
     required this.method,
     required this.methodName,
     required this.methodIconKey,
+    this.methodNameEn = '',
+    this.methodNameIt = '',
   });
 
   final String key;
@@ -77,8 +80,18 @@ class RecipeGroup {
   /// Slug прибора и его человеческое имя: первое нужно для перехода,
   /// второе — для подписи и значка в кружке.
   final String method;
+
+  /// Русское название прибора (или slug, если справочник не открылся); на
+  /// языке экрана — [methodNameFor].
   final String methodName;
+  final String methodNameEn;
+  final String methodNameIt;
   final String methodIconKey;
+
+  /// Название прибора на языке экрана: состояние грузится один раз, а язык
+  /// меняют в профиле на ходу.
+  String methodNameFor(String language) => localizedMethodName(language,
+      name: methodName, en: methodNameEn, it: methodNameIt);
 
   /// Свежая версия — та, что лежит сверху стопки.
   RecipeVersion get latest => versions.first;
@@ -131,10 +144,14 @@ class RecipesListNotifier extends StateNotifier<RecipesListState> {
       // список рецептов всё равно показывается — просто с slug вместо имени:
       // это хуже, чем с именем, и несравнимо лучше пустого экрана.
       var names = const <String, String>{};
+      var namesEn = const <String, String>{};
+      var namesIt = const <String, String>{};
       var icons = const <String, String>{};
       try {
         final methods = await _methods.getMethods();
         names = {for (final method in methods) method.slug: method.name};
+        namesEn = {for (final method in methods) method.slug: method.nameEn};
+        namesIt = {for (final method in methods) method.slug: method.nameIt};
         icons = {for (final method in methods) method.slug: method.iconKey};
       } catch (_) {
         names = const {};
@@ -145,6 +162,8 @@ class RecipesListNotifier extends StateNotifier<RecipesListState> {
         groups: groupRecipes(
           recipes,
           methodNames: names,
+          methodNamesEn: namesEn,
+          methodNamesIt: namesIt,
           methodIcons: icons,
           // Отпечатки читаются после запроса: он же и вычищает те черновики,
           // которые успели стать сохранёнными версиями.
@@ -173,6 +192,8 @@ class RecipesListNotifier extends StateNotifier<RecipesListState> {
 List<RecipeGroup> groupRecipes(
   List<RecipeData> recipes, {
   Map<String, String> methodNames = const {},
+  Map<String, String> methodNamesEn = const {},
+  Map<String, String> methodNamesIt = const {},
   Map<String, String> methodIcons = const {},
   Set<String> draftKeys = const {},
 }) {
@@ -199,6 +220,8 @@ List<RecipeGroup> groupRecipes(
         packId: versions.first.packId,
         method: method,
         methodName: methodName,
+        methodNameEn: methodNamesEn[method] ?? '',
+        methodNameIt: methodNamesIt[method] ?? '',
         methodIconKey: methodIcons[method] ?? method,
         versions: versions
             .map(
@@ -236,12 +259,15 @@ List<RecipeGroup> groupRecipes(
 /// Возвращает и название, и slug: по slug метка узнаёт семью прибора и
 /// красится в её цвет, а по названию подписывается.
 List<({String name, String slug})> methodsOfPack(
-    List<RecipeGroup> groups, int packId) {
+    List<RecipeGroup> groups, int packId,
+    {String language = 'ru'}) {
   final found = <({String name, String slug})>[];
   for (final group in groups) {
     if (group.packId != packId) continue;
-    if (found.any((item) => item.name == group.methodName)) continue;
-    found.add((name: group.methodName, slug: group.method));
+    // По slug, а не по названию: у двух приборов без справочника название
+    // — это их slug, и он же различает их надёжнее подписи.
+    if (found.any((item) => item.slug == group.method)) continue;
+    found.add((name: group.methodNameFor(language), slug: group.method));
   }
   return found;
 }
