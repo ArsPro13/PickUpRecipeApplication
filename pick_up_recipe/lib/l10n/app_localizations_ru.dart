@@ -1841,4 +1841,127 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get profileLanguageSystem => 'Как в системе';
+
+  @override
+  String get brewWaterSheetTitle => 'Сколько воды';
+
+  @override
+  String brewWaterSheetCaption(String water) {
+    return 'в рецепте $water';
+  }
+
+  @override
+  String get brewWaterAsInRecipe => 'Как в рецепте';
+
+  @override
+  String get brewWaterSameAsRecipe => 'как в рецепте';
+
+  @override
+  String get brewWaterChange => 'Изменить объём воды';
+
+  @override
+  String get brewScaleCoffee => 'кофе';
+
+  @override
+  String get brewScaleGrind => 'помол';
+
+  @override
+  String get brewScaleGrindSame => 'прежний';
+
+  @override
+  String brewScaleGrindCoarser(String percent) {
+    return 'крупнее на $percent %';
+  }
+
+  @override
+  String brewScaleGrindFiner(String percent) {
+    return 'мельче на $percent %';
+  }
+
+  @override
+  String brewScalePercent(String value) {
+    return '$value %';
+  }
+
+  @override
+  String get brewScaleTime => 'время';
+
+  @override
+  String get brewScaleInCup => 'в чашке ≈';
+
+  @override
+  String brewScaledTo(String water) {
+    return 'Пересчитано на $water';
+  }
+
+  @override
+  String brewScaledWas(String water) {
+    return 'было $water';
+  }
+
+  @override
+  String get brewScaleUndo => 'Вернуть';
+
+  @override
+  String get brewScaleSplitWait => 'Ждём, пока уйдёт';
+
+  @override
+  String brewScaleWarnDeepBed(String grams) {
+    return 'Больше $grams г за раз — слой глубже, чем советуют. Ровнее выйдет в два захода.';
+  }
+
+  @override
+  String brewScaleWarnTooDeep(String grams, String half) {
+    return 'Больше $grams г за раз — слой слишком глубокий. Лучше два захода по $half.';
+  }
+
+  @override
+  String brewScaleWarnSplit(String size, int parts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      parts,
+      locale: localeName,
+      other: '$parts части',
+      many: '$parts частей',
+      few: '$parts части',
+      one: '$parts часть',
+    );
+    return 'Не помещается в воронку $size: каждый пролив — в $_temp0.';
+  }
+
+  @override
+  String brewScaleWarnSplitAny(int parts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      parts,
+      locale: localeName,
+      other: '$parts части',
+      many: '$parts частей',
+      few: '$parts части',
+      one: '$parts часть',
+    );
+    return 'Не помещается за раз: каждый пролив — в $_temp0.';
+  }
+
+  @override
+  String brewScaleWarnSplitBigger(String size) {
+    return 'В воронку $size войдёт целиком.';
+  }
+
+  @override
+  String brewScaleWarnEdgeTemp(String grinder, String click, String drop) {
+    return '$grinder: шкала кончается на $click — вода на $drop °C холоднее.';
+  }
+
+  @override
+  String brewScaleWarnEdgePauses(String grinder, String click) {
+    return '$grinder: шкала кончается на $click — время добрали паузами.';
+  }
+
+  @override
+  String brewScaleWarnTooThin(String grams) {
+    return 'Меньше $grams г — слой слишком тонкий, вкус будет гулять.';
+  }
+
+  @override
+  String get brewScaleWarnOverCapacity =>
+      'Столько воды в прибор может не войти — лучше в два захода.';
 }

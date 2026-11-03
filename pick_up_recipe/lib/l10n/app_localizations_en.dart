@@ -1810,4 +1810,123 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileLanguageSystem => 'Match system';
+
+  @override
+  String get brewWaterSheetTitle => 'How much water';
+
+  @override
+  String brewWaterSheetCaption(String water) {
+    return 'recipe: $water';
+  }
+
+  @override
+  String get brewWaterAsInRecipe => 'As in the recipe';
+
+  @override
+  String get brewWaterSameAsRecipe => 'same as the recipe';
+
+  @override
+  String get brewWaterChange => 'Change the amount of water';
+
+  @override
+  String get brewScaleCoffee => 'coffee';
+
+  @override
+  String get brewScaleGrind => 'grind';
+
+  @override
+  String get brewScaleGrindSame => 'unchanged';
+
+  @override
+  String brewScaleGrindCoarser(String percent) {
+    return '$percent% coarser';
+  }
+
+  @override
+  String brewScaleGrindFiner(String percent) {
+    return '$percent% finer';
+  }
+
+  @override
+  String brewScalePercent(String value) {
+    return '$value%';
+  }
+
+  @override
+  String get brewScaleTime => 'time';
+
+  @override
+  String get brewScaleInCup => 'in the cup ≈';
+
+  @override
+  String brewScaledTo(String water) {
+    return 'Scaled to $water';
+  }
+
+  @override
+  String brewScaledWas(String water) {
+    return 'was $water';
+  }
+
+  @override
+  String get brewScaleUndo => 'Undo';
+
+  @override
+  String get brewScaleSplitWait => 'Let it drain';
+
+  @override
+  String brewScaleWarnDeepBed(String grams) {
+    return 'Over $grams g at once makes a deeper bed than recommended. Two batches brew more evenly.';
+  }
+
+  @override
+  String brewScaleWarnTooDeep(String grams, String half) {
+    return 'Over $grams g at once makes the bed too deep. Better brew twice, $half each.';
+  }
+
+  @override
+  String brewScaleWarnSplit(String size, int parts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      parts,
+      locale: localeName,
+      other: '$parts parts',
+      one: '$parts part',
+    );
+    return 'Doesn\'t fit the $size dripper: pour each step in $_temp0.';
+  }
+
+  @override
+  String brewScaleWarnSplitAny(int parts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      parts,
+      locale: localeName,
+      other: '$parts parts',
+      one: '$parts part',
+    );
+    return 'Doesn\'t fit at once: pour each step in $_temp0.';
+  }
+
+  @override
+  String brewScaleWarnSplitBigger(String size) {
+    return 'The $size dripper fits it whole.';
+  }
+
+  @override
+  String brewScaleWarnEdgeTemp(String grinder, String click, String drop) {
+    return '$grinder: the scale ends at $click, so the water is $drop °C cooler.';
+  }
+
+  @override
+  String brewScaleWarnEdgePauses(String grinder, String click) {
+    return '$grinder: the scale ends at $click, so the pauses make up the time.';
+  }
+
+  @override
+  String brewScaleWarnTooThin(String grams) {
+    return 'Under $grams g the bed is too thin and the taste will drift.';
+  }
+
+  @override
+  String get brewScaleWarnOverCapacity =>
+      'This much water may not fit the brewer — better brew twice.';
 }

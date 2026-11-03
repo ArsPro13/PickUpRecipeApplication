@@ -2883,5 +2883,220 @@
   "profileLanguageSystem": "Как в системе",
   "@profileLanguageSystem": {
     "description": "Вариант выбора языка: брать язык из настроек телефона. Умолчание — так приложение вело себя до появления выбора."
+  },
+
+  "brewWaterSheetTitle": "Сколько воды",
+  "@brewWaterSheetTitle": {
+    "description": "Шторка объёма воды на экране заваривания: заголовок над барабаном."
+  },
+
+  "brewWaterSheetCaption": "в рецепте {water}",
+  "@brewWaterSheetCaption": {
+    "description": "Шторка объёма воды: подпись справа от заголовка — сколько воды в самом рецепте. {water} — уже с единицей: «250 мл».",
+    "placeholders": {
+      "water": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewWaterAsInRecipe": "Как в рецепте",
+  "@brewWaterAsInRecipe": {
+    "description": "Шторка объёма воды: кнопка, которая возвращает барабан к воде рецепта."
+  },
+
+  "brewWaterSameAsRecipe": "как в рецепте",
+  "@brewWaterSameAsRecipe": {
+    "description": "Шторка объёма воды: сводка под барабаном, когда выбрана вода рецепта и пересчитывать нечего."
+  },
+
+  "brewWaterChange": "Изменить объём воды",
+  "@brewWaterChange": {
+    "description": "Экран заваривания: что делает нажатие на воду в строке параметров — для голосового помощника."
+  },
+
+  "brewScaleCoffee": "кофе",
+  "@brewScaleCoffee": {
+    "description": "Сводка пересчёта под барабаном: подпись перед дозой кофе («кофе 30 г»)."
+  },
+
+  "brewScaleGrind": "помол",
+  "@brewScaleGrind": {
+    "description": "Сводка пересчёта: подпись перед помолом («помол 64 клика»)."
+  },
+
+  "brewScaleGrindSame": "прежний",
+  "@brewScaleGrindSame": {
+    "description": "Сводка пересчёта: помол у настаивания (френч-пресс, Clever) не меняется — «помол прежний»."
+  },
+
+  "brewScaleGrindCoarser": "крупнее на {percent} %",
+  "@brewScaleGrindCoarser": {
+    "description": "Сводка пересчёта без выбранной кофемолки: насколько крупнее молоть. {percent} — целое число.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaleGrindFiner": "мельче на {percent} %",
+  "@brewScaleGrindFiner": {
+    "description": "Сводка пересчёта без выбранной кофемолки: насколько мельче молоть. {percent} — целое число.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScalePercent": "{value} %",
+  "@brewScalePercent": {
+    "description": "Сводка пересчёта: на сколько процентов изменился помол, в скобках после кликов. {value} — со знаком: «+9», «−4».",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaleTime": "время",
+  "@brewScaleTime": {
+    "description": "Сводка пересчёта: подпись перед общим временем заваривания («время 3:10»)."
+  },
+
+  "brewScaleInCup": "в чашке ≈",
+  "@brewScaleInCup": {
+    "description": "Сводка пересчёта: сколько напитка окажется в чашке — вода минус то, что удержит гуща."
+  },
+
+  "brewScaledTo": "Пересчитано на {water}",
+  "@brewScaledTo": {
+    "description": "Плашка над рамкой заваривания: рецепт пересчитан на другой объём воды. {water} — с единицей: «500 мл».",
+    "placeholders": {
+      "water": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaledWas": "было {water}",
+  "@brewScaledWas": {
+    "description": "Плашка пересчёта: сколько воды было в рецепте. {water} — число без единицы: «250».",
+    "placeholders": {
+      "water": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaleUndo": "Вернуть",
+  "@brewScaleUndo": {
+    "description": "Плашка пересчёта: кнопка, которая возвращает рецепт к исходной воде."
+  },
+
+  "brewScaleSplitWait": "Ждём, пока уйдёт",
+  "@brewScaleSplitWait": {
+    "description": "Шаг, который добавляет пересчёт между частями пролива, когда вода не помещается в воронку за раз."
+  },
+
+  "brewScaleWarnDeepBed": "Больше {grams} г за раз — слой глубже, чем советуют. Ровнее выйдет в два захода.",
+  "@brewScaleWarnDeepBed": {
+    "description": "Предупреждение пересчёта: доза больше, чем советуют практики для этой воронки.",
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaleWarnTooDeep": "Больше {grams} г за раз — слой слишком глубокий. Лучше два захода по {half}.",
+  "@brewScaleWarnTooDeep": {
+    "description": "Предупреждение пересчёта: доза такая, что честнее сварить в два захода. {half} — вода на один заход, с единицей.",
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      },
+      "half": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaleWarnSplit": "Не помещается в воронку {size}: каждый пролив — в {parts, plural, one{{parts} часть} few{{parts} части} many{{parts} частей} other{{parts} части}}.",
+  "@brewScaleWarnSplit": {
+    "description": "Предупреждение пересчёта: пролив не помещается над слоем кофе и идёт частями. {size} — размер воронки: «02», «185».",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "parts": {
+        "type": "int"
+      }
+    }
+  },
+
+  "brewScaleWarnSplitAny": "Не помещается за раз: каждый пролив — в {parts, plural, one{{parts} часть} few{{parts} части} many{{parts} частей} other{{parts} части}}.",
+  "@brewScaleWarnSplitAny": {
+    "description": "То же, что «Не помещается в воронку», у прибора без размеров.",
+    "placeholders": {
+      "parts": {
+        "type": "int"
+      }
+    }
+  },
+
+  "brewScaleWarnSplitBigger": "В воронку {size} войдёт целиком.",
+  "@brewScaleWarnSplitBigger": {
+    "description": "Продолжение предупреждения о проливе частями: размер, в который вода войдёт за раз.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaleWarnEdgeTemp": "{grinder}: шкала кончается на {click} — вода на {drop} °C холоднее.",
+  "@brewScaleWarnEdgeTemp": {
+    "description": "Предупреждение пересчёта: молоть надо крупнее, чем позволяет кофемолка, и остаток снят температурой воды.",
+    "placeholders": {
+      "grinder": {
+        "type": "String"
+      },
+      "click": {
+        "type": "String"
+      },
+      "drop": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaleWarnEdgePauses": "{grinder}: шкала кончается на {click} — время добрали паузами.",
+  "@brewScaleWarnEdgePauses": {
+    "description": "Предупреждение пересчёта: помол упёрся в край шкалы кофемолки, остаток снят длиной пауз.",
+    "placeholders": {
+      "grinder": {
+        "type": "String"
+      },
+      "click": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaleWarnTooThin": "Меньше {grams} г — слой слишком тонкий, вкус будет гулять.",
+  "@brewScaleWarnTooThin": {
+    "description": "Предупреждение пересчёта: кофе так мало, что слой не держит вкус.",
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+
+  "brewScaleWarnOverCapacity": "Столько воды в прибор может не войти — лучше в два захода.",
+  "@brewScaleWarnOverCapacity": {
+    "description": "Предупреждение пересчёта у френч-пресса и Clever: вода с кофе больше объёма прибора."
   }
 }
