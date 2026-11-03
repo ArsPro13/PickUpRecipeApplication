@@ -66,7 +66,8 @@ final flavorPaletteProvider = FutureProvider<FlavorPalette>((ref) async {
 /// показывать крутилку ради цвета — хуже, чем показать встроенный цвет,
 /// который в девяти случаях из десяти и есть правильный.
 final paletteNowProvider = Provider<FlavorPalette>((ref) {
-  return ref.watch(flavorPaletteProvider).valueOrNull ?? FlavorPalette.builtIn();
+  return ref.watch(flavorPaletteProvider).valueOrNull ??
+      FlavorPalette.builtIn();
 });
 
 /// Подсказки для поля ввода. Вид — `country`, `region`, `processing`,

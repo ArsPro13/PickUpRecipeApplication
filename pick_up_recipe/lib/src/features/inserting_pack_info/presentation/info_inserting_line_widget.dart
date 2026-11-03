@@ -164,7 +164,8 @@ class _TextInputWithHintsState extends State<TextInputWithHints> {
             children: [
               for (final hint in _matches)
                 if (widget.colored)
-                  DescriptorChip(word: hint, dense: true, onTap: () => _pick(hint))
+                  DescriptorChip(
+                      word: hint, dense: true, onTap: () => _pick(hint))
                 else
                   AppChip(label: hint, onTap: () => _pick(hint)),
             ],

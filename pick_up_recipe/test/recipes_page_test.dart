@@ -444,8 +444,8 @@ void main() {
         return dots;
       }
 
-      expect(borderDots(rect.topLeft, const Offset(1, 1)),
-          greaterThanOrEqualTo(2),
+      expect(
+          borderDots(rect.topLeft, const Offset(1, 1)), greaterThanOrEqualTo(2),
           reason: 'левый верхний угол: рамку накрыло фото');
       expect(borderDots(rect.bottomLeft, const Offset(1, -1)),
           greaterThanOrEqualTo(2),

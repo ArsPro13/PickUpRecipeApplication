@@ -28,7 +28,9 @@ class ReferenceService {
     if (response.statusCode != 200) {
       throw Exception('Не удалось получить палитру: ${response.statusCode}');
     }
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ?? const [];
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ??
+            const [];
     return data
         .map((item) => FlavorCategory.fromJson(item as Map<String, dynamic>))
         .toList();
@@ -46,7 +48,8 @@ class ReferenceService {
       cacheKey: 'flavor_descriptors',
     );
     if (response.statusCode != 200) {
-      throw Exception('Не удалось получить дескрипторы: ${response.statusCode}');
+      throw Exception(
+          'Не удалось получить дескрипторы: ${response.statusCode}');
     }
 
     final decoded = jsonDecode(utf8.decode(response.bodyBytes));
@@ -68,9 +71,12 @@ class ReferenceService {
       cacheKey: 'reference_terms_$kind',
     );
     if (response.statusCode != 200) {
-      throw Exception('Не удалось получить подсказки $kind: ${response.statusCode}');
+      throw Exception(
+          'Не удалось получить подсказки $kind: ${response.statusCode}');
     }
-    final data = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ?? const [];
+    final data =
+        jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>? ??
+            const [];
     return data
         .map((item) => ReferenceTerm.fromJson(item as Map<String, dynamic>))
         .toList();

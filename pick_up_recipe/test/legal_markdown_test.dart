@@ -42,7 +42,8 @@ void main() {
   test('заголовки разных уровней', () {
     final headings = blocks.whereType<LegalHeading>().toList();
     expect(headings.map((h) => h.level), [1, 2]);
-    expect(headings.first.text, 'Политика в отношении обработки персональных данных');
+    expect(headings.first.text,
+        'Политика в отношении обработки персональных данных');
   });
 
   test('два пробела в конце строки — перенос, обычный перенос — пробел', () {
@@ -54,7 +55,11 @@ void main() {
   });
 
   test('«1.1. Текст» — абзац, а не список', () {
-    expect(blocks.whereType<LegalParagraph>().any((p) => p.text.startsWith('1.1.')), isTrue);
+    expect(
+        blocks
+            .whereType<LegalParagraph>()
+            .any((p) => p.text.startsWith('1.1.')),
+        isTrue);
   });
 
   test('черта', () {
@@ -87,8 +92,10 @@ void main() {
   });
 
   test('строчная разметка: жирный и ссылка — без звёздочек и скобок', () {
-    final spans = parseLegalInline('хранится **только в виде хеша**, см. [Политику](https://x/legal/privacy).');
-    expect(spans.map((s) => s.text).join(), 'хранится только в виде хеша, см. Политику.');
+    final spans = parseLegalInline(
+        'хранится **только в виде хеша**, см. [Политику](https://x/legal/privacy).');
+    expect(spans.map((s) => s.text).join(),
+        'хранится только в виде хеша, см. Политику.');
     expect(spans.where((s) => s.bold).single.text, 'только в виде хеша');
     expect(spans.where((s) => s.link).single.text, 'Политику');
   });

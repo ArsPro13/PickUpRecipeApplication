@@ -65,7 +65,8 @@ class LegalMarkdownView extends StatelessWidget {
                         width: AppSpacing.s6,
                         child: Text(ordered ? '${i + 1}.' : '•', style: body),
                       ),
-                      Expanded(child: Text.rich(_spans(context, items[i], body))),
+                      Expanded(
+                          child: Text.rich(_spans(context, items[i], body))),
                     ],
                   ),
                 ),
@@ -103,7 +104,9 @@ class LegalMarkdownView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text.rich(_spans(context, row.first, strong)),
-                  for (var c = 1; c < row.length && c < table.header.length; c++)
+                  for (var c = 1;
+                      c < row.length && c < table.header.length;
+                      c++)
                     Padding(
                       padding: const EdgeInsets.only(top: AppSpacing.s1),
                       child: Text.rich(TextSpan(style: body, children: [

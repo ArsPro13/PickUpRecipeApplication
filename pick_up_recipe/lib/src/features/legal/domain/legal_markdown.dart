@@ -94,7 +94,8 @@ List<LegalBlock> parseLegalMarkdown(String source) {
 
     final heading = _heading.firstMatch(line);
     if (heading != null) {
-      blocks.add(LegalHeading(heading.group(1)!.length, heading.group(2)!.trim()));
+      blocks.add(
+          LegalHeading(heading.group(1)!.length, heading.group(2)!.trim()));
       index++;
       continue;
     }
@@ -149,7 +150,8 @@ String _joinParagraph(List<String> lines) {
   final buffer = StringBuffer();
   for (var i = 0; i < lines.length; i++) {
     buffer.write(lines[i].trim());
-    if (i < lines.length - 1) buffer.write(lines[i].endsWith('  ') ? '\n' : ' ');
+    if (i < lines.length - 1)
+      buffer.write(lines[i].endsWith('  ') ? '\n' : ' ');
   }
   return buffer.toString();
 }
@@ -189,7 +191,8 @@ List<LegalSpan> parseLegalInline(String text) {
   var last = 0;
 
   for (final match in _inline.allMatches(text)) {
-    if (match.start > last) spans.add(LegalSpan(text.substring(last, match.start)));
+    if (match.start > last)
+      spans.add(LegalSpan(text.substring(last, match.start)));
     if (match.group(1) != null) {
       spans.add(LegalSpan(match.group(1)!, bold: true));
     } else if (match.group(2) != null) {

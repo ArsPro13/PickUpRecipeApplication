@@ -61,7 +61,8 @@ class ScanPage extends StatelessWidget {
           AppButton(
             label: texts.scanNoCode,
             icon: AppIcons.uiCamera,
-            onPressed: () => context.router.push(const RecognitionCameraRoute()),
+            onPressed: () =>
+                context.router.push(const RecognitionCameraRoute()),
           ),
         ],
       ),

@@ -261,8 +261,8 @@ void main() {
     testWidgets('выбранную видно сверху, и повторное касание ничего не пишет',
         (tester) async {
       final chosen = catalog.firstWhere((g) => g.id == 11);
-      final pumped = await pumpGrinders(tester, 'en',
-          withService: ChosenService(chosen));
+      final pumped =
+          await pumpGrinders(tester, 'en', withService: ChosenService(chosen));
 
       // Верхний блок отвечает на вопрос «а какая сейчас» до всякого поиска.
       expect(find.text(en.grinderCurrent), findsOneWidget);

@@ -59,7 +59,6 @@ class _InsertingPackInfoWidgetState
     _seedFields(ref.read(formNotifierProvider));
   }
 
-
   /// Заполнить поля тем, что пришло в состояние извне, — например, разобранным
   /// с фотографии пачки, когда распознавание вернут.
   ///

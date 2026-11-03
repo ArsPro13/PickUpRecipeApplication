@@ -18,8 +18,7 @@ class ReferenceTerm {
 
   /// Имя на языке интерфейса. Пустой перевод — не ошибка: словарь наполняют
   /// руками, и английского может не быть; тогда показывается русское.
-  String label(bool english) =>
-      english && nameEn.isNotEmpty ? nameEn : name;
+  String label(bool english) => english && nameEn.isNotEmpty ? nameEn : name;
 
   factory ReferenceTerm.fromJson(Map<String, dynamic> json) => ReferenceTerm(
         slug: json['slug'] as String? ?? '',

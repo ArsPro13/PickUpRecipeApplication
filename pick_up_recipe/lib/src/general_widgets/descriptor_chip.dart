@@ -88,7 +88,8 @@ class DescriptorChip extends ConsumerWidget {
 
     final label = Text(
       word,
-      style: (dense ? context.texts.labelSmall : context.texts.bodySmall)?.copyWith(
+      style: (dense ? context.texts.labelSmall : context.texts.bodySmall)
+          ?.copyWith(
         color: text,
         fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
       ),

@@ -133,7 +133,8 @@ void main() {
       expect(router.pushed.single.routeName, RecognitionCameraRoute.name);
     });
 
-    testWidgets('подписи «Код мелкий» больше нет — под кадром сказано, '
+    testWidgets(
+        'подписи «Код мелкий» больше нет — под кадром сказано, '
         'что даст скан', (tester) async {
       await pumpScan(tester);
 

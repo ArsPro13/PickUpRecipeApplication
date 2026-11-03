@@ -85,46 +85,118 @@ class FlavorCategory {
 /// светлой теме, `0.84` и `0.27` в тёмной. Тег не может быть громче соседа
 /// из-за тона — различие идёт по тону и цветности.
 const Map<String, FlavorCategory> _builtIn = {
-  'berry': FlavorCategory(slug: 'berry', name: 'Ягоды', nameEn: 'Berry',
-      inkLight: Color(0xFF753F52), fillLight: Color(0xFFFBDBE4),
-      inkDark: Color(0xFFF7B5CA), fillDark: Color(0xFF361E26), sortOrder: 1),
-  'spice': FlavorCategory(slug: 'spice', name: 'Специи', nameEn: 'Spices',
-      inkLight: Color(0xFF6E4644), fillLight: Color(0xFFF6DEDC),
-      inkDark: Color(0xFFEDBDB9), fillDark: Color(0xFF322220), sortOrder: 2),
-  'fruit': FlavorCategory(slug: 'fruit', name: 'Фрукты', nameEn: 'Fruit',
-      inkLight: Color(0xFF77432B), fillLight: Color(0xFFFCDDD0),
-      inkDark: Color(0xFFF8BBA0), fillDark: Color(0xFF362017), sortOrder: 3),
-  'nutty': FlavorCategory(slug: 'nutty', name: 'Орехи и какао', nameEn: 'Nutty & cocoa',
-      inkLight: Color(0xFF674C38), fillLight: Color(0xFFF0E1D7),
-      inkDark: Color(0xFFE3C4AC), fillDark: Color(0xFF2F241C), sortOrder: 4),
-  'sugars': FlavorCategory(slug: 'sugars', name: 'Сахара', nameEn: 'Sugars',
-      inkLight: Color(0xFF6A4C25), fillLight: Color(0xFFF2E2CF),
-      inkDark: Color(0xFFE7C49A), fillDark: Color(0xFF302416), sortOrder: 5),
-  'roast': FlavorCategory(slug: 'roast', name: 'Обжарка', nameEn: 'Roast',
-      inkLight: Color(0xFF575247), fillLight: Color(0xFFE7E4DF),
-      inkDark: Color(0xFFCFCABE), fillDark: Color(0xFF282622), sortOrder: 6),
-  'citrus': FlavorCategory(slug: 'citrus', name: 'Цитрус', nameEn: 'Citrus',
-      inkLight: Color(0xFF54571C), fillLight: Color(0xFFE5E8CB),
-      inkDark: Color(0xFFCBD094), fillDark: Color(0xFF272812), sortOrder: 7),
-  'green': FlavorCategory(slug: 'green', name: 'Зелёное', nameEn: 'Green',
-      inkLight: Color(0xFF2E5F3A), fillLight: Color(0xFFD4ECD8),
-      inkDark: Color(0xFFA6DAAF), fillDark: Color(0xFF182C1C), sortOrder: 8),
-  'fermented': FlavorCategory(slug: 'fermented', name: 'Ферментированное', nameEn: 'Fermented',
-      inkLight: Color(0xFF514B7C), fillLight: Color(0xFFE3E1FD),
-      inkDark: Color(0xFFC7C3FC), fillDark: Color(0xFF252338), sortOrder: 9),
-  'floral': FlavorCategory(slug: 'floral', name: 'Цветочное', nameEn: 'Floral',
-      inkLight: Color(0xFF67436D), fillLight: Color(0xFFF1DDF4),
-      inkDark: Color(0xFFE4BAEA), fillDark: Color(0xFF2F2031), sortOrder: 10),
+  'berry': FlavorCategory(
+      slug: 'berry',
+      name: 'Ягоды',
+      nameEn: 'Berry',
+      inkLight: Color(0xFF753F52),
+      fillLight: Color(0xFFFBDBE4),
+      inkDark: Color(0xFFF7B5CA),
+      fillDark: Color(0xFF361E26),
+      sortOrder: 1),
+  'spice': FlavorCategory(
+      slug: 'spice',
+      name: 'Специи',
+      nameEn: 'Spices',
+      inkLight: Color(0xFF6E4644),
+      fillLight: Color(0xFFF6DEDC),
+      inkDark: Color(0xFFEDBDB9),
+      fillDark: Color(0xFF322220),
+      sortOrder: 2),
+  'fruit': FlavorCategory(
+      slug: 'fruit',
+      name: 'Фрукты',
+      nameEn: 'Fruit',
+      inkLight: Color(0xFF77432B),
+      fillLight: Color(0xFFFCDDD0),
+      inkDark: Color(0xFFF8BBA0),
+      fillDark: Color(0xFF362017),
+      sortOrder: 3),
+  'nutty': FlavorCategory(
+      slug: 'nutty',
+      name: 'Орехи и какао',
+      nameEn: 'Nutty & cocoa',
+      inkLight: Color(0xFF674C38),
+      fillLight: Color(0xFFF0E1D7),
+      inkDark: Color(0xFFE3C4AC),
+      fillDark: Color(0xFF2F241C),
+      sortOrder: 4),
+  'sugars': FlavorCategory(
+      slug: 'sugars',
+      name: 'Сахара',
+      nameEn: 'Sugars',
+      inkLight: Color(0xFF6A4C25),
+      fillLight: Color(0xFFF2E2CF),
+      inkDark: Color(0xFFE7C49A),
+      fillDark: Color(0xFF302416),
+      sortOrder: 5),
+  'roast': FlavorCategory(
+      slug: 'roast',
+      name: 'Обжарка',
+      nameEn: 'Roast',
+      inkLight: Color(0xFF575247),
+      fillLight: Color(0xFFE7E4DF),
+      inkDark: Color(0xFFCFCABE),
+      fillDark: Color(0xFF282622),
+      sortOrder: 6),
+  'citrus': FlavorCategory(
+      slug: 'citrus',
+      name: 'Цитрус',
+      nameEn: 'Citrus',
+      inkLight: Color(0xFF54571C),
+      fillLight: Color(0xFFE5E8CB),
+      inkDark: Color(0xFFCBD094),
+      fillDark: Color(0xFF272812),
+      sortOrder: 7),
+  'green': FlavorCategory(
+      slug: 'green',
+      name: 'Зелёное',
+      nameEn: 'Green',
+      inkLight: Color(0xFF2E5F3A),
+      fillLight: Color(0xFFD4ECD8),
+      inkDark: Color(0xFFA6DAAF),
+      fillDark: Color(0xFF182C1C),
+      sortOrder: 8),
+  'fermented': FlavorCategory(
+      slug: 'fermented',
+      name: 'Ферментированное',
+      nameEn: 'Fermented',
+      inkLight: Color(0xFF514B7C),
+      fillLight: Color(0xFFE3E1FD),
+      inkDark: Color(0xFFC7C3FC),
+      fillDark: Color(0xFF252338),
+      sortOrder: 9),
+  'floral': FlavorCategory(
+      slug: 'floral',
+      name: 'Цветочное',
+      nameEn: 'Floral',
+      inkLight: Color(0xFF67436D),
+      fillLight: Color(0xFFF1DDF4),
+      inkDark: Color(0xFFE4BAEA),
+      fillDark: Color(0xFF2F2031),
+      sortOrder: 10),
   // Тактильность на колесе не живёт: это не вкус, а ощущение. Свой серый
   // нужен, чтобы «вяжущее» не притворялось ягодой.
-  'mouthfeel': FlavorCategory(slug: 'mouthfeel', name: 'Тактильность', nameEn: 'Mouthfeel',
-      inkLight: Color(0xFF4C5560), fillLight: Color(0xFFE3E6EA),
-      inkDark: Color(0xFFB8C0C8), fillDark: Color(0xFF242A30), sortOrder: 11),
+  'mouthfeel': FlavorCategory(
+      slug: 'mouthfeel',
+      name: 'Тактильность',
+      nameEn: 'Mouthfeel',
+      inkLight: Color(0xFF4C5560),
+      fillLight: Color(0xFFE3E6EA),
+      inkDark: Color(0xFFB8C0C8),
+      fillDark: Color(0xFF242A30),
+      sortOrder: 11),
   // Неизвестное слово — нейтральный тег. Случайный цвет запрещён: цвет здесь
   // утверждение о смысле, а для незнакомого слова такого утверждения нет.
-  'other': FlavorCategory(slug: 'other', name: 'Прочее', nameEn: 'Other',
-      inkLight: Color(0xFF525252), fillLight: Color(0xFFE4E4E4),
-      inkDark: Color(0xFFCACACA), fillDark: Color(0xFF262626), sortOrder: 12),
+  'other': FlavorCategory(
+      slug: 'other',
+      name: 'Прочее',
+      nameEn: 'Other',
+      inkLight: Color(0xFF525252),
+      fillLight: Color(0xFFE4E4E4),
+      inkDark: Color(0xFFCACACA),
+      fillDark: Color(0xFF262626),
+      sortOrder: 12),
 };
 
 /// Цвета одного тега: чем красить текст с обводкой и чем — подложку.
@@ -249,5 +321,7 @@ Color _withChroma(Color base, int intensity) {
   final factor = factors[intensity] ?? 1.0;
   if (factor == 1.0) return base;
   final hsl = HSLColor.fromColor(base);
-  return hsl.withSaturation((hsl.saturation * factor).clamp(0.0, 1.0)).toColor();
+  return hsl
+      .withSaturation((hsl.saturation * factor).clamp(0.0, 1.0))
+      .toColor();
 }
