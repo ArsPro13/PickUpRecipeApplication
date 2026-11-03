@@ -1,0 +1,66 @@
+// Эталоны пересчёта, снятые с движка витрины
+// design/mockups/variants/water-scale.html (функция scaleTo) — того самого,
+// по которому владелец выбирал интерфейс. Рецепт — «Бразилия Можиана» на V60:
+// 15 г, 250 мл, 92 °C, шаги 45/30 · 105/35 · пауза 10 · 100/35 · 50.
+//
+// Строка: «вода кофемолка размер | доза, деление, температура, итог, в чашке,
+// на сколько частей делится пролив | шаги вид:вода/секунды», «wait+» — пауза
+// между частями пролива, которой в рецепте не было.
+//
+// Пересобрать: открыть витрину в браузере, вызвать scaleTo(w, g, s) для тех
+// же w × g × s и записать так же. Числа здесь руками не правят.
+
+const List<String> showcaseGolden = [
+  '120 c40 02 | dose 7.2 grind 24 temp 92 total 110 cup 106 split 0 | bloom:22/20 pour:50/15 wait:0/5 pour:48/15 wait:0/55',
+  '120 c40 03 | dose 7.2 grind 24 temp 92 total 110 cup 106 split 0 | bloom:22/20 pour:50/15 wait:0/5 pour:48/15 wait:0/55',
+  '120 jx 02 | dose 7.2 grind 53 temp 92 total 115 cup 106 split 0 | bloom:22/20 pour:50/15 wait:0/10 pour:48/15 wait:0/55',
+  '120 jx 03 | dose 7.2 grind 53 temp 92 total 115 cup 106 split 0 | bloom:22/20 pour:50/15 wait:0/10 pour:48/15 wait:0/55',
+  '150 c40 02 | dose 9 grind 25 temp 92 total 125 cup 132 split 0 | bloom:27/20 pour:63/20 wait:0/10 pour:60/20 wait:0/55',
+  '150 c40 03 | dose 9 grind 25 temp 92 total 125 cup 132 split 0 | bloom:27/20 pour:63/20 wait:0/10 pour:60/20 wait:0/55',
+  '150 jx 02 | dose 9 grind 56 temp 92 total 120 cup 132 split 0 | bloom:27/20 pour:63/20 wait:0/10 pour:60/20 wait:0/50',
+  '150 jx 03 | dose 9 grind 56 temp 92 total 120 cup 132 split 0 | bloom:27/20 pour:63/20 wait:0/10 pour:60/20 wait:0/50',
+  '200 c40 02 | dose 12 grind 26 temp 92 total 145 cup 176 split 0 | bloom:36/25 pour:84/30 wait:0/10 pour:80/30 wait:0/50',
+  '200 c40 03 | dose 12 grind 26 temp 92 total 145 cup 176 split 0 | bloom:36/25 pour:84/30 wait:0/10 pour:80/30 wait:0/50',
+  '200 jx 02 | dose 12 grind 58 temp 92 total 145 cup 176 split 0 | bloom:36/25 pour:84/30 wait:0/10 pour:80/30 wait:0/50',
+  '200 jx 03 | dose 12 grind 58 temp 92 total 145 cup 176 split 0 | bloom:36/25 pour:84/30 wait:0/10 pour:80/30 wait:0/50',
+  '250 c40 02 | dose 15 grind 27 temp 92 total 160 cup 220 split 0 | bloom:45/30 pour:105/35 wait:0/10 pour:100/35 wait:0/50',
+  '250 c40 03 | dose 15 grind 27 temp 92 total 160 cup 220 split 0 | bloom:45/30 pour:105/35 wait:0/10 pour:100/35 wait:0/50',
+  '250 jx 02 | dose 15 grind 60 temp 92 total 160 cup 220 split 0 | bloom:45/30 pour:105/35 wait:0/10 pour:100/35 wait:0/50',
+  '250 jx 03 | dose 15 grind 60 temp 92 total 160 cup 220 split 0 | bloom:45/30 pour:105/35 wait:0/10 pour:100/35 wait:0/50',
+  '300 c40 02 | dose 18 grind 28 temp 92 total 160 cup 264 split 0 | bloom:54/30 pour:126/35 wait:0/10 pour:120/35 wait:0/50',
+  '300 c40 03 | dose 18 grind 28 temp 92 total 160 cup 264 split 0 | bloom:54/30 pour:126/35 wait:0/10 pour:120/35 wait:0/50',
+  '300 jx 02 | dose 18 grind 61 temp 92 total 160 cup 264 split 0 | bloom:54/30 pour:126/35 wait:0/10 pour:120/35 wait:0/50',
+  '300 jx 03 | dose 18 grind 61 temp 92 total 160 cup 264 split 0 | bloom:54/30 pour:126/35 wait:0/10 pour:120/35 wait:0/50',
+  '375 c40 02 | dose 22.5 grind 29 temp 92 total 175 cup 330 split 0 | bloom:68/35 pour:158/40 wait:0/10 pour:149/40 wait:0/50',
+  '375 c40 03 | dose 22.5 grind 29 temp 92 total 175 cup 330 split 0 | bloom:68/35 pour:158/40 wait:0/10 pour:149/40 wait:0/50',
+  '375 jx 02 | dose 22.5 grind 62 temp 92 total 175 cup 330 split 0 | bloom:68/35 pour:158/40 wait:0/10 pour:149/40 wait:0/50',
+  '375 jx 03 | dose 22.5 grind 62 temp 92 total 175 cup 330 split 0 | bloom:68/35 pour:158/40 wait:0/10 pour:149/40 wait:0/50',
+  '400 c40 02 | dose 24 grind 30 temp 92 total 180 cup 352 split 0 | bloom:72/35 pour:168/40 wait:0/15 pour:160/40 wait:0/50',
+  '400 c40 03 | dose 24 grind 30 temp 92 total 180 cup 352 split 0 | bloom:72/35 pour:168/40 wait:0/15 pour:160/40 wait:0/50',
+  '400 jx 02 | dose 24 grind 62 temp 92 total 175 cup 352 split 0 | bloom:72/35 pour:168/40 wait:0/10 pour:160/40 wait:0/50',
+  '400 jx 03 | dose 24 grind 62 temp 92 total 175 cup 352 split 0 | bloom:72/35 pour:168/40 wait:0/10 pour:160/40 wait:0/50',
+  '500 c40 02 | dose 30 grind 31 temp 92 total 190 cup 440 split 0 | bloom:90/40 pour:210/45 wait:0/10 pour:200/45 wait:0/50',
+  '500 c40 03 | dose 30 grind 31 temp 92 total 190 cup 440 split 0 | bloom:90/40 pour:210/45 wait:0/10 pour:200/45 wait:0/50',
+  '500 jx 02 | dose 30 grind 64 temp 92 total 190 cup 440 split 0 | bloom:90/40 pour:210/45 wait:0/10 pour:200/45 wait:0/50',
+  '500 jx 03 | dose 30 grind 64 temp 92 total 190 cup 440 split 0 | bloom:90/40 pour:210/45 wait:0/10 pour:200/45 wait:0/50',
+  '600 c40 02 | dose 36 grind 31 temp 89 total 230 cup 528 split 2 | bloom:108/45 pour:126/25 wait+:0/25 pour:126/25 wait:0/5 pour:240/50 wait:0/55',
+  '600 c40 03 | dose 36 grind 31 temp 91 total 205 cup 528 split 0 | bloom:108/45 pour:252/50 wait:0/5 pour:240/50 wait:0/55',
+  '600 jx 02 | dose 36 grind 65 temp 92 total 230 cup 528 split 2 | bloom:108/45 pour:126/25 wait+:0/25 pour:126/25 wait:0/5 pour:240/50 wait:0/55',
+  '600 jx 03 | dose 36 grind 65 temp 92 total 210 cup 528 split 0 | bloom:108/45 pour:252/50 wait:0/10 pour:240/50 wait:0/55',
+  '625 c40 02 | dose 37.5 grind 31 temp 89 total 255 cup 550 split 2 | bloom:113/45 pour:131/25 wait+:0/25 pour:131/25 wait:0/5 pour:125/25 wait+:0/25 pour:125/25 wait:0/55',
+  '625 c40 03 | dose 37.5 grind 31 temp 90 total 205 cup 550 split 0 | bloom:113/45 pour:263/50 wait:0/5 pour:249/50 wait:0/55',
+  '625 jx 02 | dose 37.5 grind 67 temp 92 total 225 cup 550 split 2 | bloom:113/45 pour:131/25 wait+:0/20 pour:131/25 wait:0/10 pour:250/50 wait:0/50',
+  '625 jx 03 | dose 37.5 grind 65 temp 92 total 210 cup 550 split 0 | bloom:113/45 pour:263/50 wait:0/10 pour:249/50 wait:0/55',
+  '750 c40 02 | dose 45 grind 31 temp 89 total 265 cup 660 split 2 | bloom:135/50 pour:158/25 wait+:0/25 pour:158/25 wait:0/5 pour:150/25 wait+:0/25 pour:149/25 wait:0/60',
+  '750 c40 03 | dose 45 grind 31 temp 89 total 215 cup 660 split 0 | bloom:135/50 pour:315/50 wait:0/5 pour:300/50 wait:0/60',
+  '750 jx 02 | dose 45 grind 69 temp 92 total 245 cup 660 split 2 | bloom:135/50 pour:158/25 wait+:0/20 pour:158/25 wait:0/10 pour:150/25 wait+:0/15 pour:149/25 wait:0/50',
+  '750 jx 03 | dose 45 grind 67 temp 92 total 215 cup 660 split 0 | bloom:135/50 pour:315/50 wait:0/10 pour:300/50 wait:0/55',
+  '800 c40 02 | dose 48 grind 31 temp 89 total 265 cup 704 split 2 | bloom:144/50 pour:168/25 wait+:0/25 pour:168/25 wait:0/5 pour:160/25 wait+:0/25 pour:160/25 wait:0/60',
+  '800 c40 03 | dose 48 grind 31 temp 89 total 225 cup 704 split 0 | bloom:144/50 pour:336/55 wait:0/5 pour:320/55 wait:0/60',
+  '800 jx 02 | dose 48 grind 69 temp 92 total 245 cup 704 split 2 | bloom:144/50 pour:168/25 wait+:0/20 pour:168/25 wait:0/10 pour:160/25 wait+:0/15 pour:160/25 wait:0/50',
+  '800 jx 03 | dose 48 grind 67 temp 92 total 225 cup 704 split 0 | bloom:144/50 pour:336/55 wait:0/10 pour:320/55 wait:0/55',
+  '1000 c40 02 | dose 60 grind 31 temp 89 total 315 cup 880 split 3 | bloom:180/55 pour:140/20 wait+:0/20 pour:140/20 wait+:0/20 pour:140/20 wait:0/5 pour:133/20 wait+:0/15 pour:133/20 wait+:0/15 pour:134/20 wait:0/65',
+  '1000 c40 03 | dose 60 grind 31 temp 89 total 235 cup 880 split 0 | bloom:180/55 pour:420/55 wait:0/5 pour:400/55 wait:0/65',
+  '1000 jx 02 | dose 60 grind 71 temp 92 total 275 cup 880 split 3 | bloom:180/55 pour:140/20 wait+:0/10 pour:140/20 wait+:0/10 pour:140/20 wait:0/10 pour:133/20 wait+:0/10 pour:133/20 wait+:0/10 pour:134/20 wait:0/50',
+  '1000 jx 03 | dose 60 grind 68 temp 92 total 230 cup 880 split 0 | bloom:180/55 pour:420/55 wait:0/10 pour:400/55 wait:0/55',
+];

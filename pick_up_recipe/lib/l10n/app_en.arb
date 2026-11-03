@@ -1036,5 +1036,57 @@
 
   "profileLanguage": "Language",
 
-  "profileLanguageSystem": "Match system"
+  "profileLanguageSystem": "Match system",
+
+  "brewWaterSheetTitle": "How much water",
+
+  "brewWaterSheetCaption": "recipe: {water}",
+
+  "brewWaterAsInRecipe": "As in the recipe",
+
+  "brewWaterSameAsRecipe": "same as the recipe",
+
+  "brewWaterChange": "Change the amount of water",
+
+  "brewScaleCoffee": "coffee",
+
+  "brewScaleGrind": "grind",
+
+  "brewScaleGrindSame": "unchanged",
+
+  "brewScaleGrindCoarser": "{percent}% coarser",
+
+  "brewScaleGrindFiner": "{percent}% finer",
+
+  "brewScalePercent": "{value}%",
+
+  "brewScaleTime": "time",
+
+  "brewScaleInCup": "in the cup ≈",
+
+  "brewScaledTo": "Scaled to {water}",
+
+  "brewScaledWas": "was {water}",
+
+  "brewScaleUndo": "Undo",
+
+  "brewScaleSplitWait": "Let it drain",
+
+  "brewScaleWarnDeepBed": "Over {grams} g at once makes a deeper bed than recommended. Two batches brew more evenly.",
+
+  "brewScaleWarnTooDeep": "Over {grams} g at once makes the bed too deep. Better brew twice, {half} each.",
+
+  "brewScaleWarnSplit": "Doesn't fit the {size} dripper: pour each step in {parts, plural, one{{parts} part} other{{parts} parts}}.",
+
+  "brewScaleWarnSplitAny": "Doesn't fit at once: pour each step in {parts, plural, one{{parts} part} other{{parts} parts}}.",
+
+  "brewScaleWarnSplitBigger": "The {size} dripper fits it whole.",
+
+  "brewScaleWarnEdgeTemp": "{grinder}: the scale ends at {click}, so the water is {drop} °C cooler.",
+
+  "brewScaleWarnEdgePauses": "{grinder}: the scale ends at {click}, so the pauses make up the time.",
+
+  "brewScaleWarnTooThin": "Under {grams} g the bed is too thin and the taste will drift.",
+
+  "brewScaleWarnOverCapacity": "This much water may not fit the brewer — better brew twice."
 }

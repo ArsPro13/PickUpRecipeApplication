@@ -387,6 +387,8 @@ class WheelSheetBody extends StatelessWidget {
     required this.onDone,
     this.caption,
     this.footer,
+    this.secondaryLabel,
+    this.onSecondary,
   });
 
   final String title;
@@ -401,8 +403,18 @@ class WheelSheetBody extends StatelessWidget {
 
   final VoidCallback onDone;
 
+  /// Вторая кнопка слева от «Готово»: «Как в рецепте» у объёма воды. Без
+  /// подписи «Готово» стоит одна во всю ширину, как раньше.
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
+
   @override
   Widget build(BuildContext context) {
+    final done = AppButton(
+      label: AppLocalizations.of(context).builderDone,
+      onPressed: onDone,
+    );
+
     return SafeArea(
       top: false,
       child: Padding(
@@ -443,10 +455,22 @@ class WheelSheetBody extends StatelessWidget {
               footer!,
             ],
             const SizedBox(height: AppSpacing.s4),
-            AppButton(
-              label: AppLocalizations.of(context).builderDone,
-              onPressed: onDone,
-            ),
+            if (secondaryLabel case final secondary?)
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      label: secondary,
+                      kind: AppButtonKind.secondary,
+                      onPressed: onSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s3),
+                  Expanded(child: done),
+                ],
+              )
+            else
+              done,
           ],
         ),
       ),

@@ -3135,6 +3135,162 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Как в системе'**
   String get profileLanguageSystem;
+
+  /// Шторка объёма воды на экране заваривания: заголовок над барабаном.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сколько воды'**
+  String get brewWaterSheetTitle;
+
+  /// Шторка объёма воды: подпись справа от заголовка — сколько воды в самом рецепте. {water} — уже с единицей: «250 мл».
+  ///
+  /// In ru, this message translates to:
+  /// **'в рецепте {water}'**
+  String brewWaterSheetCaption(String water);
+
+  /// Шторка объёма воды: кнопка, которая возвращает барабан к воде рецепта.
+  ///
+  /// In ru, this message translates to:
+  /// **'Как в рецепте'**
+  String get brewWaterAsInRecipe;
+
+  /// Шторка объёма воды: сводка под барабаном, когда выбрана вода рецепта и пересчитывать нечего.
+  ///
+  /// In ru, this message translates to:
+  /// **'как в рецепте'**
+  String get brewWaterSameAsRecipe;
+
+  /// Экран заваривания: что делает нажатие на воду в строке параметров — для голосового помощника.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить объём воды'**
+  String get brewWaterChange;
+
+  /// Сводка пересчёта под барабаном: подпись перед дозой кофе («кофе 30 г»).
+  ///
+  /// In ru, this message translates to:
+  /// **'кофе'**
+  String get brewScaleCoffee;
+
+  /// Сводка пересчёта: подпись перед помолом («помол 64 клика»).
+  ///
+  /// In ru, this message translates to:
+  /// **'помол'**
+  String get brewScaleGrind;
+
+  /// Сводка пересчёта: помол у настаивания (френч-пресс, Clever) не меняется — «помол прежний».
+  ///
+  /// In ru, this message translates to:
+  /// **'прежний'**
+  String get brewScaleGrindSame;
+
+  /// Сводка пересчёта без выбранной кофемолки: насколько крупнее молоть. {percent} — целое число.
+  ///
+  /// In ru, this message translates to:
+  /// **'крупнее на {percent} %'**
+  String brewScaleGrindCoarser(String percent);
+
+  /// Сводка пересчёта без выбранной кофемолки: насколько мельче молоть. {percent} — целое число.
+  ///
+  /// In ru, this message translates to:
+  /// **'мельче на {percent} %'**
+  String brewScaleGrindFiner(String percent);
+
+  /// Сводка пересчёта: на сколько процентов изменился помол, в скобках после кликов. {value} — со знаком: «+9», «−4».
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} %'**
+  String brewScalePercent(String value);
+
+  /// Сводка пересчёта: подпись перед общим временем заваривания («время 3:10»).
+  ///
+  /// In ru, this message translates to:
+  /// **'время'**
+  String get brewScaleTime;
+
+  /// Сводка пересчёта: сколько напитка окажется в чашке — вода минус то, что удержит гуща.
+  ///
+  /// In ru, this message translates to:
+  /// **'в чашке ≈'**
+  String get brewScaleInCup;
+
+  /// Плашка над рамкой заваривания: рецепт пересчитан на другой объём воды. {water} — с единицей: «500 мл».
+  ///
+  /// In ru, this message translates to:
+  /// **'Пересчитано на {water}'**
+  String brewScaledTo(String water);
+
+  /// Плашка пересчёта: сколько воды было в рецепте. {water} — число без единицы: «250».
+  ///
+  /// In ru, this message translates to:
+  /// **'было {water}'**
+  String brewScaledWas(String water);
+
+  /// Плашка пересчёта: кнопка, которая возвращает рецепт к исходной воде.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вернуть'**
+  String get brewScaleUndo;
+
+  /// Шаг, который добавляет пересчёт между частями пролива, когда вода не помещается в воронку за раз.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ждём, пока уйдёт'**
+  String get brewScaleSplitWait;
+
+  /// Предупреждение пересчёта: доза больше, чем советуют практики для этой воронки.
+  ///
+  /// In ru, this message translates to:
+  /// **'Больше {grams} г за раз — слой глубже, чем советуют. Ровнее выйдет в два захода.'**
+  String brewScaleWarnDeepBed(String grams);
+
+  /// Предупреждение пересчёта: доза такая, что честнее сварить в два захода. {half} — вода на один заход, с единицей.
+  ///
+  /// In ru, this message translates to:
+  /// **'Больше {grams} г за раз — слой слишком глубокий. Лучше два захода по {half}.'**
+  String brewScaleWarnTooDeep(String grams, String half);
+
+  /// Предупреждение пересчёта: пролив не помещается над слоем кофе и идёт частями. {size} — размер воронки: «02», «185».
+  ///
+  /// In ru, this message translates to:
+  /// **'Не помещается в воронку {size}: каждый пролив — в {parts, plural, one{{parts} часть} few{{parts} части} many{{parts} частей} other{{parts} части}}.'**
+  String brewScaleWarnSplit(String size, int parts);
+
+  /// То же, что «Не помещается в воронку», у прибора без размеров.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не помещается за раз: каждый пролив — в {parts, plural, one{{parts} часть} few{{parts} части} many{{parts} частей} other{{parts} части}}.'**
+  String brewScaleWarnSplitAny(int parts);
+
+  /// Продолжение предупреждения о проливе частями: размер, в который вода войдёт за раз.
+  ///
+  /// In ru, this message translates to:
+  /// **'В воронку {size} войдёт целиком.'**
+  String brewScaleWarnSplitBigger(String size);
+
+  /// Предупреждение пересчёта: молоть надо крупнее, чем позволяет кофемолка, и остаток снят температурой воды.
+  ///
+  /// In ru, this message translates to:
+  /// **'{grinder}: шкала кончается на {click} — вода на {drop} °C холоднее.'**
+  String brewScaleWarnEdgeTemp(String grinder, String click, String drop);
+
+  /// Предупреждение пересчёта: помол упёрся в край шкалы кофемолки, остаток снят длиной пауз.
+  ///
+  /// In ru, this message translates to:
+  /// **'{grinder}: шкала кончается на {click} — время добрали паузами.'**
+  String brewScaleWarnEdgePauses(String grinder, String click);
+
+  /// Предупреждение пересчёта: кофе так мало, что слой не держит вкус.
+  ///
+  /// In ru, this message translates to:
+  /// **'Меньше {grams} г — слой слишком тонкий, вкус будет гулять.'**
+  String brewScaleWarnTooThin(String grams);
+
+  /// Предупреждение пересчёта у френч-пресса и Clever: вода с кофе больше объёма прибора.
+  ///
+  /// In ru, this message translates to:
+  /// **'Столько воды в прибор может не войти — лучше в два захода.'**
+  String get brewScaleWarnOverCapacity;
 }
 
 class _AppLocalizationsDelegate
