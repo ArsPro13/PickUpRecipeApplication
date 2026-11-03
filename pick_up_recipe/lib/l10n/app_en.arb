@@ -1104,5 +1104,31 @@
 
   "feedbackThanksTitle": "Thank you!",
 
-  "feedbackThanksText": "We've got your message. We'll reply to the email you signed in with."
+  "feedbackThanksText": "We've got your message. We'll reply to the email you signed in with.",
+
+  "brewScaleDilute": "Top up with hot water",
+
+  "brewScaleDiluteCold": "Top up with cold water",
+
+  "brewScaleWarnBypass": "The chamber holds {chamber} ml, so we brew it stronger and top up the cup with {water} ml.",
+
+  "brewScaleWarnRuns": "That much won't fit the {chamber} ml chamber, so we brew in {parts, plural, one{{parts} round} other{{parts} rounds}}.",
+
+  "brewScaleWarnRefill": "The tower holds {chamber} ml — top it up as it drips.",
+
+  "brewScalePerUnit": "{grams} g each",
+
+  "brewScaleUnitRun": "{count, plural, one{{count} round} other{{count} rounds}}",
+
+  "brewScaleUnitShot": "{count, plural, one{{count} shot} other{{count} shots}}",
+
+  "brewScaleUnitCapsule": "{count, plural, one{{count} capsule} other{{count} capsules}}",
+
+  "brewScaleUnitBag": "{count, plural, one{{count} bag} other{{count} bags}}",
+
+  "brewScaleUnitBowl": "{count, plural, one{{count} bowl} other{{count} bowls}}",
+
+  "brewScaleUnitCup": "{count, plural, one{{count} cup} other{{count} cups}}",
+
+  "brewScaledSavesVersion": "Once you start, it's saved as a new version of the recipe"
 }

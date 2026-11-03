@@ -21,15 +21,22 @@ import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/prefs_key.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
+import 'package:pick_up_recipe/src/features/brew_methods/application/brew_methods_state.dart';
+import 'package:pick_up_recipe/src/features/brew_methods/data_sources/remote/brew_method_service.dart';
+import 'package:pick_up_recipe/src/features/brew_methods/domain/brew_method.dart';
 import 'package:pick_up_recipe/src/features/grinders/application/grinder_state.dart';
 import 'package:pick_up_recipe/src/features/grinders/data_sources/remote/grinder_service.dart';
 import 'package:pick_up_recipe/src/features/grinders/domain/models/grinder_model.dart';
+import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_list_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/step_types_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/grind_descriptor_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_step_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/step_type_model.dart';
-import 'package:pick_up_recipe/src/general_widgets/water_scale_sheet.dart';
+import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
+import 'package:pick_up_recipe/src/features/recipes/domain/scaling/recipe_scaler.dart';
+import 'package:pick_up_recipe/src/features/recipes/domain/scaling/scaling_profile.dart';
+import 'package:pick_up_recipe/src/general_widgets/app_kit.dart';
 import 'package:pick_up_recipe/src/pages/brew_page.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -68,6 +75,37 @@ class _OwnGrinder implements GrinderService {
     int? primaryGrinderId,
   }) =>
       getUserGrinders();
+}
+
+/// Сервер рецептов: запоминает версии, которые экран просил сохранить.
+class _Recipes extends RecipeService {
+  final evolved = <RecipeData>[];
+
+  @override
+  Future<int> evolveRecipe(RecipeData recipe) async {
+    evolved.add(copyRecipe(recipe));
+    return 901;
+  }
+}
+
+/// Справочник методов с одним эспрессо: «вода» у него — вес в чашке.
+class _Catalog extends BrewMethodsNotifier {
+  _Catalog() : super(BrewMethodService()) {
+    state = const BrewMethodsState(
+      status: BrewMethodsStatus.ready,
+      grouped: [
+        GroupedMethods(name: 'Давление', slug: 'pressure', methods: [
+          BrewMethod(
+            id: 1,
+            slug: 'espresso',
+            name: 'Эспрессо',
+            iconKey: 'espresso',
+            waterMeaning: 'in_cup',
+          ),
+        ]),
+      ],
+    );
+  }
 }
 
 class _Origin extends StatelessWidget {
@@ -144,6 +182,35 @@ RecipeData moziana({String device = 'hario_v60'}) => RecipeData(
       ],
     );
 
+/// Деления барабана V60 — те, что откроет шторка.
+List<int> v60Wheel() =>
+    scaleWheelValues(moziana(), ScalingProfile.builtIn('hario_v60')!);
+
+/// Двойной эспрессо: 18 г в корзину, 36 г в чашке.
+RecipeData doubleShot() => RecipeData(
+      id: 78,
+      device: 'espresso',
+      date: '2026-11-01T00:00:00Z',
+      packId: 7,
+      grinderId: 11,
+      grindStep: '27',
+      grindSubStep: null,
+      water: 36,
+      time: 67,
+      temperature: 93,
+      load: 18,
+      title: 'Эспрессо',
+      notes: '',
+      grindDescriptor: 'fine',
+      agitationLevel: null,
+      steps: [
+        _step(1, 'grind', 'Смолоть в корзину', time: 20),
+        _step(2, 'custom', 'Разровнять и утрамбовать', time: 15),
+        _step(3, 'pour', 'Пролив', water: 36, time: 27),
+        _step(4, 'serve', 'Подавать', time: 5),
+      ],
+    );
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -158,7 +225,12 @@ void main() {
   });
 
   /// Экран заваривания до старта: рамка «Смелите кофе», таймер стоит.
-  Future<void> pumpBrew(WidgetTester tester, RecipeData recipe) async {
+  Future<void> pumpBrew(
+    WidgetTester tester,
+    RecipeData recipe, {
+    RecipeService? recipes,
+    bool catalog = false,
+  }) async {
     tester.view.physicalSize = const Size(412, 915);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -173,6 +245,8 @@ void main() {
               .overrideWith((ref) => const <GrindDescriptor>[]),
           grinderStateProvider.overrideWith(
               (ref) => GrinderStateNotifier(_OwnGrinder())..loadUserGrinders()),
+          recipeServiceProvider.overrideWithValue(recipes ?? _Recipes()),
+          if (catalog) brewMethodsProvider.overrideWith((ref) => _Catalog()),
         ],
         child: MaterialApp.router(
           theme: lightTheme,
@@ -201,7 +275,7 @@ void main() {
     final wheel =
         tester.widget<ListWheelScrollView>(find.byType(ListWheelScrollView));
     (wheel.controller! as FixedExtentScrollController)
-        .jumpToItem(waterWheelValues(250).indexOf(water));
+        .jumpToItem(v60Wheel().indexOf(water));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Готово'));
@@ -232,7 +306,7 @@ void main() {
       final wheel =
           tester.widget<ListWheelScrollView>(find.byType(ListWheelScrollView));
       final controller = wheel.controller! as FixedExtentScrollController;
-      controller.jumpToItem(waterWheelValues(250).indexOf(500));
+      controller.jumpToItem(v60Wheel().indexOf(500));
       await tester.pumpAndSettle();
 
       expect(rich('30 г'), findsWidgets);
@@ -261,7 +335,7 @@ void main() {
       // 500 — две строки сводки; 1000 — ещё и три предупреждения на экране
       // после «Готово». Шторка обязана остаться той же высоты.
       for (final water in [500, 1000, 120]) {
-        controller.jumpToItem(waterWheelValues(250).indexOf(water));
+        controller.jumpToItem(v60Wheel().indexOf(water));
         await tester.pumpAndSettle();
         expect(tester.getRect(wheelFinder), at250, reason: '$water мл');
       }
@@ -328,8 +402,81 @@ void main() {
       expect(find.text('Сколько воды'), findsNothing);
     });
 
+    testWidgets('старт пересчитанного рецепта — новая версия, одна',
+        (tester) async {
+      final recipes = _Recipes();
+      await pumpBrew(tester, moziana(), recipes: recipes);
+      await chooseWater(tester, 500);
+      expect(rich('сохранится новой версией'), findsOneWidget,
+          reason: 'до старта человек знает, что будет');
+
+      await tester.tap(find.text('Смолол, начинаем'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(recipes.evolved, hasLength(1));
+      final version = recipes.evolved.single;
+      expect(version.water, 500);
+      expect(version.load, 30);
+      expect(version.grindStep, '31.0', reason: 'новое деление C40');
+      expect(version.steps.first.water, 90, reason: 'предсмачивание ×2');
+
+      // Пауза и снова старт — та же правка, второй версии нет.
+      // «Пауза» — и шаг рецепта, и главная кнопка; жмём кнопку.
+      Finder button(String label) =>
+          find.ancestor(of: find.text(label), matching: find.byType(AppButton));
+      await tester.tap(button('Пауза'));
+      await tester.pump();
+      await tester.tap(button('Продолжить'));
+      await tester.pump();
+      expect(recipes.evolved, hasLength(1));
+    });
+
+    testWidgets('рецепт как есть — новой версии нет', (tester) async {
+      final recipes = _Recipes();
+      await pumpBrew(tester, moziana(), recipes: recipes);
+
+      await tester.tap(find.text('Смолол, начинаем'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(recipes.evolved, isEmpty);
+    });
+
+    testWidgets('эспрессо: барабан в граммах, больше — ещё шот',
+        (tester) async {
+      await pumpBrew(tester, doubleShot(), catalog: true);
+      Finder water(String text) =>
+          find.descendant(of: param('water'), matching: find.text(text));
+      expect(water('36 г'), findsOneWidget, reason: 'вес в чашке');
+
+      await tester.tap(param('water'));
+      await tester.pumpAndSettle();
+      expect(find.text('в рецепте 36 г'), findsOneWidget);
+
+      final wheel =
+          tester.widget<ListWheelScrollView>(find.byType(ListWheelScrollView));
+      (wheel.controller! as FixedExtentScrollController).jumpToItem(1);
+      await tester.pumpAndSettle();
+      expect(rich('2 шота'), findsOneWidget);
+      expect(rich('по 18 г'), findsOneWidget);
+
+      await tester.tap(find.text('Готово'));
+      await tester.pumpAndSettle();
+
+      expect(water('72 г'), findsOneWidget);
+      expect(find.text('2 × 18 г'), findsWidgets);
+      expect(find.text('шаг 1 из 8'), findsOneWidget,
+          reason: 'тот же шот ещё раз — шаги дважды');
+      expect(rich('Пересчитано на 72 г · было 36'), findsOneWidget);
+      expect(rich('было 27'), findsNothing,
+          reason: 'помол прежний — подписывать «было» нечего');
+    });
+
     testWidgets('прибор без профиля — вода не нажимается', (tester) async {
-      await pumpBrew(tester, moziana(device: 'aeropress'));
+      // Прибор, которого нет в таблице: появился на сервере позже, чем
+      // вышло приложение.
+      await pumpBrew(tester, moziana(device: 'unknown_device'));
 
       await tester.tap(param('water'), warnIfMissed: false);
       await tester.pumpAndSettle();

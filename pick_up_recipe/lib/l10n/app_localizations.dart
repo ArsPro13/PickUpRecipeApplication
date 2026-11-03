@@ -3339,6 +3339,84 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Письмо у нас. Ответим на почту, с которой вы вошли.'**
   String get feedbackThanksText;
+
+  /// Шаг, который добавляет пересчёт у аэропресса и других приборов с камерой: концентрат доливают водой до объёма.
+  ///
+  /// In ru, this message translates to:
+  /// **'Долейте горячую воду'**
+  String get brewScaleDilute;
+
+  /// То же, что brewScaleDilute, но у холодных рецептов (аэропресс со льдом): концентрат доливают холодной водой.
+  ///
+  /// In ru, this message translates to:
+  /// **'Долейте холодную воду'**
+  String get brewScaleDiluteCold;
+
+  /// Предупреждение пересчёта у аэропресса: вода не помещается в камеру, поэтому концентрат и доливка.
+  ///
+  /// In ru, this message translates to:
+  /// **'Камера вмещает {chamber} мл — заварим крепче и дольём {water} мл в чашку.'**
+  String brewScaleWarnBypass(String chamber, String water);
+
+  /// Предупреждение пересчёта у аэропресса: даже концентрат не помещается — несколько заходов.
+  ///
+  /// In ru, this message translates to:
+  /// **'В камеру {chamber} мл столько не войдёт — сварим за {parts, plural, one{{parts} заход} few{{parts} захода} many{{parts} заходов} other{{parts} захода}}.'**
+  String brewScaleWarnRuns(String chamber, int parts);
+
+  /// Предупреждение пересчёта у колд дрипа: вода не помещается в верхнюю колбу.
+  ///
+  /// In ru, this message translates to:
+  /// **'В колбу помещается {chamber} мл — долейте воду по ходу.'**
+  String brewScaleWarnRefill(String chamber);
+
+  /// Сводка пересчёта у заходов и порций: доза одного захода («2 шота по 18 г»).
+  ///
+  /// In ru, this message translates to:
+  /// **'по {grams} г'**
+  String brewScalePerUnit(String grams);
+
+  /// Сводка пересчёта: сколько заходов того же рецепта (гейзер, аэропресс).
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} заход} few{{count} захода} many{{count} заходов} other{{count} захода}}'**
+  String brewScaleUnitRun(int count);
+
+  /// Сводка пересчёта у эспрессо: сколько шотов.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} шот} few{{count} шота} many{{count} шотов} other{{count} шота}}'**
+  String brewScaleUnitShot(int count);
+
+  /// Сводка пересчёта у капсульной машины: сколько капсул.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} капсула} few{{count} капсулы} many{{count} капсул} other{{count} капсулы}}'**
+  String brewScaleUnitCapsule(int count);
+
+  /// Сводка пересчёта у дрип-пакетов: сколько пакетов.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} пакет} few{{count} пакета} many{{count} пакетов} other{{count} пакета}}'**
+  String brewScaleUnitBag(int count);
+
+  /// Сводка пересчёта у каппинга: сколько чаш.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} чаша} few{{count} чаши} many{{count} чаш} other{{count} чаши}}'**
+  String brewScaleUnitBowl(int count);
+
+  /// Сводка пересчёта у фина и других приборов на одну чашку: сколько чашек.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} чашка} few{{count} чашки} many{{count} чашек} other{{count} чашки}}'**
+  String brewScaleUnitCup(int count);
+
+  /// Плашка пересчёта: что произойдёт со стартом — пересчитанный рецепт станет новой версией, как правка в конструкторе.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начнёте — сохранится новой версией рецепта'**
+  String get brewScaledSavesVersion;
 }
 
 class _AppLocalizationsDelegate

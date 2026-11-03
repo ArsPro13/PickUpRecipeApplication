@@ -2,10 +2,12 @@
 // design/mockups/variants/water-scale.html, его выбрал владелец.
 //
 // Нажали «250 мл» в строке параметров экрана заваривания — открылась шторка
-// с барабаном от 120 до 1000 мл с шагом 5, таким же, как у времени шага и
-// даты обжарки. Под барабаном сразу видно, что поменяется: кофе, помол,
-// время, сколько окажется в чашке, — и о чём стоит предупредить. «Готово»
-// пересчитывает экран, «Как в рецепте» возвращает барабан к воде рецепта.
+// с барабаном, таким же, как у времени шага и даты обжарки. Деления барабана
+// задаёт прибор: у воронки — от 120 до 1000 мл с шагом 5, у эспрессо —
+// 36, 72, 108 г (ещё шот), у дрип-пакетов — по пакету. Под барабаном сразу
+// видно, что поменяется: кофе, помол или заходы, время, сколько окажется в
+// чашке. «Готово» пересчитывает экран, «Как в рецепте» возвращает барабан к
+// воде рецепта.
 //
 // Считает не шторка, а recipe_scaler.dart: шторка спрашивает его на каждом
 // щелчке барабана. Это дёшево — пара сотен шагов арифметики.
@@ -15,6 +17,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../features/grinders/domain/grind_translation.dart';
 import '../features/recipes/domain/scaling/recipe_scaler.dart';
+import '../features/recipes/domain/scaling/scaling_profile.dart';
 import '../pages/brew_page.dart' show formatAmount, formatDuration;
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
@@ -22,55 +25,46 @@ import '../themes/app_tokens.dart';
 import 'app_icon.dart';
 import 'app_wheel.dart';
 
-/// Открывает шторку и возвращает выбранную воду, мл.
+/// Открывает шторку и возвращает выбранную воду.
 ///
-/// [baseWater] — вода рецепта, к ней ведёт «Как в рецепте». [current] — с
-/// чего барабан открывается: вода рецепта или прошлый выбор. [preview] —
-/// пересчёт на любую воду барабана, для сводки. null — шторку закрыли.
+/// [values] — деления барабана (scaleWheelValues). [baseWater] — вода
+/// рецепта, к ней ведёт «Как в рецепте». [current] — с чего барабан
+/// открывается: вода рецепта или прошлый выбор. [unit] — «мл», у эспрессо
+/// «г» (вес в чашке). [preview] — пересчёт на любое деление, для сводки.
+/// null — шторку закрыли.
 Future<int?> showWaterScaleSheet(
   BuildContext context, {
+  required List<int> values,
   required int baseWater,
   required int current,
+  required String unit,
   required ScaledRecipe Function(int water) preview,
 }) {
   return showWheelSheet<int>(
     context,
     builder: (context) => _WaterScaleSheet(
+      values: values,
       baseWater: baseWater,
       current: current,
+      unit: unit,
       preview: preview,
     ),
   );
 }
 
-/// Строки барабана: от 120 до 1000 мл с шагом 5.
-///
-/// Вода рецепта стоит на барабане всегда, даже если она не кратна пяти или
-/// выходит за пределы: «Как в рецепте» обязано попасть ровно в неё.
-List<int> waterWheelValues(int baseWater, {int? current}) {
-  final low = baseWater < kScaleMinWater ? baseWater : kScaleMinWater;
-  final high = baseWater > kScaleMaxWater ? baseWater : kScaleMaxWater;
-  final values = <int>{
-    for (var water = low - low % kScaleWaterStep;
-        water <= high;
-        water += kScaleWaterStep)
-      if (water >= low) water,
-    baseWater,
-    if (current != null) current,
-  }.toList()
-    ..sort();
-  return values;
-}
-
 class _WaterScaleSheet extends StatefulWidget {
   const _WaterScaleSheet({
+    required this.values,
     required this.baseWater,
     required this.current,
+    required this.unit,
     required this.preview,
   });
 
+  final List<int> values;
   final int baseWater;
   final int current;
+  final String unit;
   final ScaledRecipe Function(int water) preview;
 
   @override
@@ -78,8 +72,12 @@ class _WaterScaleSheet extends StatefulWidget {
 }
 
 class _WaterScaleSheetState extends State<_WaterScaleSheet> {
-  late final List<int> _values =
-      waterWheelValues(widget.baseWater, current: widget.current);
+  late final List<int> _values = <int>{
+    ...widget.values,
+    widget.baseWater,
+    widget.current,
+  }.toList()
+    ..sort();
 
   late int _shown = widget.current;
 
@@ -108,10 +106,10 @@ class _WaterScaleSheetState extends State<_WaterScaleSheet> {
 
     return WheelSheetBody(
       title: texts.brewWaterSheetTitle,
-      caption: texts
-          .brewWaterSheetCaption(texts.unitMillilitres('${widget.baseWater}')),
+      caption:
+          texts.brewWaterSheetCaption('${widget.baseWater} ${widget.unit}'),
       wheels: AppWheelRow(
-        marks: [WheelMark.after(texts.builderMillilitre, 2)],
+        marks: [WheelMark.after(widget.unit, 2)],
         children: [
           Expanded(
             child: AppWheel(
@@ -126,7 +124,10 @@ class _WaterScaleSheetState extends State<_WaterScaleSheet> {
           ),
         ],
       ),
-      footer: WaterScaleSummary(scaled: widget.preview(_shown)),
+      footer: WaterScaleSummary(
+        scaled: widget.preview(_shown),
+        unit: widget.unit,
+      ),
       secondaryLabel: texts.brewWaterAsInRecipe,
       onSecondary: _backToRecipe,
       onDone: () => Navigator.of(context).pop(_shown),
@@ -145,9 +146,12 @@ class _WaterScaleSheetState extends State<_WaterScaleSheet> {
 ///
 /// Отдельным виджетом: его проверяют тестом без шторки.
 class WaterScaleSummary extends StatelessWidget {
-  const WaterScaleSummary({super.key, required this.scaled});
+  const WaterScaleSummary({super.key, required this.scaled, this.unit = ''});
 
   final ScaledRecipe scaled;
+
+  /// «мл» или «г» — как подписан барабан. Пусто — «мл».
+  final String unit;
 
   /// Высота строки сводки: кегль bodyMedium с запасом на межстрочное.
   static const double _line = 24;
@@ -184,7 +188,7 @@ class WaterScaleSummary extends StatelessWidget {
               TextSpan(
                 style: muted,
                 children: [
-                  TextSpan(text: '$label '),
+                  if (label.isNotEmpty) TextSpan(text: '$label '),
                   TextSpan(text: value, style: strong),
                   if (note != null) TextSpan(text: ' $note'),
                 ],
@@ -202,7 +206,16 @@ class WaterScaleSummary extends StatelessWidget {
           ],
         );
 
-    final (grindValue, grindNote) = _grind(texts);
+    // У заходов и порций вместо помола — сколько их: помол у них прежний,
+    // а «2 шота по 18 г» и есть то, что меняется.
+    final (secondLabel, secondValue, secondNote) = scaled.runs > 1
+        ? (
+            '',
+            scaleUnitsText(texts, scaled.unit, scaled.runs),
+            texts.brewScalePerUnit(formatAmount(scaled.dosePerRun)),
+          )
+        : (texts.brewScaleGrind, _grind(texts).$1, _grind(texts).$2);
+    final cupUnit = unit.isEmpty ? null : unit;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -213,8 +226,7 @@ class WaterScaleSummary extends StatelessWidget {
             texts.unitGrams(formatAmount(scaled.dose)),
             Alignment.centerRight,
           ),
-          cell(texts.brewScaleGrind, grindValue, Alignment.centerLeft,
-              grindNote),
+          cell(secondLabel, secondValue, Alignment.centerLeft, secondNote),
         ),
         const SizedBox(height: AppSpacing.s1),
         row(
@@ -225,7 +237,9 @@ class WaterScaleSummary extends StatelessWidget {
           ),
           cell(
             texts.brewScaleInCup,
-            texts.unitMillilitres('${scaled.cupMl}'),
+            cupUnit == null
+                ? texts.unitMillilitres('${scaled.cupMl}')
+                : '${scaled.cupMl} $cupUnit',
             Alignment.centerLeft,
           ),
         ),
@@ -336,5 +350,21 @@ String scaleWarningText(
       texts.brewScaleWarnEdgePauses(grinder, click),
     ScaleWarningKind.tooThin => texts.brewScaleWarnTooThin('${warning.grams}'),
     ScaleWarningKind.overCapacity => texts.brewScaleWarnOverCapacity,
+    ScaleWarningKind.bypass =>
+      texts.brewScaleWarnBypass('${warning.chamber}', '${warning.water}'),
+    ScaleWarningKind.runs =>
+      texts.brewScaleWarnRuns('${warning.chamber}', warning.parts),
+    ScaleWarningKind.refill => texts.brewScaleWarnRefill('${warning.chamber}'),
   };
 }
+
+/// «2 шота», «3 пакета», «2 захода» — сколько порций и как они зовутся.
+String scaleUnitsText(AppLocalizations texts, ScalingUnit unit, int count) =>
+    switch (unit) {
+      ScalingUnit.run => texts.brewScaleUnitRun(count),
+      ScalingUnit.shot => texts.brewScaleUnitShot(count),
+      ScalingUnit.capsule => texts.brewScaleUnitCapsule(count),
+      ScalingUnit.bag => texts.brewScaleUnitBag(count),
+      ScalingUnit.bowl => texts.brewScaleUnitBowl(count),
+      ScalingUnit.cup => texts.brewScaleUnitCup(count),
+    };

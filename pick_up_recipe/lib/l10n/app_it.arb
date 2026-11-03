@@ -587,5 +587,18 @@
   "feedbackSend": "Invia",
   "feedbackFailed": "Invio non riuscito. Riprova: il testo è ancora qui.",
   "feedbackThanksTitle": "Grazie!",
-  "feedbackThanksText": "Abbiamo ricevuto il tuo messaggio. Risponderemo all'email con cui hai effettuato l'accesso."
+  "feedbackThanksText": "Abbiamo ricevuto il tuo messaggio. Risponderemo all'email con cui hai effettuato l'accesso.",
+  "brewScaleDilute": "Aggiungi acqua calda",
+  "brewScaleDiluteCold": "Aggiungi acqua fredda",
+  "brewScaleWarnBypass": "La camera contiene {chamber} ml: prepariamo un concentrato e aggiungiamo {water} ml in tazza.",
+  "brewScaleWarnRuns": "Non entra nella camera da {chamber} ml: prepariamo in {parts, plural, one{{parts} volta} other{{parts} volte}}.",
+  "brewScaleWarnRefill": "La torre contiene {chamber} ml: rabbocca l'acqua mentre gocciola.",
+  "brewScalePerUnit": "{grams} g ciascuno",
+  "brewScaleUnitRun": "{count, plural, one{{count} volta} other{{count} volte}}",
+  "brewScaleUnitShot": "{count, plural, one{{count} shot} other{{count} shot}}",
+  "brewScaleUnitCapsule": "{count, plural, one{{count} capsula} other{{count} capsule}}",
+  "brewScaleUnitBag": "{count, plural, one{{count} bustina} other{{count} bustine}}",
+  "brewScaleUnitBowl": "{count, plural, one{{count} ciotola} other{{count} ciotole}}",
+  "brewScaleUnitCup": "{count, plural, one{{count} tazza} other{{count} tazze}}",
+  "brewScaledSavesVersion": "Quando inizi, viene salvata come nuova versione della ricetta"
 }

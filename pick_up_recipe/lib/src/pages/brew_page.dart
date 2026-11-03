@@ -38,6 +38,7 @@ import '../features/grinders/domain/models/grinder_model.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/last_brew_cache.dart';
 import '../features/recipes/application/screen_wake.dart';
+import '../features/recipes/application/state/recipes_list_state.dart';
 import '../features/recipes/application/step_types_state.dart';
 import '../features/recipes/domain/brew_engine.dart';
 import '../features/recipes/domain/brew_step.dart';
@@ -129,6 +130,16 @@ class _BrewPageState extends ConsumerState<BrewPage>
 
   /// Рецепт на экране: пересчитанный или исходный.
   RecipeData get _recipe => _scaled?.recipe ?? widget.recipe;
+
+  /// Пересчитанный рецепт, сохранённый новой версией со стартом заваривания.
+  ///
+  /// Владелец: «при заваривании это должно быть как изменение рецепта». Так
+  /// и сделано: начали заваривать пересчитанный — это правка, и она ложится
+  /// новой версией через тот же `POST /recipe/evolve`, что «Сохранить» в
+  /// конструкторе (без сети — в очередь). Оценка после заваривания уходит
+  /// этой версии, а не исходной. null — не пересчитывали или ещё не начали;
+  /// значение null внутри — сохранить не удалось, оценим исходный.
+  Future<RecipeData?>? _scaledVersion;
 
   /// Тикер перерисовки. Он не считает время — только просит движок отдать
   /// снимок, поэтому пропущенный кадр ничего не ломает.
@@ -406,6 +417,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
   void _toggle() {
     if (!_engine.isStarted) {
       _engine.start();
+      _saveScaledVersion();
     } else if (_snapshot.status == BrewStatus.paused) {
       _engine.resume();
     } else {
@@ -464,8 +476,36 @@ class _BrewPageState extends ConsumerState<BrewPage>
       scale: grinder?.modes ?? const [],
       baseClick: base.isDivision ? base.value : null,
       grinderId: grinder?.id,
-      splitWaitLabel: texts.brewScaleSplitWait,
+      labels: ScaleLabels(
+        splitWait: texts.brewScaleSplitWait,
+        dilute: texts.brewScaleDilute,
+        diluteCold: texts.brewScaleDiluteCold,
+      ),
     );
+  }
+
+  /// Вода с единицей: «500 мл», у эспрессо — «72 г» (вес в чашке).
+  String _waterLabel(AppLocalizations texts, int water) =>
+      _template == BrewTemplate.shot
+          ? texts.unitGrams('$water')
+          : texts.unitMillilitres('$water');
+
+  /// Сохраняет пересчитанный рецепт новой версией — один раз, со стартом.
+  ///
+  /// Не ждём: таймер уже пошёл, а версия нужна только оценке через минуты.
+  /// Без сети `evolveRecipe` кладёт её в очередь и сразу отдаёт местный
+  /// идентификатор; отказ сервера оставляет оценку исходному рецепту —
+  /// заваривание из-за этого не останавливается.
+  void _saveScaledVersion() {
+    final scaled = _scaled;
+    if (scaled == null || _scaledVersion != null) return;
+
+    final version = copyRecipe(scaled.recipe);
+    _scaledVersion = ref
+        .read(recipeServiceProvider)
+        .evolveRecipe(version)
+        .then<RecipeData?>((id) => version..id = id)
+        .catchError((Object _) => null);
   }
 
   /// Ставит рецепт на [water] мл — или возвращает исходный.
@@ -477,6 +517,8 @@ class _BrewPageState extends ConsumerState<BrewPage>
 
     setState(() {
       _scaled = water == widget.recipe.water ? null : _scaleTo(water);
+      // Новый объём — новая правка: со следующим стартом сохранится уже она.
+      _scaledVersion = null;
       _engine = BrewEngine(steps: brewStepsOf(_recipe));
       _live.value = _engine.snapshot();
       _scrolledTo = null;
@@ -490,10 +532,16 @@ class _BrewPageState extends ConsumerState<BrewPage>
 
   /// Шторка «Сколько воды» (вариант 1 витрины).
   Future<void> _openWaterSheet() async {
+    final texts = AppLocalizations.of(context);
     final water = await showWaterScaleSheet(
       context,
+      values:
+          scaleWheelValues(widget.recipe, _profile!, current: _recipe.water),
       baseWater: widget.recipe.water,
       current: _recipe.water,
+      unit: _template == BrewTemplate.shot
+          ? texts.builderGram
+          : texts.builderMillilitre,
       preview: _scaleTo,
     );
 
@@ -503,14 +551,34 @@ class _BrewPageState extends ConsumerState<BrewPage>
 
   /// Уводит на оценку. Заменяет экран, а не кладёт поверх: возвращаться
   /// к отыгранному таймеру некуда, а «назад» из оценки должно вести в список.
-  void _rate() {
-    context.router
-        .replace(RatingRoute(recipe: widget.recipe, pack: widget.pack));
+  ///
+  /// Заваривали пересчитанный — оцениваем его версию: оценка описывает то,
+  /// что было в чашке, а не исходные 250 мл.
+  Future<void> _rate() async {
+    final scaled = await (_scaledVersion ?? Future<RecipeData?>.value());
+    if (!mounted) return;
+    context.router.replace(
+        RatingRoute(recipe: scaled ?? widget.recipe, pack: widget.pack));
   }
 
   /// Правка рецепта. Отдельного экрана рецепта больше нет — этот и есть
   /// рецепт, поэтому «Править» живёт здесь, в шапке.
+  ///
+  /// Пересчитанный рецепт — это уже правка: конструктор открывается в
+  /// режиме поправки, как после жалоб на вкус. Изменения помечены точками,
+  /// «Отменить» возвращает исходный, «Сохранить» — новая версия.
   void _edit() {
+    final scaled = _scaled;
+    if (scaled != null) {
+      final texts = AppLocalizations.of(context);
+      context.router.push(RecipeBuilderRoute(
+        recipe: copyRecipe(scaled.recipe),
+        pack: widget.pack,
+        original: widget.recipe,
+        correctionLabel: _waterLabel(texts, scaled.water),
+      ));
+      return;
+    }
     context.router.push(
       RecipeBuilderRoute(recipe: widget.recipe, pack: widget.pack),
     );
@@ -628,12 +696,11 @@ class _BrewPageState extends ConsumerState<BrewPage>
     final template = _template;
     final deviceState = template == BrewTemplate.valve ? _deviceState() : '';
 
-    // Воду можно поменять до старта и только у прибора, который умеет
-    // пересчитываться: у эспрессо вода — вес в чашке, и «больше воды» там
-    // другой рецепт, а не тот же на большее число людей.
-    final canScale = !_engine.isStarted &&
-        template != BrewTemplate.shot &&
-        canScaleRecipe(widget.recipe, _profile);
+    // Воду можно поменять до старта и у любого прибора с профилем. Как
+    // именно — решает профиль: у эспрессо «больше» значит ещё шот, у
+    // аэропресса — концентрат с доливкой, у воронки — пересчёт слоя.
+    final canScale =
+        !_engine.isStarted && canScaleRecipe(widget.recipe, _profile);
     final scaled = _scaled;
 
     // Отдельной переменной, чтобы обернуть готовый экран в PopScope, не
@@ -731,6 +798,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
           if (scaled != null && !_engine.isStarted)
             _ScaledBar(
               scaled: scaled,
+              water: _waterLabel(texts, scaled.water),
               grinderName: ref.watch(grinderStateProvider).primary?.name ?? '',
               onUndo: () => _applyWater(widget.recipe.water),
             ),
@@ -846,18 +914,35 @@ class _BrewPageState extends ConsumerState<BrewPage>
     final reference = ref.watch(grindDescriptorsProvider).valueOrNull;
     final grinder = ref.watch(grinderStateProvider).primary;
 
-    final params = BrewParams.of(
+    var params = BrewParams.of(
       texts,
       _recipe,
       grind: _grindOf(_recipe, grinder, texts, reference),
       inCup: _template == BrewTemplate.shot,
     );
 
-    // Пересчёт сдвинул помол — под кликами подписано, сколько было: молоть
-    // будут по новому числу, а сверять — со старой привычкой.
+    // Заходы: мелют и закладывают по одному, поэтому «2 × 18 г», а не 36 г —
+    // корзина на 36 г не рассчитана.
     final scaled = _scaled;
+    if (scaled != null && scaled.runs > 1) {
+      final dose = '${scaled.runs} × '
+          '${texts.unitGrams(formatAmount(scaled.dosePerRun))}';
+      params = params.copyWith(
+        dose: dose,
+        prepValue: [dose, params.grind].whereType<String>().join(' · '),
+      );
+    }
+
+    // Пересчёт сдвинул помол — под кликами подписано, сколько было: молоть
+    // будут по новому числу, а сверять — со старой привычкой. У аэропресса,
+    // эспрессо и прочих помол прежний (нового деления нет) — и «было 42»
+    // под теми же 42 кликами только путало бы.
     final was = scaled?.baseGrindStep;
-    if (scaled == null || was == null || scaled.grindStep == was) {
+    final now = scaled?.grindStep;
+    if (scaled == null ||
+        was == null ||
+        now == null ||
+        grinderDivisionLabel(now) == grinderDivisionLabel(was)) {
       return params;
     }
     return params.withPrepHint(
@@ -1064,18 +1149,21 @@ enum _StripItem { dose, grind, water, temperature }
 class _ScaledBar extends StatelessWidget {
   const _ScaledBar({
     required this.scaled,
+    required this.water,
     required this.grinderName,
     required this.onUndo,
   });
 
   final ScaledRecipe scaled;
+
+  /// Выбранная вода с единицей: «500 мл», у эспрессо «72 г».
+  final String water;
   final String grinderName;
   final VoidCallback onUndo;
 
   @override
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
-    final water = texts.unitMillilitres('${scaled.water}');
     final head = texts.brewScaledTo(water);
     final at = head.indexOf(water);
     final strong = TextStyle(
@@ -1131,6 +1219,19 @@ class _ScaledBar extends StatelessWidget {
                 child: Text(texts.brewScaleUndo),
               ),
             ],
+          ),
+          // Что будет со стартом: пересчитанный рецепт ляжет новой версией.
+          // Сказано заранее, а не задним числом — новая строка в истории не
+          // должна появиться сюрпризом.
+          Padding(
+            padding: const EdgeInsets.only(
+              left: AppSpacing.s6 + AppSpacing.s1,
+              bottom: AppSpacing.s1,
+            ),
+            child: Text(
+              texts.brewScaledSavesVersion,
+              style: context.texts.labelSmall,
+            ),
           ),
           if (scaled.warnings.isNotEmpty)
             Padding(
@@ -1889,6 +1990,9 @@ class _StepCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  // Зазор до времени: длинное «Смолоть и засыпать · 1/2»
+                  // иначе упирается в «0:40» и читается как «1/20:40».
+                  const SizedBox(width: AppSpacing.s2),
                   // Место справа отвечает на вопрос «сколько это длится».
                   // У шага, который ждёт человека, длительности нет, и «0:00»
                   // отвечало на этот вопрос неправдой — поэтому там стоит то,
@@ -2233,13 +2337,17 @@ class BrewParams {
 
   /// Те же числа с другой подписью под подготовкой: «… · было 60» после
   /// пересчёта на другой объём воды.
-  BrewParams withPrepHint(String? hint) => BrewParams(
-        dose: dose,
+  BrewParams withPrepHint(String? hint) => copyWith(prepHint: hint);
+
+  /// Те же числа с заменой части: доза «2 × 18 г» у заходов.
+  BrewParams copyWith({String? dose, String? prepValue, String? prepHint}) =>
+      BrewParams(
+        dose: dose ?? this.dose,
         grind: grind,
         water: water,
         temperature: temperature,
-        prepValue: prepValue,
-        prepHint: hint,
+        prepValue: prepValue ?? this.prepValue,
+        prepHint: prepHint ?? this.prepHint,
       );
 
   /// Собирает параметры из рецепта.

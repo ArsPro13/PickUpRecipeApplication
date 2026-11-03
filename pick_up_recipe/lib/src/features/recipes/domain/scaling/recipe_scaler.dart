@@ -3,9 +3,14 @@
 // Простое умножение воды каждого шага даёт другую чашку: в той же воронке
 // слой становится глубже, вода идёт через него дольше, и кофе
 // переэкстрагируется. Здесь — пересчёт по исследованию «Рецепт на несколько
-// человек» (artifacts/scaling-research/…pdf, раздел 13): доза растёт ровно как
+// человек» (artifacts/scaling-research/…pdf): у пролива доза растёт ровно как
 // вода, время — как глубина слоя, помол крупнеет ровно настолько, чтобы
 // экстракция осталась прежней, и переводится в клики кофемолки человека.
+//
+// Остальные приборы масштабируются по-своему — это задаёт семья профиля
+// (scaling_profile.dart): настаивание, нагрев в турке, концентрат с доливкой
+// у аэропресса, заходы у эспрессо и гейзера, порции у дрип-пакетов и
+// каппинга, холодное настаивание и колд дрип.
 //
 // Чистый Dart, как brew_engine.dart: без Flutter, без сети, без состояния.
 // Один и тот же вход даёт один и тот же выход — поэтому его можно крутить
@@ -52,6 +57,15 @@ enum ScaleWarningKind {
 
   /// В прибор не помещается вся вода (иммерсия, клапан).
   overCapacity,
+
+  /// Камера меньше воды: заварим концентрат и дольём воду в чашку.
+  bypass,
+
+  /// Не помещается и концентрат — варим в несколько заходов.
+  runs,
+
+  /// Колба колд дрипа меньше воды — доливать по ходу.
+  refill,
 }
 
 /// Предупреждение с тем, что нужно для текста.
@@ -65,6 +79,8 @@ class ScaleWarning {
     this.biggerSize = '',
     this.grams = 0,
     this.halfWater = 0,
+    this.water = 0,
+    this.chamber = 0,
   });
 
   final ScaleWarningKind kind;
@@ -90,6 +106,12 @@ class ScaleWarning {
   /// Вода на один заход, если варить в два.
   final int halfWater;
 
+  /// Сколько воды долить в чашку (bypass), мл.
+  final int water;
+
+  /// Объём камеры или колбы, мл.
+  final int chamber;
+
   @override
   bool operator ==(Object other) =>
       other is ScaleWarning &&
@@ -100,14 +122,35 @@ class ScaleWarning {
       other.size == size &&
       other.biggerSize == biggerSize &&
       other.grams == grams &&
-      other.halfWater == halfWater;
+      other.halfWater == halfWater &&
+      other.water == water &&
+      other.chamber == chamber;
 
   @override
-  int get hashCode => Object.hash(
-      kind, parts, click, tempDrop, size, biggerSize, grams, halfWater);
+  int get hashCode => Object.hash(kind, parts, click, tempDrop, size,
+      biggerSize, grams, halfWater, water, chamber);
 
   @override
   String toString() => 'ScaleWarning($kind)';
+}
+
+/// Подписи шагов, которые добавляет пересчёт. Язык экрана знает экран, а
+/// не пересчёт, поэтому слова приходят снаружи.
+class ScaleLabels {
+  const ScaleLabels({
+    this.splitWait = '…',
+    this.dilute = '…',
+    this.diluteCold = '…',
+  });
+
+  /// Пауза между частями пролива: «Ждём, пока уйдёт».
+  final String splitWait;
+
+  /// Доливка воды в концентрат: «Долейте горячую воду».
+  final String dilute;
+
+  /// Доливка у холодного рецепта: «Долейте холодную воду».
+  final String diluteCold;
 }
 
 /// Рецепт после пересчёта и то, что о нём стоит показать.
@@ -127,6 +170,10 @@ class ScaledRecipe {
     required this.totalSeconds,
     required this.baseTotalSeconds,
     required this.warnings,
+    this.family = ScalingFamily.percolation,
+    this.runs = 1,
+    this.unit = ScalingUnit.run,
+    this.bypassWater = 0,
   });
 
   /// Готов для экрана заваривания и движка: шаги, вода, доза, время, помол.
@@ -169,6 +216,21 @@ class ScaledRecipe {
 
   final List<ScaleWarning> warnings;
 
+  /// Как прибор масштабировался.
+  final ScalingFamily family;
+
+  /// Сколько заходов или порций: 2 шота, 3 пакета, 2 захода аэропресса.
+  final int runs;
+
+  /// Чем считаются заходы — для подписи.
+  final ScalingUnit unit;
+
+  /// Сколько воды доливается в чашку после камеры, мл (на все заходы).
+  final int bypassWater;
+
+  /// Доза одного захода, г.
+  double get dosePerRun => runs > 1 ? dose / runs : dose;
+
   /// Ничего не пересчитано: вода та же, что в рецепте.
   bool get isOriginal => water == baseWater;
 }
@@ -194,8 +256,7 @@ bool canScaleRecipe(RecipeData recipe, ScalingProfile? profile) {
 /// [grinderId] ставится в пересчитанный рецепт вместе с новым делением —
 /// так экран покажет клики, а не слово.
 /// [size] — размер прибора; null — размер по умолчанию из профиля.
-/// [splitWaitLabel] — подпись паузы между частями пролива: язык экрана
-/// знает экран, а не пересчёт.
+/// [labels] — подписи шагов, которые добавляет пересчёт.
 ScaledRecipe scaleRecipe({
   required RecipeData base,
   required int water,
@@ -204,7 +265,7 @@ ScaledRecipe scaleRecipe({
   String? baseClick,
   int? grinderId,
   String? size,
-  String splitWaitLabel = '…',
+  ScaleLabels labels = const ScaleLabels(),
 }) {
   final usedSize = size ?? profile.defaultSize;
   // Та же вода — тот же рецепт, до секунды: округление до 5 с иначе поправило
@@ -222,11 +283,43 @@ ScaledRecipe scaleRecipe({
     ],
     baseClick: baseClick,
     size: usedSize,
-    splitWaitLabel: splitWaitLabel,
+    labels: labels,
   );
-  return profile.family == ScalingFamily.percolation
-      ? scaler.percolation(grinderId)
-      : scaler.immersion();
+  return switch (profile.family) {
+    ScalingFamily.percolation => scaler.percolation(grinderId),
+    ScalingFamily.valve || ScalingFamily.immersion => scaler.immersion(),
+    ScalingFamily.heated => scaler.heated(),
+    ScalingFamily.concentrate => scaler.concentrate(),
+    ScalingFamily.repeat => scaler.repeat(),
+    ScalingFamily.parallel => scaler.parallel(),
+    ScalingFamily.coldSteep => scaler.coldSteep(),
+    ScalingFamily.coldDrip => scaler.coldDrip(),
+  };
+}
+
+/// Деления барабана для этого рецепта и прибора.
+///
+/// У заходов и порций — кратные рецепту: эспрессо 36, 72, 108 г, дрип-пакеты
+/// 150, 300, 450 мл. У остальных — от и до с шагом профиля. Вода рецепта и
+/// уже выбранная стоят на барабане всегда, даже вне шага: «Как в рецепте»
+/// обязано попасть ровно в неё.
+List<int> scaleWheelValues(RecipeData base, ScalingProfile profile,
+    {int? current}) {
+  if (profile.countsUnits) {
+    return [
+      for (var n = 1; n <= math.max(1, profile.maxUnits); n++) base.water * n,
+    ];
+  }
+  final step = math.max(1, profile.waterStep);
+  final low = math.min(profile.minWater, base.water);
+  final high = math.max(profile.maxWater, base.water);
+  return <int>{
+    for (var water = low - low % step; water <= high; water += step)
+      if (water >= low) water,
+    base.water,
+    if (current != null) current,
+  }.toList()
+    ..sort();
 }
 
 ScaledRecipe _original(
@@ -251,6 +344,8 @@ ScaledRecipe _original(
     totalSeconds: total,
     baseTotalSeconds: total,
     warnings: const [],
+    family: profile.family,
+    unit: profile.unit,
   );
 }
 
@@ -280,6 +375,9 @@ class _Step {
     this.role = '',
     this.part = 0,
     this.parts = 1,
+    this.run = 0,
+    this.runs = 1,
+    this.units = 1,
   });
 
   final String kind;
@@ -287,20 +385,32 @@ class _Step {
   double water;
   double duration;
 
-  /// Индекс исходного шага; −1 — пауза между частями пролива.
+  /// Индекс исходного шага; −1 — шаг, которого в рецепте не было (пауза
+  /// между частями пролива, доливка в концентрат).
   final int source;
   String role;
   final int part;
   final int parts;
 
+  /// Заход из [runs] — у эспрессо, гейзера, аэропресса в несколько заходов.
+  final int run;
+  final int runs;
+
+  /// Сколько порций делается этим действием сразу (дрип-пакеты, каппинг).
+  final int units;
+
   bool get isExtra => source < 0;
 
-  _Step copy(
-          {double? water,
-          double? duration,
-          String? label,
-          int? part,
-          int? parts}) =>
+  _Step copy({
+    double? water,
+    double? duration,
+    String? label,
+    int? part,
+    int? parts,
+    int? run,
+    int? runs,
+    int? units,
+  }) =>
       _Step(
         kind: kind,
         label: label ?? this.label,
@@ -310,6 +420,9 @@ class _Step {
         role: role,
         part: part ?? this.part,
         parts: parts ?? this.parts,
+        run: run ?? this.run,
+        runs: runs ?? this.runs,
+        units: units ?? this.units,
       );
 }
 
@@ -332,7 +445,7 @@ class _Scaler {
     required this.scale,
     required this.baseClick,
     required this.size,
-    required this.splitWaitLabel,
+    required this.labels,
   })  : k = water / base.water,
         dose = (base.load * water / base.water * 10).round() / 10 {
     final tan = math.tan(profile.halfAngleDeg * math.pi / 180);
@@ -355,7 +468,7 @@ class _Scaler {
   final List<GrinderMode> scale;
   final String? baseClick;
   final String size;
-  final String splitWaitLabel;
+  final ScaleLabels labels;
 
   final double k;
   final double dose;
@@ -418,15 +531,38 @@ class _Scaler {
         s.role = switch (profile.family) {
           ScalingFamily.percolation => seenWater ? 'drain' : 'pause',
           ScalingFamily.valve => valveOpen ? 'drain' : 'steep',
-          ScalingFamily.immersion => 'steep',
+          ScalingFamily.immersion ||
+          ScalingFamily.concentrate ||
+          ScalingFamily.coldSteep =>
+            'steep',
+          // Ждём пенку — это нагрев, а не настаивание.
+          ScalingFamily.heated => step.untilUser ? 'heat' : 'steep',
+          ScalingFamily.repeat ||
+          ScalingFamily.parallel ||
+          ScalingFamily.coldDrip =>
+            'pause',
         };
       }
+      // Открытый клапан, который держат дольше паузы, — это и есть слив
+      // (Gina: у неё нет отдельного шага ожидания после клапана).
+      if (kind == 'open_valve' && step.time >= 20) s.role = 'drain';
       out.add(s);
     }
     if (profile.family == ScalingFamily.percolation) {
       for (var i = out.length - 1; i >= 0; i--) {
         if (out[i].kind == 'wait') {
           out[i].role = 'drawdown';
+          break;
+        }
+      }
+    }
+    // Нагрев без «ждём пенку» (перколятор): греется первая пауза после
+    // заливки, дальше — уже само заваривание.
+    if (profile.family == ScalingFamily.heated &&
+        !out.any((s) => s.role == 'heat')) {
+      for (final s in out) {
+        if (s.kind == 'wait') {
+          s.role = 'heat';
           break;
         }
       }
@@ -501,7 +637,7 @@ class _Scaler {
           if (j < n - 1) {
             out.add(_Step(
               kind: 'wait',
-              label: splitWaitLabel,
+              label: labels.splitWait,
               water: 0,
               duration: math.max(5, part / outflow - part / qi),
               source: -1,
@@ -649,7 +785,7 @@ class _Scaler {
       if ((s.kind == 'pour' || s.kind == 'bloom') && s.water > 0) {
         final w = s.water * k;
         out.add(s.copy(water: w, duration: math.max(s.duration, w / q)));
-      } else if (s.kind == 'wait' && s.role == 'drain') {
+      } else if (s.role == 'drain') {
         final d = s.duration * drain;
         extraDrain += (d - s.duration) * profile.drainContribution;
         out.add(s.copy(duration: d));
@@ -664,16 +800,17 @@ class _Scaler {
     final steepTotal = steeps.fold(0.0, (sum, s) => sum + s.duration);
     for (final s in steeps) {
       final share = steepTotal > 0 ? s.duration / steepTotal : 0.0;
-      s.duration = s.duration / rho - extraDrain * share;
+      // Треть настаивания остаётся всегда. Иначе у цилиндра (Pulsar) втрое
+      // глубже слой сливается так долго, что «забирает» всё настаивание и
+      // уводит время в минус. Это уже за пределами объёма прибора — о том
+      // скажет предупреждение.
+      s.duration = math.max(
+        s.duration / rho - extraDrain * share,
+        s.duration / rho / 3,
+      );
     }
 
-    final warnings = <ScaleWarning>[
-      if (capacity > 0 && water + bedMl * 0.32 > capacity)
-        ScaleWarning(ScaleWarningKind.overCapacity, size: size),
-      if (dose < profile.minDoseGrams)
-        ScaleWarning(ScaleWarningKind.tooThin,
-            grams: profile.minDoseGrams.round()),
-    ];
+    final warnings = _capacityWarnings();
 
     return _finish(
       _Schedule(out, 0),
@@ -684,6 +821,314 @@ class _Scaler {
       warnings: warnings,
     );
   }
+
+  /// Скорость, с которой рецепт льёт воду, г/с — у заходов и порций та же.
+  double get _basePourRate {
+    final rates = [
+      for (final s in steps)
+        if ((s.kind == 'pour' || s.kind == 'bloom') &&
+            s.water > 0 &&
+            s.duration > 0)
+          s.water / s.duration,
+    ]..sort();
+    return rates.isEmpty ? 5.0 : rates.first;
+  }
+
+  // ── турка: нагрев до пенки растёт как масса воды ──
+  ScaledRecipe heated() {
+    final q0 = _basePourRate;
+    final out = <_Step>[
+      for (final s in steps)
+        if ((s.kind == 'pour' || s.kind == 'bloom') && s.water > 0)
+          s.copy(
+              water: s.water * k,
+              duration: math.max(s.duration, s.water * k / q0))
+        else if (s.role == 'heat')
+          // При том же огне тепла в секунду столько же, а греть надо в k раз
+          // больше воды: до пенки — в k раз дольше.
+          s.copy(duration: s.duration * k)
+        else if (_isWater(s.kind))
+          s.copy(water: s.water * k)
+        else
+          s.copy(),
+    ];
+    return _finish(
+      _Schedule(out, 0),
+      grindRatio: 1,
+      click: baseClick,
+      grinderId: null,
+      tempDrop: 0,
+      warnings: _capacityWarnings(),
+    );
+  }
+
+  // ── холодное настаивание: часы настаивания от объёма не зависят ──
+  ScaledRecipe coldSteep() {
+    final out = <_Step>[
+      for (final s in steps)
+        if ((s.kind == 'pour' || s.kind == 'bloom') && s.water > 0)
+          s.copy(water: s.water * k, duration: s.duration * k)
+        else if (s.kind == 'remove_filter' || s.kind == 'press')
+          // Процедить в k раз больше — в k раз дольше.
+          s.copy(duration: s.duration * k)
+        else if (_isWater(s.kind))
+          s.copy(water: s.water * k)
+        else
+          s.copy(),
+    ];
+    return _finish(
+      _Schedule(out, 0),
+      grindRatio: 1,
+      click: baseClick,
+      grinderId: null,
+      tempDrop: 0,
+      warnings: _capacityWarnings(),
+    );
+  }
+
+  // ── колд дрип: капли с той же скоростью — время как объём ──
+  ScaledRecipe coldDrip() {
+    var longest = -1;
+    for (var i = 0; i < steps.length; i++) {
+      if (steps[i].kind != 'wait') continue;
+      if (longest < 0 || steps[i].duration > steps[longest].duration) {
+        longest = i;
+      }
+    }
+    final out = <_Step>[
+      for (var i = 0; i < steps.length; i++)
+        if ((steps[i].kind == 'pour' || steps[i].kind == 'bloom') &&
+            steps[i].water > 0)
+          steps[i]
+              .copy(water: steps[i].water * k, duration: steps[i].duration * k)
+        else if (i == longest)
+          steps[i].copy(duration: steps[i].duration * k)
+        else if (_isWater(steps[i].kind))
+          steps[i].copy(water: steps[i].water * k)
+        else
+          steps[i].copy(),
+    ];
+    return _finish(
+      _Schedule(out, 0),
+      grindRatio: 1,
+      click: baseClick,
+      grinderId: null,
+      tempDrop: 0,
+      warnings: [
+        if (capacity > 0 && water > capacity)
+          ScaleWarning(ScaleWarningKind.refill, chamber: capacity.round()),
+        if (dose < profile.minDoseGrams)
+          ScaleWarning(ScaleWarningKind.tooThin,
+              grams: profile.minDoseGrams.round()),
+      ],
+    );
+  }
+
+  /// Сколько порций выбрано: барабан у заходов кратен рецепту.
+  int get _units => math.max(1, (water / base.water).round());
+
+  // ── заходы: тот же рецепт ещё раз — шот за шотом, гейзер за гейзером ──
+  ScaledRecipe repeat() {
+    final n = _units;
+    final out = <_Step>[
+      for (var run = 1; run <= n; run++)
+        for (final s in steps) s.copy(run: n > 1 ? run : 0, runs: n),
+    ];
+    return _finish(
+      _Schedule(out, 0),
+      grindRatio: 1,
+      click: baseClick,
+      grinderId: null,
+      tempDrop: 0,
+      warnings: const [],
+      waterOverride: base.water * n,
+      doseOverride: base.load * n,
+      runs: n,
+    );
+  }
+
+  // ── порции разом: действие на каждую, ожидание общее ──
+  ScaledRecipe parallel() {
+    final n = _units;
+    final out = <_Step>[
+      for (final s in steps)
+        if (s.kind == 'wait')
+          s.copy()
+        else if (_isWater(s.kind))
+          s.copy(water: s.water * n, duration: s.duration * n, units: n)
+        else
+          s.copy(duration: s.duration * n, units: n),
+    ];
+    return _finish(
+      _Schedule(out, 0),
+      grindRatio: 1,
+      click: baseClick,
+      grinderId: null,
+      tempDrop: 0,
+      warnings: const [],
+      waterOverride: base.water * n,
+      doseOverride: base.load * n,
+      runs: n,
+    );
+  }
+
+  /// Вода, которую рецепт льёт в камеру (без доливки), мл.
+  double get _chamberWaterBase => steps
+      .where((s) => (s.kind == 'pour' || s.kind == 'bloom') && s.water > 0)
+      .fold(0.0, (sum, s) => sum + s.water);
+
+  /// Концентрат в камере и вода в чашку — раздел 11 исследования.
+  ///
+  /// Крепость чашки та же, что у рецепта: сухих в чашке на грамм напитка
+  /// столько же. В камере W_b = min(W, V − v·D) воды; гуща удерживает L·D;
+  /// при крепком концентрате (низкое соотношение) экстракция немного ниже —
+  /// до −10 % к 1:5 (равновесие Liang 2021). Ищем наименьшую дозу D, при
+  /// которой e·D/W_b · (W_b − L·D) ≥ D₀/W₀ · (W − L·D).
+  ({double dose, double brewWater, double bypass, bool fits}) _concentrate(
+      double total) {
+    final d0 = base.load, w0 = _chamberWaterBase;
+    final lrr = profile.retainedPerGram;
+    final chamber = profile.chamberMl;
+    final v = profile.displacementMlPerGram;
+    final kk = total / w0;
+
+    // Помещается и так — просто больше всего, без доливки. Но не больше
+    // кофе, чем камера честно отожмёт: 36 г у Prismo — уже второй заход.
+    if (chamber <= 0 || total + v * d0 * kk <= chamber) {
+      final dose = d0 * kk;
+      return (
+        dose: dose,
+        brewWater: total,
+        bypass: 0.0,
+        fits: profile.maxDoseGrams <= 0 || dose <= profile.maxDoseGrams,
+      );
+    }
+
+    final r0 = w0 / d0, target = d0 / w0;
+    double lag(double ratio) =>
+        0.10 * ((r0 - ratio) / (r0 - 5)).clamp(0.0, 1.0).toDouble();
+    for (var d = d0 * kk * 0.8; d <= d0 * kk * 3; d += 0.05) {
+      final brew = math.min(total, chamber - v * d);
+      if (brew <= lrr * d) break;
+      final strength = (1 - lag(brew / d)) * d / brew * (brew - lrr * d);
+      if (strength >= target * (total - lrr * d)) {
+        final fits = (profile.maxDoseGrams <= 0 || d <= profile.maxDoseGrams) &&
+            brew / d >= profile.minBrewRatio;
+        return (dose: d, brewWater: brew, bypass: total - brew, fits: fits);
+      }
+    }
+    return (dose: d0 * kk, brewWater: total, bypass: 0.0, fits: false);
+  }
+
+  // ── камера: концентрат с доливкой, а когда не влезает — заходы ──
+  ScaledRecipe concentrate() {
+    final total = _chamberWaterBase * k;
+    var n = 1;
+    var plan = _concentrate(total);
+    while (!plan.fits && n < math.max(1, profile.maxUnits)) {
+      n += 1;
+      plan = _concentrate(total / n);
+    }
+
+    final q0 = _basePourRate;
+    final share =
+        _chamberWaterBase > 0 ? plan.brewWater / _chamberWaterBase : k;
+    var lastPress = -1;
+    for (var i = 0; i < steps.length; i++) {
+      if (steps[i].kind == 'press' || steps[i].kind == 'flip') lastPress = i;
+    }
+    if (lastPress < 0) {
+      lastPress = steps.lastIndexWhere((s) => s.kind != 'serve');
+    }
+
+    final out = <_Step>[];
+    for (var run = 1; run <= n; run++) {
+      for (var i = 0; i < steps.length; i++) {
+        final s = steps[i];
+        final r = n > 1 ? run : 0;
+        if ((s.kind == 'pour' || s.kind == 'bloom') && s.water > 0) {
+          final w = s.water * share;
+          out.add(s.copy(
+              water: w,
+              duration: math.max(s.duration, w / q0),
+              run: r,
+              runs: n));
+        } else {
+          out.add(s.copy(run: r, runs: n));
+        }
+        if (i == lastPress && plan.bypass >= 1) {
+          out.add(_Step(
+            kind: 'dilute',
+            // Аэропресс со льдом доливают холодной: горячая вода в чашке
+            // испортила бы весь смысл.
+            label: (base.temperature ?? 90) < 40
+                ? labels.diluteCold
+                : labels.dilute,
+            water: plan.bypass,
+            duration: math.max(5, plan.bypass / profile.maxPourRate),
+            source: -1,
+            run: r,
+            runs: n,
+          ));
+        }
+      }
+    }
+
+    return _finish(
+      _Schedule(out, 0),
+      grindRatio: 1,
+      click: baseClick,
+      grinderId: null,
+      tempDrop: 0,
+      warnings: [
+        if (n > 1)
+          ScaleWarning(ScaleWarningKind.runs,
+              parts: n, chamber: profile.chamberMl.round())
+        else if (plan.bypass >= 1)
+          ScaleWarning(ScaleWarningKind.bypass,
+              water: plan.bypass.round(), chamber: profile.chamberMl.round()),
+      ],
+      doseOverride: (plan.dose * n * 10).round() / 10,
+      runs: n,
+      bypassWater: (plan.bypass * n).round(),
+    );
+  }
+
+  /// Сколько воды стоит в приборе разом, мл.
+  ///
+  /// У клапана — только то, что налито при закрытом кране: у Gina второй
+  /// пролив идёт при открытом и сразу уходит в чашку, в воронке его от силы
+  /// половина. У Clever и Switch кран закрыт всё время — там это вся вода.
+  double get _heldWater {
+    if (profile.family != ScalingFamily.valve) return water.toDouble();
+    var open = false;
+    var held = 0.0, peak = 0.0;
+    for (final s in steps) {
+      if (s.kind == 'close_valve' || s.kind == 'open_valve') {
+        open = s.kind == 'open_valve';
+        held = 0;
+      }
+      if ((s.kind == 'pour' || s.kind == 'bloom') && s.water > 0) {
+        final w = s.water * k;
+        if (open) {
+          peak = math.max(peak, w / 2);
+        } else {
+          held += w;
+          peak = math.max(peak, held);
+        }
+      }
+    }
+    return peak;
+  }
+
+  /// Не войдёт в прибор: вода с кофе больше его объёма.
+  List<ScaleWarning> _capacityWarnings() => [
+        if (capacity > 0 && _heldWater + bedMl * 0.32 > capacity)
+          ScaleWarning(ScaleWarningKind.overCapacity, size: size),
+        if (dose < profile.minDoseGrams)
+          ScaleWarning(ScaleWarningKind.tooThin,
+              grams: profile.minDoseGrams.round()),
+      ];
 
   GrinderMode? _modeOf(String? label) {
     if (label == null || scale.isEmpty) return null;
@@ -708,7 +1153,13 @@ class _Scaler {
     required int? grinderId,
     required int tempDrop,
     required List<ScaleWarning> warnings,
+    int? waterOverride,
+    double? doseOverride,
+    int runs = 1,
+    int bypassWater = 0,
   }) {
+    final finalWater = waterOverride ?? water;
+    final finalDose = doseOverride ?? dose;
     // Время — до 5 с: секундомер у чайника точнее не прочитать. Шаги,
     // которых пересчёт не коснулся (размешать, нажать поршень), остаются
     // как в рецепте — и пять секунд вместо трёх там никому не нужны.
@@ -732,7 +1183,7 @@ class _Scaler {
       final baseSum = base.steps
           .where((s) => _isWater(s.stepType) && s.water > 0)
           .fold(0, (sum, s) => sum + s.water);
-      final target = (baseSum * k).round();
+      final target = (baseSum * finalWater / base.water).round();
       final poured =
           watered.where((s) => s.kind == 'bloom' || s.kind == 'pour').toList();
       final sink = poured.isNotEmpty ? poured.last : watered.last;
@@ -742,8 +1193,8 @@ class _Scaler {
     final total = plan.steps.fold(0.0, (sum, s) => sum + s.duration).round();
     final recipe = copyRecipe(base);
     recipe
-      ..water = water
-      ..load = dose
+      ..water = finalWater
+      ..load = finalDose
       ..time = total
       ..steps = [
         for (var i = 0; i < plan.steps.length; i++) _stepOf(plan.steps[i], i),
@@ -762,19 +1213,23 @@ class _Scaler {
 
     return ScaledRecipe(
       recipe: recipe,
-      water: water,
+      water: finalWater,
       baseWater: base.water,
-      dose: dose,
-      factor: k,
+      dose: finalDose,
+      factor: finalWater / base.water,
       bedDepthRatio: lambda,
       grindRatio: grindRatio,
       grindStep: profile.family == ScalingFamily.percolation ? click : null,
       baseGrindStep: baseClick,
       size: size,
-      cupMl: (water - profile.retainedPerGram * dose).round(),
+      cupMl: (finalWater - profile.retainedPerGram * finalDose).round(),
       totalSeconds: total,
       baseTotalSeconds: baseContact.round(),
       warnings: warnings,
+      family: profile.family,
+      runs: runs,
+      unit: profile.unit,
+      bypassWater: bypassWater,
     );
   }
 
@@ -782,12 +1237,14 @@ class _Scaler {
     if (s.isExtra) {
       return RecipeStep(
         seqNum: index + 1,
-        instruction: s.label,
-        water: 0,
+        instruction: s.runs > 1 && s.run > 0
+            ? '${s.run}/${s.runs} · ${s.label}'
+            : s.label,
+        water: s.water.round(),
         time: s.duration.round(),
         id: 0,
-        stepType: 'wait',
-        stepKey: 'scale-wait-$index',
+        stepType: s.kind,
+        stepKey: 'scale-${s.kind}-$index',
         tip: '',
         isOptional: false,
         untilUser: false,
@@ -797,21 +1254,35 @@ class _Scaler {
     }
     final from = base.steps[s.source];
     final key = from.stepKey.isEmpty ? 's${from.seqNum}' : from.stepKey;
+    var label = from.instruction;
+    var stepKey = key;
+    // Подписи без слов, чтобы не знать языка экрана: «2/3 · …» — второй
+    // заход из трёх, «… · 2/3» — вторая часть пролива, «×3» — сразу на три
+    // порции. Номер захода — впереди: длинное «Смолоть и засыпать в
+    // фильтр» обрезается многоточием, и номер в конце пропадал бы первым.
+    if (s.runs > 1 && s.run > 0) {
+      label = '${s.run}/${s.runs} · $label';
+      stepKey = '$stepKey-r${s.run}';
+    }
+    if (s.parts > 1) {
+      label = '$label · ${s.part}/${s.parts}';
+      stepKey = '$stepKey-${s.part}';
+    }
+    if (s.units > 1) label = '$label ×${s.units}';
+    final repeated = s.part > 1 || s.run > 1;
     return RecipeStep(
       seqNum: index + 1,
-      instruction: s.parts > 1
-          ? '${from.instruction} · ${s.part}/${s.parts}'
-          : from.instruction,
+      instruction: label,
       water: s.water.round(),
       time: s.duration.round(),
       id: from.id,
       stepType: from.stepType,
-      stepKey: s.parts > 1 ? '$key-${s.part}' : key,
-      tip: s.part > 1 ? '' : from.tip,
+      stepKey: stepKey,
+      tip: repeated ? '' : from.tip,
       isOptional: from.isOptional,
       untilUser: from.untilUser,
       untilSign: from.untilSign,
-      warning: s.part > 1 ? '' : from.warning,
+      warning: repeated ? '' : from.warning,
     );
   }
 }

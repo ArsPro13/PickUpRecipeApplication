@@ -2003,4 +2003,106 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get feedbackThanksText =>
       'We\'ve got your message. We\'ll reply to the email you signed in with.';
+
+  @override
+  String get brewScaleDilute => 'Top up with hot water';
+
+  @override
+  String get brewScaleDiluteCold => 'Top up with cold water';
+
+  @override
+  String brewScaleWarnBypass(String chamber, String water) {
+    return 'The chamber holds $chamber ml, so we brew it stronger and top up the cup with $water ml.';
+  }
+
+  @override
+  String brewScaleWarnRuns(String chamber, int parts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      parts,
+      locale: localeName,
+      other: '$parts rounds',
+      one: '$parts round',
+    );
+    return 'That much won\'t fit the $chamber ml chamber, so we brew in $_temp0.';
+  }
+
+  @override
+  String brewScaleWarnRefill(String chamber) {
+    return 'The tower holds $chamber ml — top it up as it drips.';
+  }
+
+  @override
+  String brewScalePerUnit(String grams) {
+    return '$grams g each';
+  }
+
+  @override
+  String brewScaleUnitRun(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rounds',
+      one: '$count round',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitShot(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count shots',
+      one: '$count shot',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitCapsule(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count capsules',
+      one: '$count capsule',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitBag(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bags',
+      one: '$count bag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitBowl(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bowls',
+      one: '$count bowl',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitCup(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cups',
+      one: '$count cup',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get brewScaledSavesVersion =>
+      'Once you start, it\'s saved as a new version of the recipe';
 }

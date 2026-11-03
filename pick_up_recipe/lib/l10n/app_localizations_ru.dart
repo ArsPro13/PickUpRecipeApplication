@@ -2037,4 +2037,120 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get feedbackThanksText =>
       'Письмо у нас. Ответим на почту, с которой вы вошли.';
+
+  @override
+  String get brewScaleDilute => 'Долейте горячую воду';
+
+  @override
+  String get brewScaleDiluteCold => 'Долейте холодную воду';
+
+  @override
+  String brewScaleWarnBypass(String chamber, String water) {
+    return 'Камера вмещает $chamber мл — заварим крепче и дольём $water мл в чашку.';
+  }
+
+  @override
+  String brewScaleWarnRuns(String chamber, int parts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      parts,
+      locale: localeName,
+      other: '$parts захода',
+      many: '$parts заходов',
+      few: '$parts захода',
+      one: '$parts заход',
+    );
+    return 'В камеру $chamber мл столько не войдёт — сварим за $_temp0.';
+  }
+
+  @override
+  String brewScaleWarnRefill(String chamber) {
+    return 'В колбу помещается $chamber мл — долейте воду по ходу.';
+  }
+
+  @override
+  String brewScalePerUnit(String grams) {
+    return 'по $grams г';
+  }
+
+  @override
+  String brewScaleUnitRun(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count захода',
+      many: '$count заходов',
+      few: '$count захода',
+      one: '$count заход',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitShot(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count шота',
+      many: '$count шотов',
+      few: '$count шота',
+      one: '$count шот',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitCapsule(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count капсулы',
+      many: '$count капсул',
+      few: '$count капсулы',
+      one: '$count капсула',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitBag(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count пакета',
+      many: '$count пакетов',
+      few: '$count пакета',
+      one: '$count пакет',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitBowl(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count чаши',
+      many: '$count чаш',
+      few: '$count чаши',
+      one: '$count чаша',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String brewScaleUnitCup(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count чашки',
+      many: '$count чашек',
+      few: '$count чашки',
+      one: '$count чашка',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get brewScaledSavesVersion =>
+      'Начнёте — сохранится новой версией рецепта';
 }

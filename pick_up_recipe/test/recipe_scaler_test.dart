@@ -124,7 +124,7 @@ ScaledRecipe scaleMoziana(int water, {String grinder = 'jx', String? size}) {
     baseClick: onC40 ? '27' : '60',
     grinderId: 99,
     size: size,
-    splitWaitLabel: 'Ждём, пока уйдёт',
+    labels: const ScaleLabels(splitWait: 'Ждём, пока уйдёт'),
   );
 }
 
@@ -275,8 +275,16 @@ void main() {
       expect(scaled.grindStep, isNull, reason: 'иммерсия помол не трогает');
       expect(scaled.recipe.grinderId, 11);
       expect(scaled.recipe.grindStep, '27');
-      // Литр воды и 60 г кофе в литровый пресс не войдут.
-      expect(scaled.warnings.map((warning) => warning.kind),
+      // Литр воды с 60 г кофе в литровый пресс входит: номинал Bodum — это
+      // вода по 125 мл на чашку с запасом 2,5 см до верха (исследование v3).
+      expect(scaled.warnings, isEmpty);
+
+      final over = scaleRecipe(
+        base: press,
+        water: 1100,
+        profile: ScalingProfile.builtIn('french_press')!,
+      );
+      expect(over.warnings.map((warning) => warning.kind),
           [ScaleWarningKind.overCapacity]);
     });
 
@@ -493,24 +501,30 @@ void main() {
   });
 
   group('что пересчитывается', () {
-    test('профили есть у пролива, клапана и иммерсии', () {
-      for (final slug in [
-        'hario_v60',
-        'origami',
-        'chemex',
-        'kalita_wave',
-        'april',
-        'batch_brewer',
-        'hario_switch',
-        'clever',
-        'french_press',
-      ]) {
-        expect(ScalingProfile.builtIn(slug), isNotNull, reason: slug);
-      }
+    test('у каждой семьи свои приборы', () {
+      final families = {
+        'hario_v60': ScalingFamily.percolation,
+        'batch_brewer': ScalingFamily.percolation,
+        'clever': ScalingFamily.valve,
+        'gina': ScalingFamily.valve,
+        'french_press': ScalingFamily.immersion,
+        'cezve': ScalingFamily.heated,
+        'siphon': ScalingFamily.heated,
+        'aeropress': ScalingFamily.concentrate,
+        'espresso': ScalingFamily.repeat,
+        'moka': ScalingFamily.repeat,
+        'drip_bag': ScalingFamily.parallel,
+        'cupping': ScalingFamily.parallel,
+        'cold_brew': ScalingFamily.coldSteep,
+        'cold_drip': ScalingFamily.coldDrip,
+      };
+      families.forEach((slug, family) {
+        expect(ScalingProfile.builtIn(slug)?.family, family, reason: slug);
+      });
     });
 
-    test('аэропресс, эспрессо, мока, турка — нет', () {
-      for (final slug in ['aeropress', 'espresso', 'moka', 'cezve', 'cold']) {
+    test('прибора нет в таблице — не пересчитывается', () {
+      for (final slug in ['cold', 'unknown_device', '']) {
         expect(ScalingProfile.builtIn(slug), isNull, reason: slug);
       }
     });

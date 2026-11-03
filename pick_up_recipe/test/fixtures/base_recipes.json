@@ -1,0 +1,3713 @@
+[
+ {
+  "slug": "cold_brew",
+  "name": "Колд брю (иммерсия)",
+  "group": "cold",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 600,
+   "load": 60.0,
+   "time": 43410,
+   "temperature": 20.0,
+   "grind_descriptor": "coarse",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить водой комнатной температуры",
+     "water": 600,
+     "time": 90,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать до полного смачивания",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание в холодильнике",
+     "water": 0,
+     "time": 43200,
+     "until_user": false
+    },
+    {
+     "type": "remove_filter",
+     "label": "Достать фильтр с гущей",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить концентрат",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "cold_drip",
+  "name": "Колд дрип",
+  "group": "cold",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 540,
+   "load": 60.0,
+   "time": 18000,
+   "temperature": 20.0,
+   "grind_descriptor": "medium_coarse",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду в верхнюю колбу",
+     "water": 540,
+     "time": 120,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настроить капли: 40-50 в минуту",
+     "water": 0,
+     "time": 180,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Капельная экстракция",
+     "water": 0,
+     "time": 17400,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 300,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "cold_aero",
+  "name": "Аэропресс со льдом",
+  "group": "cold",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 200,
+   "load": 20.0,
+   "time": 130,
+   "temperature": 20.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 200,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "press",
+     "label": "Отжим",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "toddy",
+  "name": "Тодди (Toddy)",
+  "group": "cold",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 1000,
+   "load": 100.0,
+   "time": 43410,
+   "temperature": 20.0,
+   "grind_descriptor": "coarse",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить водой комнатной температуры",
+     "water": 1000,
+     "time": 90,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать до полного смачивания",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание в холодильнике",
+     "water": 0,
+     "time": 43200,
+     "until_user": false
+    },
+    {
+     "type": "remove_filter",
+     "label": "Достать фильтр с гущей",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить концентрат",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "hario_switch",
+  "name": "Харио Свитч (Hario Switch)",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 250,
+   "load": 16.0,
+   "time": 185,
+   "temperature": 92.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "close_valve",
+     "label": "Закрыть клапан",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 50,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Долить до полного",
+     "water": 200,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "open_valve",
+     "label": "Открыть клапан",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 45,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "clever",
+  "name": "Клевер (Clever Dripper)",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 280,
+   "load": 18.0,
+   "time": 210,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "close_valve",
+     "label": "Клапан закрыт: держи вне чашки",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 280,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 120,
+     "until_user": false
+    },
+    {
+     "type": "open_valve",
+     "label": "Поставить на чашку",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "french_press",
+  "name": "Френч-пресс",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 480,
+   "load": 30.0,
+   "time": 300,
+   "temperature": 94.0,
+   "grind_descriptor": "coarse",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 480,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 210,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Снять корку",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Дать гуще осесть",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "press",
+     "label": "Опустить поршень",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "cezve",
+  "name": "Турка (джезва)",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 100,
+   "load": 8.0,
+   "time": 275,
+   "temperature": 20.0,
+   "grind_descriptor": "extra_fine",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить холодной водой",
+     "water": 100,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать до однородности",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Греть до подъёма пены",
+     "water": 0,
+     "time": 180,
+     "until_user": true
+    },
+    {
+     "type": "wait",
+     "label": "Снять с огня, дать осесть",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Второй подъём пены",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить по чашкам",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "siphon",
+  "name": "Сифон",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 310,
+   "load": 20.0,
+   "time": 150,
+   "temperature": 92.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду в нижнюю колбу",
+     "water": 310,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждать подъёма воды наверх",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать после засыпки",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Экстракция",
+     "water": 0,
+     "time": 45,
+     "until_user": false
+    },
+    {
+     "type": "remove_filter",
+     "label": "Снять с огня, вода уходит вниз",
+     "water": 0,
+     "time": 25,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "eva_solo",
+  "name": "Эва Соло (Eva Solo)",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 500,
+   "load": 32.0,
+   "time": 360,
+   "temperature": 94.0,
+   "grind_descriptor": "coarse",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 500,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 270,
+     "until_user": false
+    },
+    {
+     "type": "remove_filter",
+     "label": "Вынуть фильтр",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "sowden",
+  "name": "Соуден Софтбрю (Sowden Softbrew)",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 450,
+   "load": 30.0,
+   "time": 300,
+   "temperature": 94.0,
+   "grind_descriptor": "coarse",
+   "steps": [
+    {
+     "type": "custom",
+     "label": "Прогреть чайник кипятком",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Смочить кофе",
+     "water": 60,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Долить до метки",
+     "water": 390,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание под крышкой",
+     "water": 0,
+     "time": 210,
+     "until_user": false
+    },
+    {
+     "type": "remove_filter",
+     "label": "Вынуть корзину",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить сразу",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "espro",
+  "name": "Эспро Пресс (Espro Press)",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 480,
+   "load": 32.0,
+   "time": 330,
+   "temperature": 94.0,
+   "grind_descriptor": "coarse",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 480,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 240,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Снять корку",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Дать гуще осесть",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "press",
+     "label": "Опустить поршень",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "vacone",
+  "name": "Вакуан Эйр (VacOne Air)",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 280,
+   "load": 18.0,
+   "time": 210,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "close_valve",
+     "label": "Клапан закрыт: держи вне чашки",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 280,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 120,
+     "until_user": false
+    },
+    {
+     "type": "open_valve",
+     "label": "Поставить на чашку",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "cupping",
+  "name": "Каппинг",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 200,
+   "load": 11.0,
+   "time": 300,
+   "temperature": 93.0,
+   "grind_descriptor": "medium_coarse",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 200,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 210,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Снять корку",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Дать гуще осесть",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "press",
+     "label": "Опустить поршень",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "bripe",
+  "name": "Брайп (Bripe)",
+  "group": "immersion",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 90,
+   "load": 10.0,
+   "time": 275,
+   "temperature": 20.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить холодной водой",
+     "water": 90,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать до однородности",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Греть до подъёма пены",
+     "water": 0,
+     "time": 180,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Снять с огня, дать осесть",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Второй подъём пены",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить по чашкам",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "hario_v60",
+  "name": "Харио V60 (Hario V60)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 250,
+   "load": 15.0,
+   "time": 165,
+   "temperature": 93.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 45,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 105,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 100,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 65,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "chemex",
+  "name": "Кемекс (Chemex)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 500,
+   "load": 30.0,
+   "time": 290,
+   "temperature": 94.0,
+   "grind_descriptor": "medium_coarse",
+   "steps": [
+    {
+     "type": "custom",
+     "label": "Промыть фильтр",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 60,
+     "time": 45,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 190,
+     "time": 45,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 250,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 90,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "kalita_wave",
+  "name": "Калита Вейв (Kalita Wave)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 310,
+   "load": 20.0,
+   "time": 190,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 50,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый импульс",
+     "water": 80,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй импульс",
+     "water": 90,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Третий импульс",
+     "water": 90,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 55,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "origami",
+  "name": "Оригами (Origami)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 240,
+   "load": 15.0,
+   "time": 180,
+   "temperature": 93.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 45,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "swirl",
+     "label": "Взболтать воронку",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 95,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 100,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 50,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "april",
+  "name": "Эйприл (April Brewer)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 300,
+   "load": 18.0,
+   "time": 170,
+   "temperature": 97.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 60,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "swirl",
+     "label": "Взболтать воронку",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 140,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 100,
+     "time": 25,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "batch_brewer",
+  "name": "Капельная кофеварка (batch brew)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 1020,
+   "load": 60.0,
+   "time": 300,
+   "temperature": 94.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть и разровнять в корзине",
+     "water": 0,
+     "time": 45,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Запустить пролив",
+     "water": 1020,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пролив",
+     "water": 0,
+     "time": 195,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "phin",
+  "name": "Вьетнамский фин",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 140,
+   "load": 20.0,
+   "time": 300,
+   "temperature": 94.0,
+   "grind_descriptor": "medium_coarse",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Смочить кофе",
+     "water": 40,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Предсмачивание",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Долить доверху",
+     "water": 100,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Капельный пролив",
+     "water": 0,
+     "time": 200,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "drip_bag",
+  "name": "Дрип-пакет",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 150,
+   "load": 10.0,
+   "time": 150,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 30,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Долить до полного",
+     "water": 120,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 80,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "kono",
+  "name": "Коно Мэймон (Kono Meimon)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 250,
+   "load": 15.0,
+   "time": 135,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "custom",
+     "label": "Сделать лунку в шапке",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Каплями в центр",
+     "water": 50,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Расширять круг",
+     "water": 100,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Долить до полного",
+     "water": 100,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "melitta",
+  "name": "Мелитта (Melitta)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 300,
+   "load": 20.0,
+   "time": 210,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 50,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 130,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 120,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 65,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "daiso",
+  "name": "Дайсо (Daiso)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 240,
+   "load": 15.0,
+   "time": 165,
+   "temperature": 92.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 45,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 100,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 95,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 65,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "lilydrip",
+  "name": "Лилидрип (LilyDrip)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 250,
+   "load": 15.0,
+   "time": 150,
+   "temperature": 93.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "custom",
+     "label": "Вставить лепесток и посадить фильтр",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 45,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 105,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 100,
+     "time": 25,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "torch",
+  "name": "Торч Маунтин (Torch Mountain)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 280,
+   "load": 18.0,
+   "time": 195,
+   "temperature": 94.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "custom",
+     "label": "Разровнять слой",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 55,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 115,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 110,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 45,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "phoenix",
+  "name": "Феникс 70 (Phoenix 70)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 400,
+   "load": 25.0,
+   "time": 240,
+   "temperature": 95.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 50,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Порция 2",
+     "water": 50,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Порция 3",
+     "water": 50,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Порция 4",
+     "water": 50,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Порция 5",
+     "water": 100,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Порция 6",
+     "water": 100,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "gina",
+  "name": "Джина (Gina)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 220,
+   "load": 15.0,
+   "time": 210,
+   "temperature": 95.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "close_valve",
+     "label": "Закрыть кран",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив, 80 °C",
+     "water": 50,
+     "time": 45,
+     "until_user": false
+    },
+    {
+     "type": "open_valve",
+     "label": "Открыть кран",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив, 95 °C",
+     "water": 100,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "close_valve",
+     "label": "Закрыть кран",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Третий пролив, 80 °C",
+     "water": 70,
+     "time": 45,
+     "until_user": false
+    },
+    {
+     "type": "open_valve",
+     "label": "Открыть и слить",
+     "water": 0,
+     "time": 45,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "funnex",
+  "name": "Фаннекс (Funnex)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 260,
+   "load": 16.0,
+   "time": 180,
+   "temperature": 93.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 48,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 112,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 100,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "pourigami",
+  "name": "Миир Пуригами (MiiR Pourigami)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 300,
+   "load": 18.0,
+   "time": 195,
+   "temperature": 94.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "custom",
+     "label": "Собрать три пластины",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 55,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 130,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 115,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 50,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "woodneck",
+  "name": "Нел-дрип Вуднек (Woodneck)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 280,
+   "load": 20.0,
+   "time": 180,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "custom",
+     "label": "Отжать и прогреть фильтр",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 50,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 120,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 110,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "pour_over",
+  "name": "Пуровер (любой)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 250,
+   "load": 15.0,
+   "time": 180,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 45,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 105,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 100,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 55,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "orea",
+  "name": "Ореа (Orea)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 270,
+   "load": 17.0,
+   "time": 190,
+   "temperature": 94.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 55,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 80,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Третий пролив",
+     "water": 65,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Четвёртый пролив",
+     "water": 70,
+     "time": 25,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "stagg",
+  "name": "Феллоу Стэгг [X] (Fellow Stagg [X])",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 350,
+   "load": 22.0,
+   "time": 150,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 50,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "До 200 г",
+     "water": 150,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "До 350 г",
+     "water": 150,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "tricolate",
+  "name": "Триколейт (Tricolate)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 400,
+   "load": 20.0,
+   "time": 270,
+   "temperature": 93.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание 3:1",
+     "water": 60,
+     "time": 45,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 170,
+     "time": 50,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 170,
+     "time": 45,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 90,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "pulsar",
+  "name": "Некстлевел Пульсар (NextLevel Pulsar)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 340,
+   "load": 20.0,
+   "time": 225,
+   "temperature": 94.0,
+   "grind_descriptor": "medium_coarse",
+   "steps": [
+    {
+     "type": "close_valve",
+     "label": "Прикрыть клапан",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 60,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Залить остаток",
+     "water": 280,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание в столбе",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "open_valve",
+     "label": "Открыть клапан",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 75,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "melodrip",
+  "name": "Мелодрип (Melodrip)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 300,
+   "load": 18.0,
+   "time": 180,
+   "temperature": 95.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание без сита",
+     "water": 55,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Взять сито",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив через сито",
+     "water": 130,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив через сито",
+     "water": 115,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 50,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "cafflano_kompact",
+  "name": "Каффлано Компакт (Cafflano Kompact)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 250,
+   "load": 15.0,
+   "time": 200,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "custom",
+     "label": "Разложить и прогреть",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Засыпать и залить",
+     "water": 250,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 120,
+     "until_user": false
+    },
+    {
+     "type": "remove_filter",
+     "label": "Снять микрофильтр",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "cafflano_klassic",
+  "name": "Каффлано Классик (Cafflano Klassic)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 300,
+   "load": 20.0,
+   "time": 240,
+   "temperature": 94.0,
+   "grind_descriptor": "medium_coarse",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть встроенной мельницей",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 40,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 140,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 120,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 55,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "karlsbader",
+  "name": "Карлсбадер (Karlsbader)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 350,
+   "load": 22.0,
+   "time": 240,
+   "temperature": 96.0,
+   "grind_descriptor": "extra_coarse",
+   "steps": [
+    {
+     "type": "custom",
+     "label": "Прогреть весь набор",
+     "water": 0,
+     "time": 25,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять слой встряхиванием",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив в рассекатель",
+     "water": 120,
+     "time": 35,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 25,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Долить остаток",
+     "water": 230,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 90,
+     "until_user": false
+    },
+    {
+     "type": "remove_filter",
+     "label": "Снять оба сита",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "kalita_flat",
+  "name": "Калита без волн (Kalita)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 300,
+   "load": 20.0,
+   "time": 190,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 48,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый импульс",
+     "water": 77,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй импульс",
+     "water": 87,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Третий импульс",
+     "water": 88,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 55,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "cuppamoka",
+  "name": "Вакако Каппамока (Wacaco Cuppamoka)",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 250,
+   "load": 15.0,
+   "time": 165,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 45,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 105,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 100,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 65,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "sock",
+  "name": "Тканевый мешок",
+  "group": "pour_over",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 300,
+   "load": 20.0,
+   "time": 165,
+   "temperature": 93.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "bloom",
+     "label": "Предсмачивание",
+     "water": 54,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Первый пролив",
+     "water": 126,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Пауза",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Второй пролив",
+     "water": 120,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Ждём пролива",
+     "water": 0,
+     "time": 65,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "aeropress",
+  "name": "Аэропресс",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 210,
+   "load": 15.0,
+   "time": 130,
+   "temperature": 85.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 210,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "press",
+     "label": "Отжим",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "aeropress_inverted",
+  "name": "Аэропресс перевёрнутый",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 220,
+   "load": 15.0,
+   "time": 135,
+   "temperature": 85.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "invert",
+     "label": "Перевернуть аэропресс",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 220,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "flip",
+     "label": "Перевернуть на чашку",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    },
+    {
+     "type": "press",
+     "label": "Отжим",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "moka",
+  "name": "Гейзерная кофеварка (мока)",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 153,
+   "load": 18.0,
+   "time": 300,
+   "temperature": 100.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть и засыпать в фильтр",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Залить воду в нижнюю часть",
+     "water": 153,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Греть до первых струек",
+     "water": 0,
+     "time": 180,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Снять с огня на бульканье",
+     "water": 0,
+     "time": 30,
+     "until_user": true
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "percolator",
+  "name": "Перколятор",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 640,
+   "load": 40.0,
+   "time": 540,
+   "temperature": 100.0,
+   "grind_descriptor": "coarse",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду в корпус",
+     "water": 640,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Довести до цикла",
+     "water": 0,
+     "time": 120,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Циркуляция",
+     "water": 0,
+     "time": 300,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Снять с огня и разлить",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "espresso",
+  "name": "Эспрессо",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 36,
+   "load": 18.0,
+   "time": 67,
+   "temperature": 93.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 36,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "delter",
+  "name": "Делтер Пресс (Delter Press)",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 300,
+   "load": 20.0,
+   "time": 130,
+   "temperature": 94.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 300,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "press",
+     "label": "Отжим",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "flair",
+  "name": "Флэр (Flair)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 36,
+   "load": 18.0,
+   "time": 67,
+   "temperature": 94.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 36,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "cafelat_robot",
+  "name": "Кафелат Робот (Cafelat Robot)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 42,
+   "load": 18.0,
+   "time": 67,
+   "temperature": 94.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 42,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "leverpresso",
+  "name": "Леверпрессо (Leverpresso)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 36,
+   "load": 18.0,
+   "time": 67,
+   "temperature": 93.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 36,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "rok",
+  "name": "РОК (ROK)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 36,
+   "load": 18.0,
+   "time": 67,
+   "temperature": 93.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 36,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "handpresso",
+  "name": "Хэндпрессо (Handpresso)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 50,
+   "load": 16.0,
+   "time": 67,
+   "temperature": 92.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 50,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "kompresso",
+  "name": "Каффлано Компрессо (Cafflano Kompresso)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 30,
+   "load": 10.0,
+   "time": 67,
+   "temperature": 92.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 30,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "trinity_zero",
+  "name": "Тринити Зиро (Trinity Zero)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 36,
+   "load": 18.0,
+   "time": 67,
+   "temperature": 93.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 36,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "trinity_one",
+  "name": "Тринити Ван (Trinity One)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 36,
+   "load": 18.0,
+   "time": 67,
+   "temperature": 93.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 36,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "capsule",
+  "name": "Капсульная машина",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 40,
+   "load": 6.0,
+   "time": 67,
+   "temperature": 90.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 40,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "picopresso",
+  "name": "Вакако Пикопрессо (Wacaco Picopresso)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 45,
+   "load": 18.0,
+   "time": 67,
+   "temperature": 93.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 45,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "nanopresso",
+  "name": "Вакако Нанопрессо (Wacaco Nanopresso)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 16,
+   "load": 8.0,
+   "time": 67,
+   "temperature": 92.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 16,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "minipresso",
+  "name": "Вакако Минипрессо (Wacaco Minipresso)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 40,
+   "load": 8.0,
+   "time": 67,
+   "temperature": 92.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 40,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "staresso",
+  "name": "Старессо (Staresso)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 45,
+   "load": 10.0,
+   "time": 67,
+   "temperature": 92.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 45,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "staresso_mini",
+  "name": "Старессо Мини (Staresso Mini)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 35,
+   "load": 8.0,
+   "time": 67,
+   "temperature": 92.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 35,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "staresso_pro",
+  "name": "Старессо Про (Staresso Pro)",
+  "group": "pressure",
+  "water_meaning": "in_cup",
+  "recipe": {
+   "water": 36,
+   "load": 18.0,
+   "time": 67,
+   "temperature": 90.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть в корзину",
+     "water": 0,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "custom",
+     "label": "Разровнять и утрамбовать",
+     "water": 0,
+     "time": 15,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Пролив",
+     "water": 36,
+     "time": 27,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 5,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "pipamoka",
+  "name": "Вакако Пипамока (Wacaco Pipamoka)",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 200,
+   "load": 18.0,
+   "time": 130,
+   "temperature": 94.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 200,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "press",
+     "label": "Отжим",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "prismo",
+  "name": "Аэропресс с Призмо (Prismo)",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 120,
+   "load": 18.0,
+   "time": 130,
+   "temperature": 90.0,
+   "grind_descriptor": "medium_fine",
+   "steps": [
+    {
+     "type": "pour",
+     "label": "Залить воду",
+     "water": 120,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "stir",
+     "label": "Размешать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Настаивание",
+     "water": 0,
+     "time": 60,
+     "until_user": false
+    },
+    {
+     "type": "press",
+     "label": "Отжим",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Подавать",
+     "water": 0,
+     "time": 10,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "brikka",
+  "name": "Биалетти Брикка (Bialetti Brikka)",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 150,
+   "load": 18.0,
+   "time": 300,
+   "temperature": 100.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть и засыпать в фильтр",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Залить воду в нижнюю часть",
+     "water": 150,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Греть до первых струек",
+     "water": 0,
+     "time": 180,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Снять с огня на бульканье",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "neapolitan",
+  "name": "Неаполитанская кофеварка",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 300,
+   "load": 25.0,
+   "time": 300,
+   "temperature": 100.0,
+   "grind_descriptor": "medium",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть и засыпать в фильтр",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Залить воду в нижнюю часть",
+     "water": 300,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Греть до первых струек",
+     "water": 0,
+     "time": 180,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Снять с огня на бульканье",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ },
+ {
+  "slug": "nine_barista",
+  "name": "Найн Бариста (9Barista)",
+  "group": "pressure",
+  "water_meaning": "poured",
+  "recipe": {
+   "water": 60,
+   "load": 20.0,
+   "time": 300,
+   "temperature": 100.0,
+   "grind_descriptor": "fine",
+   "steps": [
+    {
+     "type": "grind",
+     "label": "Смолоть и засыпать в фильтр",
+     "water": 0,
+     "time": 40,
+     "until_user": false
+    },
+    {
+     "type": "pour",
+     "label": "Залить воду в нижнюю часть",
+     "water": 60,
+     "time": 20,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Греть до первых струек",
+     "water": 0,
+     "time": 180,
+     "until_user": false
+    },
+    {
+     "type": "wait",
+     "label": "Снять с огня на бульканье",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    },
+    {
+     "type": "serve",
+     "label": "Разлить",
+     "water": 0,
+     "time": 30,
+     "until_user": false
+    }
+   ]
+  }
+ }
+]
