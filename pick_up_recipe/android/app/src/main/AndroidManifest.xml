@@ -34,6 +34,36 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- Ссылки recipetocup.ru/r/<код>: QR с пачки, кнопка «Открыть в
+                 приложении» в виджете на сайте обжарщика, QR на листе из PDF.
+
+                 Без этого фильтра браузеру некому отдать ссылку: в маршрутах
+                 приложения /r/:code был с самого начала, а в манифесте —
+                 нет, и любая ссылка с кодом открывалась только сайтом.
+                 Кнопка виджета зовёт приложение intent-ссылкой с явным
+                 пакетом — ей хватает самого фильтра. autoVerify нужен
+                 другому случаю: чтобы камера открывала код сразу в
+                 приложении, без браузера. Он заработает, когда на сервере
+                 появится настоящий /.well-known/assetlinks.json с отпечатком
+                 подписи (backend/users/static/README.md); до тех пор Android
+                 просто считает домен неподтверждённым и ничего не ломает. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="https"
+                    android:host="recipetocup.ru"
+                    android:pathPrefix="/r/"/>
+            </intent-filter>
+
+            <!-- Отдаёт путь ссылки роутеру (auto_route): /r/<код> открывает
+                 экран кофе. С Flutter 3.27 это умолчание, но явное значение
+                 не даёт ему тихо выключиться при смене версии движка. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="true"/>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

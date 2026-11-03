@@ -125,6 +125,7 @@ enum AuthAction {
   changePassword,
   register,
   verifyEmail,
+  deleteAccount,
 }
 
 /// Почему сервер не пустил.

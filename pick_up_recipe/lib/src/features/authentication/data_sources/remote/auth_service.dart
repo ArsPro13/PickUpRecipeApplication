@@ -212,6 +212,22 @@ class AuthService {
     return prefs.getString('refresh_token');
   }
 
+  /// Удаляет аккаунт на сервере вместе со всеми данными.
+  ///
+  /// Токены здесь не трогаются: их вместе с остальным локальным стирает
+  /// выход, который notifier зовёт следом. 403 — аккаунт обжарщика: за ним
+  /// позиции и коды на пачках, и сервер удаляет такие только по письму.
+  Future<void> deleteAccount() async {
+    final response = await _apiClient.delete('/auth/profile');
+
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw AuthFailure.fromResponse(
+        response,
+        action: AuthAction.deleteAccount,
+      );
+    }
+  }
+
   Future<void> logout() async {
     final prefs = EncryptedSharedPreferences.getInstance();
     await prefs.remove('access_token');

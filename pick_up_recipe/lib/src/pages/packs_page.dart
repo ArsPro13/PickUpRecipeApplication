@@ -1,8 +1,10 @@
-// Экран 02 «Мои пачки» — корень приложения.
+// Экран 02 «Мои пачки» — вторая вкладка.
 //
-// Пачка — это то, что стоит на кухне, поэтому приложение открывается ею,
-// а не списком рецептов. Кофемолка вынесена кнопкой в шапку: от неё зависят
-// щелчки в каждом рецепте, и менять её приходится чаще, чем что-либо в профиле.
+// До 2 ноября 2026 был корнем приложения: «пачка стоит на кухне, поэтому
+// приложение открывается ею». Владелец решил открывать приложение рецептами,
+// и полка стала второй вкладкой. Кофемолка осталась кнопкой в шапке: от неё
+// зависят щелчки в каждом рецепте, и менять её приходится чаще, чем что-либо
+// в профиле.
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -11,13 +13,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
-import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/application/state/active_packs_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
-import '../features/recipes/application/rating_draft.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/grinder_button.dart';
+import '../general_widgets/unfinished_rating_plate.dart';
 import '../general_widgets/app_kit.dart';
 import '../themes/app_icons.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
@@ -46,20 +47,14 @@ class _PacksPageState extends ConsumerState<PacksPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(activePacksNotifierProvider.notifier).fetchPacks();
-      ref.read(grinderStateProvider.notifier).loadUserGrinders();
       // История нужна ради двух вещей: меток «чем эту пачку заваривали» и
-      // того, какая пачка открыта. Провайдер общий со второй вкладкой, так
+      // того, какая пачка открыта. Провайдер общий с вкладкой «Рецепты», так
       // что запрос один на обе.
+      //
+      // Кофемолки, справочник приборов и недописанную оценку грузит корень
+      // (root_page.dart): вкладки строятся лениво, а нужны эти данные с
+      // первого экрана, какой бы он ни был.
       ref.read(recipesListProvider.notifier).load();
-      // Справочник приборов нужен меткам: по нему они узнают семью и цвет.
-      // Загружается один раз на всё приложение, поэтому лишнего запроса
-      // при переходах не выходит.
-      if (ref.read(brewMethodsProvider).grouped.isEmpty) {
-        ref.read(brewMethodsProvider.notifier).load();
-      }
-      // Незаконченная оценка ищется здесь: это первая вкладка, и после
-      // перезапуска человек оказывается ровно на ней.
-      RatingDrafts.load();
     });
   }
 
@@ -109,7 +104,7 @@ class _PacksPageState extends ConsumerState<PacksPage> {
             primaryAction: AppButton(
               label: AppLocalizations.of(context).packsScanCode,
               icon: AppIcons.uiScan,
-              onPressed: () => AutoTabsRouter.of(context).setActiveIndex(2),
+              onPressed: () => context.router.navigate(const ScanRoute()),
             ),
           ),
         ],
@@ -147,7 +142,7 @@ class _PacksPageState extends ConsumerState<PacksPage> {
                   label: AppLocalizations.of(context).packsAdd,
                   icon: AppIcons.uiPlus,
                   kind: AppButtonKind.secondary,
-                  onPressed: () => AutoTabsRouter.of(context).setActiveIndex(2),
+                  onPressed: () => context.router.navigate(const ScanRoute()),
                 ),
               ],
             ),
@@ -175,87 +170,6 @@ class _PacksPageState extends ConsumerState<PacksPage> {
           // в схеме нет, а «с ней и заваривают» — ровно это и значит.
           highlighted: groups.isNotEmpty && groups.first.packId == pack.packId,
           onTap: () => context.router.push(CoffeeRoute(packId: pack.packId)),
-        );
-      },
-    );
-  }
-}
-
-/// Плашка «оценка не дописана».
-///
-/// Место выбрано так же, как у плашки офлайна на странице кофе: рядом с тем,
-/// ради чего экран открыли, и без своего экрана. Первая вкладка — то, что
-/// человек видит после перезапуска, и другого места, где он сам додумался бы
-/// искать позавчерашнюю недооценённую чашку, попросту нет.
-///
-/// Смотрит прямо за `RatingDrafts.current`, а не через провайдер: черновик
-/// пишет чужой экран, и второй источник правды между ними только разошёлся бы
-/// с первым.
-class UnfinishedRatingPlate extends StatelessWidget {
-  const UnfinishedRatingPlate({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<RatingDraft?>(
-      valueListenable: RatingDrafts.current,
-      builder: (context, draft, _) {
-        if (draft == null) return const SizedBox.shrink();
-
-        final texts = AppLocalizations.of(context);
-
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.s4,
-            AppSpacing.s2,
-            AppSpacing.s4,
-            0,
-          ),
-          child: AppCard(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.s4,
-              vertical: AppSpacing.s3,
-            ),
-            onTap: () => context.router.push(
-              RatingRoute(recipe: draft.recipe, pack: draft.pack),
-            ),
-            child: Row(
-              children: [
-                AppIcon(
-                  AppIcons.uiStar,
-                  size: AppSizes.icon20,
-                  color: context.colors.primary,
-                ),
-                const SizedBox(width: AppSpacing.s3),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(texts.ratingDraftTitle,
-                          style: context.texts.bodyMedium),
-                      Text(
-                        draft.summaryFor(texts).isEmpty
-                            ? texts.ratingDraftContinue
-                            : texts.ratingDraftContinueWith(
-                                draft.summaryFor(texts)),
-                        style: context.texts.labelSmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: RatingDrafts.clear,
-                  tooltip: texts.remove,
-                  icon: AppIcon(
-                    AppIcons.uiClose,
-                    size: AppSizes.icon16,
-                    color: context.colors.secondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       },
     );

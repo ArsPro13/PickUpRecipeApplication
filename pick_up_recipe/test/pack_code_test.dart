@@ -121,6 +121,42 @@ void main() {
     });
   });
 
+  // Что приходит со сканера: в QR на пачке лежит ссылка, которую собирает
+  // pkg/qr на бэкенде, — `<QR_BASE_URL>/r/<код>`.
+  group('что прочитала камера', () {
+    const demo = 'ABCD234568';
+
+    test('ссылка с пачки отдаёт код', () {
+      expect(PackCode.fromScan('https://recipetocup.ru/r/$demo'), demo);
+    });
+
+    test('домен не сверяется: он может смениться, а тираж останется', () {
+      expect(PackCode.fromScan('https://pickuprecipe.ru/r/$demo'), demo);
+      expect(PackCode.fromScan('http://localhost:1323/r/$demo'), demo);
+    });
+
+    test('слэш в конце, запрос и пробелы вокруг не мешают', () {
+      expect(PackCode.fromScan(' https://recipetocup.ru/r/$demo/?utm=pack\n'),
+          demo);
+    });
+
+    test('голый код — и в печатном виде тоже', () {
+      expect(PackCode.fromScan(demo), demo);
+      expect(PackCode.fromScan('abcd-2345-68'), demo);
+    });
+
+    test('чужой QR — не код', () {
+      expect(PackCode.fromScan(''), isNull);
+      expect(PackCode.fromScan('https://example.com/menu'), isNull);
+      expect(PackCode.fromScan('https://recipetocup.ru/r/'), isNull);
+      expect(PackCode.fromScan('WIFI:S:Кофейня;T:WPA;P:12345678;;'), isNull);
+    });
+
+    test('ссылка с опечаткой в коде не открывается', () {
+      expect(PackCode.fromScan('https://recipetocup.ru/r/ABCD234567'), isNull);
+    });
+  });
+
   // Вынос строк в словарь не должен переписать объяснения: по-русски человек
   // обязан прочитать ровно то же, что читал до правки.
   group('объяснения для человека', () {

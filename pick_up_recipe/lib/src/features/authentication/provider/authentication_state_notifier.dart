@@ -117,6 +117,14 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
     state = state.copyWith(status: AuthState.needsAuthentication);
   }
 
+  /// Удаление аккаунта: сервер стирает данные, приложение — то же, что при
+  /// выходе. Если сервер отказал, локально не трогается ничего: человек
+  /// остаётся в аккаунте и видит причину.
+  Future<void> deleteAccount() async {
+    await _authService.deleteAccount();
+    await logout();
+  }
+
   Future<void> verifyMail(String email, String code) async {
     try {
       await _authService.verifyMail(

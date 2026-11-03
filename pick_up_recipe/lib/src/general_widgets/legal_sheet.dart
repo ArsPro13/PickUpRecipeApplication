@@ -5,6 +5,7 @@ import '../features/legal/data_sources/remote/legal_service.dart';
 import '../features/legal/domain/legal_document.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
+import 'legal_markdown_view.dart';
 
 /// Заголовок листа по виду документа.
 ///
@@ -127,13 +128,12 @@ class _LegalSheetState extends State<_LegalSheet> {
                             style: context.texts.bodySmall,
                           ),
                         ),
-                      // Markdown показывается как есть, без разметки: тянуть
-                      // ради этих трёх документов пакет-рендерер незачем, а
-                      // читаемость от решёток в заголовках не страдает.
-                      SelectableText(
-                        document.body,
-                        style: context.texts.bodySmall,
-                      ),
+                      // Разметку разбирает свой маленький разбор: голым
+                      // текстом лист показывал решётки, звёздочки и таблицы
+                      // из вертикальных черт, а пакет-рендерер ради трёх
+                      // документов тянуть незачем. Выделение и копирование —
+                      // как раньше, через SelectionArea.
+                      SelectionArea(child: LegalMarkdownView(document.body)),
                     ],
                   );
                 },

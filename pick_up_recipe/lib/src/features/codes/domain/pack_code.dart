@@ -76,6 +76,33 @@ abstract final class PackCode {
   /// Сходится ли контрольный символ.
   static bool isValid(String code) => problem(normalize(code)) == null;
 
+  /// Код из того, что прочитала камера, или null, если QR не наш.
+  ///
+  /// В QR на пачке лежит ссылка `https://<домен>/r/<код>` (ADR 0004): её же
+  /// открывает обычная камера телефона, когда приложения нет. Домен не
+  /// сверяется: он задан на сервере (QR_BASE_URL), может смениться, а
+  /// тираж с прежним останется на полках. Чужой код отсекает контрольный
+  /// символ, а что за ним стоит, всё равно решает сервер.
+  ///
+  /// Голый код (`ABCD-2345-68`) тоже принимается: так печатают его текстом
+  /// под QR, и ничто не мешает обжарщику положить в QR его же.
+  static String? fromScan(String payload) {
+    final text = payload.trim();
+    if (text.isEmpty) return null;
+
+    var candidate = text;
+    final uri = Uri.tryParse(text);
+    if (uri != null && (uri.scheme == 'https' || uri.scheme == 'http')) {
+      final path = uri.pathSegments.where((part) => part.isNotEmpty).toList();
+      final at = path.indexOf('r');
+      if (at < 0 || at + 1 >= path.length) return null;
+      candidate = path[at + 1];
+    }
+
+    final code = normalize(candidate);
+    return problem(code) == null ? code : null;
+  }
+
   /// Что именно не так с кодом. null — код в порядке.
   ///
   /// Причина разбирается до знака, а не сводится к «код неверный»: человеку

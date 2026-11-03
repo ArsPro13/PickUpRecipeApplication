@@ -7,9 +7,11 @@
 //     проверяет только длину (ответ на вопрос 8). Требовать в форме то, чего
 //     сервер не требует, значит отказывать в пароле, который он бы принял;
 //
-//   • добавлено согласие на обработку данных с двумя ссылками (ответ на
-//     вопрос 11). Для сторов и для 152-ФЗ это обязательный флажок, и без него
-//     приложение не подать.
+//   • добавлено согласие на обработку данных (ответ на вопрос 11). С
+//     1 сентября 2025 года оно оформляется отдельно от прочих документов
+//     (152-ФЗ, ст. 9), поэтому отметок две: «принимаю соглашение» и «даю
+//     согласие». Политика — строкой под ними, без флажка: её не принимают,
+//     а читают.
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/gestures.dart';
@@ -49,6 +51,7 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   String? _repeatError;
   String? _formError;
 
+  bool _terms = false;
   bool _consent = false;
   bool _busy = false;
 
@@ -98,11 +101,12 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
       _passwordError = AuthRules.passwordProblem(_password.text)?.text(texts);
       _repeatError =
           AuthRules.repeatProblem(_password.text, _repeat.text)?.text(texts);
-      _formError = _consent ? null : texts.registerConsentRequired;
+      _formError = _terms && _consent ? null : texts.registerConsentRequired;
     });
     if (_emailError != null ||
         _passwordError != null ||
         _repeatError != null ||
+        !_terms ||
         !_consent) {
       return;
     }
@@ -204,12 +208,28 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
         ),
         const SizedBox(height: AppSpacing.s4),
         _ConsentRow(
+          value: _terms,
+          prefix: texts.registerTermsPrefix,
+          link: texts.registerTermsLink,
+          document: LegalKind.userAgreement,
+          onChanged: (value) => setState(() {
+            _terms = value;
+            _formError = null;
+          }),
+        ),
+        const SizedBox(height: AppSpacing.s3),
+        _ConsentRow(
           value: _consent,
+          prefix: texts.registerDataPrefix,
+          link: texts.registerDataLink,
+          document: LegalKind.consent,
           onChanged: (value) => setState(() {
             _consent = value;
             _formError = null;
           }),
         ),
+        const SizedBox(height: AppSpacing.s3),
+        const _PolicyNote(),
         if (_formError != null) ...[
           const SizedBox(height: AppSpacing.s3),
           Text(
@@ -244,18 +264,27 @@ class _AuthRegisterPageState extends ConsumerState<AuthRegisterPage> {
   }
 }
 
-/// Согласие на обработку данных: флажок и две ссылки (ответ на вопрос 11).
+/// Одна отметка: флажок, текст и ссылка на документ.
 ///
-/// Ссылки открывают документы листом снизу — они приезжают с сервера
-/// (`/legal/*`) и там же меняются, без пересборки приложения.
+/// Ссылка открывает документ листом снизу — он приезжает с сервера
+/// (`/legal/*`) и там же меняется, без пересборки приложения. Сам текст
+/// перед ссылкой переключает флажок.
 ///
-/// Вторая ссылка ведёт на пользовательское соглашение, а не на оферту:
-/// оферты нет и не будет, пока в сервисе нет платежей, а ссылка на
-/// несуществующий документ хуже её отсутствия.
+/// Соглашение, а не оферта: оферты нет и не будет, пока в сервисе нет
+/// платежей, а ссылка на несуществующий документ хуже её отсутствия.
 class _ConsentRow extends StatefulWidget {
-  const _ConsentRow({required this.value, required this.onChanged});
+  const _ConsentRow({
+    required this.value,
+    required this.prefix,
+    required this.link,
+    required this.document,
+    required this.onChanged,
+  });
 
   final bool value;
+  final String prefix;
+  final String link;
+  final LegalKind document;
   final ValueChanged<bool> onChanged;
 
   @override
@@ -265,30 +294,29 @@ class _ConsentRow extends StatefulWidget {
 class _ConsentRowState extends State<_ConsentRow> {
   // Распознаватели нажатий живут столько же, сколько виджет, и требуют
   // явного освобождения: без dispose каждая перерисовка формы оставляла бы
-  // после себя ещё один.
-  late final TapGestureRecognizer _privacyTap;
-  late final TapGestureRecognizer _agreementTap;
+  // после себя ещё один. Замыкания читают widget в момент нажатия, поэтому
+  // и после перерисовки флажок переключается от актуального значения.
+  late final TapGestureRecognizer _toggleTap;
+  late final TapGestureRecognizer _documentTap;
 
   @override
   void initState() {
     super.initState();
-    _privacyTap = TapGestureRecognizer()
-      ..onTap = () => showLegalSheet(context, LegalKind.privacy);
-    _agreementTap = TapGestureRecognizer()
-      ..onTap = () => showLegalSheet(context, LegalKind.userAgreement);
+    _toggleTap = TapGestureRecognizer()
+      ..onTap = () => widget.onChanged(!widget.value);
+    _documentTap = TapGestureRecognizer()
+      ..onTap = () => showLegalSheet(context, widget.document);
   }
 
   @override
   void dispose() {
-    _privacyTap.dispose();
-    _agreementTap.dispose();
+    _toggleTap.dispose();
+    _documentTap.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final texts = AppLocalizations.of(context);
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -308,38 +336,79 @@ class _ConsentRowState extends State<_ConsentRow> {
             TextSpan(
               style: context.texts.bodySmall,
               children: [
-                // Сам текст переключает флажок, ссылки — открывают документ.
+                TextSpan(text: widget.prefix, recognizer: _toggleTap),
                 TextSpan(
-                  text: texts.consentPrefix,
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () => widget.onChanged(!widget.value),
-                ),
-                TextSpan(
-                  text: texts.consentPrivacy,
+                  text: widget.link,
                   style: TextStyle(
                     color: context.colors.primary,
                     decoration: TextDecoration.underline,
                   ),
-                  recognizer: _privacyTap,
-                ),
-                TextSpan(
-                  text: texts.consentAnd,
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () => widget.onChanged(!widget.value),
-                ),
-                TextSpan(
-                  text: texts.consentAgreement,
-                  style: TextStyle(
-                    color: context.colors.primary,
-                    decoration: TextDecoration.underline,
-                  ),
-                  recognizer: _agreementTap,
+                  recognizer: _documentTap,
                 ),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Строка под отметками: где прочитать, как обращаются с данными.
+///
+/// Без флажка: политику не принимают — это рассказ оператора о том, что он
+/// делает с данными. Прочитать её до регистрации человек должен иметь
+/// возможность, и ссылка здесь ровно для этого.
+class _PolicyNote extends StatefulWidget {
+  const _PolicyNote();
+
+  @override
+  State<_PolicyNote> createState() => _PolicyNoteState();
+}
+
+class _PolicyNoteState extends State<_PolicyNote> {
+  late final TapGestureRecognizer _policyTap;
+
+  @override
+  void initState() {
+    super.initState();
+    _policyTap = TapGestureRecognizer()
+      ..onTap = () => showLegalSheet(context, LegalKind.privacy);
+  }
+
+  @override
+  void dispose() {
+    _policyTap.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    return Padding(
+      // Под текстом отметок, а не под флажками: так строка читается как
+      // пояснение к ним, а не как третья отметка без флажка.
+      padding: const EdgeInsets.only(left: AppSizes.icon24 + AppSpacing.s3),
+      child: Text.rich(
+        TextSpan(
+          // Тем же цветом, что текст отметок: пояснение не должно звучать
+          // громче того, к чему оно поясняет.
+          style: context.texts.bodySmall,
+          children: [
+            TextSpan(text: texts.registerPolicyNote),
+            TextSpan(
+              text: texts.registerPolicyLink,
+              style: TextStyle(
+                color: context.colors.primary,
+                decoration: TextDecoration.underline,
+              ),
+              recognizer: _policyTap,
+            ),
+            const TextSpan(text: '.'),
+          ],
+        ),
+      ),
     );
   }
 }

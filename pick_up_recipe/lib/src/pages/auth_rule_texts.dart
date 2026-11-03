@@ -75,5 +75,6 @@ extension AuthActionText on AuthAction {
         AuthAction.changePassword => texts.svcAuthFailedChangePassword,
         AuthAction.register => texts.svcAuthFailedRegister,
         AuthAction.verifyEmail => texts.svcAuthFailedVerifyEmail,
+        AuthAction.deleteAccount => texts.svcAuthFailedDeleteAccount,
       };
 }

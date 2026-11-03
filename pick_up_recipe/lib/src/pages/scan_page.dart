@@ -32,7 +32,6 @@ class ScanPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
-    void openCamera() => context.router.push(const RecognitionCameraRoute());
 
     return Scaffold(
       appBar: AppBar(title: Text(texts.scanTitle)),
@@ -44,10 +43,14 @@ class ScanPage extends StatelessWidget {
           AppSpacing.s8,
         ),
         children: [
-          _CameraFrame(onTap: openCamera),
+          // Кадр открывает сканер. Раньше он вёл туда же, куда кнопка ниже, —
+          // в форму новой пачки, и «отсканировать» было нельзя вовсе.
+          _CameraFrame(
+            onTap: () => context.router.push(const CodeScannerRoute()),
+          ),
           const SizedBox(height: AppSpacing.s3),
           Text(
-            texts.scanCodeIsSmall,
+            texts.scanHint,
             style: context.texts.bodySmall,
             textAlign: TextAlign.center,
           ),
@@ -58,7 +61,7 @@ class ScanPage extends StatelessWidget {
           AppButton(
             label: texts.scanNoCode,
             icon: AppIcons.uiCamera,
-            onPressed: openCamera,
+            onPressed: () => context.router.push(const RecognitionCameraRoute()),
           ),
         ],
       ),

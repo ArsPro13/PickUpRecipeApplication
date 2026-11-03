@@ -100,23 +100,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get registerConsentRequired =>
-      'Without your consent we cannot create an account';
+      'Tick both boxes: we cannot create an account without them';
 
   @override
   String get registerTermsUnavailable =>
       'Could not load the terms. Check your connection and try again.';
 
   @override
-  String get consentPrefix => 'I agree to the ';
+  String get registerTermsPrefix => 'I accept the ';
 
   @override
-  String get consentPrivacy => 'data processing policy';
+  String get registerTermsLink => 'user agreement';
 
   @override
-  String get consentAnd => ' and the ';
+  String get registerDataPrefix => 'I give my ';
 
   @override
-  String get consentAgreement => 'user agreement';
+  String get registerDataLink => 'consent to the processing of personal data';
+
+  @override
+  String get registerPolicyNote =>
+      'How we handle your data is described in the ';
+
+  @override
+  String get registerPolicyLink => 'data processing policy';
 
   @override
   String get verifyTitle => 'Confirm your email';
@@ -566,6 +573,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileStay => 'Stay';
 
   @override
+  String get profileDeleteAccount => 'Delete account';
+
+  @override
+  String get profileDeleteTitle => 'Delete your account?';
+
+  @override
+  String get profileDeleteConfirm =>
+      'Your packs, recipes, brews and ratings will be deleted for good. They cannot be restored.';
+
+  @override
+  String get profileDeleteAction => 'Delete';
+
+  @override
+  String get profileDeleteCancel => 'Cancel';
+
+  @override
+  String get profileDeleteRoaster =>
+      'Roaster accounts are deleted on request: write to coffee@recipetocup.ru';
+
+  @override
   String get clear => 'Clear';
 
   @override
@@ -578,11 +605,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scanTapToAim => 'tap to aim';
 
   @override
-  String get scanCodeIsSmall =>
-      'The code is small — look for it in the corner of the pack';
+  String get scanHint =>
+      'The QR code on the pack opens the recipes for this coffee';
 
   @override
   String get scanNoCode => 'There is no code on the pack';
+
+  @override
+  String get scannerAim => 'Point the camera at the QR code on the pack';
+
+  @override
+  String get scannerForeignCode =>
+      'This QR code isn\'t ours — look for another one on the pack';
+
+  @override
+  String get scannerNoAccess =>
+      'No access to the camera. Allow it in the phone settings.';
+
+  @override
+  String get scannerFailed => 'The camera didn\'t open';
+
+  @override
+  String get scannerTorch => 'Flashlight';
 
   @override
   String get saving => 'Saving…';
@@ -1721,6 +1765,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get svcAuthFailedRegister => 'Could not sign up';
+
+  @override
+  String get svcAuthFailedDeleteAccount => 'Could not delete the account';
 
   @override
   String get svcAuthFailedVerifyEmail => 'Could not confirm the email';

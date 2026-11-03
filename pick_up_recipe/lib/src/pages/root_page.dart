@@ -1,26 +1,36 @@
 // Корень приложения: четыре вкладки.
 //
-// Пачки · Рецепты · Сканировать · Профиль. Первая вкладка — «Мои пачки»:
-// продукт устроен как «взял пачку → заварил», и открывать его чем-то другим
-// значит просить человека сначала найти нужное.
+// Рецепты · Пачки · Сканировать · Профиль. Первая вкладка и главный экран —
+// «Рецепты»: так решил владелец 2 ноября 2026. Приложение открывают, чтобы
+// повторить то, что уже получилось, и список заваренного — ближайший путь к
+// таймеру. До этого первыми стояли «Мои пачки».
 //
 // Раньше вкладок было две — «Main» и «Add pack», и вторая сразу открывала
 // камеру. Камера прячет два пути из трёх: ручной ввод кода и «нет кода»
 // (ответ на вопрос 32), поэтому вкладка «Сканировать» ведёт на экран 01,
 // а камера открывается уже оттуда.
+//
+// Загрузки, нужные всему приложению, живут здесь, а не на первой вкладке.
+// Вкладки строятся лениво, и то, что грузила когда-то первая, на любой
+// другой первой просто не появлялось бы: заваривание из «Рецептов» видело
+// бы помол словом вместо кликов, а метки приборов — без цвета семьи.
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
+import '../features/brew_methods/application/brew_methods_state.dart';
+import '../features/grinders/application/grinder_state.dart';
+import '../features/recipes/application/rating_draft.dart';
 import '../general_widgets/app_icon.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
 
 @RoutePage()
-class RootScreen extends StatelessWidget {
+class RootScreen extends ConsumerStatefulWidget {
   const RootScreen({super.key});
 
   /// Вкладки в порядке показа.
@@ -33,12 +43,12 @@ class RootScreen extends StatelessWidget {
     AppLocalizations texts,
   ) {
     return [
-      (route: const PacksRoute(), label: texts.tabPacks, icon: AppIcons.uiPack),
       (
         route: const RecipesRoute(),
         label: texts.tabRecipes,
         icon: AppIcons.uiHistory
       ),
+      (route: const PacksRoute(), label: texts.tabPacks, icon: AppIcons.uiPack),
       (route: const ScanRoute(), label: texts.tabScan, icon: AppIcons.uiScan),
       (
         route: const ProfileRoute(),
@@ -49,10 +59,35 @@ class RootScreen extends StatelessWidget {
   }
 
   @override
+  ConsumerState<RootScreen> createState() => _RootScreenState();
+}
+
+class _RootScreenState extends ConsumerState<RootScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Кофемолка нужна раньше любой вкладки: по ней считаются клики на
+      // заваривании, а туда ведёт уже верхняя карточка «Рецептов».
+      ref.read(grinderStateProvider.notifier).loadUserGrinders();
+      // Справочник приборов — меткам на карточках: по нему они узнают
+      // семью и цвет. Один раз на всё приложение.
+      if (ref.read(brewMethodsProvider).grouped.isEmpty) {
+        ref.read(brewMethodsProvider.notifier).load();
+      }
+      // Незаконченная оценка ищется сразу после входа: после перезапуска
+      // плашка «продолжите» должна стоять на главном экране, а он может
+      // оказаться любой вкладкой.
+      RatingDrafts.load();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AutoTabsScaffold(
-      routes:
-          tabs(AppLocalizations.of(context)).map((tab) => tab.route).toList(),
+      routes: RootScreen.tabs(AppLocalizations.of(context))
+          .map((tab) => tab.route)
+          .toList(),
       bottomNavigationBuilder: (_, tabsRouter) {
         return _TabBar(tabsRouter: tabsRouter);
       },

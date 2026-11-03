@@ -7,9 +7,12 @@
 // рецептом (стопка листается, а виджет держит первую версию); нажатие на неё
 // заодно пускает таймер, потому что тап проваливается в карточку под кнопкой.
 
+import 'dart:ui' as ui;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:encrypt_shared_preferences/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -149,6 +152,57 @@ final _playButtons = find.byWidgetPredicate(
 final _starButtons = find.byWidgetPredicate(
   (widget) => widget is AppIcon && widget.asset == AppIcons.uiStar,
 );
+
+/// Во сколько раз снимок экрана плотнее логических точек — как у телефона.
+const double _ratio = 3;
+
+/// Снимок того, что нарисовано вокруг [target]: цвет точки по её месту на
+/// экране.
+///
+/// Снимается ближайший слой над [target] — тот же приём, которым
+/// `matchesGoldenFile` берёт картинку для сравнения.
+Future<Color Function(Offset)> _screenshot(
+  WidgetTester tester,
+  Finder target,
+) async {
+  var boundary = tester.renderObject(target);
+  while (!boundary.isRepaintBoundary) {
+    boundary = boundary.parent!;
+  }
+  final box = boundary as RenderBox;
+  final origin = box.localToGlobal(Offset.zero);
+  final layer = box.debugLayer! as OffsetLayer;
+
+  final image = (await tester.runAsync(
+    () => layer.toImage(box.paintBounds, pixelRatio: _ratio),
+  ))!;
+  final bytes = (await tester.runAsync(
+    () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
+  ))!;
+  final width = image.width;
+  image.dispose();
+
+  return (global) {
+    final at = (global - origin) * _ratio;
+    final i = (at.dy.floor() * width + at.dx.floor()) * 4;
+    return Color.fromARGB(
+      bytes.getUint8(i + 3),
+      bytes.getUint8(i),
+      bytes.getUint8(i + 1),
+      bytes.getUint8(i + 2),
+    );
+  };
+}
+
+/// Та же краска, а не похожая: непрозрачная и с разницей не больше трёх
+/// ступеней из 255 в каждом канале.
+bool _sameInk(Color dot, Color ink) {
+  const step = 3 / 255;
+  return dot.a > 0.99 &&
+      (dot.r - ink.r).abs() <= step &&
+      (dot.g - ink.g).abs() <= step &&
+      (dot.b - ink.b).abs() <= step;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -357,6 +411,51 @@ void main() {
       final route = router.pushed.last;
       expect(route.routeName, RatingRoute.name);
       expect((route.args as RatingRouteArgs).recipe.id, 301);
+    });
+
+    // Владелец прислал снимок: справа рамка скруглена, а в левых углах её
+    // нет. Рамка рисовалась под содержимым, и фото пачки — прямоугольник —
+    // ложилось на её скругление. Устройство виджетов тут ничего не докажет,
+    // поэтому проверяется то, что видит глаз, — точки снимка экрана.
+    testWidgets('рамка цела во всех четырёх углах — фото её не накрывает',
+        (tester) async {
+      await pumpRecipes(tester, versions: [
+        _recipe(id: 301, date: '2026-09-09T10:00:00Z', load: 15, rated: false),
+        _recipe(id: 302, date: '2026-09-08T10:00:00Z', load: 16),
+      ]);
+
+      final card = find
+          .ancestor(of: _editButtons.last, matching: find.byType(Material))
+          .first;
+      final rect = tester.getRect(card);
+      final pixel = await _screenshot(tester, card);
+      final ink = lightTheme.colorScheme.primary;
+
+      // От вершины угла по диагонали внутрь, на восемь точек: скругление
+      // рамки при любом радиусе карточки лежит на этом пути, а фото и кнопки
+      // начинаются дальше.
+      int borderDots(Offset corner, Offset inward) {
+        var dots = 0;
+        for (var step = 0; step < 8 * _ratio; step++) {
+          if (_sameInk(pixel(corner + inward * ((step + 0.5) / _ratio)), ink)) {
+            dots++;
+          }
+        }
+        return dots;
+      }
+
+      expect(borderDots(rect.topLeft, const Offset(1, 1)),
+          greaterThanOrEqualTo(2),
+          reason: 'левый верхний угол: рамку накрыло фото');
+      expect(borderDots(rect.bottomLeft, const Offset(1, -1)),
+          greaterThanOrEqualTo(2),
+          reason: 'левый нижний угол: рамку накрыло фото');
+      // Справа рамку не теряли и до правки: эти два угла показывают, что
+      // проба рамку вообще видит.
+      expect(borderDots(rect.topRight, const Offset(-1, 1)),
+          greaterThanOrEqualTo(2));
+      expect(borderDots(rect.bottomRight, const Offset(-1, -1)),
+          greaterThanOrEqualTo(2));
     });
   });
 

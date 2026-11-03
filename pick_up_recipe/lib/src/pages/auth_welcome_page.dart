@@ -55,7 +55,7 @@ class AuthWelcomePage extends StatelessWidget {
               color: context.colors.primary,
             ),
             const SizedBox(height: AppSpacing.s4),
-            Text('PickUpRecipe', style: context.texts.titleLarge),
+            Text('Recipe to Cup', style: context.texts.titleLarge),
             const SizedBox(height: AppSpacing.s2),
             Text(
               texts.welcomeTagline,

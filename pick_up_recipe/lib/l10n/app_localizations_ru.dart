@@ -100,23 +100,29 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get registerConsentRequired =>
-      'Без согласия зарегистрировать аккаунт нельзя';
+      'Отметьте оба пункта: без них зарегистрироваться нельзя';
 
   @override
   String get registerTermsUnavailable =>
       'Не удалось загрузить условия. Проверьте связь и попробуйте ещё раз.';
 
   @override
-  String get consentPrefix => 'Соглашаюсь с ';
+  String get registerTermsPrefix => 'Принимаю ';
 
   @override
-  String get consentPrivacy => 'политикой обработки данных';
+  String get registerTermsLink => 'пользовательское соглашение';
 
   @override
-  String get consentAnd => ' и ';
+  String get registerDataPrefix => 'Даю ';
 
   @override
-  String get consentAgreement => 'пользовательским соглашением';
+  String get registerDataLink => 'согласие на обработку персональных данных';
+
+  @override
+  String get registerPolicyNote => 'Как мы обращаемся с данными, написано в ';
+
+  @override
+  String get registerPolicyLink => 'политике обработки данных';
 
   @override
   String get verifyTitle => 'Подтвердите почту';
@@ -585,6 +591,26 @@ class AppLocalizationsRu extends AppLocalizations {
   String get profileStay => 'Остаться';
 
   @override
+  String get profileDeleteAccount => 'Удалить аккаунт';
+
+  @override
+  String get profileDeleteTitle => 'Удалить аккаунт?';
+
+  @override
+  String get profileDeleteConfirm =>
+      'Пачки, рецепты, заварки и оценки удалятся навсегда. Восстановить их будет нельзя.';
+
+  @override
+  String get profileDeleteAction => 'Удалить';
+
+  @override
+  String get profileDeleteCancel => 'Отмена';
+
+  @override
+  String get profileDeleteRoaster =>
+      'Аккаунт обжарщика удаляется по письму на coffee@recipetocup.ru';
+
+  @override
   String get clear => 'Очистить';
 
   @override
@@ -597,10 +623,27 @@ class AppLocalizationsRu extends AppLocalizations {
   String get scanTapToAim => 'нажмите, чтобы навести';
 
   @override
-  String get scanCodeIsSmall => 'Код мелкий — ищите его в углу пачки';
+  String get scanHint => 'QR-код с пачки откроет рецепты для этого кофе';
 
   @override
   String get scanNoCode => 'На пачке нет кода';
+
+  @override
+  String get scannerAim => 'Наведите камеру на QR-код на пачке';
+
+  @override
+  String get scannerForeignCode =>
+      'Этот QR-код не наш — поищите другой на пачке';
+
+  @override
+  String get scannerNoAccess =>
+      'Нет доступа к камере. Разрешите его в настройках телефона.';
+
+  @override
+  String get scannerFailed => 'Камера не открылась';
+
+  @override
+  String get scannerTorch => 'Фонарик';
 
   @override
   String get saving => 'Сохраняем…';
@@ -1749,6 +1792,9 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get svcAuthFailedRegister => 'Не удалось зарегистрироваться';
+
+  @override
+  String get svcAuthFailedDeleteAccount => 'Не удалось удалить аккаунт';
 
   @override
   String get svcAuthFailedVerifyEmail => 'Не удалось подтвердить почту';

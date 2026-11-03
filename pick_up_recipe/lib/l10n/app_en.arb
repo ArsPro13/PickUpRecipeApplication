@@ -53,17 +53,21 @@
 
   "registerHaveAccount": "Already have an account?",
 
-  "registerConsentRequired": "Without your consent we cannot create an account",
+  "registerConsentRequired": "Tick both boxes: we cannot create an account without them",
 
   "registerTermsUnavailable": "Could not load the terms. Check your connection and try again.",
 
-  "consentPrefix": "I agree to the ",
+  "registerTermsPrefix": "I accept the ",
 
-  "consentPrivacy": "data processing policy",
+  "registerTermsLink": "user agreement",
 
-  "consentAnd": " and the ",
+  "registerDataPrefix": "I give my ",
 
-  "consentAgreement": "user agreement",
+  "registerDataLink": "consent to the processing of personal data",
+
+  "registerPolicyNote": "How we handle your data is described in the ",
+
+  "registerPolicyLink": "data processing policy",
 
   "verifyTitle": "Confirm your email",
 
@@ -289,6 +293,18 @@
 
   "profileStay": "Stay",
 
+  "profileDeleteAccount": "Delete account",
+
+  "profileDeleteTitle": "Delete your account?",
+
+  "profileDeleteConfirm": "Your packs, recipes, brews and ratings will be deleted for good. They cannot be restored.",
+
+  "profileDeleteAction": "Delete",
+
+  "profileDeleteCancel": "Cancel",
+
+  "profileDeleteRoaster": "Roaster accounts are deleted on request: write to coffee@recipetocup.ru",
+
   "clear": "Clear",
 
   "scanTitle": "The code from the pack",
@@ -297,9 +313,19 @@
 
   "scanTapToAim": "tap to aim",
 
-  "scanCodeIsSmall": "The code is small — look for it in the corner of the pack",
+  "scanHint": "The QR code on the pack opens the recipes for this coffee",
 
   "scanNoCode": "There is no code on the pack",
+
+  "scannerAim": "Point the camera at the QR code on the pack",
+
+  "scannerForeignCode": "This QR code isn't ours — look for another one on the pack",
+
+  "scannerNoAccess": "No access to the camera. Allow it in the phone settings.",
+
+  "scannerFailed": "The camera didn't open",
+
+  "scannerTorch": "Flashlight",
 
   "saving": "Saving…",
 
@@ -967,6 +993,8 @@
   "svcAuthFailedChangePassword": "Could not change the password",
 
   "svcAuthFailedRegister": "Could not sign up",
+
+  "svcAuthFailedDeleteAccount": "Could not delete the account",
 
   "svcAuthFailedVerifyEmail": "Could not confirm the email",
 

@@ -17,6 +17,7 @@ import '../src/pages/auth_verify_page.dart';
 import '../src/pages/auth_welcome_page.dart';
 import '../src/pages/brew_page.dart';
 import '../src/pages/choosing_recipe_page.dart';
+import '../src/pages/code_scanner_page.dart';
 import '../src/pages/coffee_page.dart';
 import '../src/pages/rating_conflict_page.dart';
 import '../src/pages/grinder_select_page.dart';
@@ -42,7 +43,8 @@ class AppRouter extends _$AppRouter {
 
   @override
   List<AutoRoute> get routes => [
-        // Корень — «Мои пачки». Гостя нет (ответ на вопрос 9), поэтому гвард
+        // Корень — «Рецепты» (решение владельца от 2 ноября 2026; до этого
+        // были «Мои пачки»). Гостя нет (ответ на вопрос 9), поэтому гвард
         // стоит на всём, кроме самого экрана входа.
         AutoRoute(
           page: RootRoute.page,
@@ -50,8 +52,8 @@ class AppRouter extends _$AppRouter {
           initial: true,
           guards: [AuthGuard(ref)],
           children: [
-            AutoRoute(page: PacksRoute.page, path: 'packs', initial: true),
-            AutoRoute(page: RecipesRoute.page, path: 'recipes'),
+            AutoRoute(page: RecipesRoute.page, path: 'recipes', initial: true),
+            AutoRoute(page: PacksRoute.page, path: 'packs'),
             AutoRoute(page: ScanRoute.page, path: 'scan'),
             AutoRoute(page: ProfileRoute.page, path: 'profile'),
           ],
@@ -60,10 +62,26 @@ class AppRouter extends _$AppRouter {
         // Диплинк по коду с упаковки: /r/{code} ведёт прямо на страницу кофе
         // (ADR 0004). Путь короткий намеренно — он печатается на пачке вместе
         // с доменом, и каждый символ там на счету.
+        //
+        // Объявление у страницы кофе ОДНО. Раньше рядом стояло второе, на
+        // '/coffee', и оно молча отключало это: auto_route складывает маршруты
+        // в словарь по имени страницы (RouteCollection.fromList), и второй
+        // CoffeeRoute затирал первый. Ссылка https://recipetocup.ru/r/<код>
+        // не находила маршрута вовсе — «Can not resolve initial route» на
+        // холодном старте и тишина на тёплом. Изнутри приложения экран
+        // открывается аргументами (CoffeeRoute(code: …) или (packId: …)), и
+        // путь ему не нужен.
+        //
+        // usesPathAsKey — чтобы вторая ссылка на ДРУГОЙ кофе открыла его, а
+        // не осталась на первом. Без него ключ страницы — имя маршрута, и
+        // auto_route, получив /r/<код Б> при открытом /r/<код А>, считал это
+        // тем же экраном: человек жал «Открыть в приложении» в виджете
+        // магазина и видел кофе, открытый в прошлый раз.
         AutoRoute(
-            page: CoffeeRoute.page, path: '/r/:code', guards: [AuthGuard(ref)]),
-        AutoRoute(
-            page: CoffeeRoute.page, path: '/coffee', guards: [AuthGuard(ref)]),
+            page: CoffeeRoute.page,
+            path: '/r/:code',
+            usesPathAsKey: true,
+            guards: [AuthGuard(ref)]),
 
         AutoRoute(
             page: RecipesForCoffeeRoute.page,
@@ -96,6 +114,13 @@ class AppRouter extends _$AppRouter {
         AutoRoute(
             page: RecognitionCameraRoute.page,
             path: '/pack-photo',
+            guards: [AuthGuard(ref)]),
+        // Живая камера для QR с пачки. Отдельным экраном, а не на вкладке:
+        // камера, открытая сама при каждом переключении вкладок, — это
+        // разрешение, индикатор записи и батарея на пустом месте.
+        AutoRoute(
+            page: CodeScannerRoute.page,
+            path: '/scan/camera',
             guards: [AuthGuard(ref)]),
 
         // Вход разбит на отдельные экраны, а не на режимы одной страницы:

@@ -521,10 +521,24 @@ class _VersionCard extends StatelessWidget {
     final texts = AppLocalizations.of(context);
     // Черновик не «неоценён»: его ещё не заваривали, оценивать нечего.
     final rated = version.recipe.hasEstimation || version.draft;
+    final radius = hero ? AppRadius.large : AppRadius.medium;
 
     return Material(
       color: context.colors.secondaryContainer,
-      borderRadius: hero ? AppRadius.large : AppRadius.medium,
+      // Обводка, а не заливка: заливка спорила бы с фотографией пачки,
+      // которая занимает левые четыре десятых карточки.
+      //
+      // Обводка — часть формы карточки и рисуется ПОВЕРХ содержимого. Раньше
+      // она жила в Ink, то есть под ним, и фото её накрывало: прямоугольный
+      // снимок ложился на скругление рамки, и в левых углах её не было. Справа
+      // под рамкой пусто, поэтому там она оставалась целой.
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: rated
+            ? BorderSide.none
+            : BorderSide(color: context.colors.primary, width: AppStroke.thick),
+      ),
+      borderOnForeground: true,
       clipBehavior: Clip.antiAlias,
       elevation: 0,
       child: InkWell(
@@ -533,14 +547,8 @@ class _VersionCard extends StatelessWidget {
         ),
         child: Ink(
           decoration: BoxDecoration(
-            borderRadius: hero ? AppRadius.large : AppRadius.medium,
+            borderRadius: radius,
             boxShadow: hero ? context.shadows.level2 : context.shadows.level1,
-            // Обводка, а не заливка: заливка спорила бы с фотографией пачки,
-            // которая занимает левые четыре десятых карточки.
-            border: rated
-                ? null
-                : Border.all(
-                    color: context.colors.primary, width: AppStroke.thick),
           ),
           child: Row(
             children: [

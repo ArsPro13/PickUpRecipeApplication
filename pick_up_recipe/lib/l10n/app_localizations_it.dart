@@ -102,23 +102,29 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get registerConsentRequired =>
-      'Senza il tuo consenso non possiamo creare un account';
+      'Spunta entrambe le caselle: senza di esse non possiamo creare un account';
 
   @override
   String get registerTermsUnavailable =>
       'Non è stato possibile caricare le condizioni. Controlla la connessione e riprova.';
 
   @override
-  String get consentPrefix => 'Accetto la ';
+  String get registerTermsPrefix => 'Accetto le ';
 
   @override
-  String get consentPrivacy => 'politica di trattamento dei dati';
+  String get registerTermsLink => 'condizioni d\'uso';
 
   @override
-  String get consentAnd => ' e le ';
+  String get registerDataPrefix => 'Do il mio ';
 
   @override
-  String get consentAgreement => 'condizioni d\'uso';
+  String get registerDataLink => 'consenso al trattamento dei dati personali';
+
+  @override
+  String get registerPolicyNote => 'Come trattiamo i dati è spiegato nella ';
+
+  @override
+  String get registerPolicyLink => 'politica di trattamento dei dati';
 
   @override
   String get verifyTitle => 'Conferma la tua email';
@@ -569,6 +575,26 @@ class AppLocalizationsIt extends AppLocalizations {
   String get profileStay => 'Resta';
 
   @override
+  String get profileDeleteAccount => 'Elimina account';
+
+  @override
+  String get profileDeleteTitle => 'Eliminare l\'account?';
+
+  @override
+  String get profileDeleteConfirm =>
+      'Pacchetti, ricette, estrazioni e valutazioni verranno eliminati per sempre. Non sarà possibile recuperarli.';
+
+  @override
+  String get profileDeleteAction => 'Elimina';
+
+  @override
+  String get profileDeleteCancel => 'Annulla';
+
+  @override
+  String get profileDeleteRoaster =>
+      'Gli account dei torrefattori si eliminano su richiesta: scrivi a coffee@recipetocup.ru';
+
+  @override
   String get clear => 'Cancella';
 
   @override
@@ -581,11 +607,28 @@ class AppLocalizationsIt extends AppLocalizations {
   String get scanTapToAim => 'tocca per inquadrare';
 
   @override
-  String get scanCodeIsSmall =>
-      'Il codice è piccolo — cercalo nell\'angolo della confezione';
+  String get scanHint =>
+      'Il codice QR sulla confezione apre le ricette per questo caffè';
 
   @override
   String get scanNoCode => 'Sulla confezione non c\'è un codice';
+
+  @override
+  String get scannerAim => 'Inquadra il codice QR sulla confezione';
+
+  @override
+  String get scannerForeignCode =>
+      'Questo codice QR non è nostro — cercane un altro sulla confezione';
+
+  @override
+  String get scannerNoAccess =>
+      'Nessun accesso alla fotocamera. Consentilo nelle impostazioni del telefono.';
+
+  @override
+  String get scannerFailed => 'La fotocamera non si è aperta';
+
+  @override
+  String get scannerTorch => 'Torcia';
 
   @override
   String get saving => 'Salvataggio…';
@@ -1727,6 +1770,10 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get svcAuthFailedRegister => 'Registrazione non riuscita';
+
+  @override
+  String get svcAuthFailedDeleteAccount =>
+      'Eliminazione dell\'account non riuscita';
 
   @override
   String get svcAuthFailedVerifyEmail => 'Conferma dell\'email non riuscita';

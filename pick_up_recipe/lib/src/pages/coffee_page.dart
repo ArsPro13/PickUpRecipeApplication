@@ -53,13 +53,26 @@ class CoffeePage extends ConsumerStatefulWidget {
   const CoffeePage(
       {super.key,
       @QueryParam('code') this.code,
-      @QueryParam('pack') this.packId});
+      @QueryParam('pack') this.packId,
+      @PathParam('code') this.linkCode});
 
-  /// Код с упаковки. Заполнен, если пришли по диплинку или ручным вводом.
+  /// Код с упаковки. Заполнен, если пришли ручным вводом или сканером.
   final String? code;
 
   /// Пачка. Заполнена, если пришли из списка своих пачек.
   final int? packId;
+
+  /// Код из пути диплинка `/r/<код>` — с пачки, с виджета на сайте
+  /// обжарщика или с листа из PDF.
+  ///
+  /// Отдельным полем, а не тем же [code]: маршрут `/r/:code` кладёт код в
+  /// ПУТЬ, а `@QueryParam` читает только строку запроса. С одним полем
+  /// ссылка `https://recipetocup.ru/r/<код>` открывала экран кофе без кода,
+  /// то есть «такого кода нет» на живой пачке.
+  final String? linkCode;
+
+  /// Код, по которому открыт экран, откуда бы он ни пришёл.
+  String? get packCode => code ?? linkCode;
 
   @override
   ConsumerState<CoffeePage> createState() => _CoffeePageState();
@@ -82,7 +95,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(coffeeStateProvider.notifier)
-          .open(code: widget.code, packId: widget.packId);
+          .open(code: widget.packCode, packId: widget.packId);
       // Прошлые рецепты — из того же списка, что у вкладки «Рецепты».
       // Сюда приходят и мимо неё — с полки или по коду, — и тогда список
       // ещё никто не загрузил.
@@ -153,7 +166,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
   /// Такого кода нет (S11). Проверять символы бессмысленно — контрольный
   /// символ уже сошёлся, значит код набран верно и его правда нет.
   Widget _notFound() {
-    final code = widget.code;
+    final code = widget.packCode;
     final texts = AppLocalizations.of(context);
 
     return ListView(
@@ -228,7 +241,7 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
       error: state.error,
       onRetry: () => ref
           .read(coffeeStateProvider.notifier)
-          .open(code: widget.code, packId: widget.packId),
+          .open(code: widget.packCode, packId: widget.packId),
     );
   }
 

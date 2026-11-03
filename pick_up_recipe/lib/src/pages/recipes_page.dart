@@ -1,4 +1,7 @@
-// Экран 07 «Рецепты» — вторая вкладка.
+// Экран 07 «Рецепты» — первая вкладка и главный экран (с 2 ноября 2026,
+// до этого — вторая после «Пачек»). Раз приложение открывается здесь, сюда
+// переехали две вещи главного экрана: кнопка кофемолки в шапке и плашка
+// недописанной оценки над списком.
 //
 // Группа — пара «кофе + метод» (ответ Q23b), а не цепочка prev_id/next_id: на
 // экране это выглядит одинаково, но владелец выбрал пару. Каждая группа —
@@ -11,11 +14,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../routing/app_router.dart';
 import '../features/packs/application/state/active_packs_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_kit.dart';
+import '../general_widgets/grinder_button.dart';
 import '../general_widgets/recipe_deck.dart';
+import '../general_widgets/unfinished_rating_plate.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_tokens.dart';
 
@@ -34,7 +40,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(recipesListProvider.notifier).load();
       // Пачки нужны ради фото и имени обжарщика: история их не отдаёт.
-      // Провайдер общий с первой вкладкой, лишнего запроса не выходит.
+      // Провайдер общий с вкладкой «Пачки», лишнего запроса не выходит.
       ref.read(activePacksNotifierProvider.notifier).fetchPacks();
     });
   }
@@ -48,10 +54,24 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
     final packs = ref.watch(activePacksNotifierProvider).known;
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context).recipesTitle)),
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(recipesListProvider.notifier).load(),
-        child: _body(state, packs),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context).recipesTitle),
+        // Клики в рецептах считаются по этой кофемолке, и на главном экране
+        // её видно сразу — как было на «Пачках», пока главными были они.
+        actions: const [GrinderButton(), SizedBox(width: AppSpacing.s4)],
+      ),
+      // Плашка над списком, а не строкой в нём: недописанная оценка не
+      // должна уезжать вверх при первой же прокрутке.
+      body: Column(
+        children: [
+          const UnfinishedRatingPlate(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () => ref.read(recipesListProvider.notifier).load(),
+              child: _body(state, packs),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -93,7 +113,9 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
             description: AppLocalizations.of(context).recipesEmptyNote,
             primaryAction: AppButton(
               label: AppLocalizations.of(context).recipesToPacks,
-              onPressed: () => AutoTabsRouter.of(context).setActiveIndex(0),
+              // По маршруту, а не по номеру: номер вкладки «Пачки» уже
+              // менялся, когда главными стали «Рецепты».
+              onPressed: () => context.router.navigate(const PacksRoute()),
             ),
           ),
         ],

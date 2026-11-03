@@ -21,6 +21,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/offline/outbox.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
+import '../features/authentication/domain/auth_rules.dart';
 import '../features/authentication/provider/authentication_state_notifier.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/packs/application/state/active_packs_state.dart';
@@ -32,6 +33,7 @@ import '../general_widgets/app_kit.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
+import 'auth_rule_texts.dart';
 
 @RoutePage()
 class ProfilePage extends ConsumerStatefulWidget {
@@ -161,31 +163,168 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           SectionTitle(texts.profileAccountTitle),
           AppCard(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
-            child: AppRow(
-              label: texts.profileLogout,
-              icon: AppIcons.uiUser,
-              divider: false,
-              onTap: () async {
-                // Выход спрашивает ВСЕГДА, а не только когда в очереди что-то
-                // лежит. Строка стоит последней в списке настроек, под сменой
-                // языка, — то есть там, куда попадают, листая экран, и промах
-                // по ней стоит дороже всего остального на экране вместе
-                // взятого: возвращаться придётся через почту и пароль.
-                //
-                // Текст вопроса при этом разный. Если в очереди что-то есть,
-                // человек об этом узнаёт до, а не после: оценка, поставленная
-                // в лесу, иначе просто исчезнет вместе с аккаунтом.
-                if (!await _confirmLogout(context)) return;
+            child: Column(
+              children: [
+                AppRow(
+                  label: texts.profileLogout,
+                  icon: AppIcons.uiUser,
+                  onTap: () async {
+                    // Выход спрашивает ВСЕГДА, а не только когда в очереди
+                    // что-то лежит. Строка стоит в конце списка настроек, под
+                    // сменой языка, — то есть там, куда попадают, листая
+                    // экран, и промах по ней стоит дороже всего остального на
+                    // экране вместе взятого: возвращаться придётся через почту
+                    // и пароль.
+                    //
+                    // Текст вопроса при этом разный. Если в очереди что-то
+                    // есть, человек об этом узнаёт до, а не после: оценка,
+                    // поставленная в лесу, иначе просто исчезнет вместе с
+                    // аккаунтом.
+                    if (!await _confirmLogout(context)) return;
 
-                await ref
-                    .read(authenticationStateNotifierProvider.notifier)
-                    .logout();
-                if (context.mounted) {
-                  await context.router.replaceAll([const AuthWelcomeRoute()]);
-                }
-              },
+                    await ref
+                        .read(authenticationStateNotifierProvider.notifier)
+                        .logout();
+                    if (context.mounted) {
+                      await context.router
+                          .replaceAll([const AuthWelcomeRoute()]);
+                    }
+                  },
+                ),
+                // Удаление — последней строкой и красным. Google Play требует,
+                // чтобы аккаунт удалялся из самого приложения, а политика
+                // обработки данных это обещает (раздел 8).
+                AppRow(
+                  label: texts.profileDeleteAccount,
+                  labelSpan: TextSpan(
+                    text: texts.profileDeleteAccount,
+                    style: TextStyle(color: context.colors.error),
+                  ),
+                  icon: AppIcons.uiTrash,
+                  divider: false,
+                  onTap: () => _deleteAccount(context),
+                ),
+              ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Удаление аккаунта: вопрос, запрос к серверу, выход.
+///
+/// Вопрос задаётся всегда и называет, что пропадёт: в отличие от выхода,
+/// отсюда не вернуться ни через почту, ни через пароль. Удалился — сразу
+/// экран входа, отдельного «аккаунт удалён» нет: сообщений внизу в
+/// приложении нет вовсе (test/no_snackbars_test.dart), а пустой экран входа
+/// и есть ответ.
+Future<void> _deleteAccount(BuildContext context) async {
+  final deleted = await showDialog<bool>(
+    context: context,
+    builder: (_) => const _DeleteAccountDialog(),
+  );
+
+  if (deleted == true && context.mounted) {
+    await context.router.replaceAll([const AuthWelcomeRoute()]);
+  }
+}
+
+/// Окно удаления: и вопрос, и ответ сервера — на месте.
+///
+/// Отказ сервера показывается строкой в этом же окне. Если сервер отказал,
+/// локально не стирается ничего — человек остаётся в аккаунте и видит
+/// причину. Аккаунт обжарщика (403) из приложения не удалить: за ним
+/// позиции и коды на проданных пачках. Повтор такого не исправит, поэтому
+/// кнопка «Удалить» после этого ответа пропадает.
+class _DeleteAccountDialog extends ConsumerStatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  ConsumerState<_DeleteAccountDialog> createState() =>
+      _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
+  bool _busy = false;
+  bool _refused = false;
+  String? _error;
+
+  Future<void> _delete() async {
+    final texts = AppLocalizations.of(context);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+
+    try {
+      await ref
+          .read(authenticationStateNotifierProvider.notifier)
+          .deleteAccount();
+      if (mounted) Navigator.of(context).pop(true);
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _refused = failure.statusCode == 403;
+        _error = _refused ? texts.profileDeleteRoaster : failure.text(texts);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = AuthFailure.offline.text(texts);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    // Пока запрос в пути, окно не закрывается ни кнопкой «назад», ни мимо:
+    // иначе не узнать, удалился ли аккаунт.
+    return PopScope(
+      canPop: !_busy,
+      child: AlertDialog(
+        title: Text(texts.profileDeleteTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(texts.profileDeleteConfirm),
+            if (_error != null) ...[
+              const SizedBox(height: AppSpacing.s3),
+              Text(
+                _error!,
+                style: context.texts.bodySmall
+                    ?.copyWith(color: context.colors.error),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: _busy ? null : () => Navigator.of(context).pop(false),
+            child: Text(texts.profileDeleteCancel),
+          ),
+          if (!_refused)
+            TextButton(
+              onPressed: _busy ? null : _delete,
+              style:
+                  TextButton.styleFrom(foregroundColor: context.colors.error),
+              child: _busy
+                  ? SizedBox(
+                      width: AppSizes.icon20,
+                      height: AppSizes.icon20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: AppStroke.thick,
+                        color: context.colors.error,
+                      ),
+                    )
+                  : Text(texts.profileDeleteAction),
+            ),
         ],
       ),
     );
