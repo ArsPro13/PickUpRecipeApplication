@@ -150,8 +150,9 @@ String _joinParagraph(List<String> lines) {
   final buffer = StringBuffer();
   for (var i = 0; i < lines.length; i++) {
     buffer.write(lines[i].trim());
-    if (i < lines.length - 1)
+    if (i < lines.length - 1) {
       buffer.write(lines[i].endsWith('  ') ? '\n' : ' ');
+    }
   }
   return buffer.toString();
 }
@@ -191,8 +192,9 @@ List<LegalSpan> parseLegalInline(String text) {
   var last = 0;
 
   for (final match in _inline.allMatches(text)) {
-    if (match.start > last)
+    if (match.start > last) {
       spans.add(LegalSpan(text.substring(last, match.start)));
+    }
     if (match.group(1) != null) {
       spans.add(LegalSpan(match.group(1)!, bold: true));
     } else if (match.group(2) != null) {
