@@ -1925,11 +1925,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String brewScalePercent(String value) {
-    return '$value %';
-  }
-
-  @override
   String get brewScaleTime => 'время';
 
   @override
@@ -2151,6 +2146,43 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get brewScaledSavesVersion =>
-      'Начнёте — сохранится новой версией рецепта';
+  String grinderReferenceHint(String grinder) {
+    return '$grinder · выберите свою';
+  }
+
+  @override
+  String get brewScaleSize => 'размер';
+
+  @override
+  String brewScaleSizeLitres(String value) {
+    return '$value л';
+  }
+
+  @override
+  String brewScaleWarnBiggerSize(String current, String size) {
+    return 'В размер $current столько не войдёт — возьмите $size.';
+  }
+
+  @override
+  String brewScaleWarnPotCups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count чашки',
+      many: '$count чашек',
+      few: '$count чашки',
+      one: '$count чашку',
+    );
+    return 'Нужна кофеварка на $_temp0: вода до клапана, корзина полная.';
+  }
+
+  @override
+  String brewScaleWarnPotSize(String size) {
+    return 'Нужна кофеварка размера $size: вода до клапана, корзина полная.';
+  }
+
+  @override
+  String brewScaleWarnWholeIn(String size) {
+    return 'В $size войдёт за раз.';
+  }
 }

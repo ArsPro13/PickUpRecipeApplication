@@ -56,8 +56,13 @@ const Grinder feld = Grinder(
   ],
 );
 
-/// Кофемолка выбрана, но её шкалы сервис пересчёта не отдал.
+/// Кофемолка выбрана, но её шкалы сервис пересчёта не отдал. Hero есть во
+/// встроенной таблице — шкала возьмётся оттуда.
 const Grinder withoutScale = Grinder(id: 25, name: 'Hero');
+
+/// Кофемолка, которую завели на сервере позже встроенной таблицы: шкалы нет
+/// ни с сервера, ни в приложении.
+const Grinder unknown = Grinder(id: 99, name: 'Новая мельница');
 
 void main() {
   group('дескриптор → деление кофемолки', () {
@@ -136,33 +141,65 @@ void main() {
   });
 
   group('кофемолки нет', () {
-    test('остаётся слово и приглашение выбрать кофемолку', () {
+    // Владелец 04.11.2026: «я хочу, чтобы клики всё равно писались в
+    // числовых значениях, а не в словесных. Чтобы была конкретика». Без своей
+    // кофемолки клики пишутся эталонной — Comandante C40, как на сайте и в
+    // PDF, — с её именем и приглашением выбрать свою.
+    test('клики эталонной Comandante C40 и приглашение выбрать свою', () {
       final grind =
           grindReading(descriptorSlug: 'medium_fine', reference: reference);
 
-      expect(grind.value, 'Средне-тонкий');
-      expect(grind.isDivision, isFalse);
+      expect(grind.value, '14');
+      expect(grind.label, '14 кликов');
+      expect(grind.isDivision, isTrue);
+      expect(grind.grinderName, 'Comandante C40');
       expect(grind.needsGrinder, isTrue);
-      expect(grind.caption, 'выберите кофемолку');
-      expect(grind.hint, 'выберите кофемолку — покажем деление');
+      expect(grind.caption, 'Comandante C40');
+      expect(grind.hint, 'Comandante C40 · выберите свою');
     });
 
-    test('помол не прячется — слово честнее пустоты', () {
+    test('крупный помол — тоже клики, а не слово', () {
       final grind =
           grindReading(descriptorSlug: 'coarse', reference: reference);
 
       expect(grind.isEmpty, isFalse);
-      expect(grind.label, 'Крупный');
+      expect(grind.label, '28 кликов');
     });
 
-    test('без справочника остаётся slug рецепта, а не пустота', () {
+    test('рецепт в делениях эталонной кофемолки — её клики как есть', () {
+      final grind = grindReading(
+        descriptorSlug: 'medium',
+        reference: reference,
+        recipeGrinderId: 11,
+        recipeGrindStep: '27',
+      );
+
+      expect(grind.value, '27');
+      expect(grind.needsGrinder, isTrue);
+    });
+
+    test('без справочника и делений остаётся slug рецепта, а не пустота', () {
       final grind = grindReading(descriptorSlug: 'medium_fine');
 
       expect(grind.value, 'medium_fine');
+      expect(grind.needsGrinder, isTrue);
     });
 
-    test('нет ни слова, ни шкалы — остаётся число рецепта со щелчками', () {
-      final grind = grindReading(descriptorSlug: '', recipeGrindStep: '26');
+    test('деления чужой кофемолки переводятся в клики эталонной', () {
+      // DF64 «26» — это не 26 кликов Comandante: переводим через шкалу DF64.
+      final grind = grindReading(
+        descriptorSlug: '',
+        recipeGrinderId: 12,
+        recipeGrindStep: '26',
+      );
+
+      expect(grind.isDivision, isTrue);
+      expect(grind.value, '13');
+    });
+
+    test('деления незнакомой кофемолки — число рецепта со щелчками', () {
+      final grind = grindReading(
+          descriptorSlug: '', recipeGrinderId: 99, recipeGrindStep: '26');
 
       expect(grind.value, '26 кликов');
       expect(grind.label, '26 кликов');
@@ -242,6 +279,14 @@ void main() {
         texts: en,
       );
 
+      expect(english.caption, 'Comandante C40');
+      expect(english.hint, 'Comandante C40 · pick yours');
+      expect(english.hint, isNot(matches(RegExp('[а-яёА-ЯЁ]'))));
+    });
+
+    test('приглашение без кликов тоже переведено', () {
+      final english = grindReading(descriptorSlug: 'medium_fine', texts: en);
+
       expect(english.caption, 'pick a grinder');
       expect(english.hint, isNot(matches(RegExp('[а-яёА-ЯЁ]'))));
     });
@@ -249,6 +294,7 @@ void main() {
     test('щелчки старого рецепта переведены', () {
       final english = grindReading(
         descriptorSlug: '',
+        recipeGrinderId: 99,
         recipeGrindStep: '26',
         texts: en,
       );
@@ -361,12 +407,26 @@ void main() {
       expect(grind.isApproximate, isFalse);
     });
 
-    test('кофемолка без шкалы показывает слово и никого никуда не зовёт', () {
-      // Кофемолку человек уже выбрал; звать выбирать её ещё раз — врать.
+    test('шкалы с сервера нет — берётся встроенная, клики остаются числом', () {
       final grind = grindReading(
         descriptorSlug: 'medium_fine',
         reference: reference,
         grinder: withoutScale,
+      );
+
+      expect(grind.isDivision, isTrue);
+      expect(grind.value, '22');
+      expect(grind.grinderName, 'Hero');
+      expect(grind.needsGrinder, isFalse);
+    });
+
+    test('кофемолка без шкалы нигде показывает слово и никого никуда не зовёт',
+        () {
+      // Кофемолку человек уже выбрал; звать выбирать её ещё раз — врать.
+      final grind = grindReading(
+        descriptorSlug: 'medium_fine',
+        reference: reference,
+        grinder: unknown,
       );
 
       expect(grind.value, 'Средне-тонкий');

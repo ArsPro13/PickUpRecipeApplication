@@ -3020,7 +3020,6 @@
     }
   },
 
-  "brewScalePercent": "{value} %",
   "@brewScalePercent": {
     "description": "Сводка пересчёта: на сколько процентов изменился помол, в скобках после кликов. {value} — со знаком: «+9», «−4».",
     "placeholders": {
@@ -3326,8 +3325,86 @@
     }
   },
 
-  "brewScaledSavesVersion": "Начнёте — сохранится новой версией рецепта",
-  "@brewScaledSavesVersion": {
-    "description": "Плашка пересчёта: что произойдёт со стартом — пересчитанный рецепт станет новой версией, как правка в конструкторе."
+  "grinderReferenceHint": "{grinder} · выберите свою",
+  "@grinderReferenceHint": {
+    "description": "Подпись под кликами на экране заваривания, когда своя кофемолка не выбрана: клики посчитаны эталонной кофемолкой (Comandante C40, как на сайте и в PDF), и можно выбрать свою.",
+    "placeholders": {
+      "grinder": {
+        "type": "String",
+        "example": "Comandante C40"
+      }
+    }
+  },
+
+  "brewScaleSize": "размер",
+  "@brewScaleSize": {
+    "description": "Шторка «Сколько воды» у кофеварки на плите (мока, Brikka, неаполитанка): подпись ячейки с размером кофеварки, в которой варится выбранный объём — «размер 6 чашек»."
+  },
+
+  "@brewScaleSizeCups": {
+    "description": "Размер прибора в чашках, именительный падеж: «размер 6 чашек», «в размер 4 чашки». Так продают мока-кофеварки и SoftBrew.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "brewScaleSizeLitres": "{value} л",
+  "@brewScaleSizeLitres": {
+    "description": "Размер прибора в литрах: «1,5 л» у френч-пресса. {value} — число с запятой.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "1,5"
+      }
+    }
+  },
+
+  "brewScaleWarnBiggerSize": "В размер {current} столько не войдёт — возьмите {size}.",
+  "@brewScaleWarnBiggerSize": {
+    "description": "Предупреждение пересчёта: в размер прибора, который у человека скорее всего (френч-пресс 1 л, Switch 02, сифон TCA-3), выбранный объём не войдёт, а в размер побольше — войдёт. Вместо прежнего «лучше в два захода».",
+    "placeholders": {
+      "current": {
+        "type": "String",
+        "example": "1 л"
+      },
+      "size": {
+        "type": "String",
+        "example": "1,5 л"
+      }
+    }
+  },
+
+  "brewScaleWarnPotCups": "Нужна кофеварка на {count, plural, one{{count} чашку} few{{count} чашки} many{{count} чашек} other{{count} чашки}}: вода до клапана, корзина полная.",
+  "@brewScaleWarnPotCups": {
+    "description": "Пересчёт у моки, Brikka, неаполитанки: выбранный объём варится за раз в кофеварке другого размера. Винительный падеж после «на»: на 1 чашку, на 2 чашки, на 6 чашек. Владелец 04.11: «в моке вполне нормально увеличить объём в два раза, потому что существуют более большие кофеварки».",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "brewScaleWarnPotSize": "Нужна кофеварка размера {size}: вода до клапана, корзина полная.",
+  "@brewScaleWarnPotSize": {
+    "description": "То же, что brewScaleWarnPotCups, когда размер подписан не чашками.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "example": "XL"
+      }
+    }
+  },
+
+  "brewScaleWarnWholeIn": "В {size} войдёт за раз.",
+  "@brewScaleWarnWholeIn": {
+    "description": "Пересчёт: в обычный прибор не входит (у аэропресса — концентрат с доливкой или заходы, у фина и Nanopresso — заходы), а в прибор побольше войдёт сразу. {size} — «AeroPress XL», «Phin 12 oz», «Nanopresso + Barista Kit».",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "example": "AeroPress XL"
+      }
+    }
   }
 }

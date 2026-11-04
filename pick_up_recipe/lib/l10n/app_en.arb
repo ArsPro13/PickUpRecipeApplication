@@ -1058,7 +1058,6 @@
 
   "brewScaleGrindFiner": "{percent}% finer",
 
-  "brewScalePercent": "{value}%",
 
   "brewScaleTime": "time",
 
@@ -1130,5 +1129,18 @@
 
   "brewScaleUnitCup": "{count, plural, one{{count} cup} other{{count} cups}}",
 
-  "brewScaledSavesVersion": "Once you start, it's saved as a new version of the recipe"
+  "grinderReferenceHint": "{grinder} · pick yours",
+
+  "brewScaleSize": "size",
+
+
+  "brewScaleSizeLitres": "{value} l",
+
+  "brewScaleWarnBiggerSize": "This won't fit size {current} — use {size}.",
+
+  "brewScaleWarnPotCups": "{count, plural, one{Use a 1-cup pot} other{Use a {count}-cup pot}}: water up to the valve, basket full.",
+
+  "brewScaleWarnPotSize": "Use a size {size} pot: water up to the valve, basket full.",
+
+  "brewScaleWarnWholeIn": "{size} fits it in one go."
 }

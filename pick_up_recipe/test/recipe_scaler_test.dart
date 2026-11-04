@@ -277,14 +277,33 @@ void main() {
       expect(scaled.recipe.grindStep, '27');
       // Литр воды с 60 г кофе в литровый пресс входит: номинал Bodum — это
       // вода по 125 мл на чашку с запасом 2,5 см до верха (исследование v3).
-      expect(scaled.warnings, isEmpty);
+      // Рецепт на 500 мл — это пресс на 0,5 л, и пересчёт называет размер,
+      // где литр поместится (исследование размеров 04.11).
+      expect(scaled.warnings, [
+        const ScaleWarning(ScaleWarningKind.biggerSize,
+            size: '0.5', biggerSize: '1.0', sizeUnit: ScalingSizeUnit.litres),
+      ]);
 
       final over = scaleRecipe(
         base: press,
         water: 1100,
         profile: ScalingProfile.builtIn('french_press')!,
       );
-      expect(over.warnings.map((warning) => warning.kind),
+      // 1,1 л в литровый пресс уже не войдёт, но пресс на 1,5 л продаётся:
+      // называем его, а не советуем два захода (владелец 04.11: «исследуй, в
+      // каких методах существуют более большие размеры девайсов»).
+      expect(over.warnings, [
+        const ScaleWarning(ScaleWarningKind.biggerSize,
+            size: '0.5', biggerSize: '1.5', sizeUnit: ScalingSizeUnit.litres),
+      ]);
+
+      // Больше самого большого пресса — тогда уже два захода.
+      final huge = scaleRecipe(
+        base: press,
+        water: 1600,
+        profile: ScalingProfile.builtIn('french_press')!,
+      );
+      expect(huge.warnings.map((warning) => warning.kind),
           [ScaleWarningKind.overCapacity]);
     });
 
@@ -512,7 +531,9 @@ void main() {
         'siphon': ScalingFamily.heated,
         'aeropress': ScalingFamily.concentrate,
         'espresso': ScalingFamily.repeat,
-        'moka': ScalingFamily.repeat,
+        // Мока — кофеварка побольше, а не второй заход (владелец 04.11).
+        'moka': ScalingFamily.pot,
+        'neapolitan': ScalingFamily.pot,
         'drip_bag': ScalingFamily.parallel,
         'cupping': ScalingFamily.parallel,
         'cold_brew': ScalingFamily.coldSteep,

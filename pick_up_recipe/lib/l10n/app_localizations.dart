@@ -3196,12 +3196,6 @@ abstract class AppLocalizations {
   /// **'мельче на {percent} %'**
   String brewScaleGrindFiner(String percent);
 
-  /// Сводка пересчёта: на сколько процентов изменился помол, в скобках после кликов. {value} — со знаком: «+9», «−4».
-  ///
-  /// In ru, this message translates to:
-  /// **'{value} %'**
-  String brewScalePercent(String value);
-
   /// Сводка пересчёта: подпись перед общим временем заваривания («время 3:10»).
   ///
   /// In ru, this message translates to:
@@ -3412,11 +3406,47 @@ abstract class AppLocalizations {
   /// **'{count, plural, one{{count} чашка} few{{count} чашки} many{{count} чашек} other{{count} чашки}}'**
   String brewScaleUnitCup(int count);
 
-  /// Плашка пересчёта: что произойдёт со стартом — пересчитанный рецепт станет новой версией, как правка в конструкторе.
+  /// Подпись под кликами на экране заваривания, когда своя кофемолка не выбрана: клики посчитаны эталонной кофемолкой (Comandante C40, как на сайте и в PDF), и можно выбрать свою.
   ///
   /// In ru, this message translates to:
-  /// **'Начнёте — сохранится новой версией рецепта'**
-  String get brewScaledSavesVersion;
+  /// **'{grinder} · выберите свою'**
+  String grinderReferenceHint(String grinder);
+
+  /// Шторка «Сколько воды» у кофеварки на плите (мока, Brikka, неаполитанка): подпись ячейки с размером кофеварки, в которой варится выбранный объём — «размер 6 чашек».
+  ///
+  /// In ru, this message translates to:
+  /// **'размер'**
+  String get brewScaleSize;
+
+  /// Размер прибора в литрах: «1,5 л» у френч-пресса. {value} — число с запятой.
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} л'**
+  String brewScaleSizeLitres(String value);
+
+  /// Предупреждение пересчёта: в размер прибора, который у человека скорее всего (френч-пресс 1 л, Switch 02, сифон TCA-3), выбранный объём не войдёт, а в размер побольше — войдёт. Вместо прежнего «лучше в два захода».
+  ///
+  /// In ru, this message translates to:
+  /// **'В размер {current} столько не войдёт — возьмите {size}.'**
+  String brewScaleWarnBiggerSize(String current, String size);
+
+  /// Пересчёт у моки, Brikka, неаполитанки: выбранный объём варится за раз в кофеварке другого размера. Винительный падеж после «на»: на 1 чашку, на 2 чашки, на 6 чашек. Владелец 04.11: «в моке вполне нормально увеличить объём в два раза, потому что существуют более большие кофеварки».
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужна кофеварка на {count, plural, one{{count} чашку} few{{count} чашки} many{{count} чашек} other{{count} чашки}}: вода до клапана, корзина полная.'**
+  String brewScaleWarnPotCups(int count);
+
+  /// То же, что brewScaleWarnPotCups, когда размер подписан не чашками.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужна кофеварка размера {size}: вода до клапана, корзина полная.'**
+  String brewScaleWarnPotSize(String size);
+
+  /// Пересчёт: в обычный прибор не входит (у аэропресса — концентрат с доливкой или заходы, у фина и Nanopresso — заходы), а в прибор побольше войдёт сразу. {size} — «AeroPress XL», «Phin 12 oz», «Nanopresso + Barista Kit».
+  ///
+  /// In ru, this message translates to:
+  /// **'В {size} войдёт за раз.'**
+  String brewScaleWarnWholeIn(String size);
 }
 
 class _AppLocalizationsDelegate

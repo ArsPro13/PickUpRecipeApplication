@@ -564,7 +564,6 @@
   "brewScaleGrindSame": "invariata",
   "brewScaleGrindCoarser": "più grossa del {percent}%",
   "brewScaleGrindFiner": "più fine del {percent}%",
-  "brewScalePercent": "{value}%",
   "brewScaleTime": "tempo",
   "brewScaleInCup": "in tazza ≈",
   "brewScaledTo": "Ricalcolata per {water}",
@@ -600,5 +599,19 @@
   "brewScaleUnitBag": "{count, plural, one{{count} bustina} other{{count} bustine}}",
   "brewScaleUnitBowl": "{count, plural, one{{count} ciotola} other{{count} ciotole}}",
   "brewScaleUnitCup": "{count, plural, one{{count} tazza} other{{count} tazze}}",
-  "brewScaledSavesVersion": "Quando inizi, viene salvata come nuova versione della ricetta"
+
+  "grinderReferenceHint": "{grinder} · scegli il tuo",
+
+  "brewScaleSize": "misura",
+
+
+  "brewScaleSizeLitres": "{value} l",
+
+  "brewScaleWarnBiggerSize": "Nella misura {current} non ci sta — usa {size}.",
+
+  "brewScaleWarnPotCups": "Serve una caffettiera da {count, plural, one{1 tazza} other{{count} tazze}}: acqua fino alla valvola, filtro pieno.",
+
+  "brewScaleWarnPotSize": "Serve una caffettiera misura {size}: acqua fino alla valvola, filtro pieno.",
+
+  "brewScaleWarnWholeIn": "In {size} ci sta tutto in una volta."
 }

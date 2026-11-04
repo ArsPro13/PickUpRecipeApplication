@@ -217,6 +217,23 @@ class WaterScaleSummary extends StatelessWidget {
         : (texts.brewScaleGrind, _grind(texts).$1, _grind(texts).$2);
     final cupUnit = unit.isEmpty ? null : unit;
 
+    // У кофеварки на плите главное при выборе объёма — в какой кофеварке это
+    // варить: «размер 6 чашек». В чашке у неё почти вся вода, и ячейка «в
+    // чашке» ничего бы не добавила.
+    final lastCell = scaled.potSize.isNotEmpty
+        ? cell(
+            texts.brewScaleSize,
+            scaleSizeLabel(texts, scaled.potSize, scaled.sizeUnit),
+            Alignment.centerLeft,
+          )
+        : cell(
+            texts.brewScaleInCup,
+            cupUnit == null
+                ? texts.unitMillilitres('${scaled.cupMl}')
+                : '${scaled.cupMl} $cupUnit',
+            Alignment.centerLeft,
+          );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -235,31 +252,35 @@ class WaterScaleSummary extends StatelessWidget {
             formatDuration(Duration(seconds: scaled.totalSeconds)),
             Alignment.centerRight,
           ),
-          cell(
-            texts.brewScaleInCup,
-            cupUnit == null
-                ? texts.unitMillilitres('${scaled.cupMl}')
-                : '${scaled.cupMl} $cupUnit',
-            Alignment.centerLeft,
-          ),
+          lastCell,
         ),
       ],
     );
   }
 
-  /// Помол: клики кофемолки человека и на сколько крупнее, а без
-  /// кофемолки — только на сколько.
+  /// Помол — кликами всегда, когда их есть из чего посчитать: новое деление
+  /// и рядом «было 14», если пересчёт его сдвинул; у приборов, где помол
+  /// по смыслу метода прежний, — те же клики, а не слово «прежний».
+  ///
+  /// Владелец 04.11: «я хочу, чтобы клики всё равно писались в числовых
+  /// значениях, а не в словесных». Проценты («крупнее на 9 %») остались
+  /// только кофемолке, шкалы которой не знает ни сервер, ни приложение.
   (String, String?) _grind(AppLocalizations texts) {
-    final percent = ((scaled.grindRatio - 1) * 100).round();
-
-    if (scaled.grindStep case final step?) {
+    final now = scaled.grindStep ?? scaled.baseGrindStep;
+    if (now != null && now.trim().isNotEmpty) {
       // Деления с сервера приходят как «27.0» — на экране они «27».
-      final clicks = grindClicksLabel(grinderDivisionLabel(step), texts);
-      if (percent == 0) return (clicks, null);
-      final signed = percent > 0 ? '+$percent' : '−${-percent}';
-      return (clicks, '(${texts.brewScalePercent(signed)})');
+      final label = grinderDivisionLabel(now);
+      final clicks = grindClicksLabel(label, texts);
+      final was = scaled.baseGrindStep;
+      if (scaled.grindStep == null ||
+          was == null ||
+          grinderDivisionLabel(was) == label) {
+        return (clicks, null);
+      }
+      return (clicks, '(${texts.brewScaledWas(grinderDivisionLabel(was))})');
     }
 
+    final percent = ((scaled.grindRatio - 1) * 100).round();
     if (percent == 0) return (texts.brewScaleGrindSame, null);
 
     return (
@@ -355,7 +376,46 @@ String scaleWarningText(
     ScaleWarningKind.runs =>
       texts.brewScaleWarnRuns('${warning.chamber}', warning.parts),
     ScaleWarningKind.refill => texts.brewScaleWarnRefill('${warning.chamber}'),
+    ScaleWarningKind.biggerSize => texts.brewScaleWarnBiggerSize(
+        scaleSizeLabel(texts, warning.size, warning.sizeUnit),
+        scaleSizeLabel(texts, warning.biggerSize, warning.sizeUnit),
+      ),
+    ScaleWarningKind.potSize => switch ((
+        warning.sizeUnit,
+        int.tryParse(warning.biggerSize.trim()),
+      )) {
+        (ScalingSizeUnit.cups, final int cups) =>
+          texts.brewScaleWarnPotCups(cups),
+        _ => texts.brewScaleWarnPotSize(
+            scaleSizeLabel(texts, warning.biggerSize, warning.sizeUnit)),
+      },
+    ScaleWarningKind.wholeIn => texts.brewScaleWarnWholeIn(
+        scaleSizeLabel(texts, warning.biggerSize, warning.sizeUnit)),
   };
+}
+
+/// Размер прибора словами: «02» и «TCA-5» как есть, «1.5» — «1,5 л»,
+/// «6» — «6 чашек», «400» у турки — «400 мл».
+String scaleSizeLabel(
+  AppLocalizations texts,
+  String size,
+  ScalingSizeUnit unit,
+) {
+  final value = size.trim();
+  switch (unit) {
+    case ScalingSizeUnit.litres:
+      final litres = double.tryParse(value.replaceAll(',', '.'));
+      return litres == null
+          ? value
+          : texts.brewScaleSizeLitres(formatAmount(litres));
+    case ScalingSizeUnit.cups:
+      final cups = int.tryParse(value);
+      return cups == null ? value : texts.brewScaleUnitCup(cups);
+    case ScalingSizeUnit.millilitres:
+      return int.tryParse(value) == null ? value : texts.unitMillilitres(value);
+    case ScalingSizeUnit.label:
+      return value;
+  }
 }
 
 /// «2 шота», «3 пакета», «2 захода» — сколько порций и как они зовутся.

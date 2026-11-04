@@ -139,10 +139,19 @@ void main() {
       expect(params.prepHint, 'Comandante C40 · средне-тонкий');
     });
 
-    test('без кофемолки остаётся слово и приглашение её выбрать', () {
-      // Прятать помол нельзя: до пункта 8 он только словом и показывался,
-      // и это единственное, что у человека было.
+    test('без кофемолки — клики эталонной Comandante C40, а не слово', () {
+      // Владелец 04.11: «клики всё равно числом». 26 делений DF64 переведены
+      // в клики Comandante C40 — ими помол пишут сайт и PDF, — и рядом
+      // приглашение выбрать свою.
       final params = BrewParams.of(ru, recipe());
+
+      expect(params.prepValue, '15 г · 13 кликов');
+      expect(params.prepHint, 'Comandante C40 · выберите свою');
+    });
+
+    test('без кофемолки и без чисел остаётся слово и приглашение', () {
+      // Прятать помол нельзя: слово лучше пустого места.
+      final params = BrewParams.of(ru, recipe(grindStep: ''));
 
       expect(params.prepValue, '15 г · средне-тонкий');
       expect(params.prepHint, 'выберите кофемолку — покажем деление');
@@ -196,7 +205,8 @@ void main() {
     });
 
     test('без справочника остаётся slug, а не пустота', () {
-      final params = BrewParams.of(ru, recipe(grindDescriptor: 'medium_fine'));
+      final params = BrewParams.of(
+          ru, recipe(grindDescriptor: 'medium_fine', grindStep: ''));
 
       expect(params.grind, 'medium_fine');
     });

@@ -14,6 +14,8 @@
 // справочника методов, и [ScalingProfile.fromJson] его разберёт; таблица
 // останется запасной.
 
+import 'dart:math' as math;
+
 import 'scaling_profiles_table.dart';
 
 /// Как прибор масштабируется — от этого зависит, что вообще пересчитывается.
@@ -54,10 +56,33 @@ enum ScalingFamily {
   /// Колд дрип: капли идут с той же скоростью, поэтому время растёт как
   /// объём воды.
   coldDrip,
+
+  /// Кофеварка на плите, порцию которой задаёт она сама (мока, Brikka,
+  /// неаполитанка): вода до клапана, корзина полная. Больше — кофеварка
+  /// побольше, а не второй заход: кофе и вода в k раз, нагрев дольше, помол
+  /// прежний. Владелец 04.11.2026: «в моке вполне нормально увеличить объём
+  /// в два раза, потому что существуют более большие кофеварки». Размеры
+  /// дискретные — барабан крутится по ним.
+  pot,
 }
 
 /// Чем считаются заходы и порции — для подписи «2 шота», «3 пакета».
 enum ScalingUnit { run, shot, capsule, bag, bowl, cup }
+
+/// Как подписать размер прибора человеку.
+enum ScalingSizeUnit {
+  /// Как продаётся: «02», «TCA-5», «L», «18 oz», «AeroPress XL».
+  label,
+
+  /// Литры: «1.5» → «1,5 л».
+  litres,
+
+  /// Чашки: «6» → «6 чашек».
+  cups,
+
+  /// Миллилитры: «400» → «400 мл» (турки продают по объёму).
+  millilitres,
+}
 
 /// Числа прибора, по которым считается пересчёт.
 ///
@@ -91,6 +116,9 @@ class ScalingProfile {
     this.chamberMl = 0,
     this.displacementMlPerGram = 0.8,
     this.minBrewRatio = 5,
+    this.sizeUnit = ScalingSizeUnit.label,
+    this.heatExponent = 1,
+    this.basketGrams = const {},
   });
 
   final ScalingFamily family;
@@ -173,9 +201,29 @@ class ScalingProfile {
   /// успевает экстрагировать — дальше честнее ещё один заход.
   final double minBrewRatio;
 
+  /// Как подписывать размеры из [capacityMl]: как есть, литрами, чашками.
+  final ScalingSizeUnit sizeUnit;
+
+  /// Как растёт нагрев с объёмом воды: время × k^этот показатель. У турки
+  /// на той же конфорке — 1 (вдвое больше воды греется вдвое дольше); у
+  /// кофеварки побольше дно шире, и время растёт медленнее воды.
+  final double heatExponent;
+
+  /// Сколько кофе в полную корзину каждого размера, г.
+  ///
+  /// У кофеварки на плите (pot) корзина растёт медленнее бойлера: мока на 3
+  /// чашки — 150 мл и 17 г, на 6 — 300 мл и 30 г (исследование 04.11), и
+  /// кофе в кофеварке побольше считается по корзине, а не ×k. У приборов
+  /// «ещё заход» (фин, Nanopresso) — по ней видно, в какой прибор побольше
+  /// войдёт сразу всё. Ключи — те же, что у [capacityMl], или свои имена.
+  final Map<String, double> basketGrams;
+
   /// Барабан кратен рецепту: каждое деление — ещё одна порция.
   bool get countsUnits =>
       family == ScalingFamily.repeat || family == ScalingFamily.parallel;
+
+  /// Барабан крутится по размерам прибора (кофеварка на 3, 6, 9 чашек).
+  bool get stepsBySize => family == ScalingFamily.pot && capacityMl.isNotEmpty;
 
   /// Объём для размера [size]; 0 — проверять нечего.
   double capacityFor(String? size) {
@@ -183,6 +231,86 @@ class ScalingProfile {
     return capacityMl[size] ??
         capacityMl[defaultSize] ??
         capacityMl.values.first;
+  }
+
+  /// Размеры от меньшего к большему.
+  List<MapEntry<String, double>> get sizesAscending =>
+      capacityMl.entries.toList()..sort((a, b) => a.value.compareTo(b.value));
+
+  /// Самый маленький размер, в который войдёт [ml]; null — не войдёт ни в
+  /// один.
+  String? sizeFitting(double ml) {
+    for (final entry in sizesAscending) {
+      if (entry.value >= ml) return entry.key;
+    }
+    return null;
+  }
+
+  /// Размер кофеварки, на который написан рецепт с [ml] воды.
+  ///
+  /// Ближайший по отношению среди тех, куда эта вода войдёт (с запасом 10 %
+  /// на разброс паспортов: мока 153 мл — на 3 чашки по 150). Не входит ни в
+  /// один — самый большой.
+  String potOwnSize(double ml) {
+    final fitting =
+        sizesAscending.where((entry) => entry.value >= ml * 0.9).toList();
+    if (fitting.isEmpty) {
+      return capacityMl.isEmpty ? defaultSize : sizesAscending.last.key;
+    }
+    var best = fitting.first;
+    var gap = double.infinity;
+    for (final entry in fitting) {
+      final distance = (math.log(entry.value / ml)).abs();
+      if (distance < gap) {
+        gap = distance;
+        best = entry;
+      }
+    }
+    return best.key;
+  }
+
+  /// Полная корзина размера [size], г; 0 — не знаем.
+  ///
+  /// Чего исследование не нашло (мока на 4 и на 18 чашек), достраивается по
+  /// соседям: между двумя известными — по прямой в логарифмах объёма, за
+  /// краем — в той же пропорции к воде, что у крайнего известного.
+  double basketFor(String size) {
+    final known = basketGrams[size];
+    if (known != null) return known;
+    final water = capacityMl[size];
+    if (water == null) return 0;
+    MapEntry<double, double>? below, above;
+    for (final entry in sizesAscending) {
+      final grams = basketGrams[entry.key];
+      if (grams == null) continue;
+      if (entry.value <= water) below = MapEntry(entry.value, grams);
+      if (entry.value >= water && above == null) {
+        above = MapEntry(entry.value, grams);
+      }
+    }
+    if (below != null && above != null && above.key != below.key) {
+      final share =
+          math.log(water / below.key) / math.log(above.key / below.key);
+      return below.value * math.pow(above.value / below.value, share);
+    }
+    final edge = below ?? above;
+    return edge == null ? 0 : edge.value * water / edge.key;
+  }
+
+  /// Размер, ближе всего подходящий к [ml] воды, — по отношению, а не по
+  /// разнице: у мок 60 и 120 мл далеки так же, как 500 и 1000.
+  String nearestSize(double ml) {
+    if (capacityMl.isEmpty || ml <= 0) return defaultSize;
+    var best = sizesAscending.first;
+    var gap = double.infinity;
+    for (final entry in sizesAscending) {
+      final distance = (math.log(entry.value / ml)).abs();
+      if (distance < gap) {
+        gap = distance;
+        best = entry;
+      }
+    }
+    return best.key;
   }
 
   /// Разбирает поле `scaling` из `default_params` справочника методов.
@@ -236,6 +364,16 @@ class ScalingProfile {
       chamberMl: number('chamber_ml', 0),
       displacementMlPerGram: number('displacement_ml_per_g', 0.8),
       minBrewRatio: number('min_brew_ratio', 5),
+      sizeUnit: ScalingSizeUnit.values
+              .where((value) => value.name == json['size_unit'])
+              .firstOrNull ??
+          ScalingSizeUnit.label,
+      heatExponent: number('heat_exponent', 1),
+      basketGrams: {
+        for (final entry
+            in (json['basket_g'] as Map<String, dynamic>? ?? const {}).entries)
+          entry.key: (entry.value as num).toDouble(),
+      },
     );
   }
 

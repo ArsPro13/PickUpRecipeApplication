@@ -169,10 +169,20 @@ void main() {
               // Концентрат крепче — кофе чуть больше пропорции, не меньше.
               expect(scaled.dose,
                   greaterThanOrEqualTo(method.recipe.load * k - 0.05));
+            case ScalingFamily.pot:
+              // Кофеварка побольше: кофе — по корзине, она растёт медленнее
+              // бойлера; сверх самой большой — заходы, кофе ровно ×n.
+              if (scaled.runs > 1) {
+                expect(scaled.dose,
+                    closeTo(method.recipe.load * scaled.runs, 0.01));
+              } else {
+                expect(scaled.dose, greaterThan(method.recipe.load));
+              }
             default:
               expect(scaled.dose, closeTo(method.recipe.load * k, 0.051));
           }
-          if (profile.family == ScalingFamily.repeat) {
+          if (profile.family == ScalingFamily.repeat ||
+              (profile.family == ScalingFamily.pot && scaled.runs > 1)) {
             expect(
                 recipe.steps.length, method.recipe.steps.length * scaled.runs);
           }

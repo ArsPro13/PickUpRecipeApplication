@@ -8,6 +8,7 @@ import 'scaling_profile.dart';
 const Map<String, ScalingProfile> scalingProfiles = {
   'aeropress': ScalingProfile(
     family: ScalingFamily.concentrate,
+    capacityMl: {'AeroPress': 280, 'AeroPress XL': 550},
     retainedPerGram: 1,
     maxDoseGrams: 42,
     maxWater: 800,
@@ -16,6 +17,7 @@ const Map<String, ScalingProfile> scalingProfiles = {
   ),
   'aeropress_inverted': ScalingProfile(
     family: ScalingFamily.concentrate,
+    capacityMl: {'AeroPress': 260, 'AeroPress XL': 550},
     retainedPerGram: 1,
     maxDoseGrams: 42,
     maxWater: 800,
@@ -41,8 +43,13 @@ const Map<String, ScalingProfile> scalingProfiles = {
     waterStep: 10,
   ),
   'brikka': ScalingProfile(
-    family: ScalingFamily.repeat,
+    family: ScalingFamily.pot,
+    capacityMl: {'2': 120, '4': 180},
+    defaultSize: '2',
+    basketGrams: {'2': 15, '4': 30},
     maxUnits: 4,
+    heatExponent: 0.5,
+    sizeUnit: ScalingSizeUnit.cups,
   ),
   'bripe': ScalingProfile(
     family: ScalingFamily.repeat,
@@ -74,9 +81,12 @@ const Map<String, ScalingProfile> scalingProfiles = {
   ),
   'cezve': ScalingProfile(
     family: ScalingFamily.heated,
+    capacityMl: {'200': 130, '250': 195, '400': 260, '700': 390},
+    defaultSize: '200',
     minWater: 60,
     maxWater: 500,
     waterStep: 10,
+    sizeUnit: ScalingSizeUnit.millilitres,
   ),
   'chemex': ScalingProfile(
     family: ScalingFamily.percolation,
@@ -94,6 +104,7 @@ const Map<String, ScalingProfile> scalingProfiles = {
   ),
   'cold_aero': ScalingProfile(
     family: ScalingFamily.concentrate,
+    capacityMl: {'AeroPress': 280, 'AeroPress XL': 550},
     retainedPerGram: 1,
     maxDoseGrams: 42,
     maxWater: 800,
@@ -162,6 +173,7 @@ const Map<String, ScalingProfile> scalingProfiles = {
     halfAngleDeg: 0,
     maxWater: 1400,
     waterStep: 10,
+    sizeUnit: ScalingSizeUnit.litres,
   ),
   'flair': ScalingProfile(
     family: ScalingFamily.repeat,
@@ -177,6 +189,7 @@ const Map<String, ScalingProfile> scalingProfiles = {
     halfAngleDeg: 0,
     maxWater: 1500,
     waterStep: 10,
+    sizeUnit: ScalingSizeUnit.litres,
   ),
   'funnex': ScalingProfile(
     family: ScalingFamily.percolation,
@@ -210,7 +223,7 @@ const Map<String, ScalingProfile> scalingProfiles = {
   ),
   'kalita_flat': ScalingProfile(
     family: ScalingFamily.percolation,
-    capacityMl: {'101': 250, '102': 400, '103': 650},
+    capacityMl: {'101': 250, '102': 400, '103': 650, '104': 975},
     defaultSize: '102',
     bottomRadiusMm: 12,
     halfAngleDeg: 25,
@@ -240,9 +253,8 @@ const Map<String, ScalingProfile> scalingProfiles = {
   ),
   'kono': ScalingProfile(
     family: ScalingFamily.percolation,
-    capacityMl: {'': 194},
-    softDoseGrams: 24,
-    maxDoseGrams: 36,
+    capacityMl: {'MD-21': 194, 'MD-41': 310},
+    defaultSize: 'MD-21',
   ),
   'leverpresso': ScalingProfile(
     family: ScalingFamily.repeat,
@@ -259,7 +271,7 @@ const Map<String, ScalingProfile> scalingProfiles = {
   ),
   'melitta': ScalingProfile(
     family: ScalingFamily.percolation,
-    capacityMl: {'1x1': 200, '1x2': 350, '1x4': 600},
+    capacityMl: {'1x1': 200, '1x2': 350, '1x4': 600, '1x6': 900},
     defaultSize: '1x2',
     halfAngleDeg: 25,
     softDoseGrams: 30,
@@ -278,18 +290,37 @@ const Map<String, ScalingProfile> scalingProfiles = {
     unit: ScalingUnit.shot,
   ),
   'moka': ScalingProfile(
-    family: ScalingFamily.repeat,
-    maxUnits: 4,
+    family: ScalingFamily.pot,
+    capacityMl: {
+      '1': 63,
+      '2': 103,
+      '3': 150,
+      '4': 220,
+      '6': 300,
+      '9': 460,
+      '12': 670,
+      '18': 885
+    },
+    defaultSize: '3',
+    basketGrams: {'1': 6, '2': 11, '3': 17, '6': 30, '9': 38, '12': 50},
+    minDoseGrams: 5,
+    heatExponent: 0.5,
+    sizeUnit: ScalingSizeUnit.cups,
   ),
   'nanopresso': ScalingProfile(
     family: ScalingFamily.repeat,
+    basketGrams: {'Nanopresso': 8, 'Nanopresso + Barista Kit': 16},
     retainedPerGram: 0,
     maxUnits: 4,
     unit: ScalingUnit.shot,
   ),
   'neapolitan': ScalingProfile(
-    family: ScalingFamily.repeat,
-    maxUnits: 4,
+    family: ScalingFamily.pot,
+    capacityMl: {'3': 250, '6': 400, '9': 600},
+    defaultSize: '6',
+    basketGrams: {'3': 28},
+    heatExponent: 0.5,
+    sizeUnit: ScalingSizeUnit.cups,
   ),
   'nine_barista': ScalingProfile(
     family: ScalingFamily.repeat,
@@ -316,12 +347,16 @@ const Map<String, ScalingProfile> scalingProfiles = {
   ),
   'percolator': ScalingProfile(
     family: ScalingFamily.heated,
+    capacityMl: {'3': 400, '6': 900, '9': 1300, '12': 1800},
+    defaultSize: '6',
     minWater: 300,
     maxWater: 1800,
     waterStep: 10,
+    sizeUnit: ScalingSizeUnit.cups,
   ),
   'phin': ScalingProfile(
     family: ScalingFamily.repeat,
+    basketGrams: {'Phin 4 oz': 14, 'Phin 12 oz': 42, 'Phin 24 oz': 84},
     maxUnits: 4,
     unit: ScalingUnit.cup,
   ),
@@ -346,7 +381,8 @@ const Map<String, ScalingProfile> scalingProfiles = {
   ),
   'pour_over': ScalingProfile(
     family: ScalingFamily.percolation,
-    capacityMl: {'': 310},
+    capacityMl: {'01': 194, '02': 310, '03': 521},
+    defaultSize: '02',
     softDoseGrams: 30,
     maxDoseGrams: 50,
   ),
@@ -397,6 +433,7 @@ const Map<String, ScalingProfile> scalingProfiles = {
     halfAngleDeg: 0,
     maxWater: 1800,
     waterStep: 10,
+    sizeUnit: ScalingSizeUnit.cups,
   ),
   'stagg': ScalingProfile(
     family: ScalingFamily.percolation,
@@ -408,6 +445,7 @@ const Map<String, ScalingProfile> scalingProfiles = {
   ),
   'staresso': ScalingProfile(
     family: ScalingFamily.repeat,
+    basketGrams: {'Staresso SP-200': 10, 'Staresso SP-300': 22},
     retainedPerGram: 0,
     maxUnits: 4,
     unit: ScalingUnit.shot,

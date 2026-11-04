@@ -77,6 +77,22 @@ class _OwnGrinder implements GrinderService {
       getUserGrinders();
 }
 
+/// Профиль без кофемолки: человек свою ещё не выбрал.
+class _NoGrinder implements GrinderService {
+  @override
+  Future<List<Grinder>> getAllGrinders() async => [c40];
+
+  @override
+  Future<List<UserGrinder>> getUserGrinders() async => const [];
+
+  @override
+  Future<List<UserGrinder>> setUserGrinders(
+    List<Grinder> grinders, {
+    int? primaryGrinderId,
+  }) =>
+      getUserGrinders();
+}
+
 /// Сервер рецептов: запоминает версии, которые экран просил сохранить.
 class _Recipes extends RecipeService {
   final evolved = <RecipeData>[];
@@ -229,6 +245,7 @@ void main() {
     WidgetTester tester,
     RecipeData recipe, {
     RecipeService? recipes,
+    GrinderService? grinders,
     bool catalog = false,
   }) async {
     tester.view.physicalSize = const Size(412, 915);
@@ -243,8 +260,9 @@ void main() {
           stepTypesProvider.overrideWith((ref) => const StepTypeReference()),
           grindDescriptorsProvider
               .overrideWith((ref) => const <GrindDescriptor>[]),
-          grinderStateProvider.overrideWith(
-              (ref) => GrinderStateNotifier(_OwnGrinder())..loadUserGrinders()),
+          grinderStateProvider.overrideWith((ref) =>
+              GrinderStateNotifier(grinders ?? _OwnGrinder())
+                ..loadUserGrinders()),
           recipeServiceProvider.overrideWithValue(recipes ?? _Recipes()),
           if (catalog) brewMethodsProvider.overrideWith((ref) => _Catalog()),
         ],
@@ -407,8 +425,9 @@ void main() {
       final recipes = _Recipes();
       await pumpBrew(tester, moziana(), recipes: recipes);
       await chooseWater(tester, 500);
-      expect(rich('сохранится новой версией'), findsOneWidget,
-          reason: 'до старта человек знает, что будет');
+      // Подписи «Начнёте — сохранится новой версией рецепта» больше нет:
+      // владелец назвал её бесполезной (04.11). Версия при этом сохраняется.
+      expect(rich('сохранится новой версией'), findsNothing);
 
       await tester.tap(find.text('Смолол, начинаем'));
       await tester.pump();
@@ -430,6 +449,41 @@ void main() {
       await tester.tap(button('Продолжить'));
       await tester.pump();
       expect(recipes.evolved, hasLength(1));
+    });
+
+    // Владелец 04.11: «почему не меняются клики при изменении объёма в
+    // случае воронки». Клики стояли, когда пересчёт не знал шкалы: рецепт
+    // записан делениями чужой кофемолки без слова крупности, кофемолка не
+    // выбрана, сервис шкал молчал.
+    testWidgets('рецепт с чужой кофемолки без слова: клики свои и двигаются',
+        (tester) async {
+      // Обжарщик записал 45 делений DF64 и слово крупности не выбрал.
+      // Раньше экран писал «45 кликов» — чужие, как будто ваши, — и
+      // пересчёт их не трогал.
+      final recipe = moziana()
+        ..grinderId = 12
+        ..grindStep = '45'
+        ..grindDescriptor = '';
+      await pumpBrew(tester, recipe);
+
+      expect(rich('20 кликов'), findsWidgets, reason: 'DF64 45 ≈ C40 20');
+      expect(rich('45 клик'), findsNothing);
+
+      await chooseWater(tester, 500);
+      expect(rich('22 клика'), findsWidgets);
+      expect(rich('было 20'), findsWidgets);
+    });
+
+    testWidgets('без своей кофемолки — клики Comandante C40, и они двигаются',
+        (tester) async {
+      await pumpBrew(tester, moziana(), grinders: _NoGrinder());
+
+      expect(rich('27 кликов'), findsWidgets);
+      expect(rich('выберите свою'), findsWidgets);
+
+      await chooseWater(tester, 500);
+      expect(rich('31 клик'), findsWidgets);
+      expect(rich('было 27'), findsWidgets);
     });
 
     testWidgets('рецепт как есть — новой версии нет', (tester) async {
@@ -471,6 +525,26 @@ void main() {
       expect(rich('Пересчитано на 72 г · было 36'), findsOneWidget);
       expect(rich('было 27'), findsNothing,
           reason: 'помол прежний — подписывать «было» нечего');
+    });
+
+    testWidgets('френч-пресс: в шторке клики, а не слово «прежний»',
+        (tester) async {
+      // У иммерсии помол по смыслу метода прежний, и шторка писала «помол
+      // прежний». Владелец 04.11: клики — числом, «чтобы была конкретика».
+      await pumpBrew(tester, moziana(device: 'french_press'));
+      await tester.tap(param('water'));
+      await tester.pumpAndSettle();
+
+      final values = scaleWheelValues(moziana(device: 'french_press'),
+          ScalingProfile.builtIn('french_press')!);
+      final wheel =
+          tester.widget<ListWheelScrollView>(find.byType(ListWheelScrollView));
+      (wheel.controller! as FixedExtentScrollController)
+          .jumpToItem(values.indexOf(500));
+      await tester.pumpAndSettle();
+
+      expect(rich('27 кликов'), findsWidgets);
+      expect(rich('прежний'), findsNothing);
     });
 
     testWidgets('прибор без профиля — вода не нажимается', (tester) async {

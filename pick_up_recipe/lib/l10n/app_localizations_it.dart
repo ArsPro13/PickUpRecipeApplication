@@ -1901,11 +1901,6 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String brewScalePercent(String value) {
-    return '$value%';
-  }
-
-  @override
   String get brewScaleTime => 'tempo';
 
   @override
@@ -2110,6 +2105,41 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get brewScaledSavesVersion =>
-      'Quando inizi, viene salvata come nuova versione della ricetta';
+  String grinderReferenceHint(String grinder) {
+    return '$grinder · scegli il tuo';
+  }
+
+  @override
+  String get brewScaleSize => 'misura';
+
+  @override
+  String brewScaleSizeLitres(String value) {
+    return '$value l';
+  }
+
+  @override
+  String brewScaleWarnBiggerSize(String current, String size) {
+    return 'Nella misura $current non ci sta — usa $size.';
+  }
+
+  @override
+  String brewScaleWarnPotCups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tazze',
+      one: '1 tazza',
+    );
+    return 'Serve una caffettiera da $_temp0: acqua fino alla valvola, filtro pieno.';
+  }
+
+  @override
+  String brewScaleWarnPotSize(String size) {
+    return 'Serve una caffettiera misura $size: acqua fino alla valvola, filtro pieno.';
+  }
+
+  @override
+  String brewScaleWarnWholeIn(String size) {
+    return 'In $size ci sta tutto in una volta.';
+  }
 }

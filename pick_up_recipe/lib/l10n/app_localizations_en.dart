@@ -1895,11 +1895,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String brewScalePercent(String value) {
-    return '$value%';
-  }
-
-  @override
   String get brewScaleTime => 'time';
 
   @override
@@ -2103,6 +2098,41 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get brewScaledSavesVersion =>
-      'Once you start, it\'s saved as a new version of the recipe';
+  String grinderReferenceHint(String grinder) {
+    return '$grinder · pick yours';
+  }
+
+  @override
+  String get brewScaleSize => 'size';
+
+  @override
+  String brewScaleSizeLitres(String value) {
+    return '$value l';
+  }
+
+  @override
+  String brewScaleWarnBiggerSize(String current, String size) {
+    return 'This won\'t fit size $current — use $size.';
+  }
+
+  @override
+  String brewScaleWarnPotCups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Use a $count-cup pot',
+      one: 'Use a 1-cup pot',
+    );
+    return '$_temp0: water up to the valve, basket full.';
+  }
+
+  @override
+  String brewScaleWarnPotSize(String size) {
+    return 'Use a size $size pot: water up to the valve, basket full.';
+  }
+
+  @override
+  String brewScaleWarnWholeIn(String size) {
+    return '$size fits it in one go.';
+  }
 }

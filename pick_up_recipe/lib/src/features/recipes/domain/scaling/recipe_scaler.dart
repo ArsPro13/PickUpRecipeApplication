@@ -22,6 +22,7 @@
 
 import 'dart:math' as math;
 
+import '../../../grinders/domain/grinder_scales.dart';
 import '../../../grinders/domain/models/grinder_model.dart';
 import '../models/recipe_data_model.dart';
 import '../models/recipe_step_model.dart';
@@ -66,6 +67,18 @@ enum ScaleWarningKind {
 
   /// Колба колд дрипа меньше воды — доливать по ходу.
   refill,
+
+  /// В размер прибора, который предполагаем у человека, столько не войдёт,
+  /// а в размер побольше войдёт: назвать его, а не советовать два захода.
+  biggerSize,
+
+  /// Кофеварка на плите варит столько за раз в размере побольше: «нужна
+  /// кофеварка на 6 чашек».
+  potSize,
+
+  /// Камера этого размера мала, но есть прибор побольше, куда всё войдёт
+  /// целиком (AeroPress XL).
+  wholeIn,
 }
 
 /// Предупреждение с тем, что нужно для текста.
@@ -81,6 +94,7 @@ class ScaleWarning {
     this.halfWater = 0,
     this.water = 0,
     this.chamber = 0,
+    this.sizeUnit = ScalingSizeUnit.label,
   });
 
   final ScaleWarningKind kind;
@@ -112,6 +126,9 @@ class ScaleWarning {
   /// Объём камеры или колбы, мл.
   final int chamber;
 
+  /// Как подписать [size] и [biggerSize]: как есть, литрами, чашками.
+  final ScalingSizeUnit sizeUnit;
+
   @override
   bool operator ==(Object other) =>
       other is ScaleWarning &&
@@ -124,11 +141,12 @@ class ScaleWarning {
       other.grams == grams &&
       other.halfWater == halfWater &&
       other.water == water &&
-      other.chamber == chamber;
+      other.chamber == chamber &&
+      other.sizeUnit == sizeUnit;
 
   @override
   int get hashCode => Object.hash(kind, parts, click, tempDrop, size,
-      biggerSize, grams, halfWater, water, chamber);
+      biggerSize, grams, halfWater, water, chamber, sizeUnit);
 
   @override
   String toString() => 'ScaleWarning($kind)';
@@ -174,6 +192,8 @@ class ScaledRecipe {
     this.runs = 1,
     this.unit = ScalingUnit.run,
     this.bypassWater = 0,
+    this.potSize = '',
+    this.sizeUnit = ScalingSizeUnit.label,
   });
 
   /// Готов для экрана заваривания и движка: шаги, вода, доза, время, помол.
@@ -228,6 +248,13 @@ class ScaledRecipe {
   /// Сколько воды доливается в чашку после камеры, мл (на все заходы).
   final int bypassWater;
 
+  /// Размер кофеварки, в которой варится пересчитанное (семья pot): «6» —
+  /// кофеварка на 6 чашек. Пусто — прибор не из тех.
+  final String potSize;
+
+  /// Как подписать [potSize] и размеры в предупреждениях.
+  final ScalingSizeUnit sizeUnit;
+
   /// Доза одного захода, г.
   double get dosePerRun => runs > 1 ? dose / runs : dose;
 
@@ -267,7 +294,7 @@ ScaledRecipe scaleRecipe({
   String? size,
   ScaleLabels labels = const ScaleLabels(),
 }) {
-  final usedSize = size ?? profile.defaultSize;
+  final usedSize = size ?? recipeSize(base, profile);
   // Та же вода — тот же рецепт, до секунды: округление до 5 с иначе поправило
   // бы шаги, которые никто не просил трогать.
   if (water == base.water || water <= 0 || base.water <= 0) {
@@ -294,6 +321,7 @@ ScaledRecipe scaleRecipe({
     ScalingFamily.parallel => scaler.parallel(),
     ScalingFamily.coldSteep => scaler.coldSteep(),
     ScalingFamily.coldDrip => scaler.coldDrip(),
+    ScalingFamily.pot => scaler.pot(),
   };
 }
 
@@ -310,6 +338,25 @@ List<int> scaleWheelValues(RecipeData base, ScalingProfile profile,
       for (var n = 1; n <= math.max(1, profile.maxUnits); n++) base.water * n,
     ];
   }
+  // Кофеварка на плите: деления — её размеры. Вода каждого — вода рецепта,
+  // помноженная на то, во сколько раз этот размер больше размера рецепта:
+  // рецепт мокой на 3 чашки в 153 мл — это 306 мл в моке на 6.
+  if (profile.stepsBySize) {
+    final sizes = potSizes(base, profile);
+    // Рецепт уже на самой большой кофеварке — дальше только заходы той же
+    // варки: 2, 3 раза по рецепту (у Brikka размеров всего два).
+    final atLargest = sizes.isNotEmpty &&
+        profile.potOwnSize(base.water.toDouble()) ==
+            profile.sizesAscending.last.key;
+    return <int>{
+      for (final entry in sizes) entry.value,
+      if (atLargest)
+        for (var n = 2; n <= math.max(1, profile.maxUnits); n++) base.water * n,
+      base.water,
+      if (current != null) current,
+    }.toList()
+      ..sort();
+  }
   final step = math.max(1, profile.waterStep);
   final low = math.min(profile.minWater, base.water);
   final high = math.max(profile.maxWater, base.water);
@@ -320,6 +367,79 @@ List<int> scaleWheelValues(RecipeData base, ScalingProfile profile,
     if (current != null) current,
   }.toList()
     ..sort();
+}
+
+/// Размеры кофеварки и вода рецепта в каждом из них, от меньшего к большему.
+///
+/// Размер рецепта — тот, чей объём ближе всего к его воде (мока 153 мл — на
+/// 3 чашки). Остальные — в той же пропорции: доза и вода растут вместе, как
+/// растут бойлер и корзина кофеварки.
+List<MapEntry<String, int>> potSizes(RecipeData base, ScalingProfile profile) {
+  if (!profile.stepsBySize || base.water <= 0) return const [];
+  final own = profile.potOwnSize(base.water.toDouble());
+  final ownCapacity = profile.capacityMl[own]!;
+  return [
+    for (final entry in profile.sizesAscending)
+      MapEntry(
+        entry.key,
+        entry.key == own
+            ? base.water
+            : (base.water * entry.value / ownCapacity).round(),
+      ),
+  ];
+}
+
+/// Размер прибора, на который написан рецепт: с ним сравнивается, войдёт ли
+/// пересчитанное, и от него называется размер побольше.
+///
+/// У настаивания, клапана, нагрева и холодного настаивания — самый
+/// маленький размер, куда рецепт входит целиком: френч-пресс на 480 мл — это
+/// пресс на 0,5 л, и ×2 — «возьмите 1 л». У пролива — размер профиля (V60-02):
+/// там вместимость — объём воронки над слоем, и считает её расписание.
+String recipeSize(RecipeData base, ScalingProfile profile) {
+  switch (profile.family) {
+    case ScalingFamily.valve:
+    case ScalingFamily.immersion:
+    case ScalingFamily.heated:
+    case ScalingFamily.coldSteep:
+      if (profile.capacityMl.isEmpty || base.water <= 0) {
+        return profile.defaultSize;
+      }
+      final held =
+          heldWater(base, profile, 1) + profile.bedMlPerGram * base.load * 0.32;
+      return profile.sizeFitting(held) ?? profile.defaultSize;
+    case ScalingFamily.pot:
+      return profile.potOwnSize(base.water.toDouble());
+    default:
+      return profile.defaultSize;
+  }
+}
+
+/// Сколько воды стоит в приборе разом при воде рецепта ×[k], мл.
+///
+/// У клапана — только то, что налито при закрытом кране: у Gina второй
+/// пролив идёт при открытом и сразу уходит в чашку, в воронке его от силы
+/// половина. У Clever и Switch кран закрыт всё время — там это вся вода.
+double heldWater(RecipeData base, ScalingProfile profile, double k) {
+  if (profile.family != ScalingFamily.valve) return base.water * k;
+  var open = false;
+  var held = 0.0, peak = 0.0;
+  for (final s in base.steps) {
+    if (s.stepType == 'close_valve' || s.stepType == 'open_valve') {
+      open = s.stepType == 'open_valve';
+      held = 0;
+    }
+    if ((s.stepType == 'pour' || s.stepType == 'bloom') && s.water > 0) {
+      final w = s.water * k;
+      if (open) {
+        peak = math.max(peak, w / 2);
+      } else {
+        held += w;
+        peak = math.max(peak, held);
+      }
+    }
+  }
+  return peak;
 }
 
 ScaledRecipe _original(
@@ -346,6 +466,9 @@ ScaledRecipe _original(
     warnings: const [],
     family: profile.family,
     unit: profile.unit,
+    potSize:
+        profile.stepsBySize ? profile.potOwnSize(base.water.toDouble()) : '',
+    sizeUnit: profile.sizeUnit,
   );
 }
 
@@ -541,6 +664,9 @@ class _Scaler {
           ScalingFamily.parallel ||
           ScalingFamily.coldDrip =>
             'pause',
+          // Кофеварка: «греть до первых струек» — нагрев, его ставим ниже;
+          // шаг до знака («снять на бульканье») заканчивает человек.
+          ScalingFamily.pot => step.untilUser ? 'pause' : 'steep',
         };
       }
       // Открытый клапан, который держат дольше паузы, — это и есть слив
@@ -557,8 +683,10 @@ class _Scaler {
       }
     }
     // Нагрев без «ждём пенку» (перколятор): греется первая пауза после
-    // заливки, дальше — уже само заваривание.
-    if (profile.family == ScalingFamily.heated &&
+    // заливки, дальше — уже само заваривание. У кофеварки на плите так же:
+    // первая пауза после заливки — «греть до первых струек».
+    if ((profile.family == ScalingFamily.heated ||
+            profile.family == ScalingFamily.pot) &&
         !out.any((s) => s.role == 'heat')) {
       for (final s in out) {
         if (s.kind == 'wait') {
@@ -845,8 +973,8 @@ class _Scaler {
               duration: math.max(s.duration, s.water * k / q0))
         else if (s.role == 'heat')
           // При том же огне тепла в секунду столько же, а греть надо в k раз
-          // больше воды: до пенки — в k раз дольше.
-          s.copy(duration: s.duration * k)
+          // больше воды: до пенки — в k раз дольше (heatExponent = 1).
+          s.copy(duration: s.duration * math.pow(k, profile.heatExponent))
         else if (_isWater(s.kind))
           s.copy(water: s.water * k)
         else
@@ -859,6 +987,70 @@ class _Scaler {
       grinderId: null,
       tempDrop: 0,
       warnings: _capacityWarnings(),
+    );
+  }
+
+  // ── кофеварка на плите: та же варка в кофеварке побольше ──
+  //
+  // Не второй заход, как у эспрессо: мока, Brikka и неаполитанка продаются
+  // размерами, и вдвое больше кофе варят в кофеварке вдвое больше. Кофе и
+  // вода — в k раз, помол прежний (корзина та же по устройству), нагрев до
+  // первых струек — дольше, но медленнее воды: у кофеварки побольше и дно
+  // шире (heatExponent из исследования).
+  ScaledRecipe pot() {
+    final sizes = potSizes(base, profile);
+    // Больше самой большой кофеварки — та же варка ещё раз.
+    if (sizes.isEmpty || water > sizes.last.value) return repeat();
+
+    final own = profile.potOwnSize(base.water.toDouble());
+    final need = sizes
+        .reduce((a, b) =>
+            (a.value - water).abs() <= (b.value - water).abs() ? a : b)
+        .key;
+    // Кофе — по корзине: у моки на 6 чашек она не вдвое больше, чем на 3
+    // (30 г против 17). Корзин не знаем — тогда вместе с водой.
+    final basketOwn = profile.basketFor(own);
+    final basketNeed = profile.basketFor(need);
+    final doseRatio =
+        basketOwn > 0 && basketNeed > 0 ? basketNeed / basketOwn : k;
+    final potDose = (base.load * doseRatio * 10).round() / 10;
+
+    final q0 = _basePourRate;
+    final heat = math.pow(k, profile.heatExponent).toDouble();
+    final out = <_Step>[
+      for (final s in steps)
+        if ((s.kind == 'pour' || s.kind == 'bloom') && s.water > 0)
+          s.copy(
+              water: s.water * k,
+              duration: math.max(s.duration, s.water * k / q0))
+        else if (s.role == 'heat')
+          s.copy(duration: s.duration * heat)
+        else if (s.kind == 'grind')
+          // Смолоть больше кофе — дольше: кофемолка мелет граммы, а не
+          // порции.
+          s.copy(duration: s.duration * doseRatio)
+        else if (_isWater(s.kind))
+          s.copy(water: s.water * k)
+        else
+          s.copy(),
+    ];
+
+    return _finish(
+      _Schedule(out, 0),
+      grindRatio: 1,
+      click: baseClick,
+      grinderId: null,
+      tempDrop: 0,
+      warnings: [
+        if (need != own)
+          ScaleWarning(ScaleWarningKind.potSize,
+              size: own, biggerSize: need, sizeUnit: profile.sizeUnit),
+        if (potDose < profile.minDoseGrams)
+          ScaleWarning(ScaleWarningKind.tooThin,
+              grams: profile.minDoseGrams.round()),
+      ],
+      doseOverride: potDose,
+      potSize: need,
     );
   }
 
@@ -934,13 +1126,21 @@ class _Scaler {
       for (var run = 1; run <= n; run++)
         for (final s in steps) s.copy(run: n > 1 ? run : 0, runs: n),
     ];
+    // Есть прибор побольше, куда весь кофе войдёт сразу (фин на 12 oz,
+    // Nanopresso с Barista Kit), — подскажем: заходы — для того, у кого его
+    // нет.
+    final whole = n > 1 ? _basketFor(base.load * n) : null;
     return _finish(
       _Schedule(out, 0),
       grindRatio: 1,
       click: baseClick,
       grinderId: null,
       tempDrop: 0,
-      warnings: const [],
+      warnings: [
+        if (whole != null)
+          ScaleWarning(ScaleWarningKind.wholeIn,
+              biggerSize: whole, sizeUnit: profile.sizeUnit),
+      ],
       waterOverride: base.water * n,
       doseOverride: base.load * n,
       runs: n,
@@ -1074,6 +1274,9 @@ class _Scaler {
       }
     }
 
+    // Камера мала — но, может, есть прибор побольше, где всё войдёт сразу.
+    final whole = n > 1 || plan.bypass >= 1 ? _wholeIn(total) : null;
+
     return _finish(
       _Schedule(out, 0),
       grindRatio: 1,
@@ -1087,6 +1290,9 @@ class _Scaler {
         else if (plan.bypass >= 1)
           ScaleWarning(ScaleWarningKind.bypass,
               water: plan.bypass.round(), chamber: profile.chamberMl.round()),
+        if (whole != null)
+          ScaleWarning(ScaleWarningKind.wholeIn,
+              biggerSize: whole, sizeUnit: profile.sizeUnit),
       ],
       doseOverride: (plan.dose * n * 10).round() / 10,
       runs: n,
@@ -1094,56 +1300,68 @@ class _Scaler {
     );
   }
 
-  /// Сколько воды стоит в приборе разом, мл.
-  ///
-  /// У клапана — только то, что налито при закрытом кране: у Gina второй
-  /// пролив идёт при открытом и сразу уходит в чашку, в воронке его от силы
-  /// половина. У Clever и Switch кран закрыт всё время — там это вся вода.
-  double get _heldWater {
-    if (profile.family != ScalingFamily.valve) return water.toDouble();
-    var open = false;
-    var held = 0.0, peak = 0.0;
-    for (final s in steps) {
-      if (s.kind == 'close_valve' || s.kind == 'open_valve') {
-        open = s.kind == 'open_valve';
-        held = 0;
-      }
-      if ((s.kind == 'pour' || s.kind == 'bloom') && s.water > 0) {
-        final w = s.water * k;
-        if (open) {
-          peak = math.max(peak, w / 2);
-        } else {
-          held += w;
-          peak = math.max(peak, held);
-        }
-      }
+  /// Самый маленький прибор, в чью корзину войдёт [grams] кофе (с допуском
+  /// 5 % на разброс паспортов); null — такого нет или корзин не знаем.
+  String? _basketFor(double grams) {
+    final options = profile.basketGrams.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+    for (final entry in options) {
+      if (entry.value >= grams * 0.95) return entry.key;
     }
-    return peak;
+    return null;
   }
 
-  /// Не войдёт в прибор: вода с кофе больше его объёма.
-  List<ScaleWarning> _capacityWarnings() => [
-        if (capacity > 0 && _heldWater + bedMl * 0.32 > capacity)
-          ScaleWarning(ScaleWarningKind.overCapacity, size: size),
-        if (dose < profile.minDoseGrams)
-          ScaleWarning(ScaleWarningKind.tooThin,
-              grams: profile.minDoseGrams.round()),
-      ];
-
-  GrinderMode? _modeOf(String? label) {
-    if (label == null || scale.isEmpty) return null;
-    final wanted = label.trim();
-    for (final mode in scale) {
-      if (mode.mode.trim() == wanted) return mode;
-    }
-    final asNumber = double.tryParse(wanted.replaceAll(',', '.'));
-    if (asNumber == null) return null;
-    for (final mode in scale) {
-      if (double.tryParse(mode.mode.trim().replaceAll(',', '.')) == asNumber) {
-        return mode;
+  /// Камера побольше, куда войдёт вся вода с кофе без доливки и заходов
+  /// (AeroPress XL); null — такой нет.
+  String? _wholeIn(double total) {
+    final coffee = base.load * total / math.max(1.0, _chamberWaterBase);
+    final need = total + profile.displacementMlPerGram * coffee;
+    for (final entry in profile.sizesAscending) {
+      if (entry.value > profile.chamberMl && entry.value >= need) {
+        return entry.key;
       }
     }
     return null;
+  }
+
+  /// Сколько воды стоит в приборе разом, мл (см. [heldWater]).
+  double get _heldWater => heldWater(base, profile, k);
+
+  /// Не войдёт в прибор: вода с кофе больше его объёма.
+  ///
+  /// Есть размер побольше, куда войдёт, — называем его: френч-пресс на 1,5 л,
+  /// сифон TCA-5, Switch 03. «Лучше в два захода» — только когда больше
+  /// размера нет.
+  List<ScaleWarning> _capacityWarnings() {
+    final held = _heldWater + bedMl * 0.32;
+    final over = capacity > 0 && held > capacity;
+    final bigger = over ? _biggerSizeFor(held) : null;
+    return [
+      if (over && bigger != null)
+        ScaleWarning(ScaleWarningKind.biggerSize,
+            size: size, biggerSize: bigger, sizeUnit: profile.sizeUnit)
+      else if (over)
+        ScaleWarning(ScaleWarningKind.overCapacity, size: size),
+      if (dose < profile.minDoseGrams)
+        ScaleWarning(ScaleWarningKind.tooThin,
+            grams: profile.minDoseGrams.round()),
+    ];
+  }
+
+  /// Размер больше текущего, в который войдёт [ml]; null — такого нет.
+  String? _biggerSizeFor(double ml) {
+    for (final entry in profile.sizesAscending) {
+      if (entry.value > capacity && entry.value >= ml) return entry.key;
+    }
+    return null;
+  }
+
+  /// Деление рецепта на шкале — с его крупностью. «14,5» на шкале из целых
+  /// получает крупность между 14 и 15: иначе пересчёт не знал бы, от чего
+  /// считать, и клики стояли бы на месте.
+  GrinderMode? _modeOf(String? label) {
+    if (label == null || scale.isEmpty) return null;
+    return divisionOnScale(scale, label);
   }
 
   ScaledRecipe _finish(
@@ -1157,6 +1375,7 @@ class _Scaler {
     double? doseOverride,
     int runs = 1,
     int bypassWater = 0,
+    String potSize = '',
   }) {
     final finalWater = waterOverride ?? water;
     final finalDose = doseOverride ?? dose;
@@ -1230,6 +1449,8 @@ class _Scaler {
       runs: runs,
       unit: profile.unit,
       bypassWater: bypassWater,
+      potSize: potSize,
+      sizeUnit: profile.sizeUnit,
     );
   }
 

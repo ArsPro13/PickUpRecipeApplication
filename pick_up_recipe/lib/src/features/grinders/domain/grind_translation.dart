@@ -21,11 +21,18 @@
 // Слова «примерно» перед пересчитанным числом больше нет: владелец попросил
 // писать клики как есть — «5 кликов», а не «примерно 5». Что число получено
 // пересчётом, модель по-прежнему знает, но на экран это не выводится.
+//
+// С 04.11.2026 клики пишутся числом всегда, когда их есть из чего посчитать
+// (владелец: «чтобы клики всё равно писались в числовых значениях»): шкала
+// без ответа сервера берётся встроенная, деления чужой кофемолки переводятся
+// через её шкалу, а без выбранной кофемолки клики пишутся эталонной —
+// Comandante C40, с её именем рядом (grinder_scales.dart).
 
 import 'package:flutter/widgets.dart' show Locale;
 
 import '../../../../l10n/app_localizations.dart';
 import '../../recipes/domain/models/grind_descriptor_model.dart';
+import 'grinder_scales.dart';
 import 'models/grinder_model.dart';
 
 /// Словарь на языке шаблона.
@@ -67,8 +74,10 @@ class GrindReading {
   /// Это деление кофемолки, а не слово справочника.
   final bool isDivision;
 
-  /// Кофемолки нет, и потому показано слово. Не «нечего показать», а
-  /// «покажем больше, если выберете» — приглашение, а не ошибка.
+  /// Своя кофемолка не выбрана. Тогда на месте помола клики эталонной
+  /// кофемолки (её имя — в [grinderName]) или, если и их не из чего
+  /// посчитать, слово. Не «нечего показать», а «покажем ваши, если
+  /// выберете» — приглашение, а не ошибка.
   final bool needsGrinder;
 
   /// Словарь, которым подписано число. Пусто — язык шаблона.
@@ -93,6 +102,10 @@ class GrindReading {
   /// клики и какая это крупность словом. «Делений» перед именем больше нет:
   /// что это клики, говорит само число.
   String? get hint {
+    // Клики эталонной кофемолки: чьи они — и что можно выбрать свою.
+    if (isDivision && grinderName != null && needsGrinder) {
+      return _words.grinderReferenceHint(grinderName!);
+    }
     if (isDivision && grinderName != null) {
       return [
         grinderName!,
@@ -107,14 +120,15 @@ class GrindReading {
 /// Помол рецепта в делениях кофемолки человека.
 ///
 /// [grinder] — основная кофемолка пользователя. `null` означает «не выбрана»,
-/// и это нормальное состояние: помол тогда остаётся словом, а рядом встаёт
-/// приглашение выбрать кофемолку. Прятать помол в этом случае нельзя — до
-/// пункта 8 он именно так и показывался, и это единственное, что у человека
-/// было.
+/// и это нормальное состояние: клики тогда пишутся эталонной кофемолкой
+/// (Comandante C40, как на сайте и в PDF) с её именем, а рядом встаёт
+/// приглашение выбрать свою. Слово остаётся, только когда кликов не из чего
+/// посчитать вовсе.
 ///
 /// [recipeGrinderId] и [recipeGrindStep] — помол, записанный в самом рецепте.
 /// Если он записан в делениях той же кофемолки, пересчитывать нечего: своё
-/// число точнее любого перевода.
+/// число точнее любого перевода. Деления чужой кофемолки переводятся через её
+/// шкалу, когда у рецепта нет ни своих микронов, ни слова крупности.
 ///
 /// [texts] — словарь экрана: им подписывают число словом «кликов». Без него
 /// подписи встают на языке шаблона.
@@ -130,37 +144,47 @@ GrindReading grindReading({
   final step = recipeGrindStep.trim();
   final word = grindDescriptorName(reference, descriptorSlug).trim();
 
+  // Чьими кликами писать: своей кофемолкой, а пока её нет — эталонной.
+  final target = grinder ?? referenceGrinder;
+  final isReference = grinder == null;
+
   // Рецепт уже записан в делениях этой кофемолки — считать нечего и незачем.
-  if (grinder != null && grinder.id == recipeGrinderId && step.isNotEmpty) {
+  if (target.id == recipeGrinderId && step.isNotEmpty) {
     return GrindReading(
       value: grinderDivisionLabel(step),
-      grinderName: grinder.name,
+      grinderName: target.name,
       word: word,
       isDivision: true,
+      needsGrinder: isReference,
       texts: texts,
     );
   }
 
-  final microns =
-      recipeMicrons ?? grindDescriptorMicrons(reference, descriptorSlug);
+  // Крупность рецепта: свои микроны точнее ступени справочника, ступень —
+  // привычнее делений чужой кофемолки. Деления чужой кофемолки остаются
+  // последним источником: без них её «22» показывалось бы как ваши клики.
+  final microns = recipeMicrons ??
+      grindDescriptorMicrons(reference, descriptorSlug) ??
+      stepMicrons(recipeGrinderId, step);
 
-  if (grinder != null && microns != null && microns > 0) {
-    final mode = nearestGrinderMode(grinder.modes, microns);
+  if (microns != null && microns > 0) {
+    final mode = nearestGrinderMode(target.knownModes, microns);
     if (mode != null) {
       return GrindReading(
         value: grinderDivisionLabel(mode.mode),
-        grinderName: grinder.name,
+        grinderName: target.name,
         word: word,
         isApproximate: true,
         isDivision: true,
+        needsGrinder: isReference,
         texts: texts,
       );
     }
   }
 
-  // Деление взять неоткуда: кофемолки нет, её шкалы нет или крупность рецепта
-  // неизвестна. Остаётся слово — пустое место на месте помола читалось бы как
-  // «помол неизвестен», а это неправда.
+  // Деление взять неоткуда: у кофемолки нет шкалы ни с сервера, ни во
+  // встроенной таблице, или крупность рецепта неизвестна. Остаётся слово —
+  // пустое место на месте помола читалось бы как «помол неизвестен».
   if (word.isNotEmpty) {
     return GrindReading(
         value: word, needsGrinder: grinder == null, texts: texts);
@@ -210,7 +234,7 @@ num? grindClicksCount(String division) {
 /// одной подписи остаются в одном экземпляре.
 List<GrinderMode> grinderScale(Grinder grinder) {
   final modes = [
-    for (final mode in grinder.modes)
+    for (final mode in grinder.knownModes)
       if (mode.mode.trim().isNotEmpty) mode,
   ];
   final numeric = modes.every((mode) => grindClicksCount(mode.mode) != null);

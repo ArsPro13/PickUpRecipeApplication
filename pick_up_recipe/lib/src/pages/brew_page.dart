@@ -34,6 +34,7 @@ import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/grinders/application/grinder_state.dart';
 import '../features/grinders/domain/grind_translation.dart';
+import '../features/grinders/domain/grinder_scales.dart';
 import '../features/grinders/domain/models/grinder_model.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/last_brew_cache.dart';
@@ -123,8 +124,8 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// и правят рецепт, а не то, на сколько чашек его сегодня сварили.
   ScaledRecipe? _scaled;
 
-  /// Как пересчитывать этот прибор. null — прибор не пересчитывается
-  /// (аэропресс, эспрессо, мока), и вода в строке не нажимается.
+  /// Как пересчитывать этот прибор. null — прибора нет во встроенной
+  /// таблице (его завели на сервере позже), и вода в строке не нажимается.
   late final ScalingProfile? _profile =
       ScalingProfile.builtIn(widget.recipe.device);
 
@@ -463,9 +464,15 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// Деление, с которого считается новый помол, — то же, что строка
   /// параметров показывает для исходного рецепта: клики рецепта, если он
   /// записан на этой же кофемолке, иначе перевод его крупности на её шкалу.
+  ///
+  /// Шкала — та же, по которой написан помол на экране: своей кофемолки
+  /// (с сервера или встроенная), а без неё — эталонной Comandante C40. Раньше
+  /// без шкалы пересчёт не знал микронов деления, и у воронки клики стояли на
+  /// месте при любом объёме — об этом и спросил владелец 04.11.
   ScaledRecipe _scaleTo(int water) {
     final texts = AppLocalizations.of(context);
     final grinder = ref.read(grinderStateProvider).primary;
+    final target = grinder ?? referenceGrinder;
     final base = _grindOf(widget.recipe, grinder, texts,
         ref.read(grindDescriptorsProvider).valueOrNull);
 
@@ -473,9 +480,9 @@ class _BrewPageState extends ConsumerState<BrewPage>
       base: widget.recipe,
       water: water,
       profile: _profile!,
-      scale: grinder?.modes ?? const [],
+      scale: target.knownModes,
       baseClick: base.isDivision ? base.value : null,
-      grinderId: grinder?.id,
+      grinderId: target.id,
       labels: ScaleLabels(
         splitWait: texts.brewScaleSplitWait,
         dilute: texts.brewScaleDilute,
@@ -756,7 +763,13 @@ class _BrewPageState extends ConsumerState<BrewPage>
                     : {
                         _StripItem.water,
                         if (scaled.dose != widget.recipe.load) _StripItem.dose,
-                        if (scaled.grindStep != scaled.baseGrindStep)
+                        // Сравниваются подписи, а не строки сервера: «14.0»
+                        // шкалы и «14» рецепта — одно деление, и подсветка
+                        // «помол поменялся» на них врала.
+                        if (scaled.grindStep != null &&
+                            grinderDivisionLabel(scaled.grindStep!) !=
+                                grinderDivisionLabel(
+                                    scaled.baseGrindStep ?? ''))
                           _StripItem.grind,
                         if (scaled.recipe.temperature !=
                             widget.recipe.temperature)
@@ -799,7 +812,11 @@ class _BrewPageState extends ConsumerState<BrewPage>
             _ScaledBar(
               scaled: scaled,
               water: _waterLabel(texts, scaled.water),
-              grinderName: ref.watch(grinderStateProvider).primary?.name ?? '',
+              // Край шкалы — у той кофемолки, чьими кликами написан помол:
+              // своей, а без неё — эталонной.
+              grinderName:
+                  (ref.watch(grinderStateProvider).primary ?? referenceGrinder)
+                      .name,
               onUndo: () => _applyWater(widget.recipe.water),
             ),
           Padding(
@@ -1220,19 +1237,10 @@ class _ScaledBar extends StatelessWidget {
               ),
             ],
           ),
-          // Что будет со стартом: пересчитанный рецепт ляжет новой версией.
-          // Сказано заранее, а не задним числом — новая строка в истории не
-          // должна появиться сюрпризом.
-          Padding(
-            padding: const EdgeInsets.only(
-              left: AppSpacing.s6 + AppSpacing.s1,
-              bottom: AppSpacing.s1,
-            ),
-            child: Text(
-              texts.brewScaledSavesVersion,
-              style: context.texts.labelSmall,
-            ),
-          ),
+          // Строки «Начнёте — сохранится новой версией рецепта» здесь больше
+          // нет: владелец назвал её бесполезной (04.11). Пересчитанный рецепт
+          // по-прежнему ложится новой версией со стартом — это видно в
+          // истории, и предупреждать об этом заранее незачем.
           if (scaled.warnings.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(
@@ -1606,10 +1614,14 @@ class _BrewFrame extends StatelessWidget {
                   ),
                 if (hint != null) ...[
                   const SizedBox(height: AppSpacing.s1),
+                  // Две строки: «Comandante C40 · выберите свою · было 14»
+                  // в одну не влезало, и многоточие съедало «было 14» —
+                  // ровно то, ради чего подпись после пересчёта и стоит.
                   Text(
                     hint,
                     style: context.texts.bodySmall,
-                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
