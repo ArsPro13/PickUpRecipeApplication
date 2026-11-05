@@ -27,6 +27,7 @@ import 'package:pick_up_recipe/src/features/brew_methods/domain/brew_method.dart
 import 'package:pick_up_recipe/src/features/grinders/application/grinder_state.dart';
 import 'package:pick_up_recipe/src/features/grinders/data_sources/remote/grinder_service.dart';
 import 'package:pick_up_recipe/src/features/grinders/domain/models/grinder_model.dart';
+import 'package:pick_up_recipe/src/features/recipes/application/active_brew.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_list_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/step_types_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/grind_descriptor_model.dart';
@@ -234,6 +235,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await EncryptedSharedPreferences.initialize(prefsKey);
     await EncryptedSharedPreferences.getInstance().clear();
+    // Идущие заваривания живут ещё и в памяти: начатое в прошлом тесте не
+    // должно достаться экрану этого.
+    ActiveBrews.load();
 
     await GetIt.instance.reset();
     GetIt.instance
@@ -247,6 +251,7 @@ void main() {
     RecipeService? recipes,
     GrinderService? grinders,
     bool catalog = false,
+    bool settle = true,
   }) async {
     tester.view.physicalSize = const Size(412, 915);
     tester.view.devicePixelRatio = 1;
@@ -278,7 +283,14 @@ void main() {
     await tester.pump();
 
     unawaited(router.push(BrewRoute(recipe: recipe, pack: null)));
-    await tester.pumpAndSettle();
+    // Идущее заваривание перерисовывается каждый кадр и успокоиться не
+    // может — тогда экран просто дожидается своего появления.
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+    }
   }
 
   Finder param(String name) => find.byKey(ValueKey('brew-param-$name'));
@@ -449,6 +461,37 @@ void main() {
       await tester.tap(button('Продолжить'));
       await tester.pump();
       expect(recipes.evolved, hasLength(1));
+    });
+
+    // С идущего заваривания можно уйти (6 ноября). Пересчитанный рецепт при
+    // этом обязан вернуться пересчитанным: те же 500 мл и те же шаги, а
+    // оценка — версии, сохранённой при старте, без второй такой же.
+    testWidgets('ушли с пересчитанного и вернулись — те же 500 мл, версия одна',
+        (tester) async {
+      final recipes = _Recipes();
+      await pumpBrew(tester, moziana(), recipes: recipes);
+      await chooseWater(tester, 500);
+      await tester.tap(find.text('Смолол, начинаем'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final active = ActiveBrews.find(moziana());
+      expect(active?.scaledWater, 500);
+      expect(active?.scaledVersionId, 901,
+          reason: 'номер сохранённой версии лежит в записи о заваривании');
+      expect(active?.brewed.load, 30);
+
+      // Уходим — стрелкой в шапке — и открываем тот же рецепт снова.
+      await tester.tap(find.byTooltip('Назад'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await pumpBrew(tester, moziana(), recipes: recipes, settle: false);
+
+      expect(find.text('500 мл'), findsOneWidget,
+          reason: 'экран открыл исходные 250 мл вместо идущего заваривания');
+      expect(find.text('30 г'), findsOneWidget);
+      expect(recipes.evolved, hasLength(1),
+          reason: 'возврат к завариванию не сохраняет версию второй раз');
     });
 
     // Владелец 04.11: «почему не меняются клики при изменении объёма в

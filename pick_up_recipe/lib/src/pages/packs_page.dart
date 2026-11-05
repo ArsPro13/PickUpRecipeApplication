@@ -19,6 +19,7 @@ import '../features/recipes/application/state/recipes_list_state.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/grinder_button.dart';
 import '../general_widgets/unfinished_rating_plate.dart';
+import '../general_widgets/active_brew_plate.dart';
 import '../general_widgets/app_kit.dart';
 import '../themes/app_icons.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
@@ -71,6 +72,9 @@ class _PacksPageState extends ConsumerState<PacksPage> {
       // должна уезжать вверх при первой же прокрутке полки.
       body: Column(
         children: [
+          // Идущее заваривание — выше недописанной оценки: кофе в воронке
+          // ждать не может, а оценка может.
+          const ActiveBrewPlate(),
           const UnfinishedRatingPlate(),
           Expanded(
             child: RefreshIndicator(

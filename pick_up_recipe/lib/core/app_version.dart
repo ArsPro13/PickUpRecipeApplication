@@ -5,4 +5,4 @@
 /// проекте нет, а заводить зависимость ради одной строки дороже, чем
 /// держать её здесь: расхождение с pubspec.yaml ловит
 /// test/app_version_test.dart.
-const String appVersion = '1.0.6+7';
+const String appVersion = '1.0.7+8';

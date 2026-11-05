@@ -6,12 +6,18 @@
 // тестом ниже: в раздел попадает не то (чужой прибор, своя пачка); на месте
 // стопки стоит похожая копия без барабана; жест забирает прокрутка экрана,
 // и карточка не листается.
+//
+// Здесь же — карточка «От обжарщика» (6 ноября 2026). Владелец прислал снимок:
+// три плитки сбились в кучу, четвёртая с названием кофемолки стоит особняком,
+// «Заварить · 3…» обрезано кнопкой «Править». Просьба: ровно, без подписи
+// кофемолки, без обрезанного текста, правка — значком в правом верхнем углу.
 
 import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:encrypt_shared_preferences/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -23,10 +29,14 @@ import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/application/brew_methods_state.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/data_sources/remote/brew_method_service.dart';
 import 'package:pick_up_recipe/src/features/brew_methods/domain/brew_method.dart';
+import 'package:pick_up_recipe/src/features/grinders/application/grinder_state.dart';
+import 'package:pick_up_recipe/src/features/grinders/data_sources/remote/grinder_service.dart';
+import 'package:pick_up_recipe/src/features/grinders/domain/models/grinder_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_list_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/general_widgets/app_icon.dart';
+import 'package:pick_up_recipe/src/general_widgets/app_kit.dart';
 import 'package:pick_up_recipe/src/general_widgets/recipe_deck.dart';
 import 'package:pick_up_recipe/src/pages/choosing_recipe_page.dart';
 import 'package:pick_up_recipe/src/themes/app_icons.dart';
@@ -147,11 +157,43 @@ class _MethodsService extends BrewMethodService {
       ];
 }
 
+/// Comandante C40 — и своя кофемолка человека, и эталонная, чьими кликами
+/// приложение пишет помол, пока своя не выбрана.
+const Grinder _c40 = Grinder(
+  id: 11,
+  name: 'Comandante C40',
+  kind: GrinderKind.manual,
+  modes: [GrinderMode(mode: '22.0', microns: 910)],
+);
+
+/// Профиль с кофемолкой ([own]) или без неё.
+class _Grinders implements GrinderService {
+  const _Grinders({required this.own});
+
+  final bool own;
+
+  @override
+  Future<List<Grinder>> getAllGrinders() async => [_c40];
+
+  @override
+  Future<List<UserGrinder>> getUserGrinders() async =>
+      own ? const [UserGrinder(grinder: _c40, isPrimary: true)] : const [];
+
+  @override
+  Future<List<UserGrinder>> setUserGrinders(
+    List<Grinder> grinders, {
+    int? primaryGrinderId,
+  }) =>
+      getUserGrinders();
+}
+
 RecipeData _recipe({
   required int id,
   required int packId,
   required String date,
   String device = 'hario_v60',
+  int grinderId = 0,
+  String grindStep = '',
 }) {
   return RecipeData(
     hasEstimation: true,
@@ -159,8 +201,8 @@ RecipeData _recipe({
     device: device,
     date: date,
     packId: packId,
-    grinderId: 0,
-    grindStep: '',
+    grinderId: grinderId,
+    grindStep: grindStep,
     grindSubStep: null,
     water: 250,
     time: 150,
@@ -188,6 +230,15 @@ final _history = [
 /// Рецепт под само это зерно: с ним наверху экрана стоит «От обжарщика».
 final _own = _recipe(id: 11, packId: 1, date: '2026-10-27T08:00:00Z');
 
+/// Он же, записанный кликами C40.
+final _ownInClicks = _recipe(
+  id: 12,
+  packId: 1,
+  date: '2026-10-27T08:00:00Z',
+  grinderId: 11,
+  grindStep: '22',
+);
+
 final _playButtons = find.byWidgetPredicate(
   (widget) => widget is AppIcon && widget.asset == AppIcons.uiPlay,
 );
@@ -210,10 +261,12 @@ void main() {
     GetIt.instance.registerSingleton<ApiClient>(_PacksApiClient());
   });
 
-  /// Экран зерна «Кения» под V60. [own] — рецепты под само это зерно.
+  /// Экран зерна «Кения» под V60. [own] — рецепты под само это зерно,
+  /// [grinders] — профиль человека: с кофемолкой или без.
   Future<_RecordingRouter> pumpChoosing(
     WidgetTester tester, {
     List<RecipeData> own = const [],
+    GrinderService? grinders,
   }) async {
     // Выше телефона, чтобы обе стопки стояли на экране без прокрутки:
     // проверяется раздел, а не то, как до него долистать.
@@ -229,6 +282,9 @@ void main() {
           recipeServiceProvider
               .overrideWithValue(_StaticRecipeService([...own, ..._history])),
           brewMethodServiceProvider.overrideWithValue(_MethodsService()),
+          if (grinders != null)
+            grinderStateProvider.overrideWith(
+                (ref) => GrinderStateNotifier(grinders)..loadUserGrinders()),
         ],
         child: MaterialApp(
           theme: lightTheme,
@@ -321,6 +377,159 @@ void main() {
 
       expect(find.text(ru.chooseRoaster), findsOneWidget);
       expect(decks(tester).map((deck) => deck.hero).toList(), [false, false]);
+    });
+  });
+
+  group('рецепт под это зерно', () {
+    final tiles = find.byType(MetricTile);
+    final brew = find.widgetWithText(AppButton, 'Заварить · 2:30');
+    final edit = find.byKey(const ValueKey('choose-edit-roaster'));
+
+    testWidgets('плитки стоят четырьмя равными колонками', (tester) async {
+      await pumpChoosing(
+        tester,
+        own: [_ownInClicks],
+        grinders: const _Grinders(own: true),
+      );
+
+      expect(tiles, findsNWidgets(4));
+      final centers = [
+        for (var index = 0; index < 4; index++)
+          tester.getCenter(tiles.at(index)).dx,
+      ];
+      final gaps = [
+        for (var index = 1; index < 4; index++)
+          centers[index] - centers[index - 1],
+      ];
+
+      expect(gaps[1], moreOrLessEquals(gaps[0], epsilon: 0.5));
+      expect(gaps[2], moreOrLessEquals(gaps[0], epsilon: 0.5),
+          reason: 'подпись под плиткой не должна сдвигать её с места в ряду');
+      // Ряд стоит по центру карточки: поля слева и справа от него равны.
+      final row =
+          tester.getRect(find.byKey(const ValueKey('choose-roaster-tiles')));
+      expect(centers.first - row.left,
+          moreOrLessEquals(row.right - centers.last, epsilon: 0.5));
+    });
+
+    testWidgets('своя кофемолка под кликами не подписана', (tester) async {
+      await pumpChoosing(
+        tester,
+        own: [_ownInClicks],
+        grinders: const _Grinders(own: true),
+      );
+
+      expect(find.text('22 клика'), findsOneWidget);
+      expect(find.text('Comandante C40'), findsNothing,
+          reason: 'владелец: «не надо подписывать кофемолку»');
+    });
+
+    testWidgets('без своей кофемолки клики подписаны эталонной',
+        (tester) async {
+      await pumpChoosing(
+        tester,
+        own: [_ownInClicks],
+        grinders: const _Grinders(own: false),
+      );
+
+      // Клики тогда чужие, и молчать об этом нельзя: человек выставит их на
+      // своей кофемолке и получит другой помол.
+      expect(find.text('22 клика'), findsOneWidget);
+      expect(find.text('Comandante C40'), findsOneWidget);
+    });
+
+    testWidgets('«Заварить» — во всю ширину, с длительностью целиком',
+        (tester) async {
+      await pumpChoosing(tester, own: [_own]);
+
+      expect(brew, findsOneWidget);
+      expect(find.text('Править'), findsNothing,
+          reason: 'кнопка «Править» отнимала место у «Заварить · 2:30»');
+      final row =
+          tester.getRect(find.byKey(const ValueKey('choose-roaster-tiles')));
+      expect(
+          tester.getSize(brew).width, moreOrLessEquals(row.width, epsilon: 1));
+    });
+
+    testWidgets('узкий экран и крупный шрифт разметку не ломают',
+        (tester) async {
+      // Телефон владельца: узкий экран и шрифт крупнее обычного.
+      tester.view.physicalSize = const Size(360, 1600);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            recipeServiceProvider
+                .overrideWithValue(_StaticRecipeService([_own])),
+            brewMethodServiceProvider.overrideWithValue(_MethodsService()),
+          ],
+          child: MaterialApp(
+            theme: lightTheme,
+            locale: const Locale('ru'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: StackRouterScope(
+              controller: _RecordingRouter(),
+              stateHash: 0,
+              child: const ChoosingRecipePage(
+                packId: 1,
+                method: 'hario_v60',
+                methodName: 'Hario V60',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull,
+          reason: 'заголовок раздела с кнопкой правки не должен вылезать за '
+              'экран');
+      // Пояснение уходит под название целиком, а не дробится по слову на
+      // строку в остатке ширины.
+      final note = tester.getSize(find.text(ru.chooseRoasterNote));
+      final oneLine = tester
+          .renderObject<RenderParagraph>(find.text(ru.chooseRoasterNote))
+          .getMaxIntrinsicHeight(double.infinity);
+      expect(note.height, moreOrLessEquals(oneLine, epsilon: 0.5));
+      expect(tiles, findsNWidgets(4));
+      expect(edit, findsOneWidget);
+    });
+
+    testWidgets('правка — значком над правым углом карточки', (tester) async {
+      final router = await pumpChoosing(tester, own: [_own]);
+
+      expect(edit, findsOneWidget);
+      final row =
+          tester.getRect(find.byKey(const ValueKey('choose-roaster-tiles')));
+      final icon = tester.getRect(edit);
+      expect(icon.center.dy, lessThan(row.top),
+          reason: 'значок стоит над карточкой, а не в ряду с плитками');
+      expect(icon.center.dx, greaterThan(tester.getCenter(tiles.at(3)).dx),
+          reason: 'и над её правым углом');
+
+      await tester.tap(edit);
+      await tester.pumpAndSettle();
+
+      final route = router.pushed.single;
+      expect(route.routeName, RecipeBuilderRoute.name);
+      expect((route.args as RecipeBuilderRouteArgs).recipe.id, 11);
+    });
+
+    testWidgets('«Заварить» ведёт на заваривание этого рецепта',
+        (tester) async {
+      final router = await pumpChoosing(tester, own: [_own]);
+
+      await tester.tap(brew);
+      await tester.pumpAndSettle();
+
+      final route = router.pushed.single;
+      expect(route.routeName, BrewRoute.name);
+      expect((route.args as BrewRouteArgs).recipe.id, 11);
     });
   });
 }

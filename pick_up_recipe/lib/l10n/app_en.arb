@@ -267,7 +267,7 @@
 
   "profileFavourite": "Most often",
 
-  "profileFavouriteValue": "{name} · {count, plural, one{{count} recipe} other{{count} recipes}}",
+  "profileFavouriteValue": "{name} · {count, plural, one{{count}\u00a0recipe} other{{count}\u00a0recipes}}",
 
   "profileFirstRecipe": "First recipe",
 
@@ -727,7 +727,19 @@
 
   "brewAbort": "Stop",
 
-  "brewStay": "Stay",
+  "brewKeepBrewing": "Keep brewing",
+
+  "brewCanLeave": "You can leave the recipe",
+
+  "brewCanLeaveNote": "The timer keeps running. You will find the brew on the Recipes screen.",
+
+  "activeBrewRunning": "Brewing in progress",
+
+  "activeBrewPaused": "Brewing is paused",
+
+  "activeBrewWaiting": "The brew is waiting for you",
+
+  "activeBrewFinished": "Brewing has finished",
 
   "brewEditRecipe": "Edit recipe",
 

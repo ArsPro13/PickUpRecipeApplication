@@ -5,6 +5,8 @@
 // значение в фальшивых часах. Именно это и позволяет проверить поведение
 // колд брю, не заваривая его двенадцать часов.
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/brew_engine.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/brew_step.dart';
@@ -427,6 +429,66 @@ void main() {
       expect(saved['skipped_total_ms'], isA<int>());
       expect(saved['waiting_total_ms'], isA<int>());
       expect(saved['confirmed_steps'], isA<List<int>>());
+    });
+
+    // Запись об идущем заваривании лежит в настройках строкой JSON, и
+    // поднимается движок из неё целиком — одной функцией, а не шестью
+    // полями по месту: забытое поле здесь значит заваривание, которое после
+    // возврата на экран оказалось не на том шаге.
+    test('поднимается из своей же записи, прошедшей через JSON', () {
+      final middle = BrewEngine(steps: middleGateSteps(), clock: clock.call);
+      middle.start();
+      clock.advance(const Duration(seconds: 30));
+      clock.advance(const Duration(minutes: 5)); // стояли у ворот
+      middle.confirmCurrentStep();
+      clock.advance(const Duration(seconds: 3));
+      middle.pause();
+      clock.advance(const Duration(seconds: 20));
+      middle.resume();
+      middle.skipCurrentStep();
+      clock.advance(const Duration(seconds: 4));
+
+      final saved = jsonDecode(jsonEncode(middle.toPersistableState()))
+          as Map<String, dynamic>;
+      final restored = BrewEngine(steps: middleGateSteps(), clock: clock.call);
+
+      expect(restored.restoreFrom(saved), isTrue);
+      expect(restored.snapshot().status, middle.snapshot().status);
+      expect(restored.snapshot().stepIndex, middle.snapshot().stepIndex);
+      expect(restored.snapshot().elapsedTotal, middle.snapshot().elapsedTotal);
+    });
+
+    test('пауза переживает перезапуск паузой', () {
+      engine.start();
+      clock.advance(const Duration(seconds: 10));
+      engine.pause();
+      clock.advance(const Duration(minutes: 3));
+
+      final restored = BrewEngine(steps: v60Steps(), clock: clock.call);
+      restored.restoreFrom(engine.toPersistableState());
+
+      expect(restored.snapshot().status, BrewStatus.paused);
+      expect(restored.snapshot().elapsedTotal, const Duration(seconds: 10),
+          reason: 'три минуты на паузе в отсчёт не идут и после перезапуска');
+    });
+
+    test('метки времени пишутся по Гринвичу', () {
+      // Местное время без пояса после перевода часов читалось бы на час не
+      // туда — а колд брю настаивается как раз через ночь.
+      engine.start();
+
+      final startedAt =
+          DateTime.parse(engine.toPersistableState()['started_at'] as String);
+      expect(startedAt.isUtc, isTrue);
+    });
+
+    test('запись без момента старта не поднимается', () {
+      final fresh = BrewEngine(steps: v60Steps(), clock: clock.call);
+
+      expect(fresh.restoreFrom(const {}), isFalse);
+      expect(fresh.restoreFrom(engine.toPersistableState()), isFalse,
+          reason: 'заваривание не начинали — поднимать нечего');
+      expect(fresh.isStarted, isFalse);
     });
   });
 

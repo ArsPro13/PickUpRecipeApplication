@@ -534,10 +534,10 @@ class AppLocalizationsRu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count рецептов',
-      many: '$count рецептов',
-      few: '$count рецепта',
-      one: '$count рецепт',
+      other: '$count рецептов',
+      many: '$count рецептов',
+      few: '$count рецепта',
+      one: '$count рецепт',
     );
     return '$name · $_temp0';
   }
@@ -1300,7 +1300,26 @@ class AppLocalizationsRu extends AppLocalizations {
   String get brewAbort => 'Прервать';
 
   @override
-  String get brewStay => 'Остаться';
+  String get brewKeepBrewing => 'Не прерывать';
+
+  @override
+  String get brewCanLeave => 'Можно выйти из рецепта';
+
+  @override
+  String get brewCanLeaveNote =>
+      'Таймер идёт. Заваривание найдёте на экране «Рецепты».';
+
+  @override
+  String get activeBrewRunning => 'Идёт заваривание';
+
+  @override
+  String get activeBrewPaused => 'Заваривание на паузе';
+
+  @override
+  String get activeBrewWaiting => 'Заваривание ждёт вас';
+
+  @override
+  String get activeBrewFinished => 'Заваривание закончилось';
 
   @override
   String get brewEditRecipe => 'Править рецепт';

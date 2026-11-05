@@ -11,6 +11,13 @@
 // перестаёт быть особым случаем: время идёт само, а таймер интерфейса нужен
 // только чтобы перерисовывать.
 //
+// По той же причине заваривание не кончается вместе с экраном (6 ноября 2026).
+// С идущего заваривания можно уйти — стрелкой, кнопкой телефона, вкладкой
+// внизу: метки движка лежат в `ActiveBrews`, плашка на «Рецептах» показывает,
+// что оно идёт, а этот экран, открытый снова, подхватывает его с того места,
+// до которого дошли часы. Раньше уход спрашивал «Прервать заваривание?» и
+// стирал отсчёт; теперь «Прервать» — отдельная кнопка на паузе.
+//
 // ── Устройство экрана ───────────────────────────────────────────────────────
 //
 // Сверху неподвижная рамка: прогресс шага бежит по её периметру, внутри —
@@ -37,6 +44,7 @@ import '../features/grinders/domain/grind_translation.dart';
 import '../features/grinders/domain/grinder_scales.dart';
 import '../features/grinders/domain/models/grinder_model.dart';
 import '../features/packs/domain/models/pack_model.dart';
+import '../features/recipes/application/active_brew.dart';
 import '../features/recipes/application/last_brew_cache.dart';
 import '../features/recipes/application/screen_wake.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
@@ -54,34 +62,11 @@ import '../general_widgets/app_icon.dart';
 import '../general_widgets/grinder_button.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import '../general_widgets/brew_abort_dialog.dart';
 import '../general_widgets/water_scale_sheet.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
-
-/// Собирает шаги плеера из рецепта, пришедшего с сервера.
-///
-/// Тип шага, подсказка и признак необязательности передаются полностью: без
-/// них плеер получал одни `custom` — то есть список одинаковых значков без
-/// подсказок, хотя сервер всё это отдаёт.
-List<BrewStep> brewStepsOf(RecipeData recipe) {
-  return [
-    for (final step in recipe.steps)
-      BrewStep.fromResponse(
-        seqNum: step.seqNum,
-        instruction: step.instruction,
-        timeSec: step.time,
-        waterMl: step.water,
-        stepType: step.stepType,
-        stepKey: step.stepKey,
-        tip: step.tip,
-        isOptional: step.isOptional,
-        untilUser: step.untilUser,
-        untilSign: step.untilSign,
-        warning: step.warning,
-      ),
-  ];
-}
 
 @RoutePage()
 class BrewPage extends ConsumerStatefulWidget {
@@ -141,6 +126,20 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// этой версии, а не исходной. null — не пересчитывали или ещё не начали;
   /// значение null внутри — сохранить не удалось, оценим исходный.
   Future<RecipeData?>? _scaledVersion;
+
+  /// Идущее заваривание этого рецепта уже искали. Ищут один раз, при первом
+  /// построении: позже экран сам и есть источник правды о нём.
+  bool _lookedForActive = false;
+
+  /// Какой экран сейчас показывает заваривание — по ключу записи.
+  ///
+  /// Уходящий экран закрывается не сразу, а когда доиграет переход, и за это
+  /// время тот же рецепт успевают открыть снова — с плашки. Тогда прежний
+  /// экран, закрываясь, отметил бы «с заваривания ушли», хотя на него уже
+  /// смотрят. Отметку ставит только тот, кто смотрел последним.
+  static final Map<String, Object> _onScreen = {};
+
+  String get _brewKey => activeBrewKey(widget.recipe, widget.pack);
 
   /// Тикер перерисовки. Он не считает время — только просит движок отдать
   /// снимок, поэтому пропущенный кадр ничего не ломает.
@@ -204,15 +203,127 @@ class _BrewPageState extends ConsumerState<BrewPage>
     // пятьдесят секунд иначе гаснет ровно на ней.
     ScreenWake.keepAwake(true);
 
+    _onScreen[_brewKey] = this;
+
     if (widget.autoStart && _engine.steps.isNotEmpty) {
       _engine.start();
       _live.value = _engine.snapshot();
       _syncFrames();
+      // Не сразу: плашка идущего заваривания может стоять на экране под
+      // этим, а перестраивать чужой виджет посреди построения своего нельзя.
+      scheduleMicrotask(_remember);
     }
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Здесь, а не в initState: пересчитанному рецепту нужен словарь экрана,
+    // а до первого didChangeDependencies его взять неоткуда.
+    if (_lookedForActive) return;
+    _lookedForActive = true;
+    _pickUpActive();
+  }
+
+  /// Подхватывает заваривание этого рецепта, если оно уже идёт.
+  ///
+  /// С экрана ушли, а часы шли: движок поднимается из сохранённых меток и
+  /// показывает тот шаг, до которого дошло время.
+  void _pickUpActive() {
+    final active = ActiveBrews.find(widget.recipe, widget.pack);
+    if (active == null || !_comeBack(active)) return;
+
+    final water = active.scaledWater;
+    if (water != null && water != widget.recipe.water && _profile != null) {
+      _scaled = _scaleTo(water);
+      // Версия пересчитанного уже сохранена при старте — второй раз
+      // сохранять её не нужно, а оценке нужен её номер.
+      final id = active.scaledVersionId;
+      _scaledVersion = Future<RecipeData?>.value(
+        id == null ? null : (copyRecipe(active.brewed)..id = id),
+      );
+    }
+
+    _syncFrames();
+    if (_snapshot.isFinished && !_showResume) _scheduleRating();
+
+    // Экран снова перед глазами — запись об этом узнаёт после кадра: плашка
+    // идущего заваривания может стоять на экране под этим, а перестраивать
+    // чужой виджет посреди построения своего нельзя.
+    scheduleMicrotask(_remember);
+  }
+
+  /// Человек снова смотрит на заваривание: открыл его экран или вернулся в
+  /// свёрнутое приложение. false — запись побита, поднимать нечего.
+  ///
+  /// Ушли с долгого шага — заваривание ждало в его конце и продолжается со
+  /// следующего шага, с паузы (см. `ActiveBrew.comeBack`). Ушли с обычного и
+  /// пропадали дольше, чем он длится, — экран возврата спрашивает, что
+  /// случилось: сколько воды уже в воронке, часы не знают (ответ C3).
+  bool _comeBack(ActiveBrew active) {
+    final engine = active.comeBack();
+    if (engine == null) return false;
+
+    _engine = engine;
+    _live.value = engine.snapshot();
+
+    final left = active.leftAt;
+    if (left != null && active.heldStep == null) {
+      final then = engine.snapshotAt(left);
+      final away = DateTime.now().difference(left);
+
+      // Ушёл на десять секунд из паузы в тридцать — вернулся молча; ушёл
+      // на четыре минуты — экран спрашивает.
+      if (then.isRunning &&
+          away > then.stepDuration &&
+          then.stepDuration > Duration.zero) {
+        _awayFor = away;
+        _showResume = true;
+      }
+    }
+
+    return true;
+  }
+
+  /// Записывает идущее заваривание, чтобы оно пережило уход с экрана.
+  ///
+  /// Зовётся на каждом действии, которое меняет метки движка: старт, пауза,
+  /// «сделал», пропуск. Между ними писать нечего — время считают часы.
+  void _remember() {
+    if (!_engine.isStarted) return;
+
+    final brew = ActiveBrew(
+      recipe: widget.recipe,
+      pack: widget.pack,
+      brewed: _scaled?.recipe,
+      engine: _engine.toPersistableState(),
+      scaledWater: _scaled?.water,
+      scaledVersionId:
+          ActiveBrews.find(widget.recipe, widget.pack)?.scaledVersionId,
+    );
+    final left = _wentBackground;
+
+    ActiveBrews.put(left == null ? brew : brew.leftAtMoment(left));
+  }
+
+  /// Заваривание кончилось — оценкой или словом «Прервать».
+  void _forget() => ActiveBrews.remove(_brewKey);
+
+  @override
   void dispose() {
+    // С экрана ушли — запомним когда: по возвращении от этого зависит,
+    // с какого места продолжать и спрашивать ли «что случилось». Если
+    // заваривание не идёт (не начинали, оценили, прервали), записи нет, и
+    // отметка ничего не делает. Не сразу — по той же причине, что и в
+    // initState.
+    final key = _brewKey;
+    if (identical(_onScreen[key], this)) {
+      _onScreen.remove(key);
+      final left = DateTime.now();
+      scheduleMicrotask(() => ActiveBrews.markLeft(key, left));
+    }
+
     ScreenWake.keepAwake(false);
     WidgetsBinding.instance.removeObserver(this);
     _framesTicker?.dispose();
@@ -226,25 +337,23 @@ class _BrewPageState extends ConsumerState<BrewPage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused && _snapshot.isRunning) {
       _wentBackground = DateTime.now();
+      // Свёрнутое приложение система может убить — момент ухода должен
+      // лежать в записи, а не только в памяти экрана.
+      _remember();
       return;
     }
 
-    // Возвращение из фона — это просто ещё один запрос снимка: движок сам
-    // знает, сколько прошло по настенным часам.
+    // Возвращение из фона — то же, что возвращение на экран: запись знает,
+    // когда ушли и с какого шага, и по ней решается, с какого места
+    // продолжать. Движок сам знает, сколько прошло по настенным часам.
     if (state == AppLifecycleState.resumed) {
       final left = _wentBackground;
       _wentBackground = null;
 
       if (left != null) {
-        final away = DateTime.now().difference(left);
-        final threshold = _snapshot.stepDuration;
-
-        // Ушёл на десять секунд из паузы в тридцать — вернулся молча; ушёл
-        // на четыре минуты — экран спрашивает, что случилось (ответ C3).
-        if (away > threshold && threshold > Duration.zero) {
-          _awayFor = away;
-          _showResume = true;
-        }
+        final active = ActiveBrews.find(widget.recipe, widget.pack);
+        if (active != null) _comeBack(active);
+        _remember();
       }
       _refresh();
     }
@@ -352,67 +461,33 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// чайник, заваривания не бросал.
   bool get _brewing => _engine.isStarted && !_snapshot.isFinished;
 
-  /// Спрашивает, точно ли уходим с идущего заваривания.
-  ///
-  /// Кнопка «назад» на телефоне лежит там же, где палец держит корпус, и
-  /// мокрой рукой нажимается сама. Без вопроса одно касание стирало отсчёт
-  /// посреди пролива — вернуться в ту же секунду уже нельзя.
-  Future<bool> _confirmLeave() async {
-    if (!_brewing) return true;
-
-    final texts = AppLocalizations.of(context);
-
-    final leave = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(texts.brewAbortTitle),
-        content: Text(texts.brewAbortNote),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(texts.brewStay),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(texts.brewAbort),
-          ),
-        ],
-      ),
-    );
-
-    return leave ?? false;
-  }
-
   /// Останавливает заваривание насовсем — это и есть «Прервать».
   ///
   /// Одного `reset()` мало. Он обнуляет метки времени в движке, но тикер
   /// перерисовки после него крутится вхолостую — и `dispose()` уходящего
   /// экрана падает на живом тикере, — а отложенный переход на оценку
   /// остаётся заведённым, хотя оценивать уже нечего: заваривание прервали,
-  /// а не доиграли.
+  /// а не доиграли. Запись об идущем заваривании стирается здесь же — иначе
+  /// плашка на «Рецептах» продолжала бы отсчёт, которого больше нет.
   void _abort() {
     _toRating?.cancel();
     _toRating = null;
     _engine.reset();
     _stopFrames();
+    _forget();
     setState(() => _live.value = _engine.snapshot());
   }
 
-  /// Уход стрелкой в шапке — через тот же вопрос, что и кнопкой телефона.
+  /// «Прервать» на паузе: вопрос — и рецепт снова ждёт старта.
   ///
-  /// Порядок важен: сначала остановить заваривание, потом уйти. Пока оно
-  /// шло, уход держал `PopScope`, и `maybePop` спрашивал его заново — то
-  /// есть открывал этот же диалог по кругу вместо того, чтобы уйти.
-  ///
-  /// `popForced`, а не `maybePop`, по той же причине: спрашивать больше не о
-  /// чем — отсчёта нет, — а `canPop` у построенного `PopScope` обновится
-  /// только со следующим кадром, и вопрос успел бы прозвучать ещё раз.
-  Future<void> _leave() async {
-    if (!await _confirmLeave()) return;
+  /// Экран остаётся на месте. Прерывают чаще всего, чтобы начать заново —
+  /// рано нажали «Смолол, начинаем», пролили мимо, — и уводить человека с
+  /// рецепта, к которому он тут же вернётся, незачем.
+  Future<void> _askAbort() async {
+    if (!await confirmBrewAbort(context)) return;
     if (!mounted) return;
 
     _abort();
-    context.router.popForced();
   }
 
   void _toggle() {
@@ -425,6 +500,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
       _engine.pause();
     }
     _refresh();
+    _remember();
   }
 
   /// Кадры идут только у идущего заваривания.
@@ -451,12 +527,14 @@ class _BrewPageState extends ConsumerState<BrewPage>
   void _skip() {
     _engine.skipCurrentStep();
     _refresh();
+    _remember();
   }
 
   /// «Сделал»: шаг, который ждал человека, закончен — время идёт дальше.
   void _confirm() {
     _engine.confirmCurrentStep();
     _refresh();
+    _remember();
   }
 
   /// Пересчёт исходного рецепта на [water] мл для кофемолки человека.
@@ -508,11 +586,16 @@ class _BrewPageState extends ConsumerState<BrewPage>
     if (scaled == null || _scaledVersion != null) return;
 
     final version = copyRecipe(scaled.recipe);
-    _scaledVersion = ref
-        .read(recipeServiceProvider)
-        .evolveRecipe(version)
-        .then<RecipeData?>((id) => version..id = id)
-        .catchError((Object _) => null);
+    final key = _brewKey;
+    _scaledVersion =
+        ref.read(recipeServiceProvider).evolveRecipe(version).then<RecipeData?>(
+      (id) {
+        // Номер версии — в запись об идущем заваривании: к оценке могут
+        // прийти уже с другого экрана, и ей нужна эта версия, а не исходная.
+        ActiveBrews.markScaledVersion(key, id);
+        return version..id = id;
+      },
+    ).catchError((Object _) => null);
   }
 
   /// Ставит рецепт на [water] мл — или возвращает исходный.
@@ -564,6 +647,9 @@ class _BrewPageState extends ConsumerState<BrewPage>
   Future<void> _rate() async {
     final scaled = await (_scaledVersion ?? Future<RecipeData?>.value());
     if (!mounted) return;
+    // Дальше — оценка: заваривание больше не идёт, и плашке о нём сказать
+    // нечего. Недописанную оценку подхватит уже её собственная плашка.
+    _forget();
     context.router.replace(
         RatingRoute(recipe: scaled ?? widget.recipe, pack: widget.pack));
   }
@@ -617,6 +703,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
         onRestart: () {
           _engine.reset();
           _stopFrames();
+          _forget();
           setState(() {
             _showResume = false;
             _live.value = _engine.snapshot();
@@ -710,12 +797,19 @@ class _BrewPageState extends ConsumerState<BrewPage>
         !_engine.isStarted && canScaleRecipe(widget.recipe, _profile);
     final scaled = _scaled;
 
-    // Отдельной переменной, чтобы обернуть готовый экран в PopScope, не
-    // сдвигая двести строк разметки.
-    final screen = Scaffold(
+    // С долгого шага можно уйти, и экран говорит об этом сам: настаивание
+    // на четыре минуты или на двенадцать часов никто не обязан высиживать.
+    // Только пока шаг идёт: на паузе и у шага, который ждёт человека, часы
+    // стоят, и уходить не от чего.
+    final canLeave = _snapshot.isRunning && isLongWait(current);
+
+    return Scaffold(
       appBar: AppBar(
+        // Уход ничего не спрашивает и ничего не стирает: заваривание идёт
+        // дальше, а вернуться к нему можно с плашки на «Рецептах» или открыв
+        // этот же рецепт снова.
         leading: IconButton(
-          onPressed: _leave,
+          onPressed: () => context.router.maybePop(),
           icon: const AppIcon(AppIcons.uiBack, size: AppSizes.icon24),
           tooltip: texts.back,
         ),
@@ -834,6 +928,27 @@ class _BrewPageState extends ConsumerState<BrewPage>
               template: template,
             ),
           ),
+          // Появляется и уходит плавно: список шагов под ней сдвигается, и
+          // рывок на смене шага читался бы как сбой.
+          AnimatedSize(
+            duration: AppDuration.base,
+            curve: AppCurves.out,
+            alignment: Alignment.topCenter,
+            child: canLeave
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.s5,
+                      0,
+                      AppSpacing.s5,
+                      AppSpacing.s2,
+                    ),
+                    child: _LeaveHint(
+                      onTap: () =>
+                          context.router.navigate(const RecipesRoute()),
+                    ),
+                  )
+                : const SizedBox(width: double.infinity),
+          ),
           Expanded(
             child: _StepList(
               controller: _steps,
@@ -885,18 +1000,31 @@ class _BrewPageState extends ConsumerState<BrewPage>
                       },
                     ),
                   ),
-                  if (_engine.isStarted && !_snapshot.isFinished) ...[
+                  if (_brewing) ...[
                     const SizedBox(width: AppSpacing.s3),
-                    AppButton(
-                      // У усилия и признака конец шага определяет человек,
-                      // а не секундомер, — и кнопка называет это действие,
-                      // а не извиняется словом «пропустить».
-                      label: brewSkipLabel(texts, current),
-                      icon: AppIcons.uiForward,
-                      kind: AppButtonKind.secondary,
-                      block: false,
-                      onPressed: _skip,
-                    ),
+                    if (_snapshot.status == BrewStatus.paused)
+                      // На паузе вторая кнопка — «Прервать». Уход с экрана
+                      // заваривание больше не останавливает, значит остановить
+                      // его должно быть чем: сначала пауза, потом это слово —
+                      // так случайным касанием отсчёт не стереть.
+                      AppButton(
+                        key: const ValueKey('brew-abort'),
+                        label: texts.brewAbort,
+                        kind: AppButtonKind.secondary,
+                        block: false,
+                        onPressed: _askAbort,
+                      )
+                    else
+                      AppButton(
+                        // У усилия и признака конец шага определяет человек,
+                        // а не секундомер, — и кнопка называет это действие,
+                        // а не извиняется словом «пропустить».
+                        label: brewSkipLabel(texts, current),
+                        icon: AppIcons.uiForward,
+                        kind: AppButtonKind.secondary,
+                        block: false,
+                        onPressed: _skip,
+                      ),
                   ],
                 ],
               ),
@@ -904,17 +1032,6 @@ class _BrewPageState extends ConsumerState<BrewPage>
           ),
         ],
       ),
-    );
-
-    return PopScope(
-      // Пока заваривание идёт, кнопка телефона не уводит молча: сначала
-      // вопрос. Доигранный рецепт отпускает сразу — терять там нечего.
-      canPop: !_brewing,
-      onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
-        await _leave();
-      },
-      child: screen,
     );
   }
 
@@ -1327,6 +1444,76 @@ class _Param extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s1),
           child: row,
+        ),
+      ),
+    );
+  }
+}
+
+/// «Можно выйти из рецепта» — на долгом шаге, под рамкой.
+///
+/// Владелец: «если шаг идёт долго, надо подсвечивать, что из рецепта можно
+/// выйти». Без этой строки про уход никто не узнает: экран с бегущим
+/// таймером выглядит так, будто держит отсчёт на себе, и его боятся закрыть.
+///
+/// Строка нажимается и уводит на «Рецепты» — туда, где заваривание будет
+/// ждать плашкой: обещание «вернётесь оттуда» проверяется одним касанием.
+class _LeaveHint extends StatelessWidget {
+  const _LeaveHint({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final texts = AppLocalizations.of(context);
+
+    return Material(
+      key: const ValueKey('brew-leave-hint'),
+      // Того же тона, что метка «пока не скажете сделал» на шаге: справка о
+      // заваривании, а не тревога.
+      color: context.colors.primary.withValues(alpha: 0.12),
+      borderRadius: AppRadius.medium,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.medium,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.s3,
+            vertical: AppSpacing.s2,
+          ),
+          child: Row(
+            children: [
+              AppIcon(
+                // Значок вкладки «Рецепты»: там заваривание и будет ждать.
+                AppIcons.uiHistory,
+                size: AppSizes.icon20,
+                color: context.colors.primary,
+              ),
+              const SizedBox(width: AppSpacing.s3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      texts.brewCanLeave,
+                      style: context.texts.bodySmall?.copyWith(
+                        color: context.colors.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(texts.brewCanLeaveNote,
+                        style: context.texts.labelSmall),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s2),
+              AppIcon(
+                AppIcons.uiForward,
+                size: AppSizes.icon20,
+                color: context.colors.secondary,
+              ),
+            ],
+          ),
         ),
       ),
     );

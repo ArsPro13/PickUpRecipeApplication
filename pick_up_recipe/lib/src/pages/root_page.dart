@@ -23,6 +23,7 @@ import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/grinders/application/grinder_state.dart';
+import '../features/recipes/application/active_brew.dart';
 import '../features/recipes/application/rating_draft.dart';
 import '../general_widgets/app_icon.dart';
 import '../themes/app_icons.dart';
@@ -79,6 +80,10 @@ class _RootScreenState extends ConsumerState<RootScreen> {
       // плашка «продолжите» должна стоять на главном экране, а он может
       // оказаться любой вкладкой.
       RatingDrafts.load();
+      // И идущее заваривание: приложение могли убить посреди колд брю, а
+      // плашка «Идёт заваривание» обязана встать на главный экран и после
+      // перезапуска.
+      ActiveBrews.load();
     });
   }
 

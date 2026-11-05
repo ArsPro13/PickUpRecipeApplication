@@ -282,14 +282,46 @@ class BrewEngine {
   /// Подтверждённые шаги здесь обязательны: без них после возврата в
   /// приложение ворота «пока не скажете сделал» закроются снова, и человек
   /// будет подтверждать один и тот же шаг дважды.
+  ///
+  /// Метки времени — по Гринвичу. Местное время без пояса после перевода
+  /// часов читалось бы на час не туда, а колд брю настаивается как раз через
+  /// ночь, в которую их и переводят.
   Map<String, dynamic> toPersistableState() => <String, dynamic>{
-        'started_at': _startedAt?.toIso8601String(),
-        'paused_at': _pausedAt?.toIso8601String(),
+        'started_at': _startedAt?.toUtc().toIso8601String(),
+        'paused_at': _pausedAt?.toUtc().toIso8601String(),
         'paused_total_ms': _pausedTotal.inMilliseconds,
         'skipped_total_ms': _skippedTotal.inMilliseconds,
         'waiting_total_ms': _waitingTotal.inMilliseconds,
         'confirmed_steps': _confirmedSteps.toList()..sort(),
       };
+
+  /// Поднимает движок из того, что отдал [toPersistableState].
+  ///
+  /// false — поднимать нечего: в записи нет момента старта (заваривание не
+  /// начинали) или она побита. Движок при этом остаётся как был.
+  bool restoreFrom(Map<String, dynamic> state) {
+    final startedAt = _parseTime(state['started_at']);
+    if (startedAt == null) return false;
+
+    restore(
+      startedAt: startedAt,
+      pausedAt: _parseTime(state['paused_at']),
+      pausedTotal: _parseDuration(state['paused_total_ms']),
+      skippedTotal: _parseDuration(state['skipped_total_ms']),
+      waitingTotal: _parseDuration(state['waiting_total_ms']),
+      confirmedSteps: [
+        for (final index in (state['confirmed_steps'] as List? ?? const []))
+          if (index is num) index.toInt(),
+      ],
+    );
+    return true;
+  }
+
+  static DateTime? _parseTime(Object? value) =>
+      value is String ? DateTime.tryParse(value) : null;
+
+  static Duration _parseDuration(Object? value) =>
+      Duration(milliseconds: value is num ? value.toInt() : 0);
 
   /// Текущее состояние по часам движка.
   BrewSnapshot snapshot() => snapshotAt(_clock());

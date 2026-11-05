@@ -12,6 +12,8 @@
 // живёт в step_ending.dart. Читать эти поля напрямую — значит завести второй
 // ответ на тот же вопрос.
 
+import 'models/recipe_data_model.dart';
+
 /// Тип шага. Значения совпадают с enum в docs/spec/recipe.schema.json.
 enum BrewStepType {
   bloom('bloom'),
@@ -156,4 +158,55 @@ class BrewStep {
   @override
   String toString() =>
       'BrewStep($id, ${type.wireName}, ${duration.inSeconds}s)';
+}
+
+/// Собирает шаги плеера из рецепта, пришедшего с сервера.
+///
+/// Тип шага, подсказка и признак необязательности передаются полностью: без
+/// них плеер получал одни `custom` — то есть список одинаковых значков без
+/// подсказок, хотя сервер всё это отдаёт.
+///
+/// Живёт здесь, а не на экране заваривания: те же шаги нужны плашке идущего
+/// заваривания, которая стоит на других экранах и считает по ним, какой шаг
+/// сейчас и сколько осталось.
+List<BrewStep> brewStepsOf(RecipeData recipe) {
+  return [
+    for (final step in recipe.steps)
+      BrewStep.fromResponse(
+        seqNum: step.seqNum,
+        instruction: step.instruction,
+        timeSec: step.time,
+        waterMl: step.water,
+        stepType: step.stepType,
+        stepKey: step.stepKey,
+        tip: step.tip,
+        isOptional: step.isOptional,
+        untilUser: step.untilUser,
+        untilSign: step.untilSign,
+        warning: step.warning,
+      ),
+  ];
+}
+
+/// С какой длительности шаг считается долгим.
+///
+/// Две минуты: столько настаиваются Clever и воронки с клапаном, дольше —
+/// френч-пресс, мока на плите и колд брю. Минутное «ждём пролива» у воронки
+/// сюда не попадает намеренно: за ним следят, и уйти с него некуда.
+const Duration longWaitThreshold = Duration(minutes: 2);
+
+/// Долгий шаг, на котором человеку нечего делать: настаивание, нагрев,
+/// капельная экстракция.
+///
+/// На таком шаге экран заваривания говорит, что из рецепта можно выйти.
+/// Тип важен не меньше длительности: двухминутный пролив тоже долгий, но
+/// человек на нём льёт воду — звать его с экрана значило бы сбить.
+/// `custom` сюда входит: у исторических рецептов тип шага не хранился, и
+/// настаивание там записано им.
+bool isLongWait(BrewStep step) {
+  if (step.duration < longWaitThreshold) return false;
+
+  return step.type == BrewStepType.wait ||
+      step.type == BrewStepType.note ||
+      step.type == BrewStepType.custom;
 }

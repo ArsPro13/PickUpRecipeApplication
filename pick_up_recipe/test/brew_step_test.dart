@@ -179,4 +179,40 @@ void main() {
       expect(_recipeStep(stepType: 'pour', water: 0).showsWater, isTrue);
     });
   });
+
+  // На долгом шаге экран заваривания говорит, что из рецепта можно выйти.
+  // Ошибка в одну сторону — подсказка зовёт с экрана посреди пролива; в
+  // другую — молчит на двенадцати часах колд брю.
+  group('долгий шаг, с которого можно уйти', () {
+    BrewStep step(String type, int time) =>
+        _brewStep(_recipeStep(stepType: type, time: time));
+
+    test('настаивание от двух минут — долгий', () {
+      expect(isLongWait(step('wait', 120)), isTrue);
+      expect(isLongWait(step('wait', 210)), isTrue, reason: 'френч-пресс');
+      expect(isLongWait(step('wait', 43200)), isTrue, reason: 'колд брю');
+    });
+
+    test('минутное «ждём пролива» — нет: за ним следят', () {
+      expect(isLongWait(step('wait', 65)), isFalse);
+      expect(isLongWait(step('wait', 119)), isFalse);
+    });
+
+    test('долгий пролив — нет: человек льёт воду', () {
+      expect(isLongWait(step('pour', 120)), isFalse);
+      expect(isLongWait(step('bloom', 180)), isFalse);
+    });
+
+    test('действие руками — нет, сколько бы оно ни длилось', () {
+      for (final type in ['press', 'stir', 'grind', 'serve', 'remove_filter']) {
+        expect(isLongWait(step(type, 300)), isFalse, reason: type);
+      }
+    });
+
+    test('шаг без типа — как настаивание', () {
+      // У исторических рецептов тип шага не хранился.
+      expect(isLongWait(step('', 240)), isTrue);
+      expect(isLongWait(step('', 30)), isFalse);
+    });
+  });
 }

@@ -267,6 +267,23 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
           icon: AppIcons.uiPack,
           title: texts.chooseRoaster,
           note: texts.chooseRoasterNote,
+          // Правка — значком в правом верхнем углу карточки, как правка
+          // кофемолки в профиле и рецепта в шапке заваривания. Кнопкой
+          // «Править» она стояла в одном ряду с «Заварить · 3:40» и отнимала
+          // у той место: на телефоне владельца от подписи оставалось
+          // «Заварить · 3…».
+          //
+          // Оригинал обжарщика при этом неприкосновенен — сохранение заводит
+          // новую версию.
+          trailing: IconButton(
+            key: const ValueKey('choose-edit-roaster'),
+            onPressed: () => context.router.push(
+              RecipeBuilderRoute(recipe: roaster, pack: widget.pack),
+            ),
+            icon: const AppIcon(AppIcons.uiEdit, size: AppSizes.icon20),
+            tooltip: texts.recipesEditRecipe,
+            visualDensity: VisualDensity.compact,
+          ),
         ),
         _RoasterRecipe(
             recipe: roaster, pack: widget.pack, grind: _grind(roaster)),
@@ -372,23 +389,47 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
 
 /// Заголовок раздела: иконка, название и, если нужно, пояснение мелким.
 class _Section extends StatelessWidget {
-  const _Section({required this.icon, required this.title, this.note});
+  const _Section({
+    required this.icon,
+    required this.title,
+    this.note,
+    this.trailing,
+  });
 
   final String icon;
   final String title;
   final String? note;
 
+  /// Действие раздела — значком у правого края, над углом его карточки.
+  final Widget? trailing;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.s6, bottom: AppSpacing.s3),
+      // Кнопка справа выше строки текста. Поля под неё ужаты, чтобы заголовок
+      // с кнопкой стоял на том же месте, что и заголовки без неё.
+      padding: trailing == null
+          ? const EdgeInsets.only(top: AppSpacing.s6, bottom: AppSpacing.s3)
+          : const EdgeInsets.only(top: AppSpacing.s4, bottom: AppSpacing.s1),
       child: Row(
         children: [
           AppIcon(icon, size: AppSizes.icon20, color: context.colors.secondary),
           const SizedBox(width: AppSpacing.s2),
-          Text(title, style: context.texts.bodyMedium),
-          const SizedBox(width: AppSpacing.s2),
-          Expanded(child: Text(note ?? '', style: context.texts.bodySmall)),
+          // Название и пояснение стоят в строку, пока помещаются, а на узком
+          // экране с крупным шрифтом пояснение уходит под название целиком.
+          // Раньше ему доставался остаток ширины, и «под это зерно» рядом с
+          // кнопкой правки складывалось столбиком по слову на строку.
+          Expanded(
+            child: Wrap(
+              spacing: AppSpacing.s2,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(title, style: context.texts.bodyMedium),
+                if (note != null) Text(note!, style: context.texts.bodySmall),
+              ],
+            ),
+          ),
+          if (trailing != null) trailing!,
         ],
       ),
     );
@@ -409,71 +450,61 @@ class _RoasterRecipe extends StatelessWidget {
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
 
+    final tiles = [
+      // Числа без хвоста «.0»: «30 г», «94 °C» — так же, как в
+      // конструкторе и на заваривании.
+      MetricTile(
+          kind: MetricKind.dose,
+          value: texts.unitGrams(formatDecimal(recipe.load))),
+      MetricTile(
+        kind: MetricKind.water,
+        value: texts.unitMillilitres('${recipe.water}'),
+      ),
+      MetricTile(
+          kind: MetricKind.temperature,
+          value: recipe.temperature == null
+              ? '—'
+              : '${formatDecimal(recipe.temperature!)} °C'),
+      MetricTile(
+        kind: MetricKind.grind,
+        value: grind.isEmpty ? '—' : grind.label,
+        // Своя кофемолка под кликами не подписана: человек и так знает, чем
+        // мелет, а название в две дюжины букв раздвигало плитку и сбивало
+        // весь ряд в кучу (владелец, 6 ноября: «не надо подписывать
+        // кофемолку»). Подпись остаётся, только пока своей нет: клики тогда
+        // чужие — эталонной кофемолки, — и молчать об этом нельзя.
+        caption: grind.needsGrinder ? grind.caption : null,
+        // Помол показан делениями кофемолки человека, и если на
+        // плитке стоит прочерк или чужая шкала — менять кофемолку
+        // надо отсюда, с открытым рецептом. Возврат пересчитает
+        // щелчки сам: плитка смотрит за состоянием кофемолки.
+        semanticsLabel: texts.packsChangeGrinder,
+        onTap: () => context.router.push(const GrinderSelectRoute()),
+      ),
+    ];
+
     return HeroSurface(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Четыре равные колонки, плитка по центру каждой. Раньше ряд
+          // раздвигался по остатку ширины, и ширину плиток задавали подписи:
+          // три короткие стояли вплотную, четвёртая — особняком.
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Числа без хвоста «.0»: «30 г», «94 °C» — так же, как в
-              // конструкторе и на заваривании.
-              MetricTile(
-                  kind: MetricKind.dose,
-                  value: texts.unitGrams(formatDecimal(recipe.load))),
-              MetricTile(
-                kind: MetricKind.water,
-                value: texts.unitMillilitres('${recipe.water}'),
-              ),
-              MetricTile(
-                  kind: MetricKind.temperature,
-                  value: recipe.temperature == null
-                      ? '—'
-                      : '${formatDecimal(recipe.temperature!)} °C'),
-              MetricTile(
-                kind: MetricKind.grind,
-                value: grind.isEmpty ? '—' : grind.label,
-                caption: grind.caption,
-                // Помол показан делениями кофемолки человека, и если на
-                // плитке стоит прочерк или чужая шкала — менять кофемолку
-                // надо отсюда, с открытым рецептом. Возврат пересчитает
-                // щелчки сам: плитка смотрит за состоянием кофемолки.
-                semanticsLabel: texts.packsChangeGrinder,
-                onTap: () => context.router.push(const GrinderSelectRoute()),
-              ),
-            ],
+            key: const ValueKey('choose-roaster-tiles'),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [for (final tile in tiles) Expanded(child: tile)],
           ),
           const SizedBox(height: AppSpacing.s4),
-          Row(
-            children: [
-              // Правка стоит рядом с завариванием, а не прячется в меню: чаще
-              // всего рецепт открывают именно чтобы подвинуть одно число под
-              // свою кофемолку. Оригинал обжарщика при этом неприкосновенен —
-              // сохранение заводит новую версию.
-              // «Править» по содержимому, а не долей ширины: доля отмерялась
-              // от «Заварить · 2:30», и слово ужималось сначала до «П…»,
-              // потом до «Прав…». Место делит тот, у кого подпись длиннее.
-              AppButton(
-                label: texts.edit,
-                kind: AppButtonKind.secondary,
-                block: false,
-                onPressed: () => context.router.push(
-                  RecipeBuilderRoute(recipe: recipe, pack: pack),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s3),
-              Expanded(
-                child: AppButton(
-                  label: texts.chooseBrewWithTime(_formatTime(recipe.time)),
-                  icon: AppIcons.uiPlay,
-                  // Числа рецепта над кнопкой, но таймер всё равно ждёт:
-                  // сначала смолоть, потом «Смолол, начинаем».
-                  onPressed: () => context.router.push(
-                    BrewRoute(recipe: recipe, pack: pack),
-                  ),
-                ),
-              ),
-            ],
+          // Кнопка одна и во всю ширину: подпись с длительностью помещается
+          // целиком. Числа рецепта над кнопкой, но таймер всё равно ждёт:
+          // сначала смолоть, потом «Смолол, начинаем».
+          AppButton(
+            label: texts.chooseBrewWithTime(_formatTime(recipe.time)),
+            icon: AppIcons.uiPlay,
+            onPressed: () => context.router.push(
+              BrewRoute(recipe: recipe, pack: pack),
+            ),
           ),
         ],
       ),

@@ -6,6 +6,7 @@ import 'package:pick_up_recipe/core/offline/outbox.dart';
 import 'package:pick_up_recipe/core/offline/recipe_drafts.dart';
 import 'package:pick_up_recipe/src/features/authentication/data_sources/remote/auth_service.dart';
 import 'package:pick_up_recipe/src/features/authentication/domain/code_resend.dart';
+import 'package:pick_up_recipe/src/features/recipes/application/active_brew.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/rating_draft.dart';
 
 import 'authentication_state.dart';
@@ -112,6 +113,7 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
     await LocalRecipes.clear();
     await RecipeDrafts.clear();
     await RatingDrafts.clear();
+    await ActiveBrews.clear();
     await Outbox.clear();
 
     state = state.copyWith(status: AuthState.needsAuthentication);

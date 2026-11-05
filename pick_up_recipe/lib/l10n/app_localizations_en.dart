@@ -520,8 +520,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recipes',
-      one: '$count recipe',
+      other: '$count recipes',
+      one: '$count recipe',
     );
     return '$name · $_temp0';
   }
@@ -1281,7 +1281,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brewAbort => 'Stop';
 
   @override
-  String get brewStay => 'Stay';
+  String get brewKeepBrewing => 'Keep brewing';
+
+  @override
+  String get brewCanLeave => 'You can leave the recipe';
+
+  @override
+  String get brewCanLeaveNote =>
+      'The timer keeps running. You will find the brew on the Recipes screen.';
+
+  @override
+  String get activeBrewRunning => 'Brewing in progress';
+
+  @override
+  String get activeBrewPaused => 'Brewing is paused';
+
+  @override
+  String get activeBrewWaiting => 'The brew is waiting for you';
+
+  @override
+  String get activeBrewFinished => 'Brewing has finished';
 
   @override
   String get brewEditRecipe => 'Edit recipe';

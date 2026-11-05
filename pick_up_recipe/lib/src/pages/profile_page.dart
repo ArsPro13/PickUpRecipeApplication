@@ -378,31 +378,43 @@ Future<void> _chooseLanguage(
                   Text(texts.profileLanguage, style: context.texts.titleMedium),
             ),
           ),
-          AppRow(
-            label: texts.profileLanguageSystem,
-            icon: AppIcons.uiSettings,
-            trailing: _LanguageMark(chosen: chosen == null),
-            onTap: () {
-              ref.read(localeProvider.notifier).choose(null);
-              Navigator.of(sheetContext).pop();
-            },
-          ),
-          for (var index = 0; index < appLocales.length; index++)
-            AppRow(
-              label: appLocales[index].label,
-              icon: AppIcons.uiInfo,
-              divider: index < appLocales.length - 1,
-              trailing: _LanguageMark(
-                chosen: chosen?.languageCode ==
-                    appLocales[index].locale.languageCode,
-              ),
-              onTap: () {
-                ref
-                    .read(localeProvider.notifier)
-                    .choose(appLocales[index].locale);
-                Navigator.of(sheetContext).pop();
-              },
+          // Строки стоят с теми же полями, что и заголовок. У самой строки
+          // боковых полей нет — в карточках их даёт карточка, — и в листе
+          // значки языков прилипали к левому краю экрана, а галочка к правому.
+          Padding(
+            key: const ValueKey('profile-language-list'),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s5),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppRow(
+                  label: texts.profileLanguageSystem,
+                  icon: AppIcons.uiSettings,
+                  trailing: _LanguageMark(chosen: chosen == null),
+                  onTap: () {
+                    ref.read(localeProvider.notifier).choose(null);
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+                for (var index = 0; index < appLocales.length; index++)
+                  AppRow(
+                    label: appLocales[index].label,
+                    icon: AppIcons.uiInfo,
+                    divider: index < appLocales.length - 1,
+                    trailing: _LanguageMark(
+                      chosen: chosen?.languageCode ==
+                          appLocales[index].locale.languageCode,
+                    ),
+                    onTap: () {
+                      ref
+                          .read(localeProvider.notifier)
+                          .choose(appLocales[index].locale);
+                      Navigator.of(sheetContext).pop();
+                    },
+                  ),
+              ],
             ),
+          ),
           const SizedBox(height: AppSpacing.s4),
         ],
       ),

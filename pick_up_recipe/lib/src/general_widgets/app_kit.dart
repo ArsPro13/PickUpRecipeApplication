@@ -223,7 +223,11 @@ class MetricTile extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.s2),
+        // По центру и с переносом: плитки стоят равными колонками, и длинное
+        // значение («Средне-тонкий», «2 круг + 3») уходит на вторую строку
+        // под своим значком, а не раздвигает соседей.
         Text(value,
+            textAlign: TextAlign.center,
             style: context.texts.bodySmall
                 ?.copyWith(color: context.colors.onSurface)),
         if (caption != null)
@@ -385,9 +389,20 @@ class AppRow extends StatelessWidget {
                   ? Text(label, style: context.texts.bodyMedium)
                   : Text.rich(labelSpan!, style: context.texts.bodyMedium),
             ),
-            if (value != null)
-              Text(value!,
-                  style: context.texts.bodySmall, textAlign: TextAlign.right),
+            if (value != null) ...[
+              const SizedBox(width: AppSpacing.s2),
+              // Значению — не больше половины экрана, дальше оно переносится.
+              // Без предела длинное значение забирало строку целиком, и
+              // подписи оставалось по букве на строку: «Чаще всего» рядом с
+              // «Харио V60 (Hario V60) · 5 рецептов» стояло столбиком.
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.sizeOf(context).width / 2,
+                ),
+                child: Text(value!,
+                    style: context.texts.bodySmall, textAlign: TextAlign.right),
+              ),
+            ],
             if (trailing != null) trailing!,
             if (onTap != null && trailing == null) ...[
               const SizedBox(width: AppSpacing.s2),
