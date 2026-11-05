@@ -425,9 +425,9 @@ class _CodeInputState extends State<CodeInput> {
         child: filled
             ? Text(
                 code[index],
-                style: context.texts.titleLarge?.copyWith(fontFeatures: const [
-                  FontFeature.tabularFigures(),
-                ]),
+                style: context.texts.titleLarge?.copyWith(
+                  fontFeatures: AppFonts.tabularFor(code[index]),
+                ),
               )
             : isCurrent
                 ? Container(

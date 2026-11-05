@@ -267,33 +267,69 @@ extension AppThemeContext on BuildContext {
 }
 
 /// Типографика. Семь ступеней вместо десяти захардкоженных размеров.
+///
+/// Семейство стоит в каждом стиле, а не только в ThemeData. Эти же стили
+/// уходят «сырыми», мимо textTheme, в шапку, кнопки, поля и нижнюю навигацию,
+/// а виджет там подменяет стиль по умолчанию целиком: без своего семейства
+/// текст рисовался системным шрифтом телефона.
+///
+/// Разрядка тоже задана явно. Иначе к стилю домешивается разрядка Material 3,
+/// подобранная под Roboto: до половины пункта на знак в мелких подписях.
 TextTheme _textTheme(Color primary, Color secondary) {
+  const family = AppFonts.family;
+
   return TextTheme(
     displayLarge: TextStyle(
-        fontSize: 30, fontWeight: FontWeight.w700, height: 1.2, color: primary),
+        fontFamily: family,
+        fontSize: 30,
+        fontWeight: FontWeight.w700,
+        height: 1.2,
+        letterSpacing: 0,
+        color: primary),
     titleLarge: TextStyle(
+        fontFamily: family,
         fontSize: 24,
         fontWeight: FontWeight.w700,
         height: 1.25,
+        letterSpacing: 0,
         color: primary),
+    // Заголовок экрана и раздела. Полужирный: в выбранном наборе он такой,
+    // а прежний w500 на деле рисовался обычным — начертания Medium в
+    // приложении не было.
     titleMedium: TextStyle(
-        fontSize: 20, fontWeight: FontWeight.w500, height: 1.3, color: primary),
+        fontFamily: family,
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+        letterSpacing: 0,
+        color: primary),
     bodyLarge: TextStyle(
-        fontSize: 18, fontWeight: FontWeight.w400, height: 1.4, color: primary),
+        fontFamily: family,
+        fontSize: 18,
+        fontWeight: FontWeight.w400,
+        height: 1.4,
+        letterSpacing: 0,
+        color: primary),
     bodyMedium: TextStyle(
+        fontFamily: family,
         fontSize: 16,
         fontWeight: FontWeight.w400,
         height: 1.45,
+        letterSpacing: 0,
         color: primary),
     bodySmall: TextStyle(
+        fontFamily: family,
         fontSize: 14,
         fontWeight: FontWeight.w400,
         height: 1.4,
+        letterSpacing: 0,
         color: secondary),
     labelSmall: TextStyle(
+        fontFamily: family,
         fontSize: 12,
         fontWeight: FontWeight.w400,
         height: 1.35,
+        letterSpacing: 0,
         color: secondary),
   );
 }
@@ -308,6 +344,9 @@ ThemeData _theme(
 
   return ThemeData(
     useMaterial3: true,
+    // Для ступеней, которых в _textTheme нет (их дорисовывает Material):
+    // без этого они остались бы на Roboto у Android и на системном у iPhone.
+    fontFamily: AppFonts.family,
     colorScheme: scheme,
     // Прозрачный, потому что фон рисует PaperBackground под всем приложением:
     // залитый цветом Scaffold закрыл бы текстуру.

@@ -188,7 +188,8 @@ class _AppWheelState extends State<AppWheel> {
                           ? context.colors.primary
                           : context.colors.onSurface,
                   fontWeight: chosen ? FontWeight.w600 : FontWeight.w400,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+                  // Числам — равная ширина, названиям месяцев она не нужна.
+                  fontFeatures: AppFonts.tabularFor(widget.labelOf(index)),
                 ),
               ),
             ),

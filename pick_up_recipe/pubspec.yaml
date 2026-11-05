@@ -58,10 +58,27 @@ flutter:
     # node scripts/extract-icons.js
     - assets/icons/
 
-  # Roboto в ассетах — ради офлайна: веб-движок иначе тянет шрифт с
-  # fonts.gstatic.com, и без сети текст не рисуется. Секция обязана жить
-  # в паре с самим файлом ассета: файл без секции в сборку не попадает.
   fonts:
+    # Шрифт приложения (выбор владельца 5 ноября, набор 02 «Мягкий»).
+    # Насыщенностей четыре — ровно те, что просит код: 400, 500, 600 и 700.
+    # Файл нужен на каждую: без него Flutter берёт ближайший и «жирнит» его
+    # сам, утолщая контур, — так до этого и рисовались таймер и названия шагов
+    # из единственного Roboto-Regular. Срезы сделаны из вариативного Onest
+    # (design/app-fonts/export.py), лицензия — рядом, OFL-Onest.txt.
+    - family: Onest
+      fonts:
+        - asset: assets/fonts/Onest-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Onest-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Onest-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Onest-Bold.ttf
+          weight: 700
+    # Roboto остаётся ради офлайна в вебе: без семейства с этим именем
+    # веб-движок тянет его с fonts.gstatic.com, и без сети текст не рисуется.
+    # Текст приложения им больше не набирается. Секция обязана жить в паре
+    # с самим файлом ассета: файл без секции в сборку не попадает.
     - family: Roboto
       fonts:
         - asset: assets/fonts/Roboto-Regular.ttf

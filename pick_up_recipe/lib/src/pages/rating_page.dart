@@ -761,6 +761,7 @@ class TasteMap extends StatelessWidget {
                   ink: context.colors.onSurface,
                   accent: context.colors.primary,
                   zones: _TasteZones.of(Theme.of(context).brightness),
+                  fontFamily: context.texts.bodyMedium?.fontFamily,
                 ),
               ),
             ),
@@ -817,6 +818,7 @@ class _TasteMapPainter extends CustomPainter {
     required this.ink,
     required this.accent,
     required this.zones,
+    required this.fontFamily,
   });
 
   final TastePoint point;
@@ -829,6 +831,10 @@ class _TasteMapPainter extends CustomPainter {
   final Color ink;
   final Color accent;
   final _TasteZones zones;
+
+  /// Шрифт подписей. Холст темы не видит: стиль, собранный здесь без
+  /// семейства, рисовался бы системным шрифтом, а не шрифтом приложения.
+  final String? fontFamily;
 
   /// Доли поля, на которых стоят кольца. Внешнее кольцо и есть край поля.
   static const List<double> _rings = [0.34, 0.67, 1.0];
@@ -941,6 +947,7 @@ class _TasteMapPainter extends CustomPainter {
       text: TextSpan(
         text: text,
         style: TextStyle(
+          fontFamily: fontFamily,
           color: color,
           fontSize: fontSize,
           fontWeight: FontWeight.w500,
@@ -963,7 +970,8 @@ class _TasteMapPainter extends CustomPainter {
   bool shouldRepaint(_TasteMapPainter oldDelegate) =>
       oldDelegate.point != point ||
       oldDelegate.ends != ends ||
-      oldDelegate.zones != zones;
+      oldDelegate.zones != zones ||
+      oldDelegate.fontFamily != fontFamily;
 }
 
 /// Что человек сказал картой — словами.

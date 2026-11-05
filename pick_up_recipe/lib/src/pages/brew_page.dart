@@ -1290,10 +1290,11 @@ class _Param extends StatelessWidget {
   Widget build(BuildContext context) {
     final number = Text(
       value,
+      // Цифры обычные, не равной ширины: «15 г» не тикает, а узкая единица
+      // в равной клетке оставляла посреди числа дыру.
       style: context.texts.titleMedium?.copyWith(
         color: changed ? context.colors.primary : context.colors.onSurface,
         fontWeight: FontWeight.w600,
-        fontFeatures: const [FontFeature.tabularFigures()],
       ),
     );
 
@@ -1555,6 +1556,7 @@ class _BrewFrame extends StatelessWidget {
             AppIcons.stepCustom;
 
     final hint = _isPrep ? params.prepHint : _subtitle(texts);
+    final central = _centralValue(texts);
 
     return AspectRatio(
       aspectRatio: 350 / 200,
@@ -1605,10 +1607,13 @@ class _BrewFrame extends StatelessWidget {
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      _centralValue(texts),
+                      central,
                       style: context.texts.displayLarge?.copyWith(
                         height: 1,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+                        // Таймеру — цифры равной ширины, чтобы секунды не
+                        // дёргались. Дозе с помолом и «готово в 08:40»
+                        // они ни к чему.
+                        fontFeatures: AppFonts.tabularFor(central),
                       ),
                     ),
                   ),

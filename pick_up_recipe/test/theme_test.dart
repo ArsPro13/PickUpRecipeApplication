@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
+import 'package:pick_up_recipe/src/themes/app_tokens.dart';
 
 /// Контраст по WCAG: (L1 + 0.05) / (L2 + 0.05).
 double contrast(Color first, Color second) {
@@ -109,6 +110,62 @@ void main() {
 
       for (var i = 1; i < sizes.length; i++) {
         expect(sizes[i], lessThan(sizes[i - 1]));
+      }
+    });
+  });
+
+  group('шрифт', () {
+    // Семейство раньше приходило только из Typography. Стили, которые тема
+    // раздаёт виджетам «сырыми» — шапке, кнопкам, полям, — его не несли, и
+    // виджет рисовал их системным шрифтом: на Android заголовок экрана и
+    // кнопки выходили одним Roboto, остальной текст другим.
+    test('семейство задано в каждой ступени и в стилях виджетов', () {
+      for (final theme in [lightTheme, darkTheme]) {
+        final texts = theme.textTheme;
+        final styles = <String, TextStyle?>{
+          'displayLarge': texts.displayLarge,
+          'titleLarge': texts.titleLarge,
+          'titleMedium': texts.titleMedium,
+          'bodyLarge': texts.bodyLarge,
+          'bodyMedium': texts.bodyMedium,
+          'bodySmall': texts.bodySmall,
+          'labelSmall': texts.labelSmall,
+          // Этих ступеней в теме нет, их дорисовывает Material — а экраны
+          // ими пользуются (заваривание, правовые документы).
+          'headlineSmall': texts.headlineSmall,
+          'titleSmall': texts.titleSmall,
+          'шапка': theme.appBarTheme.titleTextStyle,
+          'кнопка': theme.elevatedButtonTheme.style?.textStyle?.resolve({}),
+          'кнопка с обводкой':
+              theme.outlinedButtonTheme.style?.textStyle?.resolve({}),
+          'текстовая кнопка':
+              theme.textButtonTheme.style?.textStyle?.resolve({}),
+          'подсказка в поле': theme.inputDecorationTheme.hintStyle,
+          'нижняя навигация': theme.bottomNavigationBarTheme.selectedLabelStyle,
+          'метка': theme.chipTheme.labelStyle,
+          'плашка': theme.snackBarTheme.contentTextStyle,
+        };
+
+        styles.forEach((name, style) {
+          expect(style?.fontFamily, AppFonts.family, reason: name);
+        });
+      }
+    });
+
+    test('разрядка задана в каждой ступени', () {
+      // Без своего значения к стилю домешивается разрядка Material 3 под
+      // Roboto: полпункта на знак в подписях — и строки растягиваются.
+      final texts = lightTheme.textTheme;
+      for (final style in [
+        texts.displayLarge,
+        texts.titleLarge,
+        texts.titleMedium,
+        texts.bodyLarge,
+        texts.bodyMedium,
+        texts.bodySmall,
+        texts.labelSmall,
+      ]) {
+        expect(style?.letterSpacing, isNotNull);
       }
     });
   });
