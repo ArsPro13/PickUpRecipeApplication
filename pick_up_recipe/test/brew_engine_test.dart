@@ -368,9 +368,9 @@ void main() {
       final restored = BrewEngine(steps: v60Steps(), clock: clock.call)
         ..restore(
           startedAt: DateTime.parse(saved['started_at'] as String),
-          pausedTotal: Duration(milliseconds: saved['paused_total_ms'] as int),
+          pausedTotal: Duration(microseconds: saved['paused_total_us'] as int),
           skippedTotal:
-              Duration(milliseconds: saved['skipped_total_ms'] as int),
+              Duration(microseconds: saved['skipped_total_us'] as int),
         );
 
       expect(restored.snapshot().elapsedTotal, expected);
@@ -391,11 +391,11 @@ void main() {
       final restored = BrewEngine(steps: middleGateSteps(), clock: clock.call)
         ..restore(
           startedAt: DateTime.parse(saved['started_at'] as String),
-          pausedTotal: Duration(milliseconds: saved['paused_total_ms'] as int),
+          pausedTotal: Duration(microseconds: saved['paused_total_us'] as int),
           skippedTotal:
-              Duration(milliseconds: saved['skipped_total_ms'] as int),
+              Duration(microseconds: saved['skipped_total_us'] as int),
           waitingTotal:
-              Duration(milliseconds: saved['waiting_total_ms'] as int),
+              Duration(microseconds: saved['waiting_total_us'] as int),
           confirmedSteps: (saved['confirmed_steps'] as List).cast<int>(),
         );
 
@@ -425,9 +425,9 @@ void main() {
       final saved = engine.toPersistableState();
 
       expect(saved['started_at'], isA<String>());
-      expect(saved['paused_total_ms'], isA<int>());
-      expect(saved['skipped_total_ms'], isA<int>());
-      expect(saved['waiting_total_ms'], isA<int>());
+      expect(saved['paused_total_us'], isA<int>());
+      expect(saved['skipped_total_us'], isA<int>());
+      expect(saved['waiting_total_us'], isA<int>());
       expect(saved['confirmed_steps'], isA<List<int>>());
     });
 

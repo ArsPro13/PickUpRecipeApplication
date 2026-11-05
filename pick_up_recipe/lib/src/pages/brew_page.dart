@@ -117,15 +117,29 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// Рецепт на экране: пересчитанный или исходный.
   RecipeData get _recipe => _scaled?.recipe ?? widget.recipe;
 
-  /// Пересчитанный рецепт, сохранённый новой версией со стартом заваривания.
+  /// Рецепт, сохранённый со стартом заваривания.
   ///
-  /// Владелец: «при заваривании это должно быть как изменение рецепта». Так
-  /// и сделано: начали заваривать пересчитанный — это правка, и она ложится
-  /// новой версией через тот же `POST /recipe/evolve`, что «Сохранить» в
-  /// конструкторе (без сети — в очередь). Оценка после заваривания уходит
-  /// этой версии, а не исходной. null — не пересчитывали или ещё не начали;
+  /// Пересчитанный — новой версией. Владелец: «при заваривании это должно
+  /// быть как изменение рецепта». Так и сделано: начали заваривать
+  /// пересчитанный — это правка, и она ложится новой версией через тот же
+  /// `POST /recipe/evolve`, что «Сохранить» в конструкторе (без сети — в
+  /// очередь).
+  ///
+  /// Справочный рецепт метода — своей копией под эту пачку (6 ноября 2026).
+  /// Он общий, пачки у него нет, и своим рецептом он становился только при
+  /// оценке: заваривание, которое не довели до оценки, на «Рецептах» не
+  /// появлялось вовсе. Владелец: «чтобы рецепт появлялся на экране рецептов,
+  /// даже если он не закончен».
+  ///
+  /// Оценка после заваривания уходит сохранённому, а не исходному. null — не
+  /// начинали или сохранять нечего (свой рецепт заварили как есть);
   /// значение null внутри — сохранить не удалось, оценим исходный.
-  Future<RecipeData?>? _scaledVersion;
+  Future<RecipeData?>? _savedVersion;
+
+  /// Номер сохранённой версии, когда он уже известен. Лежит в записи об
+  /// идущем заваривании: без него экран, открытый заново, оценил бы исходный
+  /// рецепт — а справочному завёл бы вторую копию.
+  int? _savedId;
 
   /// Идущее заваривание этого рецепта уже искали. Ищут один раз, при первом
   /// построении: позже экран сам и есть источник правды о нём.
@@ -237,21 +251,49 @@ class _BrewPageState extends ConsumerState<BrewPage>
     final water = active.scaledWater;
     if (water != null && water != widget.recipe.water && _profile != null) {
       _scaled = _scaleTo(water);
-      // Версия пересчитанного уже сохранена при старте — второй раз
-      // сохранять её не нужно, а оценке нужен её номер.
-      final id = active.scaledVersionId;
-      _scaledVersion = Future<RecipeData?>.value(
-        id == null ? null : (copyRecipe(active.brewed)..id = id),
-      );
     }
+
+    // Что сохранялось со стартом, уже сохранено — второй раз не нужно, а
+    // оценке нужен номер. Пачка у копии — та же, с которой её сохраняли:
+    // без неё оценка приняла бы копию за справочный рецепт и завела бы ещё
+    // одну.
+    //
+    // Если экран открыт карточкой самой этой версии, сохранённое — он и
+    // есть: оценку получит рецепт экрана.
+    final id = active.savedVersionId;
+    final pack = widget.pack;
+    _savedId = id == widget.recipe.id ? null : id;
+    _savedVersion = Future<RecipeData?>.value(
+      _savedId == null
+          ? null
+          : (copyRecipe(active.brewed)
+            ..id = _savedId!
+            ..packId = active.brewed.packId == 0 && pack != null
+                ? pack.packId
+                : active.brewed.packId),
+    );
 
     _syncFrames();
     if (_snapshot.isFinished && !_showResume) _scheduleRating();
 
+    // Список шагов подводится к текущему, как только построен: вернулись на
+    // пятый шаг — и видеть должны его, а не три пройденных над ним. На паузе
+    // и у шага, который ждёт человека, тикер не идёт, и подвести больше
+    // некому.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _followActiveStep());
+
     // Экран снова перед глазами — запись об этом узнаёт после кадра: плашка
     // идущего заваривания может стоять на экране под этим, а перестраивать
     // чужой виджет посреди построения своего нельзя.
-    scheduleMicrotask(_remember);
+    //
+    // Заваривание могли найти не по рецепту, а по версии, сохранённой со
+    // стартом: её карточку нажали на «Рецептах». Тогда запись переезжает под
+    // этот рецепт — иначе у одного заваривания стало бы две плашки.
+    final found = active.key;
+    scheduleMicrotask(() {
+      if (found != _brewKey) ActiveBrews.remove(found);
+      _remember();
+    });
   }
 
   /// Человек снова смотрит на заваривание: открыл его экран или вернулся в
@@ -299,8 +341,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
       brewed: _scaled?.recipe,
       engine: _engine.toPersistableState(),
       scaledWater: _scaled?.water,
-      scaledVersionId:
-          ActiveBrews.find(widget.recipe, widget.pack)?.scaledVersionId,
+      savedVersionId: _savedId,
     );
     final left = _wentBackground;
 
@@ -493,7 +534,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
   void _toggle() {
     if (!_engine.isStarted) {
       _engine.start();
-      _saveScaledVersion();
+      _saveStartedVersion();
     } else if (_snapshot.status == BrewStatus.paused) {
       _engine.resume();
     } else {
@@ -575,24 +616,41 @@ class _BrewPageState extends ConsumerState<BrewPage>
           ? texts.unitGrams('$water')
           : texts.unitMillilitres('$water');
 
-  /// Сохраняет пересчитанный рецепт новой версией — один раз, со стартом.
+  /// Сохраняет завариваемый рецепт — один раз, со стартом.
+  ///
+  /// Сохранять есть что в двух случаях: рецепт пересчитали на другой объём
+  /// (это правка, она ложится новой версией) или заваривают справочный рецепт
+  /// метода — он общий, и под эту пачку заводится своя копия. Свой рецепт,
+  /// заваренный как есть, уже лежит на сервере, и трогать его незачем.
   ///
   /// Не ждём: таймер уже пошёл, а версия нужна только оценке через минуты.
   /// Без сети `evolveRecipe` кладёт её в очередь и сразу отдаёт местный
   /// идентификатор; отказ сервера оставляет оценку исходному рецепту —
-  /// заваривание из-за этого не останавливается.
-  void _saveScaledVersion() {
-    final scaled = _scaled;
-    if (scaled == null || _scaledVersion != null) return;
+  /// заваривание из-за этого не останавливается. Справочный рецепт экран
+  /// оценки в таком случае скопирует сам, как делал до этого.
+  void _saveStartedVersion() {
+    if (_savedVersion != null) return;
 
-    final version = copyRecipe(scaled.recipe);
+    final scaled = _scaled;
+    final pack = widget.pack;
+    final reference = widget.recipe.packId == 0 && pack != null;
+    if (scaled == null && !reference) return;
+
+    final version = copyRecipe(scaled?.recipe ?? widget.recipe);
+    // Копия справочного рецепта — под пачку, с которой пришли: владелец
+    // рецепта определяется только через неё, и без пачки сервер копию не
+    // примет. Раньше пересчитанный справочный рецепт уходил без неё — и не
+    // сохранялся вовсе: оценку получала копия исходных 250 мл.
+    if (version.packId == 0 && pack != null) version.packId = pack.packId;
+
     final key = _brewKey;
-    _scaledVersion =
+    _savedVersion =
         ref.read(recipeServiceProvider).evolveRecipe(version).then<RecipeData?>(
       (id) {
         // Номер версии — в запись об идущем заваривании: к оценке могут
         // прийти уже с другого экрана, и ей нужна эта версия, а не исходная.
-        ActiveBrews.markScaledVersion(key, id);
+        _savedId = id;
+        ActiveBrews.markSavedVersion(key, id);
         return version..id = id;
       },
     ).catchError((Object _) => null);
@@ -608,7 +666,8 @@ class _BrewPageState extends ConsumerState<BrewPage>
     setState(() {
       _scaled = water == widget.recipe.water ? null : _scaleTo(water);
       // Новый объём — новая правка: со следующим стартом сохранится уже она.
-      _scaledVersion = null;
+      _savedVersion = null;
+      _savedId = null;
       _engine = BrewEngine(steps: brewStepsOf(_recipe));
       _live.value = _engine.snapshot();
       _scrolledTo = null;
@@ -642,16 +701,17 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// Уводит на оценку. Заменяет экран, а не кладёт поверх: возвращаться
   /// к отыгранному таймеру некуда, а «назад» из оценки должно вести в список.
   ///
-  /// Заваривали пересчитанный — оцениваем его версию: оценка описывает то,
-  /// что было в чашке, а не исходные 250 мл.
+  /// Заваривали пересчитанный или справочный — оцениваем версию, сохранённую
+  /// со стартом: оценка описывает то, что было в чашке, а не исходные 250 мл,
+  /// и ложится на свой рецепт, а не на общий.
   Future<void> _rate() async {
-    final scaled = await (_scaledVersion ?? Future<RecipeData?>.value());
+    final saved = await (_savedVersion ?? Future<RecipeData?>.value());
     if (!mounted) return;
     // Дальше — оценка: заваривание больше не идёт, и плашке о нём сказать
     // нечего. Недописанную оценку подхватит уже её собственная плашка.
     _forget();
     context.router.replace(
-        RatingRoute(recipe: scaled ?? widget.recipe, pack: widget.pack));
+        RatingRoute(recipe: saved ?? widget.recipe, pack: widget.pack));
   }
 
   /// Правка рецепта. Отдельного экрана рецепта больше нет — этот и есть

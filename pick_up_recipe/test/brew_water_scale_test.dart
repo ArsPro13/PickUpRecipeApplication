@@ -477,7 +477,7 @@ void main() {
 
       final active = ActiveBrews.find(moziana());
       expect(active?.scaledWater, 500);
-      expect(active?.scaledVersionId, 901,
+      expect(active?.savedVersionId, 901,
           reason: 'номер сохранённой версии лежит в записи о заваривании');
       expect(active?.brewed.load, 30);
 

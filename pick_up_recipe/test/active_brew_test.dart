@@ -200,14 +200,14 @@ void main() {
         brewed: doubled,
         scaledWater: 500,
       ));
-      await ActiveBrews.markScaledVersion(activeBrewKey(recipe(), pack()), 901);
+      await ActiveBrews.markSavedVersion(activeBrewKey(recipe(), pack()), 901);
 
       ActiveBrews.current.value = const [];
       ActiveBrews.load();
 
       final found = ActiveBrews.find(recipe(), pack())!;
       expect(found.scaledWater, 500);
-      expect(found.scaledVersionId, 901,
+      expect(found.savedVersionId, 901,
           reason: 'оценка уйдёт версии, сохранённой при старте');
       expect(found.brewed.water, 500);
       expect(found.toEngine()!.snapshot().stepIndex, 0,
@@ -282,7 +282,7 @@ void main() {
         left: const Duration(seconds: 3),
         scaledWater: 500,
         brewed: recipe(water: 500),
-      ).withScaledVersion(55);
+      ).withSavedVersion(55);
 
       final copy = ActiveBrew.fromJson(
         jsonDecode(jsonEncode(original.toJson())) as Map<String, dynamic>,
@@ -291,7 +291,7 @@ void main() {
       expect(copy.key, original.key);
       expect(copy.brewed.water, 500);
       expect(copy.scaledWater, 500);
-      expect(copy.scaledVersionId, 55);
+      expect(copy.savedVersionId, 55);
       expect(copy.leftAt!.isAtSameMomentAs(original.leftAt!), isTrue);
       expect(copy.engine, original.engine);
     });
@@ -365,8 +365,8 @@ void main() {
       expect(snapshot.stepIndex, 2, reason: 'корку снимают сейчас, с начала');
       expect(snapshot.status, BrewStatus.paused,
           reason: 'начать шаг человек должен сам, а не в миг открытия экрана');
-      // Метки движка хранятся с точностью до миллисекунды — отсюда допуск.
-      expect(snapshot.elapsedInStep, lessThan(const Duration(milliseconds: 5)));
+      expect(snapshot.elapsedInStep, Duration.zero,
+          reason: 'шаг на паузе в самом начале — на экране его полные 0:20');
     });
 
     test('вернулись во время настаивания — тот же отсчёт', () async {

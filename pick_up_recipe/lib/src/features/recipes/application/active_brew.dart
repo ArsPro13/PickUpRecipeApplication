@@ -64,7 +64,7 @@ class ActiveBrew {
     required this.engine,
     RecipeData? brewed,
     this.scaledWater,
-    this.scaledVersionId,
+    this.savedVersionId,
     this.leftAt,
     this.heldStep,
   }) : _brewed = brewed;
@@ -86,9 +86,11 @@ class ActiveBrew {
   /// На сколько воды рецепт пересчитали. null — заваривают как есть.
   final int? scaledWater;
 
-  /// Версия, которой пересчитанный рецепт сохранился при старте. Ей уйдёт
-  /// оценка. null — не пересчитывали или сохранить не успели.
-  final int? scaledVersionId;
+  /// Рецепт, сохранённый со стартом заваривания: пересчитанный — новой
+  /// версией, справочный — своей копией под эту пачку. Ему уйдёт оценка, и
+  /// он же стоит карточкой на «Рецептах». null — сохранять было нечего (свой
+  /// рецепт заварили как есть) или сохранить не успели.
+  final int? savedVersionId;
 
   /// С какого момента человек не видит экран заваривания: ушёл с него или
   /// свернул приложение. null — экран открыт.
@@ -127,7 +129,11 @@ class ActiveBrew {
   /// Отдаётся обычный движок, без ожидания на [heldStep]: экран открыт, и
   /// присматривать за шагами снова есть кому. null — запись побита.
   BrewEngine? comeBack({DateTime Function()? clock}) {
-    final held = toEngine(clock: clock);
+    // «Сделал» и пауза — в один и тот же момент. Между двумя обращениями к
+    // часам проходят микросекунды, и следующий шаг встал бы на паузу уже
+    // начатым: на экране 0:19 вместо его 0:20.
+    final now = (clock ?? DateTime.now)();
+    final held = toEngine(clock: () => now);
     if (held == null) return null;
 
     final snapshot = held.snapshot();
@@ -168,20 +174,20 @@ class ActiveBrew {
       engine: engine,
       brewed: _brewed,
       scaledWater: scaledWater,
-      scaledVersionId: scaledVersionId,
+      savedVersionId: savedVersionId,
       leftAt: moment,
       heldStep: hold,
     );
   }
 
-  /// Та же запись, у которой пересчитанный рецепт уже сохранён версией.
-  ActiveBrew withScaledVersion(int id) => ActiveBrew(
+  /// Та же запись, у которой завариваемый рецепт уже сохранён версией [id].
+  ActiveBrew withSavedVersion(int id) => ActiveBrew(
         recipe: recipe,
         pack: pack,
         engine: engine,
         brewed: _brewed,
         scaledWater: scaledWater,
-        scaledVersionId: id,
+        savedVersionId: id,
         leftAt: leftAt,
         heldStep: heldStep,
       );
@@ -206,7 +212,7 @@ class ActiveBrew {
         if (_brewed != null) 'brewed': _brewed.toJson(),
         'engine': engine,
         if (scaledWater != null) 'scaled_water': scaledWater,
-        if (scaledVersionId != null) 'scaled_version_id': scaledVersionId,
+        if (savedVersionId != null) 'saved_version_id': savedVersionId,
         if (leftAt != null) 'left_at': leftAt!.toUtc().toIso8601String(),
         if (heldStep != null) 'held_step': heldStep,
       };
@@ -221,7 +227,7 @@ class ActiveBrew {
             : RecipeData.fromJson(json['brewed'] as Map<String, dynamic>),
         engine: Map<String, dynamic>.from(json['engine'] as Map),
         scaledWater: (json['scaled_water'] as num?)?.toInt(),
-        scaledVersionId: (json['scaled_version_id'] as num?)?.toInt(),
+        savedVersionId: (json['saved_version_id'] as num?)?.toInt(),
         leftAt: DateTime.tryParse(json['left_at'] as String? ?? ''),
         heldStep: (json['held_step'] as num?)?.toInt(),
       );
@@ -264,12 +270,20 @@ abstract final class ActiveBrews {
   }
 
   /// Заваривание этого рецепта по этой пачке, если оно идёт.
+  ///
+  /// Рецепт узнаётся и по номеру версии, сохранённой со стартом. Пока идёт
+  /// заваривание, эта версия уже стоит карточкой на «Рецептах», и нажатие на
+  /// неё обязано привести к тому же таймеру, что и плашка, — а не открыть
+  /// рецепт заново рядом с идущим.
   static ActiveBrew? find(RecipeData recipe, [PackData? pack]) {
     _ensureLoaded();
 
     final key = activeBrewKey(recipe, pack);
     for (final brew in current.value) {
       if (brew.key == key) return brew;
+    }
+    for (final brew in current.value) {
+      if (recipe.id != 0 && brew.savedVersionId == recipe.id) return brew;
     }
     return null;
   }
@@ -320,13 +334,13 @@ abstract final class ActiveBrews {
     await put(brew.leftAtMoment(moment));
   }
 
-  /// Пересчитанный рецепт сохранился версией — оценка уйдёт ей и после
+  /// Завариваемый рецепт сохранился версией — оценка уйдёт ей и после
   /// возврата к завариванию.
-  static Future<void> markScaledVersion(String key, int id) async {
+  static Future<void> markSavedVersion(String key, int id) async {
     final brew = _byKey(key);
     if (brew == null) return;
 
-    await put(brew.withScaledVersion(id));
+    await put(brew.withSavedVersion(id));
   }
 
   /// Выход из аккаунта: чужой таймер на главном экране хуже пустого.

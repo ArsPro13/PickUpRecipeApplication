@@ -286,12 +286,17 @@ class BrewEngine {
   /// Метки времени — по Гринвичу. Местное время без пояса после перевода
   /// часов читалось бы на час не туда, а колд брю настаивается как раз через
   /// ночь, в которую их и переводят.
+  ///
+  /// Длительности — в микросекундах, как их и держит движок. Округлённое до
+  /// миллисекунды ожидание после восстановления оставляло следующему шагу
+  /// долю миллисекунды уже прошедшей — и шаг, вставший на паузу в самом
+  /// начале, показывал 0:19 вместо своих 0:20.
   Map<String, dynamic> toPersistableState() => <String, dynamic>{
         'started_at': _startedAt?.toUtc().toIso8601String(),
         'paused_at': _pausedAt?.toUtc().toIso8601String(),
-        'paused_total_ms': _pausedTotal.inMilliseconds,
-        'skipped_total_ms': _skippedTotal.inMilliseconds,
-        'waiting_total_ms': _waitingTotal.inMilliseconds,
+        'paused_total_us': _pausedTotal.inMicroseconds,
+        'skipped_total_us': _skippedTotal.inMicroseconds,
+        'waiting_total_us': _waitingTotal.inMicroseconds,
         'confirmed_steps': _confirmedSteps.toList()..sort(),
       };
 
@@ -306,9 +311,9 @@ class BrewEngine {
     restore(
       startedAt: startedAt,
       pausedAt: _parseTime(state['paused_at']),
-      pausedTotal: _parseDuration(state['paused_total_ms']),
-      skippedTotal: _parseDuration(state['skipped_total_ms']),
-      waitingTotal: _parseDuration(state['waiting_total_ms']),
+      pausedTotal: _parseDuration(state['paused_total_us']),
+      skippedTotal: _parseDuration(state['skipped_total_us']),
+      waitingTotal: _parseDuration(state['waiting_total_us']),
       confirmedSteps: [
         for (final index in (state['confirmed_steps'] as List? ?? const []))
           if (index is num) index.toInt(),
@@ -321,7 +326,7 @@ class BrewEngine {
       value is String ? DateTime.tryParse(value) : null;
 
   static Duration _parseDuration(Object? value) =>
-      Duration(milliseconds: value is num ? value.toInt() : 0);
+      Duration(microseconds: value is num ? value.toInt() : 0);
 
   /// Текущее состояние по часам движка.
   BrewSnapshot snapshot() => snapshotAt(_clock());

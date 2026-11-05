@@ -12,7 +12,9 @@
 //   • возврат показывает рецепт заново, с первого шага, а не идущее;
 //   • долгое отсутствие не спрашивает, что случилось с кофе в воронке;
 //   • «Прервать» некуда нажать — или она срабатывает без вопроса;
-//   • на долгом шаге экран молчит о том, что с него можно уйти.
+//   • на долгом шаге экран молчит о том, что с него можно уйти;
+//   • справочный рецепт метода, который не довели до оценки, не появляется
+//     на «Рецептах» — своей копией он становился только при оценке.
 
 import 'dart:async';
 
@@ -27,8 +29,11 @@ import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/l10n/app_localizations.dart';
 import 'package:pick_up_recipe/prefs_key.dart';
 import 'package:pick_up_recipe/routing/app_router.dart';
+import 'package:pick_up_recipe/src/features/packs/domain/models/pack_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/active_brew.dart';
+import 'package:pick_up_recipe/src/features/recipes/application/state/recipes_list_state.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/step_types_state.dart';
+import 'package:pick_up_recipe/src/features/recipes/data_sources/remote/recipe_service.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/brew_engine.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/brew_step.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/grind_descriptor_model.dart';
@@ -96,6 +101,32 @@ class _Router extends RootStackRouter {
         AutoRoute(page: RecipesRoute.page, path: '/recipes'),
       ];
 }
+
+/// Сервер рецептов: запоминает, что экран просил сохранить, и отдаёт номер.
+class _Recipes extends RecipeService {
+  final evolved = <RecipeData>[];
+
+  @override
+  Future<int> evolveRecipe(RecipeData recipe) async {
+    evolved.add(copyRecipe(recipe));
+    return 901;
+  }
+}
+
+PackData _pack() => PackData(
+      packId: 7,
+      userId: '1',
+      packDate: '2026-11-01T10:00:00Z',
+      packName: 'Гватемала',
+      packDescriptors: const [],
+      packCountry: 'Гватемала',
+      packProcessingMethod: const [],
+      packImage: '',
+      packVariety: '',
+      packScaScore: 84,
+      isActive: true,
+      roasterName: '',
+    );
 
 RecipeStep _step(
   int seqNum, {
@@ -185,7 +216,7 @@ void main() {
   });
 
   /// Поднимает приложение на экране «Откуда пришли».
-  Future<_Router> pumpApp(WidgetTester tester) async {
+  Future<_Router> pumpApp(WidgetTester tester, {RecipeService? recipes}) async {
     // Окно телефона, а не стандартные 800×600: рамка заваривания держит
     // пропорцию, и на широком окне разметка не помещается по высоте.
     tester.view.physicalSize = const Size(400, 800);
@@ -202,6 +233,7 @@ void main() {
           stepTypesProvider.overrideWith((ref) => const StepTypeReference()),
           grindDescriptorsProvider
               .overrideWith((ref) => const <GrindDescriptor>[]),
+          if (recipes != null) recipeServiceProvider.overrideWithValue(recipes),
         ],
         child: MaterialApp.router(
           theme: lightTheme,
@@ -226,10 +258,11 @@ void main() {
     _Router router,
     RecipeData recipe, {
     bool autoStart = false,
+    PackData? pack,
   }) async {
     // Без await: push отдаёт результат экрана и ждёт, пока тот закроется.
     unawaited(router
-        .push(BrewRoute(recipe: recipe, pack: null, autoStart: autoStart)));
+        .push(BrewRoute(recipe: recipe, pack: pack, autoStart: autoStart)));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
   }
@@ -532,6 +565,109 @@ void main() {
       expect(find.text('Начать заново'), findsNothing);
       expect(find.text('шаг 3 из 3'), findsOneWidget);
       expect(button('Продолжить'), findsOneWidget);
+    });
+  });
+
+  // Справочный рецепт метода общий: пачки у него нет, и своим он становился
+  // только при оценке. Заваривание, которое до неё не довели, на «Рецептах»
+  // не появлялось вовсе. Владелец: «чтобы рецепт появлялся на экране
+  // рецептов, даже если он не закончен».
+  group('справочный рецепт', () {
+    /// Рецепт метода из справочника: пачка 0.
+    RecipeData reference() => _recipe()..packId = 0;
+
+    /// Он же, сохранённый своей копией под пачку, — как его отдаст список.
+    RecipeData own() => _recipe()
+      ..id = 901
+      ..date = '2026-11-06T01:00:00Z';
+
+    testWidgets('со стартом становится рецептом этой пачки', (tester) async {
+      final recipes = _Recipes();
+      final router = await pumpApp(tester, recipes: recipes);
+      await openBrew(tester, router, reference(), pack: _pack());
+      expect(recipes.evolved, isEmpty,
+          reason: 'открыли и посмотрели — сохранять ещё нечего');
+
+      await tapAndWait(tester, button('Смолол, начинаем'));
+
+      expect(recipes.evolved, hasLength(1));
+      expect(recipes.evolved.single.packId, 7,
+          reason: 'копия без пачки — это второй справочный рецепт, и сервер '
+              'её не примет');
+      expect(ActiveBrews.find(reference(), _pack())?.savedVersionId, 901);
+    });
+
+    testWidgets('свой рецепт, заваренный как есть, не сохраняется заново',
+        (tester) async {
+      final recipes = _Recipes();
+      final router = await pumpApp(tester, recipes: recipes);
+      await openBrew(tester, router, _recipe(), pack: _pack());
+
+      await tapAndWait(tester, button('Смолол, начинаем'));
+
+      expect(recipes.evolved, isEmpty);
+    });
+
+    testWidgets('прервали и начали снова — копия одна', (tester) async {
+      final recipes = _Recipes();
+      final router = await pumpApp(tester, recipes: recipes);
+      await openBrew(tester, router, reference(), pack: _pack());
+      await tapAndWait(tester, button('Смолол, начинаем'));
+
+      await tester.tap(button('Пауза'));
+      await tester.pump();
+      await tapAndWait(tester, find.byKey(const ValueKey('brew-abort')));
+      await tapAndWait(tester, find.widgetWithText(TextButton, 'Прервать'));
+      await tapAndWait(tester, button('Смолол, начинаем'));
+
+      expect(recipes.evolved, hasLength(1));
+      expect(ActiveBrews.find(reference(), _pack())?.savedVersionId, 901,
+          reason: 'второе заваривание оценит ту же копию, а не заведёт новую');
+    });
+
+    testWidgets('оценку получает своя копия, а не общий рецепт',
+        (tester) async {
+      // Заваривание доиграло; копия сохранена при старте под номером 901.
+      await ActiveBrews.put(ActiveBrew(
+        recipe: reference(),
+        pack: _pack(),
+        engine: _started(reference(), ago: const Duration(seconds: 200)).engine,
+        savedVersionId: 901,
+      ));
+      final router = await pumpApp(tester, recipes: _Recipes());
+
+      await openBrew(tester, router, reference(), pack: _pack());
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.text(_rating), findsOneWidget);
+      final rated = (router.current.args as RatingRouteArgs).recipe;
+      expect(rated.id, 901);
+      expect(rated.packId, 7,
+          reason: 'с пачкой 0 экран оценки принял бы копию за справочный '
+              'рецепт и завёл бы ещё одну');
+    });
+
+    testWidgets('карточка сохранённой копии ведёт к тому же таймеру',
+        (tester) async {
+      // Заваривают справочный рецепт; его копия уже стоит на «Рецептах», и
+      // нажали на неё, а не на плашку.
+      await ActiveBrews.put(ActiveBrew(
+        recipe: reference(),
+        pack: _pack(),
+        engine: _started(reference(), ago: const Duration(seconds: 40)).engine,
+        savedVersionId: 901,
+      ));
+      final router = await pumpApp(tester, recipes: _Recipes());
+
+      await openBrew(tester, router, own(), pack: _pack());
+
+      expect(find.text('шаг 2 из 3'), findsOneWidget,
+          reason: 'экран открыл рецепт заново рядом с идущим завариванием');
+      expect(button('Пауза'), findsOneWidget);
+      expect(ActiveBrews.current.value, hasLength(1),
+          reason: 'у одного заваривания — одна плашка');
+      expect(ActiveBrews.find(own(), _pack()), isNotNull);
     });
   });
 
