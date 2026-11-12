@@ -26,6 +26,7 @@ import 'package:pick_up_recipe/routing/app_router.dart';
 import 'package:pick_up_recipe/src/features/recipes/application/rating_draft.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/models/recipe_data_model.dart';
 import 'package:pick_up_recipe/src/features/recipes/domain/taste_map.dart';
+import 'package:pick_up_recipe/src/general_widgets/taste_map_view.dart';
 import 'package:pick_up_recipe/src/themes/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -209,6 +210,37 @@ void main() {
         find.bySemanticsLabel('Taste map. Noticeably bitter, slightly weak'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('ручку карты ведут вверх — страница стоит, фраза меняется',
+        (tester) async {
+      await pumpRating(tester, const Locale('ru'));
+
+      // Карта проверена отдельно, на своей странице-подставке. Здесь — что
+      // на настоящем экране палец ей никто не перехватывает: вертикаль
+      // раньше целиком уходила прокрутке, и «тяните точку» из подписи над
+      // картой не работало ровно в ту сторону, где лежат «крепко» и «слабо».
+      const start = TastePoint(0.6, -0.3);
+      expect(find.text('Заметно горько, чуть слабо'), findsOneWidget);
+
+      final map = tester.getRect(find.byType(TasteMap));
+      final field = map.width / 2 * 0.76;
+      Offset onScreen(Offset place) =>
+          map.center + Offset(place.dx, -place.dy) * field;
+
+      final list = Scrollable.of(tester.element(find.byType(TasteMap)));
+      final target = Offset(start.disc.dx, 0.3);
+
+      final finger = await tester.startGesture(onScreen(start.disc));
+      await finger.moveBy(onScreen(target) - onScreen(start.disc));
+      await tester.pump();
+      await finger.up();
+      await tester.pumpAndSettle();
+
+      expect(
+          TastePoint.fromDisc(target).summaryRu, 'Заметно горько, чуть крепко');
+      expect(find.text('Заметно горько, чуть крепко'), findsOneWidget);
+      expect(list.position.pixels, 0, reason: 'палец ушёл в прокрутку');
     });
 
     testWidgets('комментарий к оценке уезжает на сервер по-русски',

@@ -56,6 +56,7 @@ import '../general_widgets/descriptor_chip.dart';
 import '../general_widgets/app_icon.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/app_layout.dart';
+import '../general_widgets/taste_map_view.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
@@ -221,11 +222,15 @@ class _RatingPageState extends ConsumerState<RatingPage> {
     try {
       // Базовый рецепт (packId == 0) общий, и оценку на него не повесить:
       // владельца у него нет. Первая оценка и есть «первая правка» из C7 —
-      // заводим свою копию с пачкой, с которой пришли, и оцениваем её.
-      // Дальше вся цепочка — поправка, правки — идёт по копии.
+      // оцениваем свою копию под пачкой, с которой пришли. Дальше вся
+      // цепочка — поправка, правки — идёт по копии.
+      //
+      // Копия обычно уже лежит: её сохранил экран заваривания со стартом.
+      // Сюда доходят, когда сохранить тогда не вышло. И здесь она не
+      // заводится второй раз, если такая у человека уже есть.
       if (widget.recipe.packId == 0 && widget.pack != null) {
         widget.recipe.packId = widget.pack!.packId;
-        widget.recipe.id = await _service.evolveRecipe(widget.recipe);
+        widget.recipe.id = await _service.saveBrewedVersion(widget.recipe);
       }
 
       await _service.postEstimation(
@@ -711,267 +716,6 @@ class _RatingPageState extends ConsumerState<RatingPage> {
       ],
     );
   }
-}
-
-/// Карта вкуса: две оси, три кольца, цель обжарщика в центре и своя точка.
-class TasteMap extends StatelessWidget {
-  const TasteMap({super.key, required this.point, required this.onChanged});
-
-  final TastePoint point;
-  final ValueChanged<TastePoint> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final texts = AppLocalizations.of(context);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final size = constraints.maxWidth;
-
-        void report(Offset local) {
-          // Точка карты — доля от половины стороны: (0,0) в центре,
-          // ±1 у края. Ось Y перевёрнута: вверх на экране — это «крепко».
-          final half = size / 2;
-          onChanged(
-            TastePoint(
-              (local.dx - half) / half,
-              -(local.dy - half) / half,
-            ).clamped(),
-          );
-        }
-
-        return GestureDetector(
-          onTapDown: (details) => report(details.localPosition),
-          onPanUpdate: (details) => report(details.localPosition),
-          child: Semantics(
-            label: texts.rateMapSemantics(point.summaryFor(texts)),
-            child: SizedBox(
-              width: size,
-              height: size,
-              child: CustomPaint(
-                painter: _TasteMapPainter(
-                  point: point,
-                  ends: (
-                    sour: texts.rateTasteSour,
-                    bitter: texts.rateTasteBitter,
-                    strong: texts.rateTasteStrong,
-                    weak: texts.rateTasteWeak,
-                  ),
-                  frame: context.palette.border,
-                  ink: context.colors.onSurface,
-                  accent: context.colors.primary,
-                  zones: _TasteZones.of(Theme.of(context).brightness),
-                  fontFamily: context.texts.bodyMedium?.fontFamily,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// Раскраска колец карты: чем дальше от центра, тем хуже.
-///
-/// Цвета зашиты числами, а не взяты из темы: это выбранные краски, а не
-/// производные от фона. В тёмной теме — мягкий светофор, в светлой —
-/// «Пряности»: олива, куркума, паприка. Одни и те же три круга в тёмной теме
-/// светофором выглядели правильно, а в светлой краснили — на белом та же
-/// заливка читается вдвое громче.
-///
-/// Непрозрачность у светлой темы выше: заливка ложится на белое и гаснет.
-class _TasteZones {
-  const _TasteZones(this.colors, this.alpha, this.aim);
-
-  /// От центра наружу: «как задумано», «заметно», «сильно мимо».
-  final List<Color> colors;
-  final List<double> alpha;
-
-  /// Пунктир цели обжарщика. Не цвет ближнего кольца: пунктир лежит ПОВЕРХ
-  /// этого кольца, и тем же цветом его не видно — проверено на экране.
-  final Color aim;
-
-  static const _TasteZones _light = _TasteZones(
-    [Color(0xFFA9C24F), Color(0xFFF2B733), Color(0xFFD95F2E)],
-    [0.64, 0.58, 0.52],
-    Color(0xFF5F7320),
-  );
-
-  static const _TasteZones _dark = _TasteZones(
-    [Color(0xFF3FBF63), Color(0xFFE5A93C), Color(0xFFE2594A)],
-    [0.46, 0.38, 0.32],
-    Color(0xFF7BE29A),
-  );
-
-  static _TasteZones of(Brightness brightness) =>
-      brightness == Brightness.dark ? _dark : _light;
-
-  Color band(int ring) => colors[ring].withValues(alpha: alpha[ring]);
-}
-
-class _TasteMapPainter extends CustomPainter {
-  const _TasteMapPainter({
-    required this.point,
-    required this.ends,
-    required this.frame,
-    required this.ink,
-    required this.accent,
-    required this.zones,
-    required this.fontFamily,
-  });
-
-  final TastePoint point;
-
-  /// Подписи четырёх концов осей — уже на языке интерфейса: холст словаря
-  /// не видит, а по-русски они были прибиты прямо здесь.
-  final ({String sour, String bitter, String strong, String weak}) ends;
-
-  final Color frame;
-  final Color ink;
-  final Color accent;
-  final _TasteZones zones;
-
-  /// Шрифт подписей. Холст темы не видит: стиль, собранный здесь без
-  /// семейства, рисовался бы системным шрифтом, а не шрифтом приложения.
-  final String? fontFamily;
-
-  /// Доли поля, на которых стоят кольца. Внешнее кольцо и есть край поля.
-  static const List<double> _rings = [0.34, 0.67, 1.0];
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final half = size.width / 2;
-
-    // Поле оставляет поля под подписи осей.
-    final field = half * 0.76;
-
-    // Кольца заливаются снаружи внутрь: заливки полупрозрачные, и «зелёное
-    // поверх жёлтого поверх красного» — это и есть три ступени.
-    for (var ring = _rings.length - 1; ring >= 0; ring--) {
-      canvas.drawCircle(
-        center,
-        field * _rings[ring],
-        Paint()..color = zones.band(ring),
-      );
-    }
-
-    final line = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = AppStroke.thin
-      ..color = frame;
-
-    for (final fraction in _rings) {
-      canvas.drawCircle(center, field * fraction, line);
-    }
-
-    canvas.drawLine(
-      Offset(center.dx - field, center.dy),
-      Offset(center.dx + field, center.dy),
-      line,
-    );
-    canvas.drawLine(
-      Offset(center.dx, center.dy - field),
-      Offset(center.dx, center.dy + field),
-      line,
-    );
-
-    // Цель обжарщика — в центре: «получилось как задумано». Пунктиром, а не
-    // сплошным: сплошной круг того же цвета читался как ещё одно кольцо.
-    _dashedCircle(
-      canvas,
-      center,
-      field * 0.14,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = AppStroke.thick
-        ..color = zones.aim,
-    );
-
-    // Подписи крупнее прежних двенадцати пунктов: карта шириной с ладонь, и
-    // мелкая подпись у края круга не читается на ходу.
-    final labelSize = (field * 0.14).clamp(12.0, 18.0);
-
-    _label(canvas, ends.sour, Offset(0, center.dy), ink, labelSize);
-    _label(canvas, ends.bitter, Offset(size.width, center.dy), ink, labelSize,
-        anchorRight: true);
-    // Все четыре подписи — наречия, одной частью речи. «Крепче» и «слабее»
-    // рядом с «кисло» и «горько» читались как два разных вопроса на одном
-    // круге: одна ось спрашивала «по сравнению с чем», вторая — «какое».
-    // То же правило держит и английский: одна часть речи на все четыре конца.
-    _label(canvas, ends.strong,
-        Offset(center.dx, center.dy - field - labelSize), ink, labelSize,
-        centered: true);
-    _label(canvas, ends.weak, Offset(center.dx, center.dy + field + labelSize),
-        ink, labelSize,
-        centered: true);
-
-    if (point.isCenter) return;
-
-    final you =
-        Offset(center.dx + point.x * field, center.dy - point.y * field);
-
-    canvas.drawLine(
-      center,
-      you,
-      Paint()
-        ..strokeWidth = AppStroke.thin
-        ..color = accent.withValues(alpha: 0.5),
-    );
-    canvas.drawCircle(
-        you, AppSpacing.s5, Paint()..color = accent.withValues(alpha: 0.18));
-    canvas.drawCircle(you, AppSpacing.s2, Paint()..color = accent);
-  }
-
-  /// Пунктирная окружность: Flutter рисует пунктир только дугами.
-  void _dashedCircle(Canvas canvas, Offset center, double radius, Paint paint) {
-    const dashes = 16;
-    const sweep = 6.283185307179586 / dashes;
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    for (var i = 0; i < dashes; i++) {
-      canvas.drawArc(rect, i * sweep, sweep * 0.55, false, paint);
-    }
-  }
-
-  void _label(
-    Canvas canvas,
-    String text,
-    Offset at,
-    Color color,
-    double fontSize, {
-    bool centered = false,
-    bool anchorRight = false,
-  }) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(
-          fontFamily: fontFamily,
-          color: color,
-          fontSize: fontSize,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final dx = centered
-        ? at.dx - painter.width / 2
-        : (anchorRight ? at.dx - painter.width : at.dx);
-
-    painter.paint(canvas, Offset(dx, at.dy - painter.height / 2));
-  }
-
-  // Не только точка: сменившийся язык оставляет точку на месте, а подписи
-  // осей меняет, и без сравнения они остались бы от прошлого языка. Тема
-  // меняет раскраску колец — её тоже надо сравнивать.
-  @override
-  bool shouldRepaint(_TasteMapPainter oldDelegate) =>
-      oldDelegate.point != point ||
-      oldDelegate.ends != ends ||
-      oldDelegate.zones != zones ||
-      oldDelegate.fontFamily != fontFamily;
 }
 
 /// Что человек сказал картой — словами.
