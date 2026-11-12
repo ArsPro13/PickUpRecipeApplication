@@ -36,6 +36,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/library_revision.dart';
+import '../../core/offline/recipe_drafts.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
@@ -55,6 +57,7 @@ import '../features/recipes/domain/step_ending.dart';
 import '../features/recipes/domain/brew_template.dart';
 import '../features/recipes/domain/models/grind_descriptor_model.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
+import '../features/recipes/domain/models/step_type_model.dart';
 import '../features/recipes/domain/scaling/recipe_scaler.dart';
 import '../features/recipes/domain/scaling/scaling_profile.dart';
 import '../general_widgets/app_bottom_nav.dart';
@@ -130,6 +133,14 @@ class _BrewPageState extends ConsumerState<BrewPage>
   /// оценке: заваривание, которое не довели до оценки, на «Рецептах» не
   /// появлялось вовсе. Владелец: «чтобы рецепт появлялся на экране рецептов,
   /// даже если он не закончен».
+  ///
+  /// И то и другое — ОДИН РАЗ (9 ноября 2026). Если такая версия у человека
+  /// уже лежит — он заваривал по справочному вчера или уже пересчитывал на
+  /// этот объём, — новая не заводится: берётся прежняя, и у неё сдвигается
+  /// дата последнего заваривания. Владелец: повтор рецепта «не должен рождать
+  /// новый элемент в приложении, но дата последнего заваривания должна
+  /// меняться». До этого каждое утро «по базовому» прибавляло стопке ещё одну
+  /// одинаковую карточку.
   ///
   /// Оценка после заваривания уходит сохранённому, а не исходному. null — не
   /// начинали или сохранять нечего (свой рецепт заварили как есть);
@@ -616,25 +627,57 @@ class _BrewPageState extends ConsumerState<BrewPage>
           ? texts.unitGrams('$water')
           : texts.unitMillilitres('$water');
 
-  /// Сохраняет завариваемый рецепт — один раз, со стартом.
+  /// Со стартом заваривания: отметить, что по рецепту заваривают, а если
+  /// рецепт ещё не свой — сохранить его. Один раз на заваривание.
   ///
-  /// Сохранять есть что в двух случаях: рецепт пересчитали на другой объём
-  /// (это правка, она ложится новой версией) или заваривают справочный рецепт
-  /// метода — он общий, и под эту пачку заводится своя копия. Свой рецепт,
-  /// заваренный как есть, уже лежит на сервере, и трогать его незачем.
+  /// Три случая.
+  ///
+  /// Свой сохранённый рецепт как есть — он уже лежит на сервере, и трогать
+  /// его незачем: у него только сдвигается дата последнего заваривания.
+  /// Именно так выглядит повтор: карточка та же, дата новая.
+  ///
+  /// Рецепт пересчитали на другой объём (это правка) или заваривают
+  /// справочный рецепт метода (он общий, и под пачку нужна своя копия) —
+  /// версия сохраняется. Но только если такой у человека ещё нет: вчерашняя
+  /// копия справочного рецепта и сегодняшняя — один и тот же рецепт, и
+  /// заводить вторую незачем (`saveBrewedVersion`). Заваривание отмечается
+  /// уже на сохранённой версии.
+  ///
+  /// Правку из конструктора заварили, не сохранив, — она остаётся черновиком,
+  /// как и была задумана: сохранять за человека то, что он не сохранил, экран
+  /// не станет. Отметка о заваривании исходной версии при этом не ставится —
+  /// заваривали не её.
   ///
   /// Не ждём: таймер уже пошёл, а версия нужна только оценке через минуты.
-  /// Без сети `evolveRecipe` кладёт её в очередь и сразу отдаёт местный
-  /// идентификатор; отказ сервера оставляет оценку исходному рецепту —
+  /// Без сети версия встаёт в очередь и сразу получает местный номер, отметка
+  /// — следом за ней; отказ сервера оставляет оценку исходному рецепту —
   /// заваривание из-за этого не останавливается. Справочный рецепт экран
-  /// оценки в таком случае скопирует сам, как делал до этого.
+  /// оценки в таком случае сохранит сам.
   void _saveStartedVersion() {
     if (_savedVersion != null) return;
 
+    final service = ref.read(recipeServiceProvider);
+    final startedAt = DateTime.now();
     final scaled = _scaled;
     final pack = widget.pack;
     final reference = widget.recipe.packId == 0 && pack != null;
-    if (scaled == null && !reference) return;
+
+    if (scaled == null && !reference) {
+      // Справочный рецепт без пачки отметить не на чем: владельца у него нет.
+      if (widget.recipe.packId == 0) return;
+
+      if (_isUnsavedEdit()) {
+        // Черновик поднимается наверх списка с сегодняшней датой — это
+        // самое свежее, что человек заваривал.
+        unawaited(RecipeDrafts.remember(
+          copyRecipe(widget.recipe)..date = startedAt.toUtc().toIso8601String(),
+        ).then((_) => LibraryRevision.bump()));
+        return;
+      }
+
+      unawaited(service.recordBrew(widget.recipe.id, startedAt: startedAt));
+      return;
+    }
 
     final version = copyRecipe(scaled?.recipe ?? widget.recipe);
     // Копия справочного рецепта — под пачку, с которой пришли: владелец
@@ -644,16 +687,39 @@ class _BrewPageState extends ConsumerState<BrewPage>
     if (version.packId == 0 && pack != null) version.packId = pack.packId;
 
     final key = _brewKey;
-    _savedVersion =
-        ref.read(recipeServiceProvider).evolveRecipe(version).then<RecipeData?>(
+    _savedVersion = service.saveBrewedVersion(version).then<RecipeData?>(
       (id) {
         // Номер версии — в запись об идущем заваривании: к оценке могут
         // прийти уже с другого экрана, и ей нужна эта версия, а не исходная.
         _savedId = id;
         ActiveBrews.markSavedVersion(key, id);
+        unawaited(service.recordBrew(id, startedAt: startedAt));
         return version..id = id;
       },
     ).catchError((Object _) => null);
+  }
+
+  /// Экран открыт правкой, которую не сохранили: у сохранённой версии с тем
+  /// же номером другие числа или шаги.
+  ///
+  /// Так приходят из конструктора: поправили помол и нажали «Заварить», не
+  /// нажимая «Сохранить». Номер у такой правки — той версии, от которой её
+  /// вели, и отметить заваривание по номеру значило бы записать его рецепту,
+  /// которым не заваривали.
+  ///
+  /// Сверяется со списком «Рецептов»: он держит сохранённые версии. Версии с
+  /// таким номером в списке нет (список не загружен, рецепт открыт по ссылке)
+  /// — считаем рецепт сохранённым: так бывает куда чаще.
+  bool _isUnsavedEdit() {
+    final id = widget.recipe.id;
+    for (final group in ref.read(recipesListProvider).groups) {
+      for (final version in group.versions) {
+        if (version.recipe.id != id || version.draft) continue;
+        return recipeFingerprint(version.recipe) !=
+            recipeFingerprint(widget.recipe);
+      }
+    }
+    return false;
   }
 
   /// Ставит рецепт на [water] мл — или возвращает исходный.
@@ -833,6 +899,10 @@ class _BrewPageState extends ConsumerState<BrewPage>
     // Следим за справочником: шаблон и состояние прибора приезжают с ним.
     ref.watch(brewMethodsProvider);
 
+    // Типы шагов: значок и описание шага владелец правит в кабинете, и
+    // приезжают они этим справочником. Не приехал — рисуем по типу шага.
+    final stepTypes = ref.watch(stepTypesProvider).valueOrNull;
+
     // Сменили кофемолку, пока рецепт пересчитан, — клики пересчитываются
     // под новую шкалу. После старта шаги уже не трогаем.
     ref.listen(
@@ -986,6 +1056,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
               live: _live,
               params: params,
               template: template,
+              stepTypes: stepTypes,
             ),
           ),
           // Появляется и уходит плавно: список шагов под ней сдвигается, и
@@ -1015,6 +1086,7 @@ class _BrewPageState extends ConsumerState<BrewPage>
               steps: steps,
               snapshot: _snapshot,
               activeCard: _activeCard,
+              stepTypes: stepTypes,
             ),
           ),
           SafeArea(
@@ -1775,6 +1847,7 @@ class _BrewFrame extends StatelessWidget {
     required this.live,
     required this.params,
     this.template = BrewTemplate.pour,
+    this.stepTypes,
   });
 
   final BrewStep step;
@@ -1787,6 +1860,9 @@ class _BrewFrame extends StatelessWidget {
   final BrewParams params;
   final BrewTemplate template;
 
+  /// Справочник типов шагов: по нему берётся значок. null — ещё не приехал.
+  final StepTypeReference? stepTypes;
+
   bool get _isPrep => snapshot.status == BrewStatus.idle && params.hasPrep;
 
   /// «Часы»: шаг длиннее получаса — показываем не отсчёт, а «готово в».
@@ -1797,10 +1873,7 @@ class _BrewFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
-    final icon = _isPrep
-        ? AppIcons.stepGrind
-        : AppIcons.byKey('step-${step.type.wireName.replaceAll('_', '-')}') ??
-            AppIcons.stepCustom;
+    final icon = _isPrep ? AppIcons.stepGrind : brewStepIcon(step, stepTypes);
 
     final hint = _isPrep ? params.prepHint : _subtitle(texts);
     final central = _centralValue(texts);
@@ -2083,6 +2156,7 @@ class _StepList extends StatelessWidget {
     required this.steps,
     required this.snapshot,
     required this.activeCard,
+    this.stepTypes,
   });
 
   final ScrollController controller;
@@ -2091,6 +2165,9 @@ class _StepList extends StatelessWidget {
 
   /// Ключ карточки текущего шага — им список подводят к глазам.
   final GlobalKey activeCard;
+
+  /// Справочник типов шагов: значок и описание шага. null — ещё не приехал.
+  final StepTypeReference? stepTypes;
 
   @override
   Widget build(BuildContext context) {
@@ -2132,6 +2209,7 @@ class _StepList extends StatelessWidget {
                 step: steps[index],
                 index: index,
                 snapshot: snapshot,
+                stepTypes: stepTypes,
               ),
             ],
           );
@@ -2178,7 +2256,11 @@ class _StepCard extends StatelessWidget {
     required this.step,
     required this.index,
     required this.snapshot,
+    this.stepTypes,
   });
+
+  /// Справочник типов шагов: значок и описание шага. null — ещё не приехал.
+  final StepTypeReference? stepTypes;
 
   /// Наименьшая высота карточки вместе с отступом.
   ///
@@ -2199,9 +2281,8 @@ class _StepCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
-    final icon =
-        AppIcons.byKey('step-${step.type.wireName.replaceAll('_', '-')}') ??
-            AppIcons.stepCustom;
+    final icon = brewStepIcon(step, stepTypes);
+    final hint = brewStepHint(step, stepTypes);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.s2),
@@ -2306,9 +2387,9 @@ class _StepCard extends StatelessWidget {
               if (step.warning.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.s1),
                 _WarningNote(text: step.warning),
-              ] else if (step.tip.isNotEmpty) ...[
+              ] else if (hint.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.s1),
-                BrewStepTip(text: step.tip, alwaysOpen: _isActive),
+                BrewStepTip(text: hint, alwaysOpen: _isActive),
               ],
             ],
           ),
@@ -2365,6 +2446,10 @@ class _BrewStepTipState extends State<BrewStepTip> {
         // Мерить надо ровно тем, чем рисуем: Text домешивает стиль по
         // умолчанию, и без него замер разойдётся с разметкой на пограничных
         // подсказках — там, где как раз и решается судьба шеврона.
+        //
+        // И тем же размером шрифта из настроек телефона. Без него замер шёл
+        // обычным шрифтом, а рисовалось крупным: подсказка обрывалась
+        // многоточием, а шеврона, чтобы её раскрыть, не было.
         final painter = TextPainter(
           text: TextSpan(
             text: widget.text,
@@ -2372,6 +2457,7 @@ class _BrewStepTipState extends State<BrewStepTip> {
           ),
           maxLines: 1,
           textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
         )..layout(maxWidth: free < 0 ? 0 : free);
 
         final clipped = painter.didExceedMaxLines;
@@ -2422,6 +2508,33 @@ class _BrewStepTipState extends State<BrewStepTip> {
 /// Семь шагов Origami читаются как семь дел; те же семь, разбитые на три
 /// фазы, — как три. Фаза выводится из типа шага: справочник её не хранит,
 /// а порядок в рецепте всегда один и тот же — подготовка, заваривание, финал.
+/// Значок шага — тот, что владелец выбрал его типу в кабинете.
+///
+/// Раньше значок брался по самому типу: «pour» — значит ico-step-pour, и
+/// сменить его можно было только новой сборкой. Теперь ключ значка приезжает
+/// справочником типов (`icon_key`), и правка в кабинете видна после запуска.
+/// Пока справочник не приехал (нет сети, старый сервер) — как раньше, по типу.
+String brewStepIcon(BrewStep step, StepTypeReference? reference) {
+  final key = reference?.bySlug(step.type.wireName)?.iconKey ?? '';
+  return AppIcons.step(key.isEmpty ? step.type.wireName : key);
+}
+
+/// Подсказка под шагом: своя, из рецепта, а если её нет — описание шага из
+/// справочника типов.
+///
+/// Описание пишет владелец в кабинете, и оно общее на все рецепты: «Пауза»
+/// без подсказки в рецепте всё равно объяснит, чего ждать. Своя подсказка
+/// рецепта главнее — она про это зерно и этот рецепт, а не про шаг вообще.
+///
+/// У своего шага (и шага без типа — так записаны старые рецепты) описания из
+/// справочника не берётся: что это за шаг, сказано в его названии, а общее
+/// описание «свой шаг» под «Смахнуть пыль с фильтра» было бы невпопад.
+String brewStepHint(BrewStep step, StepTypeReference? reference) {
+  if (step.tip.isNotEmpty) return step.tip;
+  if (step.type == BrewStepType.custom) return '';
+  return reference?.bySlug(step.type.wireName)?.description ?? '';
+}
+
 String brewPhaseOf(AppLocalizations texts, BrewStep step) {
   return switch (step.type) {
     BrewStepType.grind || BrewStepType.addIce => texts.brewPhasePrep,

@@ -109,11 +109,12 @@ RecipeData _recipe({
   required String date,
   required double load,
   bool rated = true,
+  String device = 'hario_v60',
 }) {
   return RecipeData(
     hasEstimation: rated,
     id: id,
-    device: 'hario_v60',
+    device: device,
     date: date,
     packId: 7,
     grinderId: 1,
@@ -282,6 +283,123 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
+    });
+
+    /// Перечитывает список так же, как это делает экран после заваривания.
+    Future<void> reload(WidgetTester tester) async {
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(RecipesPage)),
+      );
+      await container.read(recipesListProvider.notifier).load();
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+        'повторили прошлую версию — стопки поменялись местами, и соседняя '
+        'не упала', (tester) async {
+      // Сверху стопка из одной версии, под ней — из двух.
+      final other = _recipe(
+        id: 401,
+        date: '2026-09-09T10:00:00Z',
+        load: 15,
+        device: 'aeropress',
+      );
+      final current = _recipe(id: 402, date: '2026-09-08T10:00:00Z', load: 16);
+      final past = _recipe(id: 403, date: '2026-09-07T10:00:00Z', load: 17);
+      final router =
+          await pumpRecipes(tester, versions: [other, current, past]);
+
+      // Нижнюю стопку докрутили до прошлой версии…
+      await tester.drag(_editButtons.last, const Offset(-150, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('версия 2 из 2'), findsOneWidget);
+
+      // …и заварили по ней ещё раз: новой карточки нет, зато у версии
+      // свежая дата — и её стопка встаёт первой.
+      past.lastBrewedAt = '2026-09-10T08:00:00Z';
+      await reload(tester);
+
+      // Раньше положение барабана оставалось на втором месте списка и
+      // доставалось стопке из одной версии: `versions[1]` у неё нет, и на
+      // месте карточки человек видел красную плашку с RangeError.
+      expect(tester.takeException(), isNull);
+
+      // Сверху — то, что только что варили, а не соседняя версия.
+      expect(find.text('версия 2 из 2'), findsNothing);
+
+      // Кружки правки в порядке дерева: край первой стопки, её верхняя
+      // карточка, потом единственная карточка второй.
+      expect(_editButtons, findsNWidgets(3));
+      await tester.tap(_editButtons.at(1));
+      await tester.pumpAndSettle();
+      expect(builderArgs(router).recipe.id, 403);
+
+      await tester.tap(_editButtons.at(2));
+      await tester.pumpAndSettle();
+      expect(builderArgs(router).recipe.id, 401);
+    });
+
+    testWidgets('версий стало меньше — барабан возвращается к первой',
+        (tester) async {
+      final stored = [..._versions];
+      final router = await pumpRecipes(tester, versions: stored);
+
+      // Докрутили до третьей версии.
+      await tester.drag(_editButtons.last, const Offset(-150, 0));
+      await tester.pumpAndSettle();
+      await tester.drag(_editButtons.last, const Offset(-150, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('версия 3 из 3'), findsOneWidget);
+
+      // Третьей версии больше нет: её удалили или она склеилась с соседней.
+      stored.removeLast();
+      await reload(tester);
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('версия 3 из 3'), findsNothing);
+
+      await tester.tap(_editButtons.last);
+      await tester.pumpAndSettle();
+      expect(builderArgs(router).recipe.id, 301);
+    });
+
+    testWidgets(
+        'заварили по соседней версии — наверх встаёт она, хотя порядок тот же',
+        (tester) async {
+      final current = _recipe(id: 501, date: '2026-09-09T10:00:00Z', load: 15);
+      final past = _recipe(id: 502, date: '2026-09-08T10:00:00Z', load: 16);
+      final router = await pumpRecipes(tester, versions: [current, past]);
+
+      await tester.drag(_editButtons.last, const Offset(-150, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('версия 2 из 2'), findsOneWidget);
+
+      // Прошлую версию пересчитали на объём текущей и заварили: новой
+      // карточки нет, отметка досталась текущей. Версии лежат как лежали,
+      // но сверху человек ждёт ту, по которой только что варил.
+      current.lastBrewedAt = '2026-09-10T08:00:00Z';
+      await reload(tester);
+
+      expect(find.text('версия 2 из 2'), findsNothing);
+
+      await tester.tap(_editButtons.last);
+      await tester.pumpAndSettle();
+      expect(builderArgs(router).recipe.id, 501);
+    });
+
+    testWidgets('список перечитали без перемен — барабан остаётся на месте',
+        (tester) async {
+      await pumpRecipes(tester);
+
+      await tester.drag(_editButtons.last, const Offset(-150, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('версия 2 из 3'), findsOneWidget);
+
+      // Потянули список вниз: версии те же и лежат так же.
+      await reload(tester);
+
+      expect(find.text('версия 2 из 3'), findsOneWidget,
+          reason: 'перечитывание не должно сбивать то, что человек листал');
     });
   });
 

@@ -25,6 +25,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/dates.dart';
+import '../../core/offline/recipe_drafts.dart' show recipeFingerprint;
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
@@ -128,7 +129,14 @@ class _ChoosingRecipePageState extends ConsumerState<ChoosingRecipePage> {
       if (!mounted) return;
 
       setState(() {
-        _recipes = [...?recipes]..sort((a, b) => b.date.compareTo(a.date));
+        // Первым — рецепт, по которому заваривали последним, и без
+        // одинаковых: прежние сборки сохраняли справочный рецепт заново на
+        // каждое заваривание, и ниже главной карточки стояли строки с теми
+        // же числами.
+        _recipes = distinctVersions(
+          recipes ?? const <RecipeData>[],
+          fingerprint: recipeFingerprint,
+        );
         _loading = false;
       });
     } catch (error) {
@@ -547,7 +555,8 @@ class _VersionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppRow(
-      label: _formatDate(AppLocalizations.of(context), recipe.date),
+      // Когда так заваривали последний раз, а не когда версию сохранили.
+      label: _formatDate(AppLocalizations.of(context), recipe.usedAt),
       value: summary,
       icon: AppIcons.uiHistory,
       onTap: () => context.router.push(BrewRoute(recipe: recipe, pack: pack)),

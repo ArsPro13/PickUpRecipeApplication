@@ -29,7 +29,9 @@ RecipeData recipe(
     temperature: 93,
     load: 15,
     title: '',
-    notes: '',
+    // Заметка у каждой версии своя: версии с одними числами и шагами — один
+    // рецепт, и список склеивает их в одну карточку (distinctVersions).
+    notes: 'версия от $date',
     grindDescriptor: '',
     agitationLevel: null,
     steps: const [],

@@ -116,7 +116,9 @@ void main() {
           temperature: 93,
           load: 15,
           title: '',
-          notes: '',
+          // Заметка у каждой версии своя: версии с одними числами и шагами
+          // — один рецепт, и список склеивает их в одну карточку.
+          notes: 'версия от $date',
           grindDescriptor: '',
           agitationLevel: null,
           steps: const [],
@@ -294,6 +296,27 @@ void main() {
       expect(result.map((group) => group.slug).toList(),
           ['immersion', 'pourover', 'other']);
     });
+
+    test('«так вы заваривали» — по последнему завариванию, а не по сохранению',
+        () {
+      // Рецепт под кемекс сохранён позже, но вчера заваривали воронкой —
+      // тем самым рецептом, что сохранён ещё в сентябре.
+      final grouped = groupMethods([
+        method('hario_v60', groupId: 1, sortOrder: 1),
+        method('chemex', groupId: 1, sortOrder: 2),
+      ], groups);
+
+      final v60 = packRecipe('hario_v60')
+        ..date = '2026-09-01T08:00:00Z'
+        ..lastBrewedAt = '2026-11-08T07:10:00Z';
+      final chemex = packRecipe('chemex')..date = '2026-10-15T08:00:00Z';
+
+      final (_, last) = buildCoffeeMethods(grouped, [chemex, v60]);
+
+      expect(last?.method.slug, 'hario_v60');
+      expect(last?.date, '2026-11-08T07:10:00Z',
+          reason: 'подпись говорит, когда заваривали, а не когда сохранили');
+    });
   });
 
   group('рецепты с прошлых пачек', () {
@@ -311,7 +334,9 @@ void main() {
           temperature: 93,
           load: 15,
           title: '',
-          notes: '',
+          // Заметка у каждой версии своя — иначе одинаковые версии склеились
+          // бы в одну карточку.
+          notes: 'версия от $date',
           grindDescriptor: '',
           agitationLevel: null,
           steps: const [],

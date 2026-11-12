@@ -43,6 +43,7 @@ import '../../routing/app_router.dart';
 import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
+import '../features/recipes/domain/models/recipe_data_model.dart';
 import '../pages/packs_page.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
@@ -113,7 +114,29 @@ double roastFillLuminance(String roastLevel) {
   return Color.lerp(colors.first, colors.last, 0.5)!.computeLuminance();
 }
 
+/// Стопка та же, что была: те же версии, в том же порядке, и ни по одной с
+/// тех пор не заваривали. Тогда барабану незачем возвращаться к первой.
+///
+/// Сравниваются номера рецептов и момент последнего заваривания, а не сами
+/// записи: после перечитывания списка объекты новые, даже когда на экране
+/// ничего не поменялось. Момент — через разбор: одно и то же время сервер и
+/// телефон записывают по-разному.
+bool sameDeck(List<RecipeVersion> before, List<RecipeVersion> after) {
+  if (before.length != after.length) return false;
+  for (var index = 0; index < before.length; index++) {
+    if (before[index].recipe.id != after[index].recipe.id) return false;
+    if (compareMoments(before[index].usedAt, after[index].usedAt) != 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// Стопка версий: шапка «кофе · метод» и барабан карточек под ней.
+///
+/// Там, где стопок несколько, каждой нужен ключ — [RecipeGroup.key]. Список
+/// пересортировывается после каждого заваривания, и без ключа положение
+/// барабана досталось бы той стопке, что встала на прежнее место.
 class RecipeDeck extends StatefulWidget {
   const RecipeDeck({
     super.key,
@@ -177,6 +200,27 @@ class _RecipeDeckState extends State<RecipeDeck>
     super.initState();
     _fly = AnimationController(vsync: this, duration: AppDuration.base);
     WidgetsBinding.instance.addPostFrameCallback((_) => _hint());
+  }
+
+  /// По стопке заварили или её пересобрали — наверх встаёт свежая версия.
+  ///
+  /// Список перечитывается после каждого заваривания. Повторили прошлую
+  /// версию — она становится первой; сохранили правку — первой встаёт она;
+  /// пересчитали рецепт на объём, под который версия уже есть, — отметка
+  /// достаётся той версии. Во всех случаях человек ждёт сверху то, что только
+  /// что варил, а барабан, оставленный на прежнем месте, показал бы ему
+  /// соседнюю версию. Если же стопку не трогали (список перечитали, чашку
+  /// оценили) — барабан остаётся там, куда его докрутили.
+  ///
+  /// Заодно это страховка от номера за краем списка. Версий может стать
+  /// меньше — одинаковые склеились, рецепт удалили, — и тогда `versions[_top]`
+  /// ронял карточку целиком: на месте стопки оставалась красная плашка.
+  @override
+  void didUpdateWidget(covariant RecipeDeck old) {
+    super.didUpdateWidget(old);
+    if (!sameDeck(old.group.versions, widget.group.versions)) {
+      _top = 0;
+    }
   }
 
   @override
@@ -435,7 +479,8 @@ class _Header extends ConsumerWidget {
   String _subtitle(AppLocalizations texts) {
     final parts = [
       if (pack != null && pack!.roasterName.isNotEmpty) pack!.roasterName,
-      formatRecipeDate(texts, group.latest.date),
+      // Когда так заваривали последний раз, а не когда рецепт сохранили.
+      formatRecipeDate(texts, group.latest.usedAt),
       // Склонение «1 версия / 2 версии / 5 версий» считает ICU: таблица форм
       // у каждого языка своя, и написанная руками была верной для одного.
       if (group.versions.length > 1)
@@ -522,7 +567,7 @@ class _VersionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
     // Черновик не «неоценён»: его ещё не заваривали, оценивать нечего.
-    final rated = version.recipe.hasEstimation || version.draft;
+    final rated = version.rated || version.draft;
     final radius = hero ? AppRadius.large : AppRadius.medium;
 
     return Material(
@@ -558,7 +603,9 @@ class _VersionCard extends StatelessWidget {
                 flex: 4,
                 child: _Photo(
                   pack: pack,
-                  caption: formatRecipeStamp(texts, version.date),
+                  // Дата и время последнего заваривания: повтор рецепта
+                  // сдвигает их, а новой карточки не заводит.
+                  caption: formatRecipeStamp(texts, version.usedAt),
                 ),
               ),
               Expanded(

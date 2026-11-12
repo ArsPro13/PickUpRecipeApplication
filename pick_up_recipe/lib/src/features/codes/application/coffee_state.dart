@@ -278,7 +278,10 @@ List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods,
 
   // Быстрый старт — по свежему рецепту, а не по частоте: человек возвращается
   // к тому, чем заваривал вчера, а не к тому, чем заваривал чаще всего.
-  final latest = [...recipes]..sort((a, b) => b.date.compareTo(a.date));
+  // «Вчера» — это когда заваривал, а не когда рецепт сохранён: повтор
+  // прошлогоднего рецепта делает свежим его.
+  final latest = [...recipes]
+    ..sort((a, b) => compareMoments(b.usedAt, a.usedAt));
   final method = groups
       .expand((group) => group.methods)
       .where((candidate) => candidate.slug == latest.first.device)
@@ -286,7 +289,7 @@ List<CoffeeMethod> _withRecipesFirst(List<CoffeeMethod> methods,
 
   return (
     groups,
-    method == null ? null : (method: method, date: latest.first.date)
+    method == null ? null : (method: method, date: latest.first.usedAt)
   );
 }
 

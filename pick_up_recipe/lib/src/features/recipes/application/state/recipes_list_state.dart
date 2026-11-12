@@ -21,9 +21,12 @@ class RecipeVersion {
     required this.timeSec,
     required this.date,
     required this.recipe,
+    String? usedAt,
+    bool? rated,
     this.temperatureC,
     this.draft = false,
-  });
+  })  : usedAt = usedAt ?? date,
+        _rated = rated;
 
   /// Сам рецепт: с карточки его можно заварить снова, не ходя за ним заново.
   final RecipeData recipe;
@@ -41,9 +44,25 @@ class RecipeVersion {
   /// по этой паре версии и различают на глаз.
   final int timeSec;
 
-  /// Дата как её отдал сервер. Нужна для сортировки и для подписи нижнего
-  /// края стопки «ещё 6 версий, с 22 июля».
+  /// Когда версию сохранили — как это отдал сервер. По ней считается «первый
+  /// рецепт» в профиле: это про то, когда человек начал, а не когда заваривал
+  /// в последний раз.
   final String date;
+
+  /// Когда по этой версии заваривали последний раз, а если не заваривали —
+  /// когда её сохранили ([RecipeUse.usedAt]). Этой датой карточка подписана
+  /// и по ней стоит в стопке: повтор рецепта не заводит новую карточку, а
+  /// сдвигает дату у прежней и поднимает её наверх.
+  final String usedAt;
+
+  final bool? _rated;
+
+  /// У чашки по этому рецепту есть оценка.
+  ///
+  /// Не всегда то же, что `recipe.hasEstimation`: карточка может стоять за
+  /// несколько одинаковых версий сразу (см. [groupRecipes]), и «не оценено»
+  /// на ней верно, только если не оценена ни одна.
+  bool get rated => _rated ?? recipe.hasEstimation;
 
   final double? temperatureC;
 
@@ -207,8 +226,32 @@ List<RecipeGroup> groupRecipes(
 
   final groups = <RecipeGroup>[];
   for (final entry in byKey.entries) {
-    // Свежая версия первой: именно её показывает верхняя карточка стопки.
-    final versions = [...entry.value]..sort((a, b) => b.date.compareTo(a.date));
+    // Первой стоит версия, по которой заваривали последней: именно её
+    // показывает верхняя карточка стопки. Не «сохранённая последней» — повтор
+    // прошлой версии делает текущей её, хотя сохранена она давно.
+    //
+    // Одинаковые версии — одна карточка (см. distinctVersions). «Не оценено»
+    // на ней верно, только если не оценена ни одна из одинаковых: оценка,
+    // поставленная вчерашней копии, — оценка этого же рецепта.
+    //
+    // И «сохранена» у такой карточки — когда рецепт появился впервые, то есть
+    // по самой ранней из копий: по этой дате профиль считает «первый рецепт».
+    final rated = <RecipeData, bool>{};
+    final firstSaved = <RecipeData, String>{};
+    final versions = distinctVersions(
+      entry.value,
+      fingerprint: recipeFingerprint,
+      onDuplicate: (kept, duplicate) {
+        rated[kept] =
+            (rated[kept] ?? kept.hasEstimation) || duplicate.hasEstimation;
+
+        final known = firstSaved[kept] ?? kept.date;
+        firstSaved[kept] =
+            compareMoments(duplicate.date, known) < 0 ? duplicate.date : known;
+      },
+    );
+    final keys = [for (final recipe in versions) recipeFingerprint(recipe)];
+
     final method = versions.first.device;
     final methodName = methodNames[method] ?? method;
 
@@ -223,30 +266,32 @@ List<RecipeGroup> groupRecipes(
         methodNameEn: methodNamesEn[method] ?? '',
         methodNameIt: methodNamesIt[method] ?? '',
         methodIconKey: methodIcons[method] ?? method,
-        versions: versions
-            .map(
-              (recipe) => RecipeVersion(
-                packId: recipe.packId,
-                method: recipe.device,
-                title: recipe.title.isNotEmpty ? recipe.title : methodName,
-                doseG: recipe.load,
-                waterG: recipe.water,
-                timeSec: recipe.time,
-                date: recipe.date,
-                recipe: recipe,
-                temperatureC: recipe.temperature,
-                draft: draftKeys.isNotEmpty &&
-                    draftKeys.contains(recipeFingerprint(recipe)),
-              ),
-            )
-            .toList(),
+        versions: [
+          for (var index = 0; index < versions.length; index++)
+            RecipeVersion(
+              packId: versions[index].packId,
+              method: versions[index].device,
+              title: versions[index].title.isNotEmpty
+                  ? versions[index].title
+                  : methodName,
+              doseG: versions[index].load,
+              waterG: versions[index].water,
+              timeSec: versions[index].time,
+              date: firstSaved[versions[index]] ?? versions[index].date,
+              usedAt: versions[index].usedAt,
+              rated: rated[versions[index]],
+              recipe: versions[index],
+              temperatureC: versions[index].temperature,
+              draft: draftKeys.isNotEmpty && draftKeys.contains(keys[index]),
+            ),
+        ],
       ),
     );
   }
 
-  // Свежие группы сверху: список читают с начала, а «так завариваю» —
-  // это про последнее заваривание, а не про случайный порядок ключей.
-  groups.sort((a, b) => b.latest.date.compareTo(a.latest.date));
+  // Сверху — то, чем заваривали последним: список читают с начала, а «так
+  // завариваю» — это про последнее заваривание, а не про дату сохранения.
+  groups.sort((a, b) => compareMoments(b.latest.usedAt, a.latest.usedAt));
 
   return groups;
 }

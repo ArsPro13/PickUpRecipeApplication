@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pick_up_recipe/core/offline/brew_log.dart';
 import 'package:pick_up_recipe/core/offline/local_recipes.dart';
 import 'package:pick_up_recipe/core/offline/offline_cache.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
@@ -114,6 +115,7 @@ class AuthenticationStateNotifier extends StateNotifier<AuthenticationState> {
     await RecipeDrafts.clear();
     await RatingDrafts.clear();
     await ActiveBrews.clear();
+    await BrewLog.clear();
     await Outbox.clear();
 
     state = state.copyWith(status: AuthState.needsAuthentication);

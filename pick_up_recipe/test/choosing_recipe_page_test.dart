@@ -209,7 +209,9 @@ RecipeData _recipe({
     temperature: 93,
     load: 15,
     title: '',
-    notes: '',
+    // Заметка у каждой версии своя: версии с одними числами и шагами — один
+    // рецепт, и стопка склеивает их в одну карточку.
+    notes: 'версия $id',
     grindDescriptor: '',
     agitationLevel: null,
     steps: const [],

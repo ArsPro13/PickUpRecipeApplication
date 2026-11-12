@@ -503,7 +503,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
           stepKey: '',
           tip: '',
           isOptional: false,
-          untilUser: false,
+          // Таймер или кнопка «Сделал» — как владелец задал этому типу в
+          // кабинете. Раньше встроенный шаг всегда добавлялся «по времени»,
+          // и «Открыть клапан» приходилось переключать руками в каждом
+          // рецепте.
+          untilUser: type.endsWith == StepEndsWith.user,
           untilSign: '',
           warning: type.warning,
         );
@@ -770,6 +774,16 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     final tip = TextEditingController(text: step.tip);
     final texts = AppLocalizations.of(context);
 
+    // Пока своей подсказки нет, экран заваривания подписывает шаг описанием
+    // из справочника. Оно и стоит в пустом поле серым — чтобы было видно,
+    // что человек получит, если подсказку не писать.
+    final description = ref
+            .read(stepTypesProvider)
+            .valueOrNull
+            ?.bySlug(step.stepType)
+            ?.description ??
+        '';
+
     final saved = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -786,7 +800,11 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
             TextField(
               controller: tip,
               maxLines: 2,
-              decoration: InputDecoration(labelText: texts.builderStepTip),
+              decoration: InputDecoration(
+                labelText: texts.builderStepTip,
+                hintText: description.isEmpty ? null : description,
+                hintMaxLines: 3,
+              ),
             ),
           ],
         ),
@@ -1073,7 +1091,10 @@ class _StepRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final texts = AppLocalizations.of(context);
-    final icon = AppIcons.step(type?.iconKey ?? step.stepType);
+    // Значок — тот, что владелец выбрал типу в кабинете; справочник не
+    // приехал или ключ пуст — по самому типу шага, как на экране заваривания.
+    final iconKey = type?.iconKey ?? '';
+    final icon = AppIcons.step(iconKey.isEmpty ? step.stepType : iconKey);
     final accent = context.colors.primary;
 
     // Цветом воды помечены только те шаги, которые её льют. У паузы и ремарки

@@ -57,6 +57,18 @@ class RecipeData {
   @JsonKey(name: "has_estimation", defaultValue: false)
   late bool hasEstimation;
 
+  /// Когда по рецепту заваривали последний раз — ISO-строкой, как [date].
+  ///
+  /// [date] — когда версию сохранили, и это разные вещи: рецепт сохраняют
+  /// один раз, а заваривают по нему каждое утро. Пока поля не было, повтор
+  /// рецепта не менял на карточке ничего, а чтобы дата «сдвинулась»,
+  /// приложение сохраняло ещё одну такую же версию.
+  ///
+  /// null — по рецепту не заваривали (или сервер старый и этого не считает).
+  /// Что показывать на карточке, решает [RecipeUse.usedAt].
+  @JsonKey(name: "last_brewed_at")
+  late String? lastBrewedAt;
+
   RecipeData({
     required this.id,
     required this.device,
@@ -75,6 +87,7 @@ class RecipeData {
     required this.agitationLevel,
     required this.steps,
     this.hasEstimation = false,
+    this.lastBrewedAt,
   });
 
   factory RecipeData.fromJson(Map<String, dynamic> json) =>
@@ -100,7 +113,37 @@ class RecipeData {
         agitationLevel: response.agitationLevel,
         steps: response.steps.map((e) => RecipeStep.fromResponse(e)).toList(),
         hasEstimation: response.hasEstimation,
+        lastBrewedAt: response.lastBrewedAt,
       );
+}
+
+/// Когда рецептом пользовались.
+///
+/// Расширением, а не геттером класса: RecipeData собирает json_serializable,
+/// и геттер, добавленный в сам класс, уехал бы в toJson — то есть в кэш, в
+/// черновики и в запрос к серверу.
+extension RecipeUse on RecipeData {
+  /// Момент последнего заваривания, а если по рецепту не заваривали — момент,
+  /// когда версию сохранили. По нему карточки стоят в списке и по нему же
+  /// подписаны: «когда я последний раз так заваривал».
+  String get usedAt {
+    final brewed = lastBrewedAt;
+    if (brewed == null || brewed.isEmpty) return date;
+    return compareMoments(brewed, date) >= 0 ? brewed : date;
+  }
+}
+
+/// Сравнивает два момента, записанных ISO-строками: раньше — меньше.
+///
+/// Через разбор, а не строками как есть. Сервер отдаёт время то с долями
+/// секунды, то без, и «…:05Z» при сравнении букв оказывается позже, чем
+/// «…:05.300Z», хотя на деле раньше: точка в таблице символов стоит до «Z».
+/// Неразобранная строка сравнивается буквами — как раньше сравнивались все.
+int compareMoments(String a, String b) {
+  final left = DateTime.tryParse(a);
+  final right = DateTime.tryParse(b);
+  if (left == null || right == null) return a.compareTo(b);
+  return left.compareTo(right);
 }
 
 /// Глубокая копия рецепта.
@@ -116,4 +159,43 @@ class RecipeData {
 RecipeData copyRecipe(RecipeData recipe) {
   return RecipeData.fromJson(
       jsonDecode(jsonEncode(recipe)) as Map<String, dynamic>);
+}
+
+/// Версии по порядку «чем заваривали последним» и без повторов.
+///
+/// Одинаковые версии — те же числа и те же шаги — это один рецепт, и
+/// показывается он один раз. Прежние сборки плодили такие копии сами: каждое
+/// заваривание по справочному рецепту сохраняло его заново, и стопка
+/// показывала «5 версий» с одними и теми же числами. Новых копий больше не
+/// заводится, а эти остались в базе; стирать их оттуда незачем (на них висят
+/// оценки), но и показывать как разные рецепты нельзя.
+///
+/// Из одинаковых остаётся та, по которой заваривали последней: с неё и
+/// заваривают снова. [fingerprint] — чем версии сравнивать; обычно это
+/// `recipeFingerprint`, и он передаётся сюда, а не зовётся напрямую, чтобы
+/// модель не тянула за собой слой хранения.
+///
+/// [onDuplicate] зовётся для каждой отброшенной версии — с ней и с той, что
+/// осталась вместо неё: так список узнаёт, что оценка есть хотя бы у одной.
+List<RecipeData> distinctVersions(
+  Iterable<RecipeData> recipes, {
+  required String Function(RecipeData) fingerprint,
+  void Function(RecipeData kept, RecipeData duplicate)? onDuplicate,
+}) {
+  final sorted = [...recipes]
+    ..sort((a, b) => compareMoments(b.usedAt, a.usedAt));
+
+  final byKey = <String, RecipeData>{};
+  final distinct = <RecipeData>[];
+  for (final recipe in sorted) {
+    final key = fingerprint(recipe);
+    final kept = byKey[key];
+    if (kept != null) {
+      onDuplicate?.call(kept, recipe);
+      continue;
+    }
+    byKey[key] = recipe;
+    distinct.add(recipe);
+  }
+  return distinct;
 }

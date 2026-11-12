@@ -2,11 +2,12 @@
 //
 // Оценка чашки и правка рецепта не могут ждать связи: заваривают там, где её
 // нет, и это нормальный, а не исключительный случай. Поэтому обе операции
-// кладутся сюда и уезжают, когда сеть вернётся.
+// кладутся сюда и уезжают, когда сеть вернётся. Так же и отметка «по рецепту
+// начали заваривать»: по ней сервер ведёт дату последнего заваривания.
 //
-// Порядок строгий и очередь одна на всё. Правка рецепта и оценка этой правки
-// связаны: пока сервер не завёл версию, оценивать нечего. Отправлять их
-// параллельно значило бы гадать, что успело раньше.
+// Порядок строгий и очередь одна на всё. Правка рецепта, заваривание по ней и
+// её оценка связаны: пока сервер не завёл версию, ни заваривать, ни оценивать
+// нечего. Отправлять их параллельно значило бы гадать, что успело раньше.
 //
 // Локальные идентификаторы отрицательные. Рецепт, сделанный без сети, получает
 // id вроде -1001; когда версия уезжает, сервер отвечает настоящим id, и всё,
@@ -30,6 +31,9 @@ enum OutboxKind {
 
   /// POST /recipe/estimation — оценка чашки.
   estimation,
+
+  /// POST /recipe/brew — по рецепту начали заваривать.
+  brew,
 
   /// POST /user/step_types — свой тип шага.
   userStepType;
@@ -261,6 +265,22 @@ abstract final class Outbox {
     await _saveQueue(queue);
   }
 
+  /// Ставит отметку о заваривании. В `recipe_id` может стоять местный номер
+  /// версии, которая сама ещё ждёт отправки: к её черёду он станет серверным.
+  static Future<void> enqueueBrew(Map<String, dynamic> payload) async {
+    final queue = _queue()
+      ..add(
+        OutboxEntry(
+          seq: await _nextSeq(),
+          kind: OutboxKind.brew,
+          payload: payload,
+          queuedAt: DateTime.now().toIso8601String(),
+        ),
+      );
+
+    await _saveQueue(queue);
+  }
+
   static Future<void> enqueueUserStepType(Map<String, dynamic> payload) async {
     final queue = _queue()
       ..add(
@@ -312,14 +332,15 @@ abstract final class Outbox {
           dropped++;
           queue = queue.sublist(1);
 
-          // Оценка без своей версии рецепта не нужна никому: если версия не
-          // завелась, вешать оценку не на что.
+          // Оценка и отметка о заваривании без своей версии рецепта не
+          // нужны никому: если версия не завелась, вешать их не на что.
           if (entry.kind == OutboxKind.evolve && entry.localId != 0) {
             final before = queue.length;
             queue = queue
                 .where(
                   (waiting) =>
-                      waiting.kind != OutboxKind.estimation ||
+                      (waiting.kind != OutboxKind.estimation &&
+                          waiting.kind != OutboxKind.brew) ||
                       (waiting.payload['recipe_id'] as num?)?.toInt() !=
                           entry.localId,
                 )
@@ -415,6 +436,22 @@ abstract final class Outbox {
         payload['recipe_id'] = recipeId;
 
         final response = await api.post('/recipe/estimation', payload);
+        if (response.statusCode != 200) {
+          throw _statusFailure(response.statusCode, response.body);
+        }
+
+      case OutboxKind.brew:
+        final payload = Map<String, dynamic>.from(entry.payload);
+        final recipeId = resolve((payload['recipe_id'] as num?)?.toInt() ?? 0);
+        if (recipeId <= 0) {
+          // Версия так и не завелась — отмечать заваривание не на чем.
+          throw const _Rejected(0, 'рецепт не уехал');
+        }
+        payload['recipe_id'] = recipeId;
+
+        // Сервер старше приложения и ручки не знает — ответит 404, и дело
+        // выбросится как отвергнутое: дату на этом телефоне держит BrewLog.
+        final response = await api.post('/recipe/brew', payload);
         if (response.statusCode != 200) {
           throw _statusFailure(response.statusCode, response.body);
         }

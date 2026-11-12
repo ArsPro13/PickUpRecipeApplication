@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:pick_up_recipe/core/api_client.dart';
 import 'package:pick_up_recipe/core/library_revision.dart';
 import 'package:pick_up_recipe/core/logger.dart';
+import 'package:pick_up_recipe/core/offline/brew_log.dart';
 import 'package:pick_up_recipe/core/offline/local_recipes.dart';
 import 'package:pick_up_recipe/core/offline/offline_exception.dart';
 import 'package:pick_up_recipe/core/offline/outbox.dart';
@@ -116,6 +117,11 @@ class RecipeService {
 
         final unsent = LocalRecipes.all();
 
+        // Заваривание, начатое на этом телефоне, видно на карточке сразу —
+        // не дожидаясь, пока отметка о нём доедет до сервера и вернётся
+        // списком. Серверная дата остаётся, если она позже.
+        BrewLog.applyTo([...recipes, ...unsent]);
+
         // Черновик, догнавший сохранённую версию, перестаёт быть черновиком.
         // Проверка стоит здесь, на чтении списка: другого места, где видно и
         // серверные версии, и свои, у приложения нет.
@@ -218,6 +224,100 @@ class RecipeService {
     return RecipeCorrection.fromJson(
       jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
     );
+  }
+
+  /// Отмечает, что по рецепту начали заваривать.
+  ///
+  /// Это и есть «дата последнего заваривания»: рецепт остаётся тем же, новая
+  /// версия не заводится, а карточка в «Рецептах» получает свежую дату и
+  /// встаёт первой. Раньше след от заваривания оставляла только новая версия
+  /// рецепта — поэтому повтор и плодил одинаковые карточки.
+  ///
+  /// Сперва — на телефон ([BrewLog]): карточка должна сдвинуться сразу и без
+  /// сети. К серверу отметка едет следом, а без связи встаёт в очередь.
+  /// Ошибок наружу не отдаёт: таймер уже пошёл, и несохранённая отметка — не
+  /// повод трогать заваривание.
+  Future<void> recordBrew(int recipeId, {DateTime? startedAt}) async {
+    if (recipeId == 0) return;
+
+    final at = (startedAt ?? DateTime.now()).toUtc();
+    final payload = {
+      'recipe_id': recipeId,
+      'started_at': at.toIso8601String(),
+      'source': 'app',
+    };
+
+    try {
+      await BrewLog.mark(recipeId, at);
+      // Списки перечитают себя и покажут новую дату.
+      LibraryRevision.bump();
+
+      // Версия сделана без сети и сама ещё ждёт отправки — отметка встаёт
+      // в очередь за ней: к её черёду местный номер станет серверным.
+      if (recipeId < 0) {
+        await Outbox.enqueueBrew(payload);
+        return;
+      }
+
+      // Сервер старше приложения ответит 404, справочному рецепту — 400.
+      // И то и другое не сбой: дату на этом телефоне уже держит журнал.
+      await _apiClient.post('/recipe/brew', payload);
+    } on OfflineException {
+      await Outbox.enqueueBrew(payload);
+    } catch (error) {
+      logger.e('Отметка о заваривании не сохранилась', error: error);
+    }
+  }
+
+  /// Ищет среди сохранённых версий под ту же пачку и прибор такую же, как
+  /// [version]. null — такой нет (или спросить не вышло).
+  ///
+  /// На этом держится правило «повтор рецепта не рождает новую карточку».
+  /// Версию сохраняет не только кнопка «Сохранить»: экран заваривания делает
+  /// это сам со стартом — справочный рецепт ложится копией под пачку,
+  /// пересчитанный на другой объём — следующей версией. Человек, который
+  /// каждое утро заваривает одно и то же, получал каждое утро ещё одну
+  /// одинаковую карточку.
+  ///
+  /// Сравнение — по отпечатку: те же числа и те же шаги. Черновики не в
+  /// счёт: это как раз то, что ещё не сохранено.
+  Future<RecipeData?> findSameVersion(RecipeData version) async {
+    if (version.packId == 0) return null;
+
+    try {
+      final known = await getByParams(
+            packId: version.packId,
+            device: version.device,
+            allVersions: true,
+          ) ??
+          const <RecipeData>[];
+
+      final key = recipeFingerprint(version);
+      final drafts = RecipeDrafts.keys();
+      // Список идёт от свежих к старым: из нескольких одинаковых (их успели
+      // наплодить до этой проверки) берётся последняя.
+      for (final recipe in known) {
+        final fingerprint = recipeFingerprint(recipe);
+        if (fingerprint == key && !drafts.contains(fingerprint)) return recipe;
+      }
+    } catch (error) {
+      // Не спросили — не беда: сервер и сам не заведёт вторую такую же.
+      logger.e('Не удалось проверить, сохранена ли уже такая версия',
+          error: error);
+    }
+    return null;
+  }
+
+  /// Сохраняет рецепт, по которому начали заваривать, — или находит уже
+  /// сохранённый такой же. Возвращает номер версии.
+  ///
+  /// Одна дорога для экрана заваривания и для оценки: обоим нужна версия,
+  /// которой уйдёт оценка, и ни один не должен завести вторую одинаковую.
+  Future<int> saveBrewedVersion(RecipeData version) async {
+    final same = await findSameVersion(version);
+    if (same != null) return same.id;
+
+    return evolveRecipe(version);
   }
 
   /// Сохраняет правку как новую версию в цепочке `prev_id`/`next_id`.

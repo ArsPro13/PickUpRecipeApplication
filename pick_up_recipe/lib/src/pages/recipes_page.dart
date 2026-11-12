@@ -18,6 +18,7 @@ import '../../routing/app_router.dart';
 import '../features/packs/application/state/active_packs_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
+import '../features/recipes/application/step_types_state.dart';
 import '../general_widgets/active_brew_plate.dart';
 import '../general_widgets/app_kit.dart';
 import '../general_widgets/grinder_button.dart';
@@ -46,6 +47,17 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
     });
   }
 
+  /// «Потянуть вниз»: перечитать список — и справочник шагов заодно.
+  ///
+  /// Названия, значки и описания шагов владелец правит в кабинете, а
+  /// справочник приложение читает один раз за запуск. Без этого увидеть
+  /// правку можно было бы, только закрыв приложение; жест «обновить» —
+  /// ровно то место, где человек ждёт свежего.
+  Future<void> _refresh() {
+    ref.invalidate(stepTypesProvider);
+    return ref.read(recipesListProvider.notifier).load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(recipesListProvider);
@@ -71,7 +83,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
           const UnfinishedRatingPlate(),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () => ref.read(recipesListProvider.notifier).load(),
+              onRefresh: _refresh,
               child: _body(state, packs),
             ),
           ),
@@ -148,9 +160,21 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
         AppSpacing.s5,
       ),
       itemCount: state.groups.length,
+      // Стопка переезжает вместе со своим барабаном. После заваривания список
+      // пересортировывается: только что сваренное встаёт первым, остальное
+      // сдвигается. Без ключа и этого поиска состояние осталось бы на прежнем
+      // месте — и стопке из одной версии достался бы барабан, докрученный до
+      // второй: вместо карточки человек видел ошибку.
+      findChildIndexCallback: (key) {
+        if (key is! ValueKey<String>) return null;
+        final index =
+            state.groups.indexWhere((group) => group.key == key.value);
+        return index < 0 ? null : index;
+      },
       itemBuilder: (context, index) {
         final group = state.groups[index];
         return RecipeDeck(
+          key: ValueKey<String>(group.key),
           group: group,
           pack: packs[group.packId],
           // Единственный главный элемент экрана — верхняя карточка первой

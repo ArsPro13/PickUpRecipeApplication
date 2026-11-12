@@ -352,6 +352,56 @@ void main() {
       expect(AppIcons.step(''), AppIcons.stepCustom);
       expect(AppIcons.step(null), AppIcons.stepCustom);
     });
+
+    test('значок из другой части набора находится по полному ключу', () {
+      // Владелец в кабинете может дать шагу значок не из «шагов» — тогда
+      // ключ приезжает с пространством имён. До этого такой ключ молча
+      // превращался в значок своего шага.
+      expect(AppIcons.step('ui-refresh'), AppIcons.uiRefresh);
+      expect(AppIcons.step('metric_water'), AppIcons.metricWater);
+    });
+
+    test('значок шага главнее тёзки из другой части набора', () {
+      // «grind» есть и среди шагов, и среди показателей: у шага — свой.
+      expect(AppIcons.step('grind'), AppIcons.stepGrind);
+    });
+  });
+
+  group('настройки типа шага из кабинета', () {
+    Map<String, dynamic> stir([Map<String, dynamic> extra = const {}]) => {
+          'id': 9,
+          'slug': 'stir',
+          'name': 'Размешать',
+          'short_name': 'мешать',
+          'icon_key': 'stir',
+          'group_id': 2,
+          ...extra,
+        };
+
+    test('описание и способ завершения читаются из справочника', () {
+      final type = StepType.fromJson(stir({
+        'description': 'Три круга ложкой, не задевая фильтр.',
+        'ends_with': 'user',
+      }));
+
+      expect(type.description, 'Три круга ложкой, не задевая фильтр.');
+      expect(type.endsWith, StepEndsWith.user);
+    });
+
+    test('старый сервер этих полей не присылает — таймер и без описания', () {
+      // Приложение новее сервера — обычное дело: сервер выкатывают реже.
+      final type = StepType.fromJson(stir());
+
+      expect(type.description, isEmpty);
+      expect(type.endsWith, StepEndsWith.timer);
+    });
+
+    test('незнакомый способ завершения — тоже таймер', () {
+      expect(StepType.fromJson(stir({'ends_with': 'none'})).endsWith,
+          StepEndsWith.timer);
+      expect(StepType.fromJson(stir({'ends_with': 'when_ready'})).endsWith,
+          StepEndsWith.timer);
+    });
   });
 
   group('рабочая копия рецепта', () {

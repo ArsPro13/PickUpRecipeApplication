@@ -331,6 +331,9 @@ class _CoffeePageState extends ConsumerState<CoffeePage> {
       const SizedBox(height: AppSpacing.s3),
       for (var index = 0; index < decks.length; index++)
         RecipeDeck(
+          // Ключ — пара «кофе + метод»: после заваривания стопки меняются
+          // местами, и барабан должен уехать вместе со своей.
+          key: ValueKey<String>(decks[index].key),
           group: decks[index],
           pack: pack,
           hero: index == 0,

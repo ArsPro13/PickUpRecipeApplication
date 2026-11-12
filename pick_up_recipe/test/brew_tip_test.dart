@@ -15,6 +15,9 @@ const _long = 'Воронка должна опустеть примерно к 
     'перелив, и в чашке появляется горечь.';
 const _short = 'Лей от центра';
 
+/// Впритык: обычным шрифтом в строку помещается, на треть крупнее — нет.
+const _medium = 'Три круга по часовой';
+
 const _expand = 'Показать подсказку целиком';
 const _collapse = 'Свернуть подсказку';
 
@@ -22,6 +25,7 @@ Future<void> pumpTip(
   WidgetTester tester,
   String text, {
   bool alwaysOpen = false,
+  double fontScale = 1,
 }) {
   return tester.pumpWidget(
     MaterialApp(
@@ -31,6 +35,12 @@ Future<void> pumpTip(
       locale: const Locale('ru'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      // Размер шрифта из настроек телефона: у владельца он крупнее обычного.
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: TextScaler.linear(fontScale)),
+        child: child!,
+      ),
       home: Scaffold(
         body: Align(
           alignment: Alignment.topLeft,
@@ -75,6 +85,25 @@ void main() {
       expect(find.text(_short), findsOneWidget);
       expect(find.byTooltip(_expand), findsNothing,
           reason: 'подсказка влезла целиком — раскрывать нечего');
+    });
+
+    testWidgets(
+        'с крупным шрифтом кнопка появляется у той, что перестала влезать',
+        (tester) async {
+      // Обычным шрифтом эта подсказка помещается в строку…
+      await pumpTip(tester, _medium);
+      expect(find.byTooltip(_expand), findsNothing);
+
+      // …а крупным — уже нет. Раньше «влезло или нет» мерилось обычным
+      // шрифтом при любом размере из настроек: текст обрывался многоточием,
+      // а раскрыть его было нечем.
+      await pumpTip(tester, _medium, fontScale: 1.3);
+      expect(find.byTooltip(_expand), findsOneWidget,
+          reason: 'подсказка оборвана, а кнопки «показать целиком» нет');
+
+      await tester.tap(find.byTooltip(_expand));
+      await tester.pumpAndSettle();
+      expect(tester.widget<Text>(find.text(_medium)).maxLines, isNull);
     });
 
     testWidgets('у текущего шага раскрыта сразу и без кнопки', (tester) async {

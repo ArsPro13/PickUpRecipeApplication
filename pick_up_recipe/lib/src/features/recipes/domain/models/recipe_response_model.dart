@@ -66,6 +66,12 @@ class RecipeResponseModel {
   @JsonKey(name: "has_estimation", defaultValue: false)
   late bool hasEstimation;
 
+  /// Когда по рецепту заваривали последний раз — время старта, как его
+  /// записал сервер. null — не заваривали ни разу, либо сервер ещё не умеет
+  /// это считать: тогда карточка показывает дату сохранения версии.
+  @JsonKey(name: "last_brewed_at")
+  late String? lastBrewedAt;
+
   late List<RecipeResponseStepModel> steps;
 
   RecipeResponseModel({
@@ -86,6 +92,7 @@ class RecipeResponseModel {
     required this.agitationLevel,
     required this.brewMethodId,
     required this.steps,
+    this.lastBrewedAt,
   });
 
   factory RecipeResponseModel.fromJson(Map<String, dynamic> json) =>

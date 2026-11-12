@@ -8,6 +8,8 @@
 // `allowed_step_types`: справочник один на все двадцать методов, а живых
 // клеток у медианного метода семь из семнадцати.
 
+import 'user_step_type_model.dart';
+
 /// Метка группы «всё остальное».
 ///
 /// Такой группы в справочнике нет — она собирается на телефоне из того, что
@@ -52,6 +54,8 @@ class StepType {
     this.sortOrder = 0,
     this.deviceState = '',
     this.warning = '',
+    this.description = '',
+    this.endsWith = StepEndsWith.timer,
   });
 
   final int id;
@@ -79,6 +83,17 @@ class StepType {
   /// читают во время шага, а это надо прочесть до.
   final String warning;
 
+  /// Что это за шаг и что на нём делать — словами владельца, из кабинета.
+  /// Экран заваривания показывает описание под шагом, у которого своей
+  /// подсказки в рецепте нет. Пусто — описания не писали (или сервер старый).
+  final String description;
+
+  /// Чем шаг заканчивается, когда его только добавили в рецепт: таймером
+  /// или кнопкой «Сделал». Владелец задаёт это в кабинете; раньше любой
+  /// встроенный шаг добавлялся «по времени». В готовом рецепте у каждого
+  /// шага свой признак — этот нужен только конструктору.
+  final StepEndsWith endsWith;
+
   factory StepType.fromJson(Map<String, dynamic> json) {
     return StepType(
       id: (json['id'] as num).toInt(),
@@ -90,6 +105,11 @@ class StepType {
       sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
       deviceState: json['device_state'] as String? ?? '',
       warning: json['warning'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      // Старый сервер поля не присылает — тогда таймер, как было всегда.
+      // «none» у встроенного типа не бывает; на всякий случай он тоже таймер.
+      endsWith:
+          json['ends_with'] == 'user' ? StepEndsWith.user : StepEndsWith.timer,
     );
   }
 
