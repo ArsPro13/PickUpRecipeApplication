@@ -49,6 +49,11 @@ Widget _formWithLegalLink(
   );
 }
 
+/// Крестик листа. По подсказке, а не по рисунку: значок с 14.11.2026 из
+/// набора приложения (AppIcon), а не Icons.close, — а проверяется здесь не
+/// значок, а то, что лист закрывается.
+final closeButton = find.byTooltip('Закрыть');
+
 void main() {
   late TextEditingController controller;
   late FocusNode focus;
@@ -79,13 +84,11 @@ void main() {
 
       await tester.tap(find.text('политика обработки данных'));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.close), findsOneWidget,
-          reason: 'лист не открылся');
+      expect(closeButton, findsOneWidget, reason: 'лист не открылся');
 
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(closeButton);
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.close), findsNothing,
-          reason: 'лист не закрылся');
+      expect(closeButton, findsNothing, reason: 'лист не закрылся');
 
       expect(
         tester.testTextInput.isVisible,
@@ -109,10 +112,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Жест владельца: тянем лист вниз, пока он не уедет за нижний край.
-      await tester.drag(find.byIcon(Icons.close), const Offset(0, 600));
+      await tester.drag(closeButton, const Offset(0, 600));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.close), findsNothing,
-          reason: 'лист не закрылся жестом');
+      expect(closeButton, findsNothing, reason: 'лист не закрылся жестом');
 
       expect(tester.testTextInput.isVisible, isFalse);
       expect(focus.hasFocus, isFalse);
@@ -135,7 +137,7 @@ void main() {
         reason: 'клавиатура осталась под листом и закрывает документ',
       );
 
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(closeButton);
       await tester.pumpAndSettle();
       expect(tester.testTextInput.isVisible, isFalse);
       expect(controller.text, 'me@example.com');
