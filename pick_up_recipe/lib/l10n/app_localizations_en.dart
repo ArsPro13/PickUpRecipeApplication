@@ -1625,7 +1625,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get builderSteps => 'Steps';
 
   @override
-  String get builderDragHint => 'drag by the handle';
+  String get builderDragHint => 'hold and drag';
 
   @override
   String get builderAddStep => 'Add a step';

@@ -23,7 +23,8 @@ class AppScreen extends StatelessWidget {
   const AppScreen({
     super.key,
     this.title,
-    required this.body,
+    this.body = const [],
+    this.slivers,
     this.actions = const [],
     this.bottom = const [],
     this.showBack = true,
@@ -41,6 +42,15 @@ class AppScreen extends StatelessWidget {
 
   /// Содержимое прокручиваемой части.
   final List<Widget> body;
+
+  /// То же содержимое сливерами — вместо [body].
+  ///
+  /// Нужно экрану, в теле которого есть список, сам двигающий прокрутку:
+  /// шаг конструктора, который тащат к краю экрана, должен прокручивать
+  /// экран. Список, вложенный в ListView, крутил бы при этом только себя —
+  /// а у него, сжатого по содержимому, крутить нечего, и шаг нельзя было
+  /// унести за край.
+  final List<Widget>? slivers;
 
   /// Кнопки справа в шапке.
   final List<Widget> actions;
@@ -83,7 +93,16 @@ class AppScreen extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: ListView(padding: padding, children: body),
+            child: slivers == null
+                ? ListView(padding: padding, children: body)
+                : CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: padding,
+                        sliver: SliverMainAxisGroup(slivers: slivers!),
+                      ),
+                    ],
+                  ),
           ),
           if (bottom.isNotEmpty) AppBottomBar(children: bottom),
         ],

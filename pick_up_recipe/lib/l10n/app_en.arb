@@ -906,7 +906,7 @@
 
   "builderSteps": "Steps",
 
-  "builderDragHint": "drag by the handle",
+  "builderDragHint": "hold and drag",
 
   "builderAddStep": "Add a step",
 

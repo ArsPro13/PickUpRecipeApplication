@@ -1630,7 +1630,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get builderSteps => 'Passaggi';
 
   @override
-  String get builderDragHint => 'trascina dalla maniglia';
+  String get builderDragHint => 'tieni premuto e trascina';
 
   @override
   String get builderAddStep => 'Aggiungi un passaggio';

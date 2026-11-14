@@ -488,7 +488,7 @@
   "builderGram": "g",
   "builderMillilitre": "ml",
   "builderSteps": "Passaggi",
-  "builderDragHint": "trascina dalla maniglia",
+  "builderDragHint": "tieni premuto e trascina",
   "builderAddStep": "Aggiungi un passaggio",
   "builderStep": "Passaggio",
   "builderStepName": "Nome",

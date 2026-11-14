@@ -22,6 +22,7 @@ import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -189,46 +190,54 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       // мельницы. Чьей именно, до этого экран не говорил нигде, и правка
       // «поставлю 18» означала разное у владельца Comandante и Timemore.
       actions: const [GrinderButton(), SizedBox(width: AppSpacing.s4)],
-      body: [
-        Text(_subtitle(), style: context.texts.labelSmall),
-        const SizedBox(height: AppSpacing.s3),
-        if (_showsCorrection) ...[
-          _CorrectionRow(
-            label: widget.correctionLabel!,
-            onUndo: _undoCorrection,
-          ),
-          const SizedBox(height: AppSpacing.s4),
-        ],
-        _params(texts, grinder),
-        const SizedBox(height: AppSpacing.s4),
-        Row(
-          children: [
-            Expanded(
-                child:
-                    Text(texts.builderSteps, style: context.texts.bodyMedium)),
-            Text(texts.builderDragHint, style: context.texts.labelSmall),
+      // Сливерами, а не списком виджетов: шаги лежат прямо в прокрутке экрана.
+      // Вложенный в неё ReorderableListView, сжатый по содержимому, при
+      // поднесении шага к краю пытался прокрутить сам себя — то есть ничего, и
+      // шаг нельзя было унести на место, которое сейчас за краем экрана.
+      slivers: [
+        SliverList.list(children: [
+          Text(_subtitle(), style: context.texts.labelSmall),
+          const SizedBox(height: AppSpacing.s3),
+          if (_showsCorrection) ...[
+            _CorrectionRow(
+              label: widget.correctionLabel!,
+              onUndo: _undoCorrection,
+            ),
+            const SizedBox(height: AppSpacing.s4),
           ],
-        ),
-        const SizedBox(height: AppSpacing.s2),
-        _steps(),
-        const SizedBox(height: AppSpacing.s2),
-        DashedBorderBox(
-          onTap: () => _addStep(method),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          _params(texts, grinder),
+          const SizedBox(height: AppSpacing.s4),
+          Row(
             children: [
-              AppIcon(AppIcons.uiPlus,
-                  size: AppSizes.icon20, color: context.colors.secondary),
-              const SizedBox(width: AppSpacing.s2),
-              Text(texts.builderAddStep,
-                  style: context.texts.bodyMedium?.copyWith(
-                    color: context.colors.secondary,
-                  )),
+              Expanded(
+                  child: Text(texts.builderSteps,
+                      style: context.texts.bodyMedium)),
+              Text(texts.builderDragHint, style: context.texts.labelSmall),
             ],
           ),
-        ),
-        const SizedBox(height: AppSpacing.s4),
-        _totals(texts),
+          const SizedBox(height: AppSpacing.s2),
+        ]),
+        _steps(),
+        SliverList.list(children: [
+          const SizedBox(height: AppSpacing.s2),
+          DashedBorderBox(
+            onTap: () => _addStep(method),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AppIcon(AppIcons.uiPlus,
+                    size: AppSizes.icon20, color: context.colors.secondary),
+                const SizedBox(width: AppSpacing.s2),
+                Text(texts.builderAddStep,
+                    style: context.texts.bodyMedium?.copyWith(
+                      color: context.colors.secondary,
+                    )),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s4),
+          _totals(texts),
+        ]),
       ],
       bottom: [
         if (_saveError != null)
@@ -394,12 +403,13 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   Widget _steps() {
     final reference = ref.watch(stepTypesProvider).valueOrNull;
 
-    return ReorderableListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      buildDefaultDragHandles: false,
+    return SliverReorderableList(
       itemCount: _recipe.steps.length,
       onReorderItem: _reorder,
+      // Шаг поднялся — телефон отвечает толчком: карточку закрывает палец, и
+      // без отклика непонятно, взят шаг или палец просто лежит на нём.
+      onReorderStart: (_) => HapticFeedback.mediumImpact(),
+      proxyDecorator: _liftedStep,
       itemBuilder: (context, index) {
         final step = _recipe.steps[index];
         final row = _StepRow(
@@ -431,6 +441,38 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
     );
   }
 
+  /// Как выглядит шаг, пока его несут: приподнят тенью над соседями и чуть
+  /// крупнее их. Лежащая и несомая карточки иначе ничем не отличались.
+  Widget _liftedStep(Widget child, int index, Animation<double> animation) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final lift = Curves.easeOut.transform(animation.value);
+        return Transform.scale(
+          scale: 1 + 0.02 * lift,
+          child: Stack(
+            children: [
+              // Тень — только под карточкой: у строки списка снизу отступ до
+              // соседа, и тень на всю строку легла бы ещё и на пустую полосу.
+              Positioned.fill(
+                bottom: AppSpacing.s2,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: AppRadius.medium,
+                    boxShadow:
+                        BoxShadow.lerpList(null, context.shadows.level3, lift),
+                  ),
+                ),
+              ),
+              child!,
+            ],
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+
   /// `onReorderItem`, а не `onReorder`: он отдаёт уже поправленный индекс —
   /// у старого приходилось самому вычитать единицу при движении вниз, и это
   /// ровно то место, где список тихо переставлял не тот шаг.
@@ -439,7 +481,9 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
       final step = _recipe.steps.removeAt(oldIndex);
       _recipe.steps.insert(newIndex, step);
       _renumber();
-      _openStep = null;
+      // Раскрытый шаг остаётся раскрытым: перенесли его самого — он едет на
+      // новое место, перенесли соседа — его номер сдвигается на единицу.
+      _openStep = openStepAfterMove(_openStep, oldIndex, newIndex);
     });
   }
 
@@ -861,9 +905,13 @@ class _RecipeBuilderPageState extends ConsumerState<RecipeBuilderPage> {
   }
 
   Future<void> _leave() async {
-    if (await _confirmLeave() && mounted) {
-      await context.router.maybePop();
-    }
+    if (!await _confirmLeave() || !mounted) return;
+    // Не maybePop: тот спрашивает разрешения у PopScope этого же экрана, а
+    // PopScope при несохранённых правках уход держит и снова зовёт _leave.
+    // «Уйти» открывало тот же вопрос заново, и уйти без сохранения было
+    // нельзя вовсе (снимок владельца, 13.11.2026). Человек уже ответил —
+    // спрашивать экран второй раз не о чем.
+    context.router.popForced();
   }
 
   Future<void> _save() async {
@@ -1103,18 +1151,21 @@ class _StepRow extends StatelessWidget {
         ? context.metrics.water
         : context.colors.onSurface;
 
-    return AppCard(
+    final content = Padding(
       padding: const EdgeInsets.all(AppSpacing.s3),
-      borderColor: open ? accent : null,
       child: Column(
         children: [
-          InkWell(
-            onTap: onToggle,
-            child: Row(
-              children: [
-                ReorderableDragStartListener(
-                  index: index,
-                  child: Padding(
+          // Долгое нажатие на строку тоже поднимает шаг — как в любом списке
+          // телефона. Только на строке, не на всей карточке: в раскрытой части
+          // счётчик воды и кнопки с подсказками по долгому нажатию, и вместо
+          // них всплывал бы шаг.
+          ReorderableDelayedDragStartListener(
+            index: index,
+            child: InkWell(
+              onTap: onToggle,
+              child: Row(
+                children: [
+                  Padding(
                     padding: const EdgeInsets.only(right: AppSpacing.s2),
                     child: AppIcon(
                       AppIcons.uiDrag,
@@ -1122,37 +1173,38 @@ class _StepRow extends StatelessWidget {
                       color: context.colors.secondary,
                     ),
                   ),
-                ),
-                AppIcon(icon, size: AppSizes.icon20, color: iconColor),
-                const SizedBox(width: AppSpacing.s2),
-                Expanded(
-                  child: Text(
-                    step.instruction.isEmpty
-                        ? (type?.name ?? texts.builderStep)
-                        : step.instruction,
-                    style: context.texts.bodyMedium?.copyWith(
-                      fontWeight: open ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(stepSummary(step, texts), style: context.texts.labelSmall),
-                if (changed) ...[
+                  AppIcon(icon, size: AppSizes.icon20, color: iconColor),
                   const SizedBox(width: AppSpacing.s2),
-                  Container(
-                    height: AppSpacing.s2,
-                    width: AppSpacing.s2,
-                    decoration:
-                        BoxDecoration(color: accent, shape: BoxShape.circle),
+                  Expanded(
+                    child: Text(
+                      step.instruction.isEmpty
+                          ? (type?.name ?? texts.builderStep)
+                          : step.instruction,
+                      style: context.texts.bodyMedium?.copyWith(
+                        fontWeight: open ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(stepSummary(step, texts),
+                      style: context.texts.labelSmall),
+                  if (changed) ...[
+                    const SizedBox(width: AppSpacing.s2),
+                    Container(
+                      height: AppSpacing.s2,
+                      width: AppSpacing.s2,
+                      decoration:
+                          BoxDecoration(color: accent, shape: BoxShape.circle),
+                    ),
+                  ],
+                  const SizedBox(width: AppSpacing.s2),
+                  AppIcon(
+                    open ? AppIcons.uiChevronUp : AppIcons.uiChevronDown,
+                    size: AppSizes.icon20,
+                    color: context.colors.secondary,
                   ),
                 ],
-                const SizedBox(width: AppSpacing.s2),
-                AppIcon(
-                  open ? AppIcons.uiChevronUp : AppIcons.uiChevronDown,
-                  size: AppSizes.icon20,
-                  color: context.colors.secondary,
-                ),
-              ],
+              ),
             ),
           ),
           if (open) ...[
@@ -1235,7 +1287,52 @@ class _StepRow extends StatelessWidget {
         ],
       ),
     );
+
+    return AppCard(
+      // Отступ карточки — внутри [content]: ручке нужен край карточки, а не
+      // край отступа.
+      padding: EdgeInsets.zero,
+      borderColor: open ? accent : null,
+      child: Stack(
+        children: [
+          content,
+          // Ручка — вся левая полоса карточки, от верхнего края до нижнего, а
+          // не значок 20 точек посередине: шаг брался, только если попасть
+          // пальцем ровно в значок, и «не тащился», стоило взяться чуть выше
+          // или ниже (владелец, 13.11.2026). Тянет сразу, без долгого нажатия:
+          // за полосу берутся, чтобы нести, — прокручивают экран не здесь.
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: stepGripWidth,
+            child: ReorderableDragStartListener(
+              index: index,
+              // Прозрачная заливка ловит касания: пустой виджет мимо себя
+              // пальцы пропускает, и ручкой была бы только линия значка.
+              child: const ColoredBox(color: Colors.transparent),
+            ),
+          ),
+        ],
+      ),
+    );
   }
+}
+
+/// Ширина ручки шага — полосы у левого края карточки. Это размер пальца,
+/// а не значка: меньше 48 точек промахиваются (Material, «Touch targets»).
+const double stepGripWidth = AppSizes.tapTarget;
+
+/// Где окажется раскрытый шаг после того, как шаг [from] перенесли на [to].
+///
+/// [to] — уже итоговое место, как его отдаёт `onReorderItem`. null — раскрытых
+/// шагов нет, и после переноса их тоже нет.
+int? openStepAfterMove(int? open, int from, int to) {
+  if (open == null) return null;
+  if (open == from) return to;
+  if (from < open && open <= to) return open - 1;
+  if (to <= open && open < from) return open + 1;
+  return open;
 }
 
 // ── Что шаг умеет ──────────────────────────────────────────────────────────

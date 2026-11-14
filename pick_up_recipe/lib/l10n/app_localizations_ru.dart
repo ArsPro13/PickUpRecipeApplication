@@ -1652,7 +1652,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get builderSteps => 'Шаги';
 
   @override
-  String get builderDragHint => 'потяните за ручку';
+  String get builderDragHint => 'удерживайте и тяните';
 
   @override
   String get builderAddStep => 'Добавить шаг';
