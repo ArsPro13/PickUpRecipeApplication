@@ -35,12 +35,10 @@ import 'dart:typed_data';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/utils.dart';
 import '../../l10n/app_localizations.dart';
 import '../../routing/app_router.dart';
-import '../features/brew_methods/application/brew_methods_state.dart';
 import '../features/packs/domain/models/pack_model.dart';
 import '../features/recipes/application/state/recipes_list_state.dart';
 import '../features/recipes/domain/models/recipe_data_model.dart';
@@ -48,7 +46,6 @@ import '../pages/packs_page.dart';
 import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
-import '../themes/method_family.dart';
 import 'app_icon.dart';
 import 'app_kit.dart';
 
@@ -415,20 +412,20 @@ class _RecipeDeckState extends State<RecipeDeck>
 }
 
 /// Шапка группы: значок прибора в кружке, «кофе · метод» и число версий.
-class _Header extends ConsumerWidget {
+class _Header extends StatelessWidget {
   const _Header({required this.group, required this.pack});
 
   final RecipeGroup group;
   final PackData? pack;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Кружок значка красится в цвет семьи прибора: воронка, пресс и холодные
-    // методы перестают выглядеть одинаково при беглом просмотре списка.
-    final family = methodFamilyColor(
-      ref.watch(brewMethodsProvider).groupSlugBySlug[group.method],
-    );
-    final accent = family ?? context.colors.primary;
+  Widget build(BuildContext context) {
+    // Кружок значка — в цвет приложения, у всех приборов один и тот же. До
+    // 15.11.2026 он красился в цвет семьи прибора (зелень у иммерсии, вино у
+    // давления), и владелец попросил вернуть цвет приложения: на главном
+    // экране зелёные значки выглядели чужими. Прибор и так назван рядом
+    // словами, а семья видна по меткам на «Пачках».
+    final accent = context.colors.primary;
 
     return Row(
       children: [

@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../features/legal/data_sources/remote/legal_service.dart';
 import '../features/legal/domain/legal_document.dart';
-import '../themes/app_icons.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_tokens.dart';
-import 'app_icon.dart';
 import 'legal_markdown_view.dart';
 
 /// Заголовок листа по виду документа.
@@ -89,8 +87,7 @@ class _LegalSheetState extends State<_LegalSheet> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon:
-                        const AppIcon(AppIcons.uiClose, size: AppSizes.icon24),
+                    icon: const Icon(Icons.close),
                     tooltip: texts.svcLegalClose,
                   ),
                 ],

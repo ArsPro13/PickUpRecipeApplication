@@ -1,6 +1,6 @@
 // СГЕНЕРИРОВАНО scripts/extract-icons.js — НЕ ПРАВИТЬ РУКАМИ.
 //
-// Источник — design/tokens/icons.js, 160 иконок (ADR 0005).
+// Источник — design/tokens/icons.js (ADR 0005), иконок в наборе: 161.
 // Перегенерировать: node scripts/extract-icons.js
 
 /// Пути к иконкам набора. Ключи совпадают с id в спрайте макетов.
@@ -147,11 +147,6 @@ abstract final class AppIcons {
   static const String uiChevronDown = '$_base/ico-ui-chevron-down.svg';
   static const String uiChevronUp = '$_base/ico-ui-chevron-up.svg';
   static const String uiClose = '$_base/ico-ui-close.svg';
-
-  /// Копия — «повторить шаг» в редакторе рецепта кабинета. Приложению пока
-  /// не нужна, но набор у них общий: значок, который владелец видит в
-  /// кабинете, должен быть и здесь (scripts/gen-app-icons.py).
-  static const String uiCopy = '$_base/ico-ui-copy.svg';
   static const String uiCheck = '$_base/ico-ui-check.svg';
   static const String uiEdit = '$_base/ico-ui-edit.svg';
   static const String uiStar = '$_base/ico-ui-star.svg';
@@ -182,6 +177,7 @@ abstract final class AppIcons {
   static const String uiLock = '$_base/ico-ui-lock.svg';
   static const String uiEye = '$_base/ico-ui-eye.svg';
   static const String uiEyeOff = '$_base/ico-ui-eye-off.svg';
+  static const String uiCopy = '$_base/ico-ui-copy.svg';
 
   // ── state (4) ──
   static const String stateEmpty = '$_base/ico-state-empty.svg';
@@ -318,7 +314,6 @@ abstract final class AppIcons {
     '$_base/ico-ui-chevron-down.svg',
     '$_base/ico-ui-chevron-up.svg',
     '$_base/ico-ui-close.svg',
-    '$_base/ico-ui-copy.svg',
     '$_base/ico-ui-check.svg',
     '$_base/ico-ui-edit.svg',
     '$_base/ico-ui-star.svg',
@@ -349,6 +344,7 @@ abstract final class AppIcons {
     '$_base/ico-ui-lock.svg',
     '$_base/ico-ui-eye.svg',
     '$_base/ico-ui-eye-off.svg',
+    '$_base/ico-ui-copy.svg',
     '$_base/ico-state-empty.svg',
     '$_base/ico-state-loading.svg',
     '$_base/ico-state-error.svg',

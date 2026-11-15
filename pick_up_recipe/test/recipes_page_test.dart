@@ -88,6 +88,31 @@ class _EmptyMethodService extends BrewMethodService {
   Future<List<BrewMethodGroup>> getGroups() async => const [];
 }
 
+/// Справочник с одним френч-прессом из семьи иммерсии — той, что до
+/// 15.11.2026 красила значок в шапке стопки в зелёный.
+class _ImmersionMethodService extends BrewMethodService {
+  @override
+  Future<List<BrewMethod>> getMethods() async => const [
+        BrewMethod(
+          id: 5,
+          slug: 'french_press',
+          name: 'Френч-пресс',
+          iconKey: 'french_press',
+          groupId: 2,
+        ),
+      ];
+
+  @override
+  Future<List<BrewMethodGroup>> getGroups() async => const [
+        BrewMethodGroup(
+          id: 2,
+          slug: 'immersion',
+          name: 'Иммерсия',
+          iconKey: 'french_press',
+        ),
+      ];
+}
+
 /// Полка пачек пуста: карточке хватает рецепта, пачка ей только фото.
 class _SilentApiClient extends ApiClient {
   _SilentApiClient() : super(onAuthError: _nothing);
@@ -228,6 +253,7 @@ void main() {
   Future<_RecordingRouter> pumpRecipes(
     WidgetTester tester, {
     List<RecipeData>? versions,
+    BrewMethodService? methods,
   }) async {
     final router = _RecordingRouter();
 
@@ -236,7 +262,8 @@ void main() {
         overrides: [
           recipeServiceProvider
               .overrideWithValue(_StaticRecipeService(versions ?? _versions)),
-          brewMethodServiceProvider.overrideWithValue(_EmptyMethodService()),
+          brewMethodServiceProvider
+              .overrideWithValue(methods ?? _EmptyMethodService()),
         ],
         child: MaterialApp(
           theme: lightTheme,
@@ -597,6 +624,44 @@ void main() {
           '${local.minute.toString().padLeft(2, '0')}';
 
       expect(find.textContaining(time), findsWidgets);
+    });
+  });
+
+  group('значок прибора в шапке стопки', () {
+    testWidgets('в цвет приложения, даже у иммерсии', (tester) async {
+      await pumpRecipes(
+        tester,
+        versions: [
+          _recipe(
+            id: 501,
+            date: '2026-11-14T10:00:00Z',
+            load: 30,
+            device: 'french_press',
+          ),
+        ],
+        methods: _ImmersionMethodService(),
+      );
+
+      // Справочник семей грузит корень приложения, а не вкладка, — здесь его
+      // поднимаем так же, как это делает RootScreen.
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(RecipesPage)),
+      );
+      await container.read(brewMethodsProvider.notifier).load();
+      await tester.pumpAndSettle();
+      expect(
+        container.read(brewMethodsProvider).groupSlugBySlug['french_press'],
+        'immersion',
+        reason: 'без семьи тест не проверил бы ничего',
+      );
+
+      // Владелец, 15.11.2026: «цвета иконок на главной сделай в цвет
+      // приложения, а не какие-то зелёные».
+      final icon = tester.widget<AppIcon>(find.byWidgetPredicate(
+        (widget) =>
+            widget is AppIcon && widget.asset == AppIcons.methodFrenchPress,
+      ));
+      expect(icon.color, lightTheme.colorScheme.primary);
     });
   });
 
